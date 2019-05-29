@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Application {
     operator: Operator,
     lhs: Box<Expression>,
@@ -13,9 +13,21 @@ impl Application {
             rhs: Box::new(rhs),
         }
     }
+
+    pub fn operator(&self) -> &Operator {
+        &self.operator
+    }
+
+    pub fn lhs(&self) -> &Expression {
+        &self.lhs
+    }
+
+    pub fn rhs(&self) -> &Expression {
+        &self.rhs
+    }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
     Number(f64),
     Application(Application),
@@ -33,7 +45,7 @@ impl From<Application> for Expression {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Operator {
     Add,
     Subtract,

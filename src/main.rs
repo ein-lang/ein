@@ -3,10 +3,11 @@ extern crate lalrpop_util;
 extern crate llvm_sys;
 
 mod ast;
+mod compile;
 mod parse;
 
+use compile::compile;
 use parse::parse;
-use std::error::Error;
 use std::io::Read;
 
 fn main() -> std::io::Result<()> {
@@ -14,13 +15,9 @@ fn main() -> std::io::Result<()> {
 
     std::io::stdin().read_to_string(&mut buffer)?;
 
-    println!(
-        "{:?}",
-        parse(&buffer).map_err(|err| std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            err.description()
-        ))?
-    );
+    compile(&parse(&buffer).map_err(map_error)?).map_err(map_error)
+}
 
-    Ok(())
+fn map_error<E: std::error::Error>(error: E) -> std::io::Error {
+    std::io::Error::new(std::io::ErrorKind::InvalidInput, error.description())
 }
