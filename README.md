@@ -1,7 +1,7 @@
-# Falco
+# Sloth
 
-[![Circle CI](https://img.shields.io/circleci/project/github/raviqqe/falco/master.svg?style=flat-square)](https://circleci.com/gh/raviqqe/falco)
-[![License](https://img.shields.io/github/license/raviqqe/falco.svg?style=flat-square)](LICENSE)
+[![Circle CI](https://img.shields.io/circleci/project/github/raviqqe/sloth/master.svg?style=flat-square)](https://circleci.com/gh/raviqqe/sloth)
+[![License](https://img.shields.io/github/license/raviqqe/sloth.svg?style=flat-square)](LICENSE)
 
 ## License
 

@@ -229,15 +229,6 @@ version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "falco"
-version = "0.1.0"
-dependencies = [
- "lalrpop 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "lalrpop-util 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "fixedbitset"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -598,6 +589,15 @@ dependencies = [
 name = "siphasher"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "sloth"
+version = "0.1.0"
+dependencies = [
+ "lalrpop 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lalrpop-util 0.17.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "string_cache"
