@@ -2,8 +2,9 @@ version: 2
 jobs:
   build:
     docker:
-      - image: rust
+      - image: archlinux/base
     steps:
+      - run: pacman -Syu --noconfirm clang llvm rust
       - checkout
       - run: cargo build
       - run: cargo test

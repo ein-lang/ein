@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate lalrpop_util;
+extern crate llvm_sys;
 
 mod ast;
 mod parse;

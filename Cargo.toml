@@ -7,6 +7,7 @@ build = "build.rs"
 
 [dependencies]
 lalrpop-util = "0.17.0"
+llvm-sys = "80"
 regex = "0.2.0"
 
 [build-dependencies]
