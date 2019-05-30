@@ -1,8 +1,8 @@
 use super::error::CompileError;
+use super::utilities::c_string;
 use crate::ast;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
-use std::ffi::CString;
 
 pub struct ExpressionCompiler {
     builder: LLVMBuilderRef,
@@ -25,7 +25,7 @@ impl ExpressionCompiler {
                     self.builder,
                     self.compile(application.lhs())?,
                     self.compile(application.rhs())?,
-                    CString::new("").unwrap().as_ptr(),
+                    c_string("").as_ptr(),
                 ),
                 ast::Expression::Number(number) => LLVMConstReal(LLVMDoubleType(), *number),
             })
