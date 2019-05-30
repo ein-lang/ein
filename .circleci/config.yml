@@ -4,7 +4,12 @@ jobs:
     docker:
       - image: archlinux/base
     steps:
-      - run: pacman -Syu --noconfirm clang llvm rust
       - checkout
+      - run: |
+          pacman -Syu --noconfirm base-devel clang llvm ruby-bundler rust
+          bundler install
       - run: cargo build
       - run: cargo test
+      - run: |
+          cargo build --release
+          SLOTH_ROOT=$PWD PATH=target/release:$PATH bundler exec cucumber

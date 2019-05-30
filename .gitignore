@@ -1,3 +1,4 @@
 *.bc
 *.out
 target
+tmp

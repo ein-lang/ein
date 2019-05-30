@@ -9,15 +9,16 @@ mod parse;
 
 use compile::{compile, CompileOptions};
 use parse::parse;
-use std::io::Read;
 
 fn main() -> std::io::Result<()> {
-    let mut buffer = String::with_capacity(1024);
-
-    std::io::stdin().read_to_string(&mut buffer)?;
-
     compile(
-        &parse(&buffer).map_err(map_error)?,
+        &parse(&std::fs::read_to_string(
+            std::env::args()
+                .collect::<Vec<String>>()
+                .get(1)
+                .ok_or(invalid_input_error("no input file"))?,
+        )?)
+        .map_err(map_error)?,
         CompileOptions {
             root_directory: environment::root_directory().map_err(map_error)?,
         },
@@ -26,5 +27,9 @@ fn main() -> std::io::Result<()> {
 }
 
 fn map_error<E: std::error::Error>(error: E) -> std::io::Error {
-    std::io::Error::new(std::io::ErrorKind::InvalidInput, error.description())
+    invalid_input_error(error.description())
+}
+
+fn invalid_input_error(description: &str) -> std::io::Error {
+    std::io::Error::new(std::io::ErrorKind::InvalidInput, description)
 }
