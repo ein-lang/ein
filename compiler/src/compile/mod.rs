@@ -5,6 +5,7 @@ mod utilities;
 use crate::ast;
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
+use llvm_sys::analysis::*;
 use llvm_sys::bit_writer::*;
 use llvm_sys::core::*;
 use std::error::Error;
@@ -20,6 +21,7 @@ const BC_PATH: &str = "sloth.bc";
 pub fn compile(expression: &ast::Expression, options: CompileOptions) -> Result<(), CompileError> {
     unsafe {
         let module = LLVMModuleCreateWithName(c_string("main").as_ptr());
+
         let mut arguments = vec![];
         let function = LLVMAddFunction(
             module,
@@ -34,6 +36,14 @@ pub fn compile(expression: &ast::Expression, options: CompileOptions) -> Result<
             builder,
             ExpressionCompiler::new(builder).compile(expression)?,
         );
+
+        LLVMVerifyFunction(function, LLVMVerifierFailureAction::LLVMAbortProcessAction);
+        LLVMVerifyModule(
+            module,
+            LLVMVerifierFailureAction::LLVMAbortProcessAction,
+            std::ptr::null_mut(),
+        );
+
         LLVMWriteBitcodeToFile(module, c_string(BC_PATH).as_ptr());
     }
 
