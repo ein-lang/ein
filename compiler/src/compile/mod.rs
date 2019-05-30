@@ -30,9 +30,10 @@ pub fn compile(expression: &ast::Expression, options: CompileOptions) -> Result<
 
         let builder = LLVMCreateBuilder();
         LLVMPositionBuilderAtEnd(builder, LLVMGetEntryBasicBlock(function));
-        let compiler = ExpressionCompiler::new(builder);
-        let e = compiler.compile(expression)?;
-        LLVMBuildRet(builder, e);
+        LLVMBuildRet(
+            builder,
+            ExpressionCompiler::new(builder).compile(expression)?,
+        );
         LLVMWriteBitcodeToFile(module, c_string(BC_PATH).as_ptr());
     }
 
