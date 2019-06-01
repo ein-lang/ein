@@ -1,33 +1,33 @@
 use super::error::CompileError;
-use super::utilities::c_string;
+use super::llvm;
 use crate::ast;
-use llvm_sys::core::*;
-use llvm_sys::prelude::*;
 
 pub struct ExpressionCompiler {
-    builder: LLVMBuilderRef,
+    builder: llvm::Builder,
 }
 
 impl ExpressionCompiler {
-    pub fn new(builder: LLVMBuilderRef) -> ExpressionCompiler {
-        ExpressionCompiler { builder }
+    pub fn new(module: &llvm::Module) -> ExpressionCompiler {
+        ExpressionCompiler {
+            builder: unsafe { llvm::Builder::new(module) },
+        }
     }
 
-    pub fn compile(&self, expression: &ast::Expression) -> Result<LLVMValueRef, CompileError> {
+    pub fn compile(&self, expression: &ast::Expression) -> Result<llvm::Value, CompileError> {
         unsafe {
             Ok(match expression {
-                ast::Expression::Application(application) => (match application.operator() {
-                    ast::Operator::Add => LLVMBuildFAdd,
-                    ast::Operator::Subtract => LLVMBuildFSub,
-                    ast::Operator::Multiply => LLVMBuildFMul,
-                    ast::Operator::Divide => LLVMBuildFDiv,
-                })(
-                    self.builder,
-                    self.compile(application.lhs())?,
-                    self.compile(application.rhs())?,
-                    c_string("").as_ptr(),
-                ),
-                ast::Expression::Number(number) => LLVMConstReal(LLVMDoubleType(), *number),
+                ast::Expression::Application(application) => {
+                    let lhs = self.compile(application.lhs())?;
+                    let rhs = self.compile(application.rhs())?;
+
+                    match application.operator() {
+                        ast::Operator::Add => self.builder.build_fadd(lhs, rhs),
+                        ast::Operator::Subtract => self.builder.build_fsub(lhs, rhs),
+                        ast::Operator::Multiply => self.builder.build_fmul(lhs, rhs),
+                        ast::Operator::Divide => self.builder.build_fdiv(lhs, rhs),
+                    }
+                }
+                ast::Expression::Number(number) => llvm::const_real(llvm::double_type(), *number),
             })
         }
     }
