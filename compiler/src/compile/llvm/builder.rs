@@ -1,3 +1,4 @@
+use super::constants::*;
 use super::module::Module;
 use super::types::*;
 use super::utilities::c_string;
@@ -15,6 +16,10 @@ impl Builder {
             module: module.internal(),
             builder: LLVMCreateBuilder(),
         }
+    }
+
+    pub unsafe fn build_br(&self, label: LLVMBasicBlockRef) {
+        LLVMBuildBr(self.builder, label);
     }
 
     pub unsafe fn build_call(
@@ -78,10 +83,10 @@ impl Builder {
         self.build_call_with_name(
             "llvm.coro.id",
             &mut [
-                LLVMConstInt(LLVMIntType(32), 0, 0),
-                LLVMConstNull(generic_pointer_type()),
-                LLVMConstNull(generic_pointer_type()),
-                LLVMConstNull(generic_pointer_type()),
+                const_int(i32_type(), 0),
+                const_null(generic_pointer_type()),
+                const_null(generic_pointer_type()),
+                const_null(generic_pointer_type()),
             ],
         )
     }
@@ -90,26 +95,23 @@ impl Builder {
         self.build_call_with_name("llvm.coro.size.i32", &mut [])
     }
 
-    pub unsafe fn build_coro_begin(
-        &self,
-        token: LLVMValueRef,
-        frame: LLVMValueRef,
-    ) -> LLVMValueRef {
-        self.build_call_with_name("llvm.coro.begin", &mut [token, frame])
+    pub unsafe fn build_coro_begin(&self, id: LLVMValueRef, frame: LLVMValueRef) -> LLVMValueRef {
+        self.build_call_with_name("llvm.coro.begin", &mut [id, frame])
     }
 
     pub unsafe fn build_coro_end(&self, handle: LLVMValueRef) {
-        self.build_call_with_name(
-            "llvm.coro.end",
-            &mut [handle, LLVMConstInt(i1_type(), 0, 0)],
-        );
+        self.build_call_with_name("llvm.coro.end", &mut [handle, const_int(i1_type(), 0)]);
     }
 
-    pub unsafe fn malloc(&self, size: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_coro_free(&self, id: LLVMValueRef, handle: LLVMValueRef) -> LLVMValueRef {
+        self.build_call_with_name("llvm.coro.free", &mut [id, handle])
+    }
+
+    pub unsafe fn build_malloc(&self, size: LLVMValueRef) -> LLVMValueRef {
         self.build_call_with_name("malloc", &mut [size])
     }
 
-    pub unsafe fn free(&self, pointer: LLVMValueRef) {
+    pub unsafe fn build_free(&self, pointer: LLVMValueRef) {
         self.build_call_with_name("free", &mut [pointer]);
     }
 }

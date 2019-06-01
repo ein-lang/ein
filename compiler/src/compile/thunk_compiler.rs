@@ -26,12 +26,17 @@ impl<'a> ThunkCompiler<'a> {
 
             let id = builder.build_coro_id();
             let size = builder.build_coro_size_i32();
-            let frame = builder.build_call_with_name("malloc", &mut [size]);
+            let frame = builder.build_malloc(size);
             let handle = builder.build_coro_begin(id, frame);
 
-            builder.position_at_end(builder.append_basic_block(function, "suspend"));
+            let suspend_block = builder.append_basic_block(function, "suspend");
+            builder.position_at_end(suspend_block);
             builder.build_coro_end(handle);
             builder.build_ret(handle);
+
+            builder.position_at_end(builder.append_basic_block(function, "cleanup"));
+            builder.build_free(builder.build_coro_free(id, handle));
+            builder.build_br(suspend_block);
 
             llvm::verify_function(function);
 
