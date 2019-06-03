@@ -63,7 +63,20 @@ impl Module {
             &mut [token_type(), generic_pointer_type()],
         );
 
+        self.declare_function("llvm.coro.done", i1_type(), &mut [generic_pointer_type()]);
+        self.declare_function(
+            "llvm.coro.promise",
+            generic_pointer_type(),
+            &mut [generic_pointer_type(), i32_type(), i1_type()],
+        );
+        self.declare_function(
+            "llvm.coro.resume",
+            void_type(),
+            &mut [generic_pointer_type()],
+        );
+
         self.declare_function("malloc", generic_pointer_type(), &mut [i32_type()]);
+        self.declare_function("free", void_type(), &mut [generic_pointer_type()]);
     }
 }
 

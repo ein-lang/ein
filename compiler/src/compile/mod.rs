@@ -3,6 +3,7 @@ mod expression_compiler;
 mod llvm;
 mod module_compiler;
 mod thunk_compiler;
+mod utilities;
 
 use crate::ast;
 use error::CompileError;

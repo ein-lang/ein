@@ -13,4 +13,5 @@ pub use constants::*;
 pub use module::*;
 pub use prelude::*;
 pub use types::*;
+pub use utilities::get_param;
 pub use verification::*;

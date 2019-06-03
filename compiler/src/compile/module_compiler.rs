@@ -22,9 +22,9 @@ impl<'a> ModuleCompiler<'a> {
                 llvm::function_type(llvm::double_type(), &mut []),
             );
 
-            let builder = llvm::Builder::new(&self.module);
-            builder.position_at_end(builder.append_basic_block(function, "entry"));
-            builder.build_ret(ExpressionCompiler::new(&self.module).compile(&self.expression)?);
+            let builder = llvm::Builder::new(function);
+            builder.position_at_end(builder.append_basic_block("entry"));
+            builder.build_ret(ExpressionCompiler::new(&builder).compile(&self.expression)?);
 
             llvm::verify_function(function);
             llvm::verify_module(&self.module);

@@ -2,15 +2,13 @@ use super::error::CompileError;
 use super::llvm;
 use crate::ast;
 
-pub struct ExpressionCompiler {
-    builder: llvm::Builder,
+pub struct ExpressionCompiler<'a> {
+    builder: &'a llvm::Builder,
 }
 
-impl ExpressionCompiler {
-    pub fn new(module: &llvm::Module) -> ExpressionCompiler {
-        ExpressionCompiler {
-            builder: unsafe { llvm::Builder::new(module) },
-        }
+impl<'a> ExpressionCompiler<'a> {
+    pub fn new(builder: &'a llvm::Builder) -> Self {
+        Self { builder }
     }
 
     pub fn compile(&self, expression: &ast::Expression) -> Result<llvm::Value, CompileError> {

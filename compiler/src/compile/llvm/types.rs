@@ -9,10 +9,6 @@ pub unsafe fn generic_pointer_type() -> LLVMTypeRef {
     pointer_type(i8_type())
 }
 
-pub unsafe fn coroutine_handle_type() -> LLVMTypeRef {
-    pointer_type(i8_type())
-}
-
 pub unsafe fn i64_type() -> LLVMTypeRef {
     int_type(64)
 }
@@ -43,4 +39,8 @@ pub unsafe fn pointer_type(internal: LLVMTypeRef) -> LLVMTypeRef {
 
 pub unsafe fn function_type(result: LLVMTypeRef, arguments: &mut [LLVMTypeRef]) -> LLVMTypeRef {
     LLVMFunctionType(result, arguments.as_mut_ptr(), arguments.len() as u32, 0)
+}
+
+pub unsafe fn void_type() -> LLVMTypeRef {
+    LLVMVoidType()
 }
