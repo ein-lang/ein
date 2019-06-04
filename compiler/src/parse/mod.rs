@@ -25,11 +25,33 @@ mod test {
     #[test]
     fn parse_operation() {
         assert_eq!(
-            parse("(+ 1 2)").unwrap(),
+            parse("1 + 2").unwrap(),
             Operation::new(Operator::Add, 1.0.into(), 2.0.into()).into()
         );
         assert_eq!(
-            parse("(- (* 1 2) (/ 3 4))").unwrap(),
+            parse("1 * 2").unwrap(),
+            Operation::new(Operator::Multiply, 1.0.into(), 2.0.into()).into()
+        );
+        assert_eq!(
+            parse("1 * 2 - 3").unwrap(),
+            Operation::new(
+                Operator::Subtract,
+                Operation::new(Operator::Multiply, 1.0.into(), 2.0.into()).into(),
+                3.0.into()
+            )
+            .into()
+        );
+        assert_eq!(
+            parse("1 + 2 * 3").unwrap(),
+            Operation::new(
+                Operator::Add,
+                1.0.into(),
+                Operation::new(Operator::Multiply, 2.0.into(), 3.0.into()).into(),
+            )
+            .into()
+        );
+        assert_eq!(
+            parse("1 * 2 - 3 / 4").unwrap(),
             Operation::new(
                 Operator::Subtract,
                 Operation::new(Operator::Multiply, 1.0.into(), 2.0.into()).into(),
