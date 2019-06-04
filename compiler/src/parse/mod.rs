@@ -13,7 +13,7 @@ pub fn parse(source: &str) -> Result<crate::ast::Expression, error::ParseError> 
 #[cfg(test)]
 mod test {
     use super::parse;
-    use crate::ast::{Application, Expression, Operator};
+    use crate::ast::{Expression, Operation, Operator};
 
     #[test]
     fn parse_number() {
@@ -23,17 +23,17 @@ mod test {
     }
 
     #[test]
-    fn parse_application() {
+    fn parse_operation() {
         assert_eq!(
             parse("(+ 1 2)").unwrap(),
-            Application::new(Operator::Add, 1.0.into(), 2.0.into()).into()
+            Operation::new(Operator::Add, 1.0.into(), 2.0.into()).into()
         );
         assert_eq!(
             parse("(- (* 1 2) (/ 3 4))").unwrap(),
-            Application::new(
+            Operation::new(
                 Operator::Subtract,
-                Application::new(Operator::Multiply, 1.0.into(), 2.0.into()).into(),
-                Application::new(Operator::Divide, 3.0.into(), 4.0.into()).into()
+                Operation::new(Operator::Multiply, 1.0.into(), 2.0.into()).into(),
+                Operation::new(Operator::Divide, 3.0.into(), 4.0.into()).into()
             )
             .into()
         );

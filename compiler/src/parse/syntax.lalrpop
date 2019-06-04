@@ -1,16 +1,16 @@
 use std::str::FromStr;
-use crate::ast::{Application, Expression, Operator};
+use crate::ast::{Operation, Expression, Operator};
 
 grammar;
 
 pub Expression: Expression = {
     Number => Expression::Number(<>),
-    Application => Expression::Application(<>),
+    Operation => Expression::Operation(<>),
 };
 
 Number: f64 = r"-?[0-9]+(\.[0-9]+)?" => f64::from_str(<>).unwrap();
 
-Application: Application = "(" <Operator> <Expression> <Expression> ")" => Application::new(<>);
+Operation: Operation = "(" <Operator> <Expression> <Expression> ")" => Operation::new(<>);
 
 Operator: Operator = {
     "+" => Operator::Add,

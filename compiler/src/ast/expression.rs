@@ -1,9 +1,9 @@
-use super::application::Application;
+use super::operation::Operation;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
     Number(f64),
-    Application(Application),
+    Operation(Operation),
 }
 
 impl From<f64> for Expression {
@@ -12,8 +12,8 @@ impl From<f64> for Expression {
     }
 }
 
-impl From<Application> for Expression {
-    fn from(appication: Application) -> Expression {
-        Expression::Application(appication)
+impl From<Operation> for Expression {
+    fn from(appication: Operation) -> Expression {
+        Expression::Operation(appication)
     }
 }

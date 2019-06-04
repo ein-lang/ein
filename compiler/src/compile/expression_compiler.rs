@@ -14,11 +14,11 @@ impl<'a> ExpressionCompiler<'a> {
     pub fn compile(&self, expression: &ast::Expression) -> Result<llvm::Value, CompileError> {
         unsafe {
             Ok(match expression {
-                ast::Expression::Application(application) => {
-                    let lhs = self.compile(application.lhs())?;
-                    let rhs = self.compile(application.rhs())?;
+                ast::Expression::Operation(operation) => {
+                    let lhs = self.compile(operation.lhs())?;
+                    let rhs = self.compile(operation.rhs())?;
 
-                    match application.operator() {
+                    match operation.operator() {
                         ast::Operator::Add => self.builder.build_fadd(lhs, rhs),
                         ast::Operator::Subtract => self.builder.build_fsub(lhs, rhs),
                         ast::Operator::Multiply => self.builder.build_fmul(lhs, rhs),

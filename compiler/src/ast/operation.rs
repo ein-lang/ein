@@ -2,15 +2,15 @@ use super::expression::Expression;
 use super::operator::Operator;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Application {
+pub struct Operation {
     operator: Operator,
     lhs: Box<Expression>,
     rhs: Box<Expression>,
 }
 
-impl Application {
+impl Operation {
     pub fn new(operator: Operator, lhs: Expression, rhs: Expression) -> Self {
-        Application {
+        Operation {
             operator,
             lhs: Box::new(lhs),
             rhs: Box::new(rhs),
