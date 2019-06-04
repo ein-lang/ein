@@ -3,7 +3,10 @@ use crate::ast::{Operation, Expression, Operator};
 
 grammar;
 
-pub Expression: Expression = Term3 => <>;
+pub Expression: Expression = {
+    Term2 => <>,
+    Operation2 => Expression::Operation(<>),
+};
 
 pub Term1: Expression = {
     Number => Expression::Number(<>),
@@ -15,16 +18,11 @@ pub Term2: Expression = {
     Operation1 => Expression::Operation(<>),
 };
 
-pub Term3: Expression = {
-    Term2 => <>,
-    Operation2 => Expression::Operation(<>),
-};
-
 Operation1: Operation =
   <e1:Term2> <o:Operator1> <e2:Term1> => Operation::new(o, e1, e2);
 
 Operation2: Operation =
-  <e1:Term3> <o:Operator2> <e2:Term2> => Operation::new(o, e1, e2);
+  <e1:Expression> <o:Operator2> <e2:Term2> => Operation::new(o, e1, e2);
 
 Operator1: Operator = {
     "*" => Operator::Multiply,
