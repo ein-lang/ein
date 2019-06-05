@@ -7,7 +7,7 @@ grammar;
 
 pub Module: Module = <FunctionDefinition*> => Module::new(<>);
 
-pub FunctionDefinition: FunctionDefinition = {
+FunctionDefinition: FunctionDefinition = {
   <location: @L> <type_name:Identifier> ":" <type_:FunctionType> ";"
   <name:Identifier> <arguments:Identifier*> "=" <body:Expression> ";" =>? {
     if type_name != name {
@@ -23,12 +23,12 @@ pub Expression: Expression = {
   Operation2 => Expression::Operation(<>),
 };
 
-pub Term1: Expression = {
+Term1: Expression = {
   Number => Expression::Number(<>),
   "(" <Expression> ")" => <>,
 };
 
-pub Term2: Expression = {
+Term2: Expression = {
   Term1 => <>,
   Operation1 => Expression::Operation(<>),
 };
