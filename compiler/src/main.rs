@@ -6,13 +6,14 @@ mod ast;
 mod compile;
 mod environment;
 mod parse;
+mod types;
 
 use compile::{compile, CompileOptions};
 use parse::parse;
 
 fn main() -> std::io::Result<()> {
     compile(
-        &parse::parse(&std::fs::read_to_string(
+        &parse(&std::fs::read_to_string(
             std::env::args()
                 .collect::<Vec<String>>()
                 .get(1)

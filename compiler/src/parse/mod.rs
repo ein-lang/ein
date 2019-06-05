@@ -20,6 +20,7 @@ fn parse_expression(source: &str) -> Result<crate::ast::Expression, error::Parse
 mod test {
     use super::{parse, parse_expression};
     use crate::ast::{Expression, FunctionDefinition, Module, Operation, Operator};
+    use crate::types::{self, Type};
 
     #[test]
     fn parse_number() {
@@ -70,11 +71,16 @@ mod test {
     #[test]
     fn parse_module() {
         assert_eq!(
-            parse("foo x y = 42;").unwrap(),
+            parse("foo : Number -> Number -> Number; foo x y = 42;").unwrap(),
             Module::new(vec![FunctionDefinition::new(
                 "foo".into(),
                 vec!["x".into(), "y".into()],
-                42.0.into()
+                42.0.into(),
+                types::Function::new(
+                    Type::Number,
+                    types::Function::new(Type::Number, Type::Number).into()
+                )
+                .into()
             )])
         );
     }

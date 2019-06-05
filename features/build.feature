@@ -2,6 +2,7 @@ Feature: Build
   Scenario: Build an executable
     Given a file named "main.sl" with:
     """
+    main : Number -> Number;
     main x = 1 * 3 - 4 / 2;
     """
     And I successfully run `sloth main.sl`

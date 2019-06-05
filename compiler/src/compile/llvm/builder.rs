@@ -19,8 +19,8 @@ impl Builder {
         }
     }
 
-    pub unsafe fn build_alloca(&self, typ: LLVMTypeRef) -> LLVMValueRef {
-        LLVMBuildAlloca(self.builder, typ, c_string("").as_ptr())
+    pub unsafe fn build_alloca(&self, type_: LLVMTypeRef) -> LLVMValueRef {
+        LLVMBuildAlloca(self.builder, type_, c_string("").as_ptr())
     }
 
     pub unsafe fn build_load(&self, pointer: LLVMValueRef) -> LLVMValueRef {
@@ -44,8 +44,8 @@ impl Builder {
         LLVMBuildCondBr(self.builder, condition, then, els);
     }
 
-    pub unsafe fn build_bit_cast(&self, value: LLVMValueRef, typ: LLVMTypeRef) -> LLVMValueRef {
-        LLVMBuildBitCast(self.builder, value, typ, c_string("").as_ptr())
+    pub unsafe fn build_bit_cast(&self, value: LLVMValueRef, type_: LLVMTypeRef) -> LLVMValueRef {
+        LLVMBuildBitCast(self.builder, value, type_, c_string("").as_ptr())
     }
 
     pub unsafe fn build_call(
