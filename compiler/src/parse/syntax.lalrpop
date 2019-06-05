@@ -8,7 +8,7 @@ grammar;
 pub Module: Module = <FunctionDefinition*> => Module::new(<>);
 
 pub FunctionDefinition: FunctionDefinition = {
-  <location: @L> <type_name:Identifier> ":" <type_:Type> ";"
+  <location: @L> <type_name:Identifier> ":" <type_:FunctionType> ";"
   <name:Identifier> <arguments:Identifier*> "=" <body:Expression> ";" =>? {
     if type_name != name {
       Err(ParseError::InvalidToken { location })
@@ -54,9 +54,11 @@ Number: f64 = r"-?[0-9]+(\.[0-9]+)?" => f64::from_str(<>).unwrap();
 Identifier: String = r"[a-zA-Z][a-zA-Z0-9]*" => String::from(<>);
 
 Type: Type = {
-  <AtomicType> "->" <Type> => Type::Function(types::Function::new(<>)),
+  FunctionType => <>.into(),
   AtomicType => <>,
 };
+
+FunctionType: types::Function =<AtomicType> "->" <Type> => types::Function::new(<>);
 
 AtomicType: Type = {
   "Number" => Type::Number,

@@ -1,16 +1,21 @@
 use super::expression::Expression;
-use crate::types::Type;
+use crate::types;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionDefinition {
     name: String,
     arguments: Vec<String>,
     body: Expression,
-    type_: Type,
+    type_: types::Function,
 }
 
 impl FunctionDefinition {
-    pub fn new(name: String, arguments: Vec<String>, body: Expression, type_: Type) -> Self {
+    pub fn new(
+        name: String,
+        arguments: Vec<String>,
+        body: Expression,
+        type_: types::Function,
+    ) -> Self {
         Self {
             name,
             arguments,
@@ -31,7 +36,7 @@ impl FunctionDefinition {
         &self.body
     }
 
-    pub fn type_(&self) -> &Type {
+    pub fn type_(&self) -> &types::Function {
         &self.type_
     }
 }
