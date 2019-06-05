@@ -1,21 +1,26 @@
 use std::str::FromStr;
-use crate::ast::{Operation, Expression, Operator};
+use crate::ast::{Expression, FunctionDefinition, Module, Operation, Operator};
 
 grammar;
 
+pub Module: Module = <FunctionDefinition*> => Module::new(<>);
+
+pub FunctionDefinition: FunctionDefinition =
+  <Identifier> <Identifier*> "=" <Expression> ";" => FunctionDefinition::new(<>);
+
 pub Expression: Expression = {
-    Term2 => <>,
-    Operation2 => Expression::Operation(<>),
+  Term2 => <>,
+  Operation2 => Expression::Operation(<>),
 };
 
 pub Term1: Expression = {
-    Number => Expression::Number(<>),
-    "(" <Expression> ")" => <>,
+  Number => Expression::Number(<>),
+  "(" <Expression> ")" => <>,
 };
 
 pub Term2: Expression = {
-    Term1 => <>,
-    Operation1 => Expression::Operation(<>),
+  Term1 => <>,
+  Operation1 => Expression::Operation(<>),
 };
 
 Operation1: Operation =
@@ -25,13 +30,15 @@ Operation2: Operation =
   <e1:Expression> <o:Operator2> <e2:Term2> => Operation::new(o, e1, e2);
 
 Operator1: Operator = {
-    "*" => Operator::Multiply,
-    "/" => Operator::Divide,
+  "*" => Operator::Multiply,
+  "/" => Operator::Divide,
 }
 
 Operator2: Operator = {
-    "+" => Operator::Add,
-    "-" => Operator::Subtract,
+  "+" => Operator::Add,
+  "-" => Operator::Subtract,
 };
 
 Number: f64 = r"-?[0-9]+(\.[0-9]+)?" => f64::from_str(<>).unwrap();
+
+Identifier: String = r"[a-zA-Z][a-zA-Z0-9]*" => String::from(<>);

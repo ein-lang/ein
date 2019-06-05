@@ -15,10 +15,10 @@ pub struct CompileOptions {
 
 const BC_PATH: &str = "sloth.bc";
 
-pub fn compile(expression: &ast::Expression, options: CompileOptions) -> Result<(), CompileError> {
+pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), CompileError> {
     unsafe {
         let module = llvm::Module::new("main");
-        ModuleCompiler::new(&module, expression).compile()?;
+        ModuleCompiler::new(&module, ast_module).compile()?;
         llvm::write_bitcode_to_file(module, BC_PATH);
     }
 

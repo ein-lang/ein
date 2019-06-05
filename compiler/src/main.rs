@@ -12,7 +12,7 @@ use parse::parse;
 
 fn main() -> std::io::Result<()> {
     compile(
-        &parse(&std::fs::read_to_string(
+        &parse::parse(&std::fs::read_to_string(
             std::env::args()
                 .collect::<Vec<String>>()
                 .get(1)
