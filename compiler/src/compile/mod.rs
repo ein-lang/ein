@@ -2,6 +2,7 @@ mod error;
 mod expression_compiler;
 mod llvm;
 mod module_compiler;
+mod type_compiler;
 
 use crate::ast;
 use error::CompileError;

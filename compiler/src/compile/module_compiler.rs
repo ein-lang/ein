@@ -2,15 +2,21 @@ use super::super::ast;
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::llvm;
+use super::type_compiler::TypeCompiler;
 
 pub struct ModuleCompiler<'a> {
     module: &'a llvm::Module,
     ast_module: &'a ast::Module,
+    type_compiler: TypeCompiler,
 }
 
 impl<'a> ModuleCompiler<'a> {
     pub fn new(module: &'a llvm::Module, ast_module: &'a ast::Module) -> ModuleCompiler<'a> {
-        ModuleCompiler { module, ast_module }
+        ModuleCompiler {
+            module,
+            ast_module,
+            type_compiler: TypeCompiler::new(),
+        }
     }
 
     pub fn compile(&self) -> Result<(), CompileError> {
@@ -24,7 +30,8 @@ impl<'a> ModuleCompiler<'a> {
                     } else {
                         function_definition.name()
                     },
-                    llvm::function_type(llvm::double_type(), &mut []),
+                    self.type_compiler
+                        .compile_function(&function_definition.type_()),
                 );
 
                 let builder = llvm::Builder::new(function);

@@ -13,6 +13,25 @@ impl Function {
             result: Box::new(result),
         }
     }
+
+    pub fn arguments(&self) -> Vec<&Type> {
+        let mut arguments: Vec<&Type> = vec![&self.argument];
+        let mut result: &Type = &self.result;
+
+        while let Type::Function(function) = result {
+            arguments.push(&function.argument);
+            result = &function.result;
+        }
+
+        arguments
+    }
+
+    pub fn result(&self) -> &Type {
+        match self.result.as_ref() {
+            Type::Function(function) => function.result(),
+            _ => &self.result,
+        }
+    }
 }
 
 impl From<Function> for Type {
