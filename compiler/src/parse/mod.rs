@@ -10,6 +10,7 @@ pub fn parse(source: &str) -> Result<crate::ast::Module, error::ParseError> {
         .map_err(|err| error::ParseError::new(err.description().into()))
 }
 
+#[cfg(test)]
 fn parse_expression(source: &str) -> Result<crate::ast::Expression, error::ParseError> {
     syntax::ExpressionParser::new()
         .parse(source)
