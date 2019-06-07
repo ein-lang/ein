@@ -38,7 +38,7 @@ impl<'a> ModuleCompiler<'a> {
                 let mut arguments = HashMap::new();
 
                 for (index, name) in function_definition.arguments().iter().enumerate() {
-                    arguments.insert(name.into(), llvm::get_param(function, index as u32));
+                    arguments.insert(name.clone(), llvm::get_param(function, index as u32));
                 }
 
                 let builder = llvm::Builder::new(function);
