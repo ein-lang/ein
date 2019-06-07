@@ -4,6 +4,7 @@ use super::operation::Operation;
 pub enum Expression {
     Number(f64),
     Operation(Operation),
+    Variable(String),
 }
 
 impl From<f64> for Expression {

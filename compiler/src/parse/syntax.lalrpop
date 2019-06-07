@@ -25,6 +25,7 @@ pub Expression: Expression = {
 
 Term1: Expression = {
   Number => Expression::Number(<>),
+  Identifier => Expression::Variable(<>),
   "(" <Expression> ")" => <>,
 };
 
@@ -58,7 +59,7 @@ Type: Type = {
   AtomicType => <>,
 };
 
-FunctionType: types::Function =<AtomicType> "->" <Type> => types::Function::new(<>);
+FunctionType: types::Function = <AtomicType> "->" <Type> => types::Function::new(<>);
 
 AtomicType: Type = {
   "Number" => Type::Number,

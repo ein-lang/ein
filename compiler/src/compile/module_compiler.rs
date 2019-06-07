@@ -3,6 +3,7 @@ use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::llvm;
 use super::type_compiler::TypeCompiler;
+use std::collections::HashMap;
 
 pub struct ModuleCompiler<'a> {
     module: &'a llvm::Module,
@@ -34,10 +35,17 @@ impl<'a> ModuleCompiler<'a> {
                         .compile_function(&function_definition.type_()),
                 );
 
+                let mut arguments = HashMap::new();
+
+                for (index, name) in function_definition.arguments().iter().enumerate() {
+                    arguments.insert(name.into(), llvm::get_param(function, index as u32));
+                }
+
                 let builder = llvm::Builder::new(function);
                 builder.position_at_end(builder.append_basic_block("entry"));
                 builder.build_ret(
-                    ExpressionCompiler::new(&builder).compile(&function_definition.body())?,
+                    ExpressionCompiler::new(&builder, &arguments)
+                        .compile(&function_definition.body())?,
                 );
 
                 llvm::verify_function(function);

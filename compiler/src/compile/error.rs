@@ -7,8 +7,10 @@ pub struct CompileError {
 }
 
 impl CompileError {
-    pub fn new(message: String) -> Self {
-        CompileError { message }
+    pub fn new(message: &str) -> Self {
+        CompileError {
+            message: message.into(),
+        }
     }
 }
 

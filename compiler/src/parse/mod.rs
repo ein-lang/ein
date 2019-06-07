@@ -84,4 +84,17 @@ mod test {
             )])
         );
     }
+
+    #[test]
+    fn parse_variable() {
+        assert_eq!(
+            parse("f : Number -> Number; f x = x;").unwrap(),
+            Module::new(vec![FunctionDefinition::new(
+                "f".into(),
+                vec!["x".into()],
+                Expression::Variable("x".into()),
+                types::Function::new(Type::Number, Type::Number).into(),
+            )])
+        );
+    }
 }
