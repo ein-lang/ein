@@ -29,6 +29,7 @@ impl<'a> ModuleCompiler<'a> {
                     ast::Definition::FunctionDefinition(function_definition) => {
                         self.compile_function_definition(function_definition)?
                     }
+                    ast::Definition::VariableDefinition(_variable_definition) => unimplemented!(),
                 }
             }
 

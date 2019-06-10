@@ -1,6 +1,6 @@
 use super::input::Input;
 use super::utilities::*;
-use crate::ast::{Definition, Expression, FunctionDefinition, Module, Operation, Operator};
+use crate::ast::*;
 use crate::types::{self, Type};
 use nom::{
     branch::*, bytes::complete::*, character::complete::*, combinator::*, error::*, multi::*,
@@ -17,9 +17,14 @@ pub fn module(input: Input) -> IResult<Input, Module> {
 }
 
 fn definition(input: Input) -> IResult<Input, Definition> {
-    map(function_definition, |function_definition| {
-        function_definition.into()
-    })(input)
+    alt((
+        map(function_definition, |function_definition| {
+            function_definition.into()
+        }),
+        map(variable_definition, |variable_definition| {
+            variable_definition.into()
+        }),
+    ))(input)
 }
 
 fn function_definition(original_input: Input) -> IResult<Input, FunctionDefinition> {
@@ -43,6 +48,26 @@ fn function_definition(original_input: Input) -> IResult<Input, FunctionDefiniti
             }
         },
     )
+}
+
+fn variable_definition(original_input: Input) -> IResult<Input, VariableDefinition> {
+    tuple((
+        identifier,
+        keyword(":"),
+        type_,
+        line_break,
+        identifier,
+        keyword("="),
+        expression,
+        line_break,
+    ))(original_input.clone())
+    .and_then(|(input, (name, _, type_, _, same_name, _, body, _))| {
+        if name == same_name {
+            Ok((input, VariableDefinition::new(name, body, type_)))
+        } else {
+            Err(nom::Err::Error((original_input, ErrorKind::Verify)))
+        }
+    })
 }
 
 fn expression(input: Input) -> IResult<Input, Expression> {
@@ -205,7 +230,7 @@ fn convert_result<T>(result: IResult<&str, T>, braces: u64) -> IResult<Input, T>
 mod test {
     use super::{
         blank, expression, function_definition, identifier, keyword, line_break, module,
-        number_literal, number_type, type_, Input,
+        number_literal, number_type, type_, variable_definition, Input,
     };
     use crate::ast::*;
     use crate::types::{self, Type};
@@ -439,6 +464,17 @@ mod test {
                     Expression::Variable("x".into()),
                     types::Function::new(Type::Number, Type::Number).into()
                 )
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_variable_definition() {
+        assert_eq!(
+            variable_definition(Input::new("x : Number\nx = 42", 0)),
+            Ok((
+                Input::new("", 0),
+                VariableDefinition::new("x".into(), Expression::Number(42.0), Type::Number,)
             ))
         );
     }
