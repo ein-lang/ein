@@ -23,7 +23,7 @@ fn function_definition(original_input: Input) -> IResult<Input, FunctionDefiniti
         function_type,
         line_break,
         identifier,
-        many0(identifier),
+        many1(identifier),
         keyword("="),
         expression,
         line_break,
@@ -102,16 +102,16 @@ fn identifier(input: Input) -> IResult<Input, String> {
 }
 
 fn type_(input: Input) -> IResult<Input, Type> {
-    alt((wrapped_function_type, atomic_type))(input)
+    alt((map(bare_function_type, |type_| type_.into()), atomic_type))(input)
 }
 
 fn function_type(input: Input) -> IResult<Input, types::Function> {
-    tuple((atomic_type, keyword("->"), type_))(input)
-        .map(|(input, (argument, _, result))| (input, types::Function::new(argument, result)))
+    alt((bare_function_type, parenthesesed(function_type)))(input)
 }
 
-fn wrapped_function_type(input: Input) -> IResult<Input, Type> {
-    function_type(input).map(|(input, type_)| (input, Type::Function(type_)))
+fn bare_function_type(input: Input) -> IResult<Input, types::Function> {
+    tuple((atomic_type, keyword("->"), type_))(input)
+        .map(|(input, (argument, _, result))| (input, types::Function::new(argument, result)))
 }
 
 fn atomic_type(input: Input) -> IResult<Input, Type> {
@@ -198,8 +198,8 @@ fn convert_result<T>(result: IResult<&str, T>, braces: u64) -> IResult<Input, T>
 #[cfg(test)]
 mod test {
     use super::{
-        blank, expression, identifier, keyword, line_break, module, number_literal, number_type,
-        type_, Input,
+        blank, expression, function_definition, identifier, keyword, line_break, module,
+        number_literal, number_type, type_, Input,
     };
     use crate::ast::*;
     use crate::types::{self, Type};
@@ -394,6 +394,46 @@ mod test {
         assert_eq!(
             module(Input::new("x", 0)),
             Err(nom::Err::Failure((Input::new("x", 0), ErrorKind::Eof)))
+        );
+    }
+
+    #[test]
+    fn parse_function_definition() {
+        assert_eq!(
+            function_definition(Input::new("f : Number -> Number\nf x = x", 0)),
+            Ok((
+                Input::new("", 0),
+                FunctionDefinition::new(
+                    "f".into(),
+                    vec!["x".into()],
+                    Expression::Variable("x".into()),
+                    types::Function::new(Type::Number, Type::Number).into()
+                )
+            ))
+        );
+        assert_eq!(
+            function_definition(Input::new("f : (\n  Number ->\n  Number\n)\nf x = x", 0)),
+            Ok((
+                Input::new("", 0),
+                FunctionDefinition::new(
+                    "f".into(),
+                    vec!["x".into()],
+                    Expression::Variable("x".into()),
+                    types::Function::new(Type::Number, Type::Number).into()
+                )
+            ))
+        );
+        assert_eq!(
+            function_definition(Input::new("f : ((Number -> Number))\nf x = x", 0)),
+            Ok((
+                Input::new("", 0),
+                FunctionDefinition::new(
+                    "f".into(),
+                    vec!["x".into()],
+                    Expression::Variable("x".into()),
+                    types::Function::new(Type::Number, Type::Number).into()
+                )
+            ))
         );
     }
 }
