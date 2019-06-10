@@ -3,12 +3,8 @@ name = "sloth"
 version = "0.1.0"
 authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
-build = "build.rs"
 
 [dependencies]
-lalrpop-util = "0.17.0"
 llvm-sys = "80"
+nom = "5.0.0-beta2"
 regex = "0.2.0"
-
-[build-dependencies]
-lalrpop = "0.17.0"

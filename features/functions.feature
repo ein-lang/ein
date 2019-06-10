@@ -2,8 +2,8 @@ Feature: Functions
   Scenario: Use an argument
     Given a file named "main.sl" with:
     """
-    main : Number -> Number;
-    main x = x;
+    main : Number -> Number
+    main x = x
     """
     And I successfully run `sloth main.sl`
     When I run `sh -c ./a.out`
