@@ -7,4 +7,3 @@ edition = "2018"
 [dependencies]
 llvm-sys = "80"
 nom = "5.0.0-beta2"
-regex = "0.2.0"
