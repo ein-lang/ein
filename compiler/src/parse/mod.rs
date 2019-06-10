@@ -30,7 +30,8 @@ mod test {
                     Type::Number,
                     types::Function::new(Type::Number, Type::Number).into()
                 )
-            )])
+            )
+            .into()])
         );
     }
 }

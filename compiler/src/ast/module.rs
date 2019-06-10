@@ -1,18 +1,16 @@
-use super::function_definition::FunctionDefinition;
+use super::definition::Definition;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
-    function_definitions: Vec<FunctionDefinition>,
+    definitions: Vec<Definition>,
 }
 
 impl Module {
-    pub fn new(function_definitions: Vec<FunctionDefinition>) -> Self {
-        Self {
-            function_definitions,
-        }
+    pub fn new(definitions: Vec<Definition>) -> Self {
+        Self { definitions }
     }
 
-    pub fn function_definitions(&self) -> &[FunctionDefinition] {
-        &self.function_definitions
+    pub fn definitions(&self) -> &[Definition] {
+        &self.definitions
     }
 }

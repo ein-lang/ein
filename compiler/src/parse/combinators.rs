@@ -1,6 +1,6 @@
 use super::input::Input;
 use super::utilities::*;
-use crate::ast::{Expression, FunctionDefinition, Module, Operation, Operator};
+use crate::ast::{Definition, Expression, FunctionDefinition, Module, Operation, Operator};
 use crate::types::{self, Type};
 use nom::{
     branch::*, bytes::complete::*, character::complete::*, combinator::*, error::*, multi::*,
@@ -10,10 +10,16 @@ use std::str::FromStr;
 
 pub fn module(input: Input) -> IResult<Input, Module> {
     terminated(
-        many0(function_definition),
+        many0(definition),
         tuple((convert_combinator(multispace0), eof)),
     )(input)
-    .map(|(input, function_definitions)| (input, Module::new(function_definitions)))
+    .map(|(input, definitions)| (input, Module::new(definitions)))
+}
+
+fn definition(input: Input) -> IResult<Input, Definition> {
+    map(function_definition, |function_definition| {
+        function_definition.into()
+    })(input)
 }
 
 fn function_definition(original_input: Input) -> IResult<Input, FunctionDefinition> {
