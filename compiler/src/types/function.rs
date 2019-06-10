@@ -33,9 +33,3 @@ impl Function {
         }
     }
 }
-
-impl From<Function> for Type {
-    fn from(function: Function) -> Self {
-        Type::Function(function)
-    }
-}
