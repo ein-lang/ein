@@ -198,7 +198,10 @@ fn blank(input: Input) -> IResult<Input, ()> {
 }
 
 fn line_break(input: Input) -> IResult<Input, ()> {
-    token(alt((nullify(convert_combinator(newline)), eof)))(input)
+    alt((
+        nullify(many1(token(convert_combinator(newline)))),
+        token(eof),
+    ))(input)
 }
 
 fn eof(input: Input) -> IResult<Input, ()> {
@@ -404,6 +407,14 @@ mod test {
         assert_eq!(line_break(Input::new("\n", 0)), Ok((Input::new("", 0), ())));
         assert_eq!(
             line_break(Input::new(" \n", 0)),
+            Ok((Input::new("", 0), ()))
+        );
+        assert_eq!(
+            line_break(Input::new("\n\n", 0)),
+            Ok((Input::new("", 0), ()))
+        );
+        assert_eq!(
+            line_break(Input::new("\n \n", 0)),
             Ok((Input::new("", 0), ()))
         );
         assert_eq!(line_break(Input::new("", 0)), Ok((Input::new("", 0), ())));
