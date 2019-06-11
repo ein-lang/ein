@@ -1,3 +1,4 @@
+use super::basic_block::*;
 use super::constants::*;
 use super::type_::*;
 use super::utilities::c_string;
@@ -32,17 +33,12 @@ impl Builder {
         LLVMBuildStore(self.builder, pointer.into(), value.into());
     }
 
-    pub unsafe fn build_br(&self, label: LLVMBasicBlockRef) {
-        LLVMBuildBr(self.builder, label);
+    pub unsafe fn build_br(&self, block: BasicBlock) {
+        LLVMBuildBr(self.builder, block.into());
     }
 
-    pub unsafe fn build_cond_br(
-        &self,
-        condition: Value,
-        then: LLVMBasicBlockRef,
-        els: LLVMBasicBlockRef,
-    ) {
-        LLVMBuildCondBr(self.builder, condition.into(), then, els);
+    pub unsafe fn build_cond_br(&self, condition: Value, then: BasicBlock, els: BasicBlock) {
+        LLVMBuildCondBr(self.builder, condition.into(), then.into(), els.into());
     }
 
     pub unsafe fn build_bit_cast(&self, value: Value, type_: Type) -> Value {
@@ -101,12 +97,12 @@ impl Builder {
         LLVMBuildFDiv(self.builder, lhs.into(), rhs.into(), c_string("").as_ptr()).into()
     }
 
-    pub unsafe fn append_basic_block(&self, name: &str) -> LLVMBasicBlockRef {
-        LLVMAppendBasicBlock(self.function, c_string(name).as_ptr())
+    pub unsafe fn append_basic_block(&self, name: &str) -> BasicBlock {
+        LLVMAppendBasicBlock(self.function, c_string(name).as_ptr()).into()
     }
 
-    pub unsafe fn position_at_end(&self, block: LLVMBasicBlockRef) {
-        LLVMPositionBuilderAtEnd(self.builder, block);
+    pub unsafe fn position_at_end(&self, block: BasicBlock) {
+        LLVMPositionBuilderAtEnd(self.builder, block.into());
     }
 
     pub unsafe fn build_coro_id(&self, promise: Value) -> Value {

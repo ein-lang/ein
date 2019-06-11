@@ -1,3 +1,4 @@
+mod basic_block;
 mod bit_code;
 mod builder;
 mod constants;
@@ -7,6 +8,7 @@ mod utilities;
 mod value;
 mod verification;
 
+pub use basic_block::*;
 pub use bit_code::*;
 pub use builder::*;
 pub use constants::*;
