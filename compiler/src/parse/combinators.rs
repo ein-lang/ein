@@ -109,19 +109,21 @@ fn create_operator<'a>(
 fn number_literal(input: Input) -> IResult<Input, f64> {
     token(convert_combinator(tuple((
         opt(tag("-")),
-        many1(digit1),
+        many1(one_of("123456789")),
         opt(tuple((tag("."), many1(digit1)))),
     ))))(input)
     .map(|(input, (sign, head, tail))| {
         (
             input,
             if sign.is_some() { -1.0 } else { 1.0 }
-                * f64::from_str(&format!(
-                    "{}{}",
-                    head.join(""),
-                    tail.map(|(_, digits)| format!(".{}", digits.join("")))
-                        .unwrap_or("".into())
-                ))
+                * f64::from_str(
+                    &[
+                        head.iter().collect(),
+                        tail.map(|(_, digits)| [".", &digits.concat()].concat())
+                            .unwrap_or("".into()),
+                    ]
+                    .concat(),
+                )
                 .unwrap(),
         )
     })
@@ -327,7 +329,7 @@ mod test {
         );
         assert_eq!(
             number_literal(Input::new("01", 0)),
-            Ok((Input::new("", 0), 1.0))
+            Err(nom::Err::Error((Input::new("01", 0), ErrorKind::OneOf)))
         );
         assert_eq!(
             number_literal(Input::new("-1", 0)),
