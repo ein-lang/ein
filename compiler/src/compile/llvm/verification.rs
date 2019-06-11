@@ -1,9 +1,12 @@
 use super::module::Module;
+use super::value::*;
 use llvm_sys::analysis::*;
-use llvm_sys::prelude::*;
 
-pub unsafe fn verify_function(function: LLVMValueRef) {
-    LLVMVerifyFunction(function, LLVMVerifierFailureAction::LLVMAbortProcessAction);
+pub unsafe fn verify_function(function: Value) {
+    LLVMVerifyFunction(
+        function.into(),
+        LLVMVerifierFailureAction::LLVMAbortProcessAction,
+    );
 }
 
 pub unsafe fn verify_module(module: &Module) {

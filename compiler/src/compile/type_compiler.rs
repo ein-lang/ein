@@ -11,12 +11,12 @@ impl TypeCompiler {
     pub unsafe fn compile(&self, type_: &Type) -> llvm::Type {
         match type_ {
             Type::Function(function) => self.compile_function(function),
-            Type::Number => llvm::double_type(),
+            Type::Number => llvm::Type::double(),
         }
     }
 
     pub unsafe fn compile_function(&self, function: &types::Function) -> llvm::Type {
-        llvm::function_type(
+        llvm::Type::function(
             self.compile(function.result()),
             &mut function
                 .arguments()

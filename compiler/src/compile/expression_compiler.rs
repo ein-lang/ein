@@ -17,7 +17,7 @@ impl<'a> ExpressionCompiler<'a> {
         unsafe {
             match expression {
                 ast::Expression::Number(number) => {
-                    Ok(llvm::const_real(llvm::double_type(), *number))
+                    Ok(llvm::const_real(llvm::Type::double(), *number))
                 }
                 ast::Expression::Operation(operation) => {
                     let lhs = self.compile(operation.lhs())?;

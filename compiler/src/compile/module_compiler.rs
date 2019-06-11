@@ -59,7 +59,7 @@ impl<'a> ModuleCompiler<'a> {
             arguments.insert(name.clone(), llvm::get_param(function, index as u32));
         }
 
-        let builder = llvm::Builder::new(function);
+        let builder = llvm::Builder::new(function.into());
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_ret(
             ExpressionCompiler::new(&builder, &arguments).compile(&function_definition.body())?,

@@ -1,6 +1,7 @@
 use super::constants::*;
-use super::types::*;
+use super::type_::*;
 use super::utilities::c_string;
+use super::value::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
@@ -19,16 +20,16 @@ impl Builder {
         }
     }
 
-    pub unsafe fn build_alloca(&self, type_: LLVMTypeRef) -> LLVMValueRef {
-        LLVMBuildAlloca(self.builder, type_, c_string("").as_ptr())
+    pub unsafe fn build_alloca(&self, type_: Type) -> Value {
+        LLVMBuildAlloca(self.builder, type_.into(), c_string("").as_ptr()).into()
     }
 
-    pub unsafe fn build_load(&self, pointer: LLVMValueRef) -> LLVMValueRef {
-        LLVMBuildLoad(self.builder, pointer, c_string("").as_ptr())
+    pub unsafe fn build_load(&self, pointer: Value) -> Value {
+        LLVMBuildLoad(self.builder, pointer.into(), c_string("").as_ptr()).into()
     }
 
-    pub unsafe fn build_store(&self, pointer: LLVMValueRef, value: LLVMValueRef) {
-        LLVMBuildStore(self.builder, pointer, value);
+    pub unsafe fn build_store(&self, pointer: Value, value: Value) {
+        LLVMBuildStore(self.builder, pointer.into(), value.into());
     }
 
     pub unsafe fn build_br(&self, label: LLVMBasicBlockRef) {
@@ -37,60 +38,67 @@ impl Builder {
 
     pub unsafe fn build_cond_br(
         &self,
-        condition: LLVMValueRef,
+        condition: Value,
         then: LLVMBasicBlockRef,
         els: LLVMBasicBlockRef,
     ) {
-        LLVMBuildCondBr(self.builder, condition, then, els);
+        LLVMBuildCondBr(self.builder, condition.into(), then, els);
     }
 
-    pub unsafe fn build_bit_cast(&self, value: LLVMValueRef, type_: LLVMTypeRef) -> LLVMValueRef {
-        LLVMBuildBitCast(self.builder, value, type_, c_string("").as_ptr())
+    pub unsafe fn build_bit_cast(&self, value: Value, type_: Type) -> Value {
+        LLVMBuildBitCast(
+            self.builder,
+            value.into(),
+            type_.into(),
+            c_string("").as_ptr(),
+        )
+        .into()
     }
 
-    pub unsafe fn build_call(
-        &self,
-        function: LLVMValueRef,
-        arguments: &mut [LLVMValueRef],
-    ) -> LLVMValueRef {
+    pub unsafe fn build_call(&self, function: Value, arguments: &mut [Value]) -> Value {
         LLVMBuildCall(
             self.builder,
-            function,
-            arguments.as_mut_ptr(),
+            function.into(),
+            arguments
+                .iter()
+                .map(|value| value.into())
+                .collect::<Vec<LLVMValueRef>>()
+                .as_mut_ptr(),
             arguments.len() as u32,
             std::ptr::null(),
         )
+        .into()
     }
 
     pub unsafe fn build_call_with_name(
         &self,
         function_name: &str,
-        arguments: &mut [LLVMValueRef],
-    ) -> LLVMValueRef {
+        arguments: &mut [Value],
+    ) -> Value {
         self.build_call(
-            LLVMGetNamedFunction(self.module, c_string(function_name).as_ptr()),
+            LLVMGetNamedFunction(self.module, c_string(function_name).as_ptr()).into(),
             arguments,
         )
     }
 
-    pub unsafe fn build_ret(&self, value: LLVMValueRef) {
-        LLVMBuildRet(self.builder, value);
+    pub unsafe fn build_ret(&self, value: Value) {
+        LLVMBuildRet(self.builder, value.into());
     }
 
-    pub unsafe fn build_fadd(&self, lhs: LLVMValueRef, rhs: LLVMValueRef) -> LLVMValueRef {
-        LLVMBuildFAdd(self.builder, lhs, rhs, c_string("").as_ptr())
+    pub unsafe fn build_fadd(&self, lhs: Value, rhs: Value) -> Value {
+        LLVMBuildFAdd(self.builder, lhs.into(), rhs.into(), c_string("").as_ptr()).into()
     }
 
-    pub unsafe fn build_fsub(&self, lhs: LLVMValueRef, rhs: LLVMValueRef) -> LLVMValueRef {
-        LLVMBuildFSub(self.builder, lhs, rhs, c_string("").as_ptr())
+    pub unsafe fn build_fsub(&self, lhs: Value, rhs: Value) -> Value {
+        LLVMBuildFSub(self.builder, lhs.into(), rhs.into(), c_string("").as_ptr()).into()
     }
 
-    pub unsafe fn build_fmul(&self, lhs: LLVMValueRef, rhs: LLVMValueRef) -> LLVMValueRef {
-        LLVMBuildFMul(self.builder, lhs, rhs, c_string("").as_ptr())
+    pub unsafe fn build_fmul(&self, lhs: Value, rhs: Value) -> Value {
+        LLVMBuildFMul(self.builder, lhs.into(), rhs.into(), c_string("").as_ptr()).into()
     }
 
-    pub unsafe fn build_fdiv(&self, lhs: LLVMValueRef, rhs: LLVMValueRef) -> LLVMValueRef {
-        LLVMBuildFDiv(self.builder, lhs, rhs, c_string("").as_ptr())
+    pub unsafe fn build_fdiv(&self, lhs: Value, rhs: Value) -> Value {
+        LLVMBuildFDiv(self.builder, lhs.into(), rhs.into(), c_string("").as_ptr()).into()
     }
 
     pub unsafe fn append_basic_block(&self, name: &str) -> LLVMBasicBlockRef {
@@ -101,54 +109,54 @@ impl Builder {
         LLVMPositionBuilderAtEnd(self.builder, block);
     }
 
-    pub unsafe fn build_coro_id(&self, promise: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_coro_id(&self, promise: Value) -> Value {
         self.build_call_with_name(
             "llvm.coro.id",
             &mut [
-                const_int(i32_type(), 0),
-                self.build_bit_cast(promise, generic_pointer_type()),
-                const_null(generic_pointer_type()),
-                const_null(generic_pointer_type()),
+                const_int(Type::i32(), 0),
+                self.build_bit_cast(promise, Type::generic_pointer()),
+                const_null(Type::generic_pointer()),
+                const_null(Type::generic_pointer()),
             ],
         )
     }
 
-    pub unsafe fn build_coro_size_i32(&self) -> LLVMValueRef {
+    pub unsafe fn build_coro_size_i32(&self) -> Value {
         self.build_call_with_name("llvm.coro.size.i32", &mut [])
     }
 
-    pub unsafe fn build_coro_begin(&self, id: LLVMValueRef, frame: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_coro_begin(&self, id: Value, frame: Value) -> Value {
         self.build_call_with_name("llvm.coro.begin", &mut [id, frame])
     }
 
-    pub unsafe fn build_coro_end(&self, handle: LLVMValueRef) {
-        self.build_call_with_name("llvm.coro.end", &mut [handle, const_int(i1_type(), 0)]);
+    pub unsafe fn build_coro_end(&self, handle: Value) {
+        self.build_call_with_name("llvm.coro.end", &mut [handle, const_int(Type::i1(), 0)]);
     }
 
-    pub unsafe fn build_coro_free(&self, id: LLVMValueRef, handle: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_coro_free(&self, id: Value, handle: Value) -> Value {
         self.build_call_with_name("llvm.coro.free", &mut [id, handle])
     }
 
-    pub unsafe fn build_coro_resume(&self, handle: LLVMValueRef) {
+    pub unsafe fn build_coro_resume(&self, handle: Value) {
         self.build_call_with_name("llvm.coro.resume", &mut [handle]);
     }
 
-    pub unsafe fn build_coro_done(&self, handle: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_coro_done(&self, handle: Value) -> Value {
         self.build_call_with_name("llvm.coro.done", &mut [handle])
     }
 
-    pub unsafe fn build_coro_promise(&self, handle: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_coro_promise(&self, handle: Value) -> Value {
         self.build_call_with_name(
             "llvm.coro.promise",
-            &mut [handle, const_int(i32_type(), 8), const_int(i1_type(), 0)],
+            &mut [handle, const_int(Type::i32(), 8), const_int(Type::i1(), 0)],
         )
     }
 
-    pub unsafe fn build_malloc(&self, size: LLVMValueRef) -> LLVMValueRef {
+    pub unsafe fn build_malloc(&self, size: Value) -> Value {
         self.build_call_with_name("malloc", &mut [size])
     }
 
-    pub unsafe fn build_free(&self, pointer: LLVMValueRef) {
+    pub unsafe fn build_free(&self, pointer: Value) {
         self.build_call_with_name("free", &mut [pointer]);
     }
 }

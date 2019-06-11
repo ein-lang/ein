@@ -1,6 +1,6 @@
-use super::prelude::*;
-use super::types::*;
+use super::type_::*;
 use super::utilities::*;
+use super::value::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
@@ -20,63 +20,63 @@ impl Module {
     }
 
     pub unsafe fn add_function(&self, name: &str, function_type: Type) -> Value {
-        LLVMAddFunction(self.module, c_string(name).as_ptr(), function_type)
+        LLVMAddFunction(self.module, c_string(name).as_ptr(), function_type.into()).into()
     }
 
     pub unsafe fn declare_function(&self, name: &str, return_type: Type, arguments: &mut [Type]) {
-        self.add_function(name, function_type(return_type, arguments));
+        self.add_function(name, Type::function(return_type, arguments));
     }
 
     pub unsafe fn declare_intrinsics(&self) {
         self.declare_function(
             "llvm.coro.id",
-            token_type(),
+            Type::token().into(),
             &mut [
-                i32_type(),
-                generic_pointer_type(),
-                generic_pointer_type(),
-                generic_pointer_type(),
+                Type::i32(),
+                Type::generic_pointer(),
+                Type::generic_pointer(),
+                Type::generic_pointer(),
             ],
         );
 
-        self.declare_function("llvm.coro.size.i32", i32_type(), &mut []);
-        self.declare_function("llvm.coro.size.i64", i64_type(), &mut []);
+        self.declare_function("llvm.coro.size.i32", Type::i32(), &mut []);
+        self.declare_function("llvm.coro.size.i64", Type::i64(), &mut []);
 
         self.declare_function(
             "llvm.coro.begin",
-            generic_pointer_type(),
-            &mut [token_type(), generic_pointer_type()],
+            Type::generic_pointer(),
+            &mut [Type::token(), Type::generic_pointer()],
         );
         self.declare_function(
             "llvm.coro.end",
-            i1_type(),
-            &mut [generic_pointer_type(), i1_type()],
+            Type::i1(),
+            &mut [Type::generic_pointer(), Type::i1()],
         );
         self.declare_function(
             "llvm.coro.suspend",
-            i8_type(),
-            &mut [token_type(), i1_type()],
+            Type::i8(),
+            &mut [Type::token(), Type::i1()],
         );
         self.declare_function(
             "llvm.coro.free",
-            generic_pointer_type(),
-            &mut [token_type(), generic_pointer_type()],
+            Type::generic_pointer(),
+            &mut [Type::token(), Type::generic_pointer()],
         );
 
-        self.declare_function("llvm.coro.done", i1_type(), &mut [generic_pointer_type()]);
+        self.declare_function("llvm.coro.done", Type::i1(), &mut [Type::generic_pointer()]);
         self.declare_function(
             "llvm.coro.promise",
-            generic_pointer_type(),
-            &mut [generic_pointer_type(), i32_type(), i1_type()],
+            Type::generic_pointer(),
+            &mut [Type::generic_pointer(), Type::i32(), Type::i1()],
         );
         self.declare_function(
             "llvm.coro.resume",
-            void_type(),
-            &mut [generic_pointer_type()],
+            Type::void().into(),
+            &mut [Type::generic_pointer()],
         );
 
-        self.declare_function("malloc", generic_pointer_type(), &mut [i32_type()]);
-        self.declare_function("free", void_type(), &mut [generic_pointer_type()]);
+        self.declare_function("malloc", Type::generic_pointer(), &mut [Type::i32()]);
+        self.declare_function("free", Type::void().into(), &mut [Type::generic_pointer()]);
     }
 }
 
