@@ -5,22 +5,22 @@ use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
 pub struct Module {
-    module: LLVMModuleRef,
+    internal: LLVMModuleRef,
 }
 
 impl Module {
     pub unsafe fn new(name: &str) -> Self {
         Self {
-            module: LLVMModuleCreateWithName(c_string(name).as_ptr()),
+            internal: LLVMModuleCreateWithName(c_string(name).as_ptr()),
         }
     }
 
-    pub fn internal(&self) -> LLVMModuleRef {
-        self.module
+    pub(super) fn internal(&self) -> LLVMModuleRef {
+        self.internal
     }
 
     pub unsafe fn add_function(&self, name: &str, function_type: Type) -> Value {
-        LLVMAddFunction(self.module, c_string(name).as_ptr(), function_type.into()).into()
+        LLVMAddFunction(self.internal, c_string(name).as_ptr(), function_type.into()).into()
     }
 
     pub unsafe fn declare_function(&self, name: &str, return_type: Type, arguments: &mut [Type]) {
@@ -85,7 +85,7 @@ impl std::fmt::Display for Module {
         write!(
             formatter,
             "{}",
-            unsafe { std::ffi::CString::from_raw(LLVMPrintModuleToString(self.module)) }
+            unsafe { std::ffi::CString::from_raw(LLVMPrintModuleToString(self.internal)) }
                 .to_str()
                 .unwrap()
         )
