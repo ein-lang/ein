@@ -31,10 +31,21 @@ impl<'a> ExpressionCompiler<'a> {
                     })
                 }
                 ast::Expression::Variable(name) => match self.variables.get(name) {
-                    Some(value) => Ok(*value),
+                    Some(value) => Ok(self.unwrap_value(*value)),
                     None => Err(CompileError::new("variable not found")),
                 },
             }
+        }
+    }
+
+    unsafe fn unwrap_value(&self, value: llvm::Value) -> llvm::Value {
+        if value.type_().kind() == llvm::TypeKind::Pointer {
+            match value.type_().element().kind() {
+                llvm::TypeKind::Double => self.builder.build_load(value),
+                _ => value,
+            }
+        } else {
+            value
         }
     }
 }

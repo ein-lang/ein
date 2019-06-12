@@ -23,6 +23,10 @@ impl Module {
         LLVMAddFunction(self.internal, c_string(name).as_ptr(), function_type.into()).into()
     }
 
+    pub unsafe fn add_global(&self, name: &str, type_: Type) -> Value {
+        LLVMAddGlobal(self.internal, type_.into(), c_string(name).as_ptr()).into()
+    }
+
     pub unsafe fn declare_function(&self, name: &str, return_type: Type, arguments: &mut [Type]) {
         self.add_function(name, Type::function(return_type, arguments));
     }
@@ -77,6 +81,10 @@ impl Module {
 
         self.declare_function("malloc", Type::generic_pointer(), &mut [Type::i32()]);
         self.declare_function("free", Type::void().into(), &mut [Type::generic_pointer()]);
+    }
+
+    pub unsafe fn dump(&self) {
+        LLVMDumpModule(self.internal)
     }
 }
 

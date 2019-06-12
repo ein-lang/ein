@@ -1,3 +1,4 @@
+use super::type_kind::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
@@ -9,6 +10,14 @@ pub struct Type {
 impl Type {
     pub(super) fn new(internal: LLVMTypeRef) -> Self {
         Self { internal }
+    }
+
+    pub unsafe fn kind(&self) -> TypeKind {
+        LLVMGetTypeKind(self.into()).into()
+    }
+
+    pub unsafe fn element(&self) -> Type {
+        LLVMGetElementType(self.into()).into()
     }
 
     pub unsafe fn token() -> Self {
@@ -61,8 +70,8 @@ impl Type {
         .into()
     }
 
-    pub unsafe fn void() -> LLVMTypeRef {
-        LLVMVoidType()
+    pub unsafe fn void() -> Type {
+        LLVMVoidType().into()
     }
 }
 

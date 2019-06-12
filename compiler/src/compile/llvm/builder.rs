@@ -13,10 +13,10 @@ pub struct Builder {
 }
 
 impl Builder {
-    pub unsafe fn new(function: LLVMValueRef) -> Builder {
+    pub unsafe fn new(function: Value) -> Builder {
         Builder {
-            module: LLVMGetGlobalParent(function),
-            function,
+            module: LLVMGetGlobalParent(function.into()),
+            function: function.into(),
             builder: LLVMCreateBuilder(),
         }
     }
@@ -41,6 +41,30 @@ impl Builder {
         LLVMBuildCondBr(self.builder, condition.into(), then.into(), els.into());
     }
 
+    pub unsafe fn build_phi(
+        &self,
+        type_: Type,
+        incoming_values: &mut [Value],
+        incoming_blocks: &mut [BasicBlock],
+    ) {
+        let phi = LLVMBuildPhi(self.builder, type_.into(), c_string("").as_ptr());
+
+        LLVMAddIncoming(
+            phi,
+            incoming_values
+                .iter()
+                .map(|value| value.into())
+                .collect::<Vec<LLVMValueRef>>()
+                .as_mut_ptr(),
+            incoming_blocks
+                .iter()
+                .map(|block| block.into())
+                .collect::<Vec<LLVMBasicBlockRef>>()
+                .as_mut_ptr(),
+            incoming_values.len() as u32,
+        );
+    }
+
     pub unsafe fn build_bit_cast(&self, value: Value, type_: Type) -> Value {
         LLVMBuildBitCast(
             self.builder,
@@ -61,7 +85,7 @@ impl Builder {
                 .collect::<Vec<LLVMValueRef>>()
                 .as_mut_ptr(),
             arguments.len() as u32,
-            std::ptr::null(),
+            c_string("").as_ptr(),
         )
         .into()
     }
@@ -79,6 +103,10 @@ impl Builder {
 
     pub unsafe fn build_ret(&self, value: Value) {
         LLVMBuildRet(self.builder, value.into());
+    }
+
+    pub unsafe fn build_ret_void(&self) {
+        LLVMBuildRetVoid(self.builder);
     }
 
     pub unsafe fn build_fadd(&self, lhs: Value, rhs: Value) -> Value {

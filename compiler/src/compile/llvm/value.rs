@@ -1,3 +1,5 @@
+use super::type_::Type;
+use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
 #[derive(Copy, Clone, Debug)]
@@ -8,6 +10,22 @@ pub struct Value {
 impl Value {
     pub(super) fn new(internal: LLVMValueRef) -> Self {
         Self { internal }
+    }
+
+    pub unsafe fn set_initializer(&self, value: Value) {
+        LLVMSetInitializer(self.into(), value.into());
+    }
+
+    pub unsafe fn type_(&self) -> Type {
+        LLVMTypeOf(self.into()).into()
+    }
+
+    pub unsafe fn dump(&self) {
+        LLVMDumpValue(self.into())
+    }
+
+    pub unsafe fn is_global_variable(&self) -> Value {
+        LLVMIsAGlobalVariable(self.into()).into()
     }
 }
 

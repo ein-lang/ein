@@ -13,3 +13,7 @@ pub unsafe fn const_real(real_type: Type, value: f64) -> Value {
 pub unsafe fn const_null(pointer_type: Type) -> Value {
     LLVMConstNull(pointer_type.into()).into()
 }
+
+pub unsafe fn get_undef(type_: Type) -> Value {
+    LLVMGetUndef(type_.into()).into()
+}
