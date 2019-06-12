@@ -20,12 +20,13 @@ impl Value {
         LLVMTypeOf(self.into()).into()
     }
 
-    pub unsafe fn dump(&self) {
-        LLVMDumpValue(self.into())
-    }
-
     pub unsafe fn is_global_variable(&self) -> Value {
         LLVMIsAGlobalVariable(self.into()).into()
+    }
+
+    #[allow(dead_code)]
+    pub unsafe fn dump(&self) {
+        LLVMDumpValue(self.into())
     }
 }
 

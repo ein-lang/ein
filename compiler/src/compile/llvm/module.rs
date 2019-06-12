@@ -83,6 +83,7 @@ impl Module {
         self.declare_function("free", Type::void().into(), &mut [Type::generic_pointer()]);
     }
 
+    #[allow(dead_code)]
     pub unsafe fn dump(&self) {
         LLVMDumpModule(self.internal)
     }
