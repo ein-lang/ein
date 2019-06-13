@@ -16,13 +16,15 @@ impl TypeCompiler {
     }
 
     pub unsafe fn compile_function(&self, function: &types::Function) -> llvm::Type {
-        llvm::Type::function(
-            self.compile(function.result()),
-            &mut function
+        let mut arguments = vec![llvm::Type::pointer(llvm::Type::i8())];
+        arguments.extend_from_slice(
+            &function
                 .arguments()
                 .iter()
-                .map(|type_| self.compile(type_))
-                .collect::<Vec<llvm::Type>>(),
-        )
+                .map(|type_| self.compile(*type_))
+                .collect::<Vec<_>>(),
+        );
+
+        llvm::Type::function(self.compile(function.result()), &mut arguments)
     }
 }

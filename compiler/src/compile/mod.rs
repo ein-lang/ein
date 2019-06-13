@@ -1,3 +1,4 @@
+mod desugar;
 mod error;
 mod expression_compiler;
 mod llvm;
@@ -5,6 +6,7 @@ mod module_compiler;
 mod type_compiler;
 
 use crate::ast;
+use desugar::desugar;
 use error::CompileError;
 use module_compiler::ModuleCompiler;
 use std::error::Error;
@@ -19,7 +21,7 @@ const BC_PATH: &str = "sloth.bc";
 pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), CompileError> {
     unsafe {
         let module = llvm::Module::new("main");
-        ModuleCompiler::new(&module, ast_module).compile()?;
+        ModuleCompiler::new(&module, &desugar(ast_module)).compile()?;
         llvm::write_bitcode_to_file(module, BC_PATH);
     }
 

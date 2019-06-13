@@ -1,6 +1,7 @@
 use super::type_kind::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
+use std::os::raw::c_uint;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Type {
@@ -44,7 +45,7 @@ impl Type {
         Self::int(1)
     }
 
-    pub unsafe fn int(bits: u32) -> Self {
+    pub unsafe fn int(bits: c_uint) -> Self {
         LLVMIntType(bits).into()
     }
 
@@ -64,7 +65,7 @@ impl Type {
                 .map(|type_| type_.into())
                 .collect::<Vec<LLVMTypeRef>>()
                 .as_mut_ptr(),
-            arguments.len() as u32,
+            arguments.len() as c_uint,
             0,
         )
         .into()
@@ -72,6 +73,19 @@ impl Type {
 
     pub unsafe fn void() -> Type {
         LLVMVoidType().into()
+    }
+
+    pub unsafe fn struct_(elements: &[Self]) -> Type {
+        LLVMStructType(
+            elements
+                .iter()
+                .map(|type_| type_.into())
+                .collect::<Vec<LLVMTypeRef>>()
+                .as_mut_ptr(),
+            elements.len() as c_uint,
+            0,
+        )
+        .into()
     }
 }
 
