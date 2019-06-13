@@ -124,7 +124,7 @@ impl<'a> ModuleCompiler<'a> {
 
         let initializer = self.module.add_function(
             &Self::generate_initializer_name(variable_definition.name()),
-            llvm::Type::function(llvm::Type::void(), &mut []),
+            llvm::Type::function(llvm::Type::void(), &[]),
         );
 
         let builder = llvm::Builder::new(initializer);
@@ -145,13 +145,13 @@ impl<'a> ModuleCompiler<'a> {
     unsafe fn compile_global_initializer(&self) {
         let initializer = self.module.add_function(
             GLOBAL_INITIALIZER_NAME,
-            llvm::Type::function(llvm::Type::void(), &mut []),
+            llvm::Type::function(llvm::Type::void(), &[]),
         );
         let builder = llvm::Builder::new(initializer);
         builder.position_at_end(builder.append_basic_block("entry"));
 
         for initializer in &self.initializers {
-            builder.build_call(*initializer, &mut []);
+            builder.build_call(*initializer, &[]);
         }
 
         builder.build_ret_void();

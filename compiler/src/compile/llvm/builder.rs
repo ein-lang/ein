@@ -44,8 +44,8 @@ impl Builder {
     pub unsafe fn build_phi(
         &self,
         type_: Type,
-        incoming_values: &mut [Value],
-        incoming_blocks: &mut [BasicBlock],
+        incoming_values: &[Value],
+        incoming_blocks: &[BasicBlock],
     ) {
         let phi = LLVMBuildPhi(self.builder, type_.into(), c_string("").as_ptr());
 
@@ -75,7 +75,7 @@ impl Builder {
         .into()
     }
 
-    pub unsafe fn build_call(&self, function: Value, arguments: &mut [Value]) -> Value {
+    pub unsafe fn build_call(&self, function: Value, arguments: &[Value]) -> Value {
         LLVMBuildCall(
             self.builder,
             function.into(),
@@ -93,7 +93,7 @@ impl Builder {
     pub unsafe fn build_call_with_name(
         &self,
         function_name: &str,
-        arguments: &mut [Value],
+        arguments: &[Value],
     ) -> Value {
         self.build_call(
             LLVMGetNamedFunction(self.module, c_string(function_name).as_ptr()).into(),
@@ -136,7 +136,7 @@ impl Builder {
     pub unsafe fn build_coro_id(&self, promise: Value) -> Value {
         self.build_call_with_name(
             "llvm.coro.id",
-            &mut [
+            &[
                 const_int(Type::i32(), 0),
                 self.build_bit_cast(promise, Type::generic_pointer()),
                 const_null(Type::generic_pointer()),
@@ -146,41 +146,41 @@ impl Builder {
     }
 
     pub unsafe fn build_coro_size_i32(&self) -> Value {
-        self.build_call_with_name("llvm.coro.size.i32", &mut [])
+        self.build_call_with_name("llvm.coro.size.i32", &[])
     }
 
     pub unsafe fn build_coro_begin(&self, id: Value, frame: Value) -> Value {
-        self.build_call_with_name("llvm.coro.begin", &mut [id, frame])
+        self.build_call_with_name("llvm.coro.begin", &[id, frame])
     }
 
     pub unsafe fn build_coro_end(&self, handle: Value) {
-        self.build_call_with_name("llvm.coro.end", &mut [handle, const_int(Type::i1(), 0)]);
+        self.build_call_with_name("llvm.coro.end", &[handle, const_int(Type::i1(), 0)]);
     }
 
     pub unsafe fn build_coro_free(&self, id: Value, handle: Value) -> Value {
-        self.build_call_with_name("llvm.coro.free", &mut [id, handle])
+        self.build_call_with_name("llvm.coro.free", &[id, handle])
     }
 
     pub unsafe fn build_coro_resume(&self, handle: Value) {
-        self.build_call_with_name("llvm.coro.resume", &mut [handle]);
+        self.build_call_with_name("llvm.coro.resume", &[handle]);
     }
 
     pub unsafe fn build_coro_done(&self, handle: Value) -> Value {
-        self.build_call_with_name("llvm.coro.done", &mut [handle])
+        self.build_call_with_name("llvm.coro.done", &[handle])
     }
 
     pub unsafe fn build_coro_promise(&self, handle: Value) -> Value {
         self.build_call_with_name(
             "llvm.coro.promise",
-            &mut [handle, const_int(Type::i32(), 8), const_int(Type::i1(), 0)],
+            &[handle, const_int(Type::i32(), 8), const_int(Type::i1(), 0)],
         )
     }
 
     pub unsafe fn build_malloc(&self, size: Value) -> Value {
-        self.build_call_with_name("malloc", &mut [size])
+        self.build_call_with_name("malloc", &[size])
     }
 
     pub unsafe fn build_free(&self, pointer: Value) {
-        self.build_call_with_name("free", &mut [pointer]);
+        self.build_call_with_name("free", &[pointer]);
     }
 }

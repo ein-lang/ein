@@ -57,7 +57,7 @@ impl Type {
         LLVMPointerType(content.into(), 0).into()
     }
 
-    pub unsafe fn function(result: Self, arguments: &mut [Self]) -> Self {
+    pub unsafe fn function(result: Self, arguments: &[Self]) -> Self {
         LLVMFunctionType(
             result.into(),
             arguments
