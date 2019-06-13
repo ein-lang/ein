@@ -77,9 +77,26 @@ fn expression(input: Input) -> IResult<Input, Expression> {
     ))(input)
 }
 
+fn application(input: Input) -> IResult<Input, Application> {
+    map(
+        tuple((function_expression, many1(expression))),
+        |(function, arguments)| Application::new(function, arguments),
+    )(input)
+}
+
+fn function_expression(input: Input) -> IResult<Input, Expression> {
+    alt((
+        map(identifier, |identifier| Expression::Variable(identifier)),
+        parenthesesed(expression),
+    ))(input)
+}
+
 fn term(input: Input) -> IResult<Input, Expression> {
     alt((
         map(number_literal, |number| Expression::Number(number)),
+        map(application, |application| {
+            Expression::Application(application)
+        }),
         map(identifier, |identifier| Expression::Variable(identifier)),
         parenthesesed(expression),
     ))(input)
@@ -234,8 +251,8 @@ fn convert_result<T>(result: IResult<&str, T>, braces: u64) -> IResult<Input, T>
 #[cfg(test)]
 mod test {
     use super::{
-        blank, expression, function_definition, identifier, keyword, line_break, module,
-        number_literal, number_type, type_, variable_definition, Input,
+        application, blank, expression, function_definition, identifier, keyword, line_break,
+        module, number_literal, number_type, type_, variable_definition, Input,
     };
     use crate::ast::*;
     use crate::types::{self, Type};
@@ -487,8 +504,27 @@ mod test {
             variable_definition(Input::new("x : Number\nx = 42", 0)),
             Ok((
                 Input::new("", 0),
-                VariableDefinition::new("x".into(), Expression::Number(42.0), Type::Number,)
+                VariableDefinition::new("x".into(), Expression::Number(42.0), Type::Number)
             ))
+        );
+    }
+
+    #[test]
+    fn parse_application() {
+        assert_eq!(
+            expression(Input::new("f x", 0)),
+            Ok((
+                Input::new("", 0),
+                Application::new(
+                    Expression::Variable("f".into()),
+                    vec![Expression::Variable("x".into())]
+                )
+                .into()
+            ))
+        );
+        assert_eq!(
+            application(Input::new("f", 0)),
+            Err(nom::Err::Error((Input::new("", 0), ErrorKind::Tag)))
         );
     }
 }

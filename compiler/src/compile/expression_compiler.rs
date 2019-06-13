@@ -16,6 +16,7 @@ impl<'a> ExpressionCompiler<'a> {
     pub fn compile(&self, expression: &ast::Expression) -> Result<llvm::Value, CompileError> {
         unsafe {
             match expression {
+                ast::Expression::Application(_application) => unimplemented!(),
                 ast::Expression::Number(number) => {
                     Ok(llvm::const_real(llvm::Type::double(), *number))
                 }

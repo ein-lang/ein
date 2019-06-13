@@ -10,7 +10,7 @@ pub struct Operation {
 
 impl Operation {
     pub fn new(operator: Operator, lhs: Expression, rhs: Expression) -> Self {
-        Operation {
+        Self {
             operator,
             lhs: Box::new(lhs),
             rhs: Box::new(rhs),

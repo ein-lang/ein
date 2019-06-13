@@ -1,3 +1,4 @@
+mod application;
 mod definition;
 mod expression;
 mod function_definition;
@@ -6,6 +7,7 @@ mod operation;
 mod operator;
 mod variable_definition;
 
+pub use application::*;
 pub use definition::*;
 pub use expression::*;
 pub use function_definition::*;
