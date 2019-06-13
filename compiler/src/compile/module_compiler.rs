@@ -95,13 +95,13 @@ impl<'a> ModuleCompiler<'a> {
     }
 
     unsafe fn declare_global_variable(&mut self, variable_definition: &ast::VariableDefinition) {
-        let global = self.module.add_global(
-            variable_definition.name(),
-            self.type_compiler.compile(variable_definition.type_()),
+        self.variables.insert(
+            variable_definition.name().into(),
+            self.module.add_global(
+                variable_definition.name(),
+                self.type_compiler.compile(variable_definition.type_()),
+            ),
         );
-        global.set_initializer(llvm::get_undef(global.type_().element()));
-        self.variables
-            .insert(variable_definition.name().into(), global);
     }
 
     unsafe fn compile_global_variable(
@@ -109,6 +109,7 @@ impl<'a> ModuleCompiler<'a> {
         variable_definition: &ast::VariableDefinition,
     ) -> Result<(), CompileError> {
         let global = self.variables[variable_definition.name()];
+        global.set_initializer(llvm::get_undef(global.type_().element()));
 
         let initializer = self.module.add_function(
             &Self::generate_initializer_name(variable_definition.name()),
