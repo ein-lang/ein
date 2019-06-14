@@ -17,7 +17,17 @@ impl<'a> ExpressionCompiler<'a> {
         unsafe {
             match expression {
                 ast::Expression::Application(application) => {
-                    let closure = self.compile(application.function())?;
+                    let mut function = application.function();
+                    let mut ast_arguments = vec![application.argument()];
+
+                    while let ast::Expression::Application(application) = &*function {
+                        function = application.function();
+                        ast_arguments.push(application.argument());
+                    }
+
+                    ast_arguments.reverse();
+
+                    let closure = self.compile(function)?;
 
                     let mut arguments = vec![self.builder.build_gep(
                         self.builder.build_bit_cast(
@@ -33,8 +43,8 @@ impl<'a> ExpressionCompiler<'a> {
                         ],
                     )];
 
-                    for argument in application.arguments() {
-                        arguments.push(self.compile(argument)?);
+                    for ast_argument in ast_arguments {
+                        arguments.push(self.compile(ast_argument)?);
                     }
 
                     Ok(self.builder.build_call(

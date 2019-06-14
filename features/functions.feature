@@ -31,7 +31,7 @@ Feature: Functions
     f x y = x
 
     main : Number -> Number
-    main x = f x x
+    main x = f x 13
     """
     And I successfully run `sloth main.sl`
     When I run `sh -c ./a.out`

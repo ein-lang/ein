@@ -79,19 +79,21 @@ fn expression(input: Input) -> IResult<Input, Expression> {
 
 fn application(input: Input) -> IResult<Input, Application> {
     map(
-        tuple((function_expression, many1(argument_expression))),
-        |(function, arguments)| Application::new(function, arguments),
+        tuple((atomic_expression, many1(atomic_expression))),
+        |(function, mut arguments)| {
+            let mut drain = arguments.drain(..);
+            let mut application = Application::new(function, drain.next().unwrap());
+
+            for argument in drain {
+                application = Application::new(application.into(), argument);
+            }
+
+            application
+        },
     )(input)
 }
 
-fn function_expression(input: Input) -> IResult<Input, Expression> {
-    alt((
-        map(identifier, |identifier| Expression::Variable(identifier)),
-        parenthesesed(expression),
-    ))(input)
-}
-
-fn argument_expression(input: Input) -> IResult<Input, Expression> {
+fn atomic_expression(input: Input) -> IResult<Input, Expression> {
     alt((
         map(number_literal, |number| Expression::Number(number)),
         map(identifier, |identifier| Expression::Variable(identifier)),
@@ -101,12 +103,10 @@ fn argument_expression(input: Input) -> IResult<Input, Expression> {
 
 fn term(input: Input) -> IResult<Input, Expression> {
     alt((
-        map(number_literal, |number| Expression::Number(number)),
         map(application, |application| {
             Expression::Application(application)
         }),
-        map(identifier, |identifier| Expression::Variable(identifier)),
-        parenthesesed(expression),
+        atomic_expression,
     ))(input)
 }
 
@@ -525,7 +525,22 @@ mod test {
                 Input::new("", 0),
                 Application::new(
                     Expression::Variable("f".into()),
-                    vec![Expression::Variable("x".into())]
+                    Expression::Variable("x".into())
+                )
+                .into()
+            ))
+        );
+        assert_eq!(
+            expression(Input::new("f x y", 0)),
+            Ok((
+                Input::new("", 0),
+                Application::new(
+                    Application::new(
+                        Expression::Variable("f".into()),
+                        Expression::Variable("x".into())
+                    )
+                    .into(),
+                    Expression::Variable("y".into())
                 )
                 .into()
             ))
