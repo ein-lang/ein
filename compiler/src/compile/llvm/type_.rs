@@ -21,6 +21,26 @@ impl Type {
         LLVMGetElementType(self.into()).into()
     }
 
+    pub unsafe fn struct_elements(&self) -> Vec<Type> {
+        let mut elements = Vec::with_capacity(LLVMCountStructElementTypes(self.into()) as usize);
+
+        for _ in 0..elements.capacity() {
+            elements.push(std::mem::uninitialized());
+        }
+
+        LLVMGetStructElementTypes(self.into(), elements.as_mut_ptr());
+
+        elements
+            .iter()
+            .map(|type_| type_.clone().into())
+            .collect::<Vec<_>>()
+    }
+
+    #[allow(dead_code)]
+    pub unsafe fn dump(&self) {
+        LLVMDumpType(self.into())
+    }
+
     pub unsafe fn token() -> Self {
         LLVMTokenTypeInContext(LLVMGetGlobalContext()).into()
     }

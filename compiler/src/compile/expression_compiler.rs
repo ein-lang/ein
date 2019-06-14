@@ -16,7 +16,38 @@ impl<'a> ExpressionCompiler<'a> {
     pub fn compile(&self, expression: &ast::Expression) -> Result<llvm::Value, CompileError> {
         unsafe {
             match expression {
-                ast::Expression::Application(_application) => unimplemented!(),
+                ast::Expression::Application(application) => {
+                    let closure = self.compile(application.function())?;
+
+                    let mut arguments = vec![self.builder.build_gep(
+                        self.builder.build_bit_cast(
+                            closure,
+                            llvm::Type::pointer(llvm::Type::struct_(&[
+                                closure.type_().element().struct_elements()[0],
+                                llvm::Type::i8(),
+                            ])),
+                        ),
+                        &[
+                            llvm::const_int(llvm::Type::i32(), 0),
+                            llvm::const_int(llvm::Type::i32(), 1),
+                        ],
+                    )];
+
+                    for argument in application.arguments() {
+                        arguments.push(self.compile(argument)?);
+                    }
+
+                    Ok(self.builder.build_call(
+                        self.builder.build_load(self.builder.build_gep(
+                            closure,
+                            &[
+                                llvm::const_int(llvm::Type::i32(), 0),
+                                llvm::const_int(llvm::Type::i32(), 0),
+                            ],
+                        )),
+                        &arguments,
+                    ))
+                }
                 ast::Expression::Number(number) => {
                     Ok(llvm::const_real(llvm::Type::double(), *number))
                 }

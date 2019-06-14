@@ -79,13 +79,21 @@ fn expression(input: Input) -> IResult<Input, Expression> {
 
 fn application(input: Input) -> IResult<Input, Application> {
     map(
-        tuple((function_expression, many1(expression))),
+        tuple((function_expression, many1(argument_expression))),
         |(function, arguments)| Application::new(function, arguments),
     )(input)
 }
 
 fn function_expression(input: Input) -> IResult<Input, Expression> {
     alt((
+        map(identifier, |identifier| Expression::Variable(identifier)),
+        parenthesesed(expression),
+    ))(input)
+}
+
+fn argument_expression(input: Input) -> IResult<Input, Expression> {
+    alt((
+        map(number_literal, |number| Expression::Number(number)),
         map(identifier, |identifier| Expression::Variable(identifier)),
         parenthesesed(expression),
     ))(input)

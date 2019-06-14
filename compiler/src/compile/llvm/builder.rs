@@ -75,6 +75,21 @@ impl Builder {
         .into()
     }
 
+    pub unsafe fn build_gep(&self, pointer: Value, indices: &[Value]) -> Value {
+        LLVMBuildGEP(
+            self.builder,
+            pointer.into(),
+            indices
+                .iter()
+                .map(|value| value.into())
+                .collect::<Vec<_>>()
+                .as_mut_ptr(),
+            indices.len() as u32,
+            c_string("").as_ptr(),
+        )
+        .into()
+    }
+
     pub unsafe fn build_call(&self, function: Value, arguments: &[Value]) -> Value {
         LLVMBuildCall(
             self.builder,
@@ -90,11 +105,7 @@ impl Builder {
         .into()
     }
 
-    pub unsafe fn build_call_with_name(
-        &self,
-        function_name: &str,
-        arguments: &[Value],
-    ) -> Value {
+    pub unsafe fn build_call_with_name(&self, function_name: &str, arguments: &[Value]) -> Value {
         self.build_call(
             LLVMGetNamedFunction(self.module, c_string(function_name).as_ptr()).into(),
             arguments,
