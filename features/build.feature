@@ -9,3 +9,16 @@ Feature: Build
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "1"
     And the exit status should be 0
+
+  Scenario: Fail to build an executable
+    Given a file named "main.sl" with:
+    """
+    f : Number
+    f = 42
+
+    main : Number -> Number
+    main x = f x
+    """
+    And I run `sloth main.sl`
+    Then stderr from "sloth main.sl" should contain "type inference error"
+    And the exit status should not be 0

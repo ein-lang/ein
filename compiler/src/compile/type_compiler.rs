@@ -12,6 +12,7 @@ impl TypeCompiler {
         match type_ {
             Type::Function(function) => self.compile_function(function),
             Type::Number => llvm::Type::double(),
+            Type::Variable(_) => unreachable!(),
         }
     }
 
@@ -25,6 +26,6 @@ impl TypeCompiler {
                 .collect::<Vec<_>>(),
         );
 
-        llvm::Type::function(self.compile(function.result()), &mut arguments)
+        llvm::Type::function(self.compile(function.last_result()), &mut arguments)
     }
 }

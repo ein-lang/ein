@@ -1,17 +1,26 @@
 use super::Type;
+use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Function {
-    argument: Box<Type>,
-    result: Box<Type>,
+    argument: Rc<Type>,
+    result: Rc<Type>,
 }
 
 impl Function {
     pub fn new(argument: Type, result: Type) -> Self {
         Self {
-            argument: Box::new(argument),
-            result: Box::new(result),
+            argument: Rc::new(argument),
+            result: Rc::new(result),
         }
+    }
+
+    pub fn argument(&self) -> &Type {
+        &self.argument
+    }
+
+    pub fn result(&self) -> &Type {
+        &self.result
     }
 
     pub fn arguments(&self) -> Vec<&Type> {
@@ -26,8 +35,8 @@ impl Function {
         arguments
     }
 
-    pub fn result(&self) -> &Type {
-        match self.result.as_ref() {
+    pub fn last_result(&self) -> &Type {
+        match &*self.result {
             Type::Function(function) => function.result(),
             _ => &self.result,
         }

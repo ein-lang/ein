@@ -4,6 +4,7 @@ mod expression_compiler;
 mod llvm;
 mod module_compiler;
 mod type_compiler;
+mod type_inference;
 
 use crate::ast;
 use desugar::desugar;
@@ -11,6 +12,7 @@ use error::CompileError;
 use module_compiler::ModuleCompiler;
 use std::error::Error;
 use std::path::Path;
+use type_inference::infer_types;
 
 pub struct CompileOptions {
     pub root_directory: String,
@@ -21,7 +23,12 @@ const BC_PATH: &str = "sloth.bc";
 pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), CompileError> {
     unsafe {
         let module = llvm::Module::new("main");
-        ModuleCompiler::new(&module, &desugar(ast_module)).compile()?;
+        ModuleCompiler::new(
+            &module,
+            &infer_types(&desugar(ast_module))
+                .map_err(|error| CompileError::new(error.description()))?,
+        )
+        .compile()?;
         llvm::write_bitcode_to_file(module, BC_PATH);
     }
 
