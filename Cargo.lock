@@ -119,7 +119,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "sloth"
 version = "0.1.0"
 dependencies = [
- "llvm-sys 80.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "core 0.1.0",
  "nom 5.0.0-beta2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

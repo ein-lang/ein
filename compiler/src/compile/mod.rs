@@ -1,7 +1,6 @@
 mod desugar;
 mod error;
 mod expression_compiler;
-mod llvm;
 mod module_compiler;
 mod type_compiler;
 mod type_inference;
@@ -21,16 +20,14 @@ pub struct CompileOptions {
 const BC_PATH: &str = "sloth.bc";
 
 pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), CompileError> {
-    unsafe {
-        let module = llvm::Module::new("main");
-        ModuleCompiler::new(
-            &module,
+    core::compile::compile(
+        &ModuleCompiler::new().compile(
             &infer_types(&desugar(ast_module))
                 .map_err(|error| CompileError::new(error.description()))?,
-        )
-        .compile()?;
-        llvm::write_bitcode_to_file(module, BC_PATH);
-    }
+        )?,
+        BC_PATH,
+    )
+    .map_err(|error| CompileError::new(error.description()))?;
 
     std::process::Command::new("clang")
         .arg("-O3")

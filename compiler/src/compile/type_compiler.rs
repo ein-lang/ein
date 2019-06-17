@@ -1,4 +1,3 @@
-use super::llvm;
 use crate::types::{self, Type};
 
 pub struct TypeCompiler {}
@@ -8,24 +7,30 @@ impl TypeCompiler {
         Self {}
     }
 
-    pub unsafe fn compile(&self, type_: &Type) -> llvm::Type {
+    pub fn compile(&self, type_: &Type) -> core::types::Type {
         match type_ {
-            Type::Function(function) => self.compile_function(function),
-            Type::Number => llvm::Type::double(),
+            Type::Function(function) => self.compile_function(function).into(),
+            Type::Number => core::types::Value::Number.into(),
             Type::Variable(_) => unreachable!(),
         }
     }
 
-    pub unsafe fn compile_function(&self, function: &types::Function) -> llvm::Type {
-        let mut arguments = vec![llvm::Type::pointer(llvm::Type::i8())];
-        arguments.extend_from_slice(
-            &function
+    pub fn compile_function(&self, function: &types::Function) -> core::types::Function {
+        core::types::Function::new(
+            function
                 .arguments()
                 .iter()
                 .map(|type_| self.compile(*type_))
                 .collect::<Vec<_>>(),
-        );
+            self.compile_value(function.last_result()),
+        )
+    }
 
-        llvm::Type::function(self.compile(function.last_result()), &mut arguments)
+    pub fn compile_value(&self, type_: &Type) -> core::types::Value {
+        match type_ {
+            Type::Function(_) => unreachable!(),
+            Type::Number => core::types::Value::Number.into(),
+            Type::Variable(_) => unreachable!(),
+        }
     }
 }

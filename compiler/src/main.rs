@@ -1,4 +1,4 @@
-extern crate llvm_sys;
+extern crate core;
 extern crate nom;
 
 mod ast;
