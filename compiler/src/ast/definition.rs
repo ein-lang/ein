@@ -1,10 +1,10 @@
 use super::function_definition::*;
-use super::variable_definition::*;
+use super::value_definition::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
     FunctionDefinition(FunctionDefinition),
-    VariableDefinition(VariableDefinition),
+    ValueDefinition(ValueDefinition),
 }
 
 impl From<FunctionDefinition> for Definition {
@@ -13,8 +13,8 @@ impl From<FunctionDefinition> for Definition {
     }
 }
 
-impl From<VariableDefinition> for Definition {
-    fn from(function_definition: VariableDefinition) -> Self {
-        Definition::VariableDefinition(function_definition)
+impl From<ValueDefinition> for Definition {
+    fn from(function_definition: ValueDefinition) -> Self {
+        Definition::ValueDefinition(function_definition)
     }
 }

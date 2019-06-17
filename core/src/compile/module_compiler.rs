@@ -35,8 +35,8 @@ impl<'a> ModuleCompiler<'a> {
                     ast::Definition::FunctionDefinition(function_definition) => {
                         self.declare_function(function_definition)
                     }
-                    ast::Definition::VariableDefinition(variable_definition) => {
-                        self.declare_global_variable(variable_definition)
+                    ast::Definition::ValueDefinition(value_definition) => {
+                        self.declare_global_variable(value_definition)
                     }
                 }
             }
@@ -46,8 +46,8 @@ impl<'a> ModuleCompiler<'a> {
                     ast::Definition::FunctionDefinition(function_definition) => {
                         self.compile_function(function_definition)?
                     }
-                    ast::Definition::VariableDefinition(variable_definition) => {
-                        self.compile_global_variable(variable_definition)?
+                    ast::Definition::ValueDefinition(value_definition) => {
+                        self.compile_global_variable(value_definition)?
                     }
                 }
             }
@@ -105,26 +105,26 @@ impl<'a> ModuleCompiler<'a> {
         Ok(())
     }
 
-    unsafe fn declare_global_variable(&mut self, variable_definition: &ast::VariableDefinition) {
+    unsafe fn declare_global_variable(&mut self, value_definition: &ast::ValueDefinition) {
         self.variables.insert(
-            variable_definition.name().into(),
+            value_definition.name().into(),
             self.module.add_global(
-                variable_definition.name(),
+                value_definition.name(),
                 self.type_compiler
-                    .compile_value(variable_definition.type_()),
+                    .compile_value(value_definition.type_()),
             ),
         );
     }
 
     unsafe fn compile_global_variable(
         &mut self,
-        variable_definition: &ast::VariableDefinition,
+        value_definition: &ast::ValueDefinition,
     ) -> Result<(), CompileError> {
-        let global = self.variables[variable_definition.name()];
+        let global = self.variables[value_definition.name()];
         global.set_initializer(llvm::get_undef(global.type_().element()));
 
         let initializer = self.module.add_function(
-            &Self::generate_initializer_name(variable_definition.name()),
+            &Self::generate_initializer_name(value_definition.name()),
             llvm::Type::function(llvm::Type::void(), &[]),
         );
 
@@ -132,7 +132,7 @@ impl<'a> ModuleCompiler<'a> {
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_store(
             ExpressionCompiler::new(&builder, &self.variables)
-                .compile(&variable_definition.body())?,
+                .compile(&value_definition.body())?,
             global,
         );
         builder.build_ret_void();

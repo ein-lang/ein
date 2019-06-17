@@ -21,8 +21,8 @@ fn definition(input: Input) -> IResult<Input, Definition> {
         map(function_definition, |function_definition| {
             function_definition.into()
         }),
-        map(variable_definition, |variable_definition| {
-            variable_definition.into()
+        map(value_definition, |value_definition| {
+            value_definition.into()
         }),
     ))(input)
 }
@@ -50,7 +50,7 @@ fn function_definition(original_input: Input) -> IResult<Input, FunctionDefiniti
     )
 }
 
-fn variable_definition(original_input: Input) -> IResult<Input, VariableDefinition> {
+fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
     tuple((
         identifier,
         keyword(":"),
@@ -63,7 +63,7 @@ fn variable_definition(original_input: Input) -> IResult<Input, VariableDefiniti
     ))(original_input.clone())
     .and_then(|(input, (name, _, type_, _, same_name, _, body, _))| {
         if name == same_name {
-            Ok((input, VariableDefinition::new(name, body, type_)))
+            Ok((input, ValueDefinition::new(name, body, type_)))
         } else {
             Err(nom::Err::Error((original_input, ErrorKind::Verify)))
         }
@@ -260,7 +260,7 @@ fn convert_result<T>(result: IResult<&str, T>, braces: u64) -> IResult<Input, T>
 mod test {
     use super::{
         application, blank, expression, function_definition, identifier, keyword, line_break,
-        module, number_literal, number_type, type_, variable_definition, Input,
+        module, number_literal, number_type, type_, value_definition, Input,
     };
     use crate::ast::*;
     use crate::types::{self, Type};
@@ -507,12 +507,12 @@ mod test {
     }
 
     #[test]
-    fn parse_variable_definition() {
+    fn parse_value_definition() {
         assert_eq!(
-            variable_definition(Input::new("x : Number\nx = 42", 0)),
+            value_definition(Input::new("x : Number\nx = 42", 0)),
             Ok((
                 Input::new("", 0),
-                VariableDefinition::new("x".into(), Expression::Number(42.0), Type::Number)
+                ValueDefinition::new("x".into(), Expression::Number(42.0), Type::Number)
             ))
         );
     }

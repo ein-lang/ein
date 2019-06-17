@@ -24,7 +24,7 @@ mod test {
 
     #[test]
     fn infer_types_of_variables() {
-        let module = Module::new(vec![VariableDefinition::new(
+        let module = Module::new(vec![ValueDefinition::new(
             "x".into(),
             42.0.into(),
             Type::Number,
@@ -35,7 +35,7 @@ mod test {
 
     #[test]
     fn fail_to_infer_types_of_variables() {
-        let module = Module::new(vec![VariableDefinition::new(
+        let module = Module::new(vec![ValueDefinition::new(
             "x".into(),
             42.0.into(),
             types::Function::new(Type::Number, Type::Number).into(),
@@ -91,7 +91,7 @@ mod test {
                 types::Function::new(Type::Number, Type::Number).into(),
             )
             .into(),
-            VariableDefinition::new(
+            ValueDefinition::new(
                 "x".into(),
                 Application::new(Expression::Variable("f".into()), Expression::Number(42.0)).into(),
                 Type::Number,
@@ -112,7 +112,7 @@ mod test {
                 types::Function::new(Type::Number, Type::Number).into(),
             )
             .into(),
-            VariableDefinition::new(
+            ValueDefinition::new(
                 "x".into(),
                 Application::new(
                     Application::new(Expression::Variable("f".into()), Expression::Number(42.0))

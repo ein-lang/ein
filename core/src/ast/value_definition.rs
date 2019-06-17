@@ -1,15 +1,15 @@
 use super::expression::Expression;
-use crate::types::Type;
+use crate::types;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct VariableDefinition {
+pub struct ValueDefinition {
     name: String,
     body: Expression,
-    type_: Type,
+    type_: types::Value,
 }
 
-impl VariableDefinition {
-    pub fn new(name: String, body: Expression, type_: Type) -> Self {
+impl ValueDefinition {
+    pub fn new(name: String, body: Expression, type_: types::Value) -> Self {
         Self { name, body, type_ }
     }
 
@@ -21,7 +21,7 @@ impl VariableDefinition {
         &self.body
     }
 
-    pub fn type_(&self) -> &Type {
+    pub fn type_(&self) -> &types::Value {
         &self.type_
     }
 }

@@ -31,10 +31,10 @@ impl TypeInferer {
                         function_definition.type_().clone().into(),
                     );
                 }
-                Definition::VariableDefinition(variable_definition) => {
+                Definition::ValueDefinition(value_definition) => {
                     variables.insert(
-                        variable_definition.name(),
-                        variable_definition.type_().clone(),
+                        value_definition.name(),
+                        value_definition.type_().clone(),
                     );
                 }
             }
@@ -45,8 +45,8 @@ impl TypeInferer {
                 Definition::FunctionDefinition(function_definition) => {
                     self.infer_function_definition(function_definition, &variables)?;
                 }
-                Definition::VariableDefinition(variable_definition) => {
-                    self.infer_variable_definition(variable_definition, &variables)
+                Definition::ValueDefinition(value_definition) => {
+                    self.infer_value_definition(value_definition, &variables)
                 }
             };
         }
@@ -83,14 +83,14 @@ impl TypeInferer {
         Ok(())
     }
 
-    fn infer_variable_definition(
+    fn infer_value_definition(
         &mut self,
-        variable_definition: &VariableDefinition,
+        value_definition: &ValueDefinition,
         variables: &HashMap<&str, Type>,
     ) {
-        let type_ = self.infer_expression(variable_definition.body(), &variables);
+        let type_ = self.infer_expression(value_definition.body(), &variables);
         self.equations
-            .push(Equation::new(type_, variable_definition.type_().clone()));
+            .push(Equation::new(type_, value_definition.type_().clone()));
     }
 
     fn infer_expression(

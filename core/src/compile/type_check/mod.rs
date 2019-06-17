@@ -23,7 +23,7 @@ mod test {
 
     #[test]
     fn check_types_of_variables() {
-        let module = Module::new(vec![VariableDefinition::new(
+        let module = Module::new(vec![ValueDefinition::new(
             "x".into(),
             42.0.into(),
             types::Value::Number,
@@ -42,7 +42,7 @@ mod test {
                 types::Value::Number,
             )
             .into(),
-            VariableDefinition::new(
+            ValueDefinition::new(
                 "x".into(),
                 Expression::Variable("f".into()).into(),
                 types::Value::Number,
@@ -98,7 +98,7 @@ mod test {
                 types::Value::Number,
             )
             .into(),
-            VariableDefinition::new(
+            ValueDefinition::new(
                 "x".into(),
                 Application::new(
                     Expression::Variable("f".into()),
@@ -123,7 +123,7 @@ mod test {
                 types::Value::Number,
             )
             .into(),
-            VariableDefinition::new(
+            ValueDefinition::new(
                 "x".into(),
                 Application::new(
                     Expression::Variable("f".into()),
@@ -140,7 +140,7 @@ mod test {
 
     #[test]
     fn fail_to_check_types_because_of_missing_variables() {
-        let module = Module::new(vec![VariableDefinition::new(
+        let module = Module::new(vec![ValueDefinition::new(
             "x".into(),
             Expression::Variable("y".into()).into(),
             types::Value::Number,

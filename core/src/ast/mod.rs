@@ -6,7 +6,7 @@ mod function_definition;
 mod module;
 mod operation;
 mod operator;
-mod variable_definition;
+mod value_definition;
 
 pub use application::*;
 pub use argument::*;
@@ -16,4 +16,4 @@ pub use function_definition::*;
 pub use module::*;
 pub use operation::*;
 pub use operator::*;
-pub use variable_definition::*;
+pub use value_definition::*;

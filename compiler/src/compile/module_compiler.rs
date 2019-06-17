@@ -25,8 +25,8 @@ impl ModuleCompiler {
                     ast::Definition::FunctionDefinition(function_definition) => {
                         self.compile_function_definition(function_definition).into()
                     }
-                    ast::Definition::VariableDefinition(variable_definition) => {
-                        self.compile_variable_definition(variable_definition).into()
+                    ast::Definition::ValueDefinition(value_definition) => {
+                        self.compile_value_definition(value_definition).into()
                     }
                 })
                 .collect::<Vec<_>>(),
@@ -53,15 +53,15 @@ impl ModuleCompiler {
         )
     }
 
-    fn compile_variable_definition(
+    fn compile_value_definition(
         &self,
-        variable_definition: &ast::VariableDefinition,
-    ) -> core::ast::VariableDefinition {
-        core::ast::VariableDefinition::new(
-            variable_definition.name().into(),
-            self.expression_compiler.compile(variable_definition.body()),
+        value_definition: &ast::ValueDefinition,
+    ) -> core::ast::ValueDefinition {
+        core::ast::ValueDefinition::new(
+            value_definition.name().into(),
+            self.expression_compiler.compile(value_definition.body()),
             self.type_compiler
-                .compile_value(variable_definition.type_()),
+                .compile_value(value_definition.type_()),
         )
     }
 }

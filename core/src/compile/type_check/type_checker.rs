@@ -22,10 +22,10 @@ impl TypeChecker {
                         function_definition.type_().clone().into(),
                     );
                 }
-                Definition::VariableDefinition(variable_definition) => {
+                Definition::ValueDefinition(value_definition) => {
                     variables.insert(
-                        variable_definition.name(),
-                        variable_definition.type_().clone().into(),
+                        value_definition.name(),
+                        value_definition.type_().clone().into(),
                     );
                 }
             }
@@ -36,8 +36,8 @@ impl TypeChecker {
                 Definition::FunctionDefinition(function_definition) => {
                     self.check_function_definition(function_definition, &variables)?;
                 }
-                Definition::VariableDefinition(variable_definition) => {
-                    self.check_variable_definition(variable_definition, &variables)?;
+                Definition::ValueDefinition(value_definition) => {
+                    self.check_value_definition(value_definition, &variables)?;
                 }
             };
         }
@@ -65,13 +65,13 @@ impl TypeChecker {
         }
     }
 
-    fn check_variable_definition(
+    fn check_value_definition(
         &mut self,
-        variable_definition: &VariableDefinition,
+        value_definition: &ValueDefinition,
         variables: &HashMap<&str, Type>,
     ) -> Result<(), TypeCheckError> {
-        if self.check_expression(variable_definition.body(), &variables)?
-            == variable_definition.type_().clone().into()
+        if self.check_expression(value_definition.body(), &variables)?
+            == value_definition.type_().clone().into()
         {
             Ok(())
         } else {
