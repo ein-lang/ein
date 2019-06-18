@@ -1,19 +1,20 @@
 use super::expression::Expression;
 use super::operator::Operator;
+use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Operation {
     operator: Operator,
-    lhs: Box<Expression>,
-    rhs: Box<Expression>,
+    lhs: Rc<Expression>,
+    rhs: Rc<Expression>,
 }
 
 impl Operation {
     pub fn new(operator: Operator, lhs: Expression, rhs: Expression) -> Self {
         Self {
             operator,
-            lhs: Box::new(lhs),
-            rhs: Box::new(rhs),
+            lhs: Rc::new(lhs),
+            rhs: Rc::new(rhs),
         }
     }
 

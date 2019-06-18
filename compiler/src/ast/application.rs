@@ -1,16 +1,17 @@
 use super::expression::Expression;
+use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Application {
-    function: Box<Expression>,
-    argument: Box<Expression>,
+    function: Rc<Expression>,
+    argument: Rc<Expression>,
 }
 
 impl Application {
     pub fn new(function: Expression, argument: Expression) -> Self {
         Self {
-            function: Box::new(function),
-            argument: Box::new(argument),
+            function: Rc::new(function),
+            argument: Rc::new(argument),
         }
     }
 
