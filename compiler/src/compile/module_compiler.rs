@@ -22,22 +22,22 @@ impl ModuleCompiler {
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
-                    ast::Definition::FunctionDefinition(function_definition) => {
-                        self.compile_function_definition(function_definition).into()
-                    }
+                    ast::Definition::FunctionDefinition(function_definition) => Ok(self
+                        .compile_function_definition(function_definition)?
+                        .into()),
                     ast::Definition::ValueDefinition(value_definition) => {
-                        self.compile_value_definition(value_definition).into()
+                        Ok(self.compile_value_definition(value_definition)?.into())
                     }
                 })
-                .collect::<Vec<_>>(),
+                .collect::<Result<Vec<_>, _>>()?,
         ))
     }
 
     fn compile_function_definition(
         &self,
         function_definition: &ast::FunctionDefinition,
-    ) -> core::ast::FunctionDefinition {
-        core::ast::FunctionDefinition::new(
+    ) -> Result<core::ast::FunctionDefinition, CompileError> {
+        Ok(core::ast::FunctionDefinition::new(
             function_definition.name().into(),
             function_definition
                 .arguments()
@@ -47,21 +47,21 @@ impl ModuleCompiler {
                     core::ast::Argument::new(name.clone(), self.type_compiler.compile(type_))
                 })
                 .collect::<Vec<_>>(),
-            self.expression_compiler.compile(function_definition.body()),
+            self.expression_compiler
+                .compile(function_definition.body())?,
             self.type_compiler
                 .compile_value(function_definition.type_().last_result()),
-        )
+        ))
     }
 
     fn compile_value_definition(
         &self,
         value_definition: &ast::ValueDefinition,
-    ) -> core::ast::ValueDefinition {
-        core::ast::ValueDefinition::new(
+    ) -> Result<core::ast::ValueDefinition, CompileError> {
+        Ok(core::ast::ValueDefinition::new(
             value_definition.name().into(),
-            self.expression_compiler.compile(value_definition.body()),
-            self.type_compiler
-                .compile_value(value_definition.type_()),
-        )
+            self.expression_compiler.compile(value_definition.body())?,
+            self.type_compiler.compile_value(value_definition.type_()),
+        ))
     }
 }

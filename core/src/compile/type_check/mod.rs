@@ -149,4 +149,60 @@ mod test {
 
         assert_eq!(check_types(&module), Err(TypeCheckError));
     }
+
+    #[test]
+    fn check_types_of_let_values() {
+        let module = Module::new(vec![ValueDefinition::new(
+            "x".into(),
+            LetValues::new(
+                vec![
+                    ValueDefinition::new(
+                        "y".into(),
+                        Expression::Number(42.0),
+                        types::Value::Number,
+                    ),
+                    ValueDefinition::new(
+                        "z".into(),
+                        Expression::Variable("y".into()),
+                        types::Value::Number,
+                    ),
+                ],
+                Expression::Variable("z".into()),
+            )
+            .into(),
+            types::Value::Number,
+        )
+        .into()]);
+
+        assert_eq!(check_types(&module), Ok(()));
+    }
+
+    #[test]
+    fn fail_to_check_types_of_let_values() {
+        let module = Module::new(vec![
+            FunctionDefinition::new(
+                "f".into(),
+                vec![Argument::new("x".into(), types::Value::Number.into())],
+                42.0.into(),
+                types::Value::Number,
+            )
+            .into(),
+            ValueDefinition::new(
+                "x".into(),
+                LetValues::new(
+                    vec![ValueDefinition::new(
+                        "y".into(),
+                        Expression::Variable("f".into()),
+                        types::Value::Number,
+                    )],
+                    Expression::Variable("y".into()),
+                )
+                .into(),
+                types::Value::Number,
+            )
+            .into(),
+        ]);
+
+        assert_eq!(check_types(&module), Err(TypeCheckError));
+    }
 }

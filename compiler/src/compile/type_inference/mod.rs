@@ -130,4 +130,111 @@ mod test {
             Err(TypeInferenceError::new("type inference error".into()))
         );
     }
+
+    #[test]
+    fn infer_types_of_let_values() {
+        let module = Module::new(vec![ValueDefinition::new(
+            "x".into(),
+            Let::new(
+                vec![
+                    ValueDefinition::new("y".into(), Expression::Number(42.0), Type::Number).into(),
+                ],
+                Expression::Variable("y".into()),
+            )
+            .into(),
+            Type::Number,
+        )
+        .into()]);
+
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn fail_to_infer_types_of_let_values() {
+        let module = Module::new(vec![ValueDefinition::new(
+            "x".into(),
+            Let::new(
+                vec![ValueDefinition::new(
+                    "y".into(),
+                    Expression::Number(42.0),
+                    types::Function::new(Type::Number, Type::Number).into(),
+                )
+                .into()],
+                Expression::Variable("y".into()),
+            )
+            .into(),
+            Type::Number,
+        )
+        .into()]);
+
+        assert_eq!(
+            infer_types(&module),
+            Err(TypeInferenceError::new("type inference error".into()))
+        );
+    }
+
+    #[test]
+    fn infer_types_of_let_functions() {
+        let module = Module::new(vec![ValueDefinition::new(
+            "x".into(),
+            Let::new(
+                vec![FunctionDefinition::new(
+                    "f".into(),
+                    vec!["z".into()],
+                    Expression::Variable("z".into()),
+                    types::Function::new(Type::Number, Type::Number),
+                )
+                .into()],
+                Application::new(Expression::Variable("f".into()), Expression::Number(42.0)).into(),
+            )
+            .into(),
+            Type::Number,
+        )
+        .into()]);
+
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn fail_to_infer_types_of_let_functions() {
+        let module = Module::new(vec![ValueDefinition::new(
+            "x".into(),
+            Let::new(
+                vec![FunctionDefinition::new(
+                    "f".into(),
+                    vec!["z".into()],
+                    Expression::Variable("z".into()),
+                    types::Function::new(
+                        Type::Number,
+                        types::Function::new(Type::Number, Type::Number).into(),
+                    ),
+                )
+                .into()],
+                Application::new(Expression::Variable("f".into()), Expression::Number(42.0)).into(),
+            )
+            .into(),
+            Type::Number,
+        )
+        .into()]);
+
+        assert_eq!(
+            infer_types(&module),
+            Err(TypeInferenceError::new("type inference error".into()))
+        );
+    }
+
+    #[test]
+    fn fail_to_infer_types_with_missing_variables() {
+        let module = Module::new(vec![ValueDefinition::new(
+            "x".into(),
+            Expression::Variable("y".into()),
+            Type::Number,
+        )
+        .into()]);
+
+        assert_eq!(
+            infer_types(&module),
+            Err(TypeInferenceError::new("variable missing".into()))
+        );
+    }
 }

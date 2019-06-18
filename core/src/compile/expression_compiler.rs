@@ -5,19 +5,22 @@ use std::collections::HashMap;
 
 pub struct ExpressionCompiler<'a> {
     builder: &'a llvm::Builder,
-    variables: &'a HashMap<String, llvm::Value>,
 }
 
 impl<'a> ExpressionCompiler<'a> {
-    pub fn new(builder: &'a llvm::Builder, variables: &'a HashMap<String, llvm::Value>) -> Self {
-        Self { builder, variables }
+    pub fn new(builder: &'a llvm::Builder) -> Self {
+        Self { builder }
     }
 
-    pub fn compile(&self, expression: &ast::Expression) -> Result<llvm::Value, CompileError> {
+    pub fn compile(
+        &self,
+        expression: &ast::Expression,
+        variables: &HashMap<String, llvm::Value>,
+    ) -> Result<llvm::Value, CompileError> {
         unsafe {
             match expression {
                 ast::Expression::Application(application) => {
-                    let closure = self.compile(application.function())?;
+                    let closure = self.compile(application.function(), variables)?;
 
                     let mut arguments = vec![self.builder.build_gep(
                         self.builder.build_bit_cast(
@@ -34,7 +37,7 @@ impl<'a> ExpressionCompiler<'a> {
                     )];
 
                     for argument in application.arguments() {
-                        arguments.push(self.compile(argument)?);
+                        arguments.push(self.compile(argument, variables)?);
                     }
 
                     Ok(self.builder.build_call(
@@ -48,12 +51,24 @@ impl<'a> ExpressionCompiler<'a> {
                         &arguments,
                     ))
                 }
+                ast::Expression::LetValues(let_values) => {
+                    let mut variables = variables.clone();
+
+                    for definition in let_values.definitions() {
+                        variables.insert(
+                            definition.name().into(),
+                            self.compile(definition.body(), &variables)?,
+                        );
+                    }
+
+                    self.compile(let_values.expression(), &variables)
+                }
                 ast::Expression::Number(number) => {
                     Ok(llvm::const_real(llvm::Type::double(), *number))
                 }
                 ast::Expression::Operation(operation) => {
-                    let lhs = self.compile(operation.lhs())?;
-                    let rhs = self.compile(operation.rhs())?;
+                    let lhs = self.compile(operation.lhs(), variables)?;
+                    let rhs = self.compile(operation.rhs(), variables)?;
 
                     Ok(match operation.operator() {
                         ast::Operator::Add => self.builder.build_fadd(lhs, rhs),
@@ -62,7 +77,7 @@ impl<'a> ExpressionCompiler<'a> {
                         ast::Operator::Divide => self.builder.build_fdiv(lhs, rhs),
                     })
                 }
-                ast::Expression::Variable(name) => match self.variables.get(name) {
+                ast::Expression::Variable(name) => match variables.get(name) {
                     Some(value) => Ok(self.unwrap_value(*value)),
                     None => Err(CompileError::new("variable not found")),
                 },

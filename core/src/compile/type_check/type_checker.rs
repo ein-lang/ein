@@ -107,6 +107,21 @@ impl TypeChecker {
                     Type::Value(_) => Err(TypeCheckError),
                 }
             }
+            Expression::LetValues(let_values) => {
+                let mut variables = variables.clone();
+
+                for definition in let_values.definitions() {
+                    if self.check_expression(definition.body(), &variables)?
+                        != definition.type_().clone().into()
+                    {
+                        return Err(TypeCheckError);
+                    }
+
+                    variables.insert(definition.name(), definition.type_().clone().into());
+                }
+
+                self.check_expression(let_values.expression(), &variables)
+            }
             Expression::Number(_) => Ok(types::Value::Number.into()),
             Expression::Operation(operation) => {
                 if self.check_expression(operation.lhs(), variables)? != types::Value::Number.into()

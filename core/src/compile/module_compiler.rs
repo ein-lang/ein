@@ -97,7 +97,7 @@ impl<'a> ModuleCompiler<'a> {
         let builder = llvm::Builder::new(entry_function);
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_ret(
-            ExpressionCompiler::new(&builder, &arguments).compile(&function_definition.body())?,
+            ExpressionCompiler::new(&builder).compile(&function_definition.body(), &arguments)?,
         );
 
         llvm::verify_function(entry_function);
@@ -110,8 +110,7 @@ impl<'a> ModuleCompiler<'a> {
             value_definition.name().into(),
             self.module.add_global(
                 value_definition.name(),
-                self.type_compiler
-                    .compile_value(value_definition.type_()),
+                self.type_compiler.compile_value(value_definition.type_()),
             ),
         );
     }
@@ -131,8 +130,7 @@ impl<'a> ModuleCompiler<'a> {
         let builder = llvm::Builder::new(initializer);
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_store(
-            ExpressionCompiler::new(&builder, &self.variables)
-                .compile(&value_definition.body())?,
+            ExpressionCompiler::new(&builder).compile(&value_definition.body(), &self.variables)?,
             global,
         );
         builder.build_ret_void();

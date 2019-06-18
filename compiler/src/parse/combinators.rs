@@ -8,6 +8,8 @@ use nom::{
 };
 use std::str::FromStr;
 
+const KEYWORDS: &[&str] = &["in", "let"];
+
 pub fn module(input: Input) -> IResult<Input, Module> {
     terminated(
         many0(definition),
@@ -21,9 +23,7 @@ fn definition(input: Input) -> IResult<Input, Definition> {
         map(function_definition, |function_definition| {
             function_definition.into()
         }),
-        map(value_definition, |value_definition| {
-            value_definition.into()
-        }),
+        map(value_definition, |value_definition| value_definition.into()),
     ))(input)
 }
 
@@ -70,11 +70,61 @@ fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
     })
 }
 
+fn untyped_function_definition(input: Input) -> IResult<Input, FunctionDefinition> {
+    map(
+        tuple((
+            identifier,
+            many1(identifier),
+            keyword("="),
+            expression,
+            line_break,
+        )),
+        |(name, arguments, _, body, _)| {
+            FunctionDefinition::new(
+                name,
+                arguments,
+                body,
+                types::Function::new(types::Variable::new().into(), types::Variable::new().into()),
+            )
+        },
+    )(input)
+}
+
+fn untyped_value_definition(input: Input) -> IResult<Input, ValueDefinition> {
+    map(
+        tuple((identifier, keyword("="), expression, line_break)),
+        |(name, _, body, _)| ValueDefinition::new(name, body, types::Variable::new().into()),
+    )(input)
+}
+
 fn expression(input: Input) -> IResult<Input, Expression> {
     alt((
         map(operation, |operation| Expression::Operation(operation)),
         term,
     ))(input)
+}
+
+fn let_(input: Input) -> IResult<Input, Let> {
+    map(
+        tuple((
+            keyword("let"),
+            many1(alt((
+                map(function_definition, |function_definition| {
+                    function_definition.into()
+                }),
+                map(value_definition, |value_definition| value_definition.into()),
+                map(untyped_function_definition, |function_definition| {
+                    function_definition.into()
+                }),
+                map(untyped_value_definition, |value_definition| {
+                    value_definition.into()
+                }),
+            ))),
+            keyword("in"),
+            expression,
+        )),
+        |(_, definitions, _, expression)| Let::new(definitions, expression),
+    )(input)
 }
 
 fn application(input: Input) -> IResult<Input, Application> {
@@ -103,9 +153,8 @@ fn atomic_expression(input: Input) -> IResult<Input, Expression> {
 
 fn term(input: Input) -> IResult<Input, Expression> {
     alt((
-        map(application, |application| {
-            Expression::Application(application)
-        }),
+        map(application, |application| application.into()),
+        map(let_, |let_| let_.into()),
         atomic_expression,
     ))(input)
 }
@@ -154,9 +203,16 @@ fn number_literal(input: Input) -> IResult<Input, f64> {
     })
 }
 
-fn identifier(input: Input) -> IResult<Input, String> {
-    token(convert_combinator(tuple((alpha1, alphanumeric0))))(input)
+fn identifier(original_input: Input) -> IResult<Input, String> {
+    token(convert_combinator(tuple((alpha1, alphanumeric0))))(original_input.clone())
         .map(|(input, (head, tail))| (input, format!("{}{}", head, tail)))
+        .and_then(|(input, identifier)| {
+            if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
+                Err(nom::Err::Error((original_input, ErrorKind::Verify)))
+            } else {
+                Ok((input, identifier))
+            }
+        })
 }
 
 fn type_(input: Input) -> IResult<Input, Type> {
@@ -224,9 +280,13 @@ fn blank(input: Input) -> IResult<Input, ()> {
 
 fn line_break(input: Input) -> IResult<Input, ()> {
     alt((
-        nullify(many1(token(convert_combinator(newline)))),
+        nullify(many1(preceded(white_space, convert_combinator(newline)))),
         token(eof),
     ))(input)
+}
+
+fn white_space(input: Input) -> IResult<Input, ()> {
+    nullify(convert_combinator(many0(one_of(" \t"))))(input)
 }
 
 fn eof(input: Input) -> IResult<Input, ()> {
@@ -259,7 +319,7 @@ fn convert_result<T>(result: IResult<&str, T>, braces: u64) -> IResult<Input, T>
 #[cfg(test)]
 mod test {
     use super::{
-        application, blank, expression, function_definition, identifier, keyword, line_break,
+        application, blank, expression, function_definition, identifier, keyword, let_, line_break,
         module, number_literal, number_type, type_, value_definition, Input,
     };
     use crate::ast::*;
@@ -346,6 +406,14 @@ mod test {
         assert_eq!(
             identifier(Input::new("1st", 0)),
             Err(nom::Err::Error((Input::new("1st", 0), ErrorKind::Alpha)))
+        );
+        assert_eq!(
+            identifier(Input::new("let", 0)),
+            Err(nom::Err::Error((Input::new("let", 0), ErrorKind::Verify)))
+        );
+        assert_eq!(
+            identifier(Input::new("in", 0)),
+            Err(nom::Err::Error((Input::new("in", 0), ErrorKind::Verify)))
         );
     }
 
@@ -548,6 +616,118 @@ mod test {
         assert_eq!(
             application(Input::new("f", 0)),
             Err(nom::Err::Error((Input::new("", 0), ErrorKind::Tag)))
+        );
+    }
+
+    #[test]
+    fn parse_let() {
+        assert_eq!(
+            let_(Input::new("let x = 42\nin x", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "x".into(),
+                        Expression::Number(42.0),
+                        types::Variable::new().into()
+                    )
+                    .into()],
+                    Expression::Variable("x".into())
+                )
+            ))
+        );
+        assert_eq!(
+            let_(Input::new("let x : Number\nx = 42\nin x", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![
+                        ValueDefinition::new("x".into(), Expression::Number(42.0), Type::Number)
+                            .into()
+                    ],
+                    Expression::Variable("x".into())
+                )
+            ))
+        );
+        assert_eq!(
+            let_(Input::new("let f x = x\nin f", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![FunctionDefinition::new(
+                        "f".into(),
+                        vec!["x".into()],
+                        Expression::Variable("x".into()),
+                        types::Function::new(
+                            types::Variable::new().into(),
+                            types::Variable::new().into()
+                        )
+                    )
+                    .into()],
+                    Expression::Variable("f".into())
+                )
+            ))
+        );
+        assert_eq!(
+            let_(Input::new("let f : Number -> Number\nf x = x\nin f", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![FunctionDefinition::new(
+                        "f".into(),
+                        vec!["x".into()],
+                        Expression::Variable("x".into()),
+                        types::Function::new(Type::Number, Type::Number)
+                    )
+                    .into()],
+                    Expression::Variable("f".into())
+                )
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_let_as_expression() {
+        assert_eq!(
+            expression(Input::new("let x = 42\nin x", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "x".into(),
+                        Expression::Number(42.0),
+                        types::Variable::new().into()
+                    )
+                    .into()],
+                    Expression::Variable("x".into())
+                )
+                .into()
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_let_in_definition() {
+        assert_eq!(
+            value_definition(Input::new("x : Number\nx = (let y = 42\nin y)", 0)),
+            Ok((
+                Input::new("", 0),
+                ValueDefinition::new(
+                    "x".into(),
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "y".into(),
+                            Expression::Number(42.0),
+                            types::Variable::new().into()
+                        )
+                        .into()],
+                        Expression::Variable("y".into())
+                    )
+                    .into(),
+                    Type::Number
+                )
+                .into()
+            ))
         );
     }
 }

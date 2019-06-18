@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::Display;
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ParseError {
     message: String,
 }

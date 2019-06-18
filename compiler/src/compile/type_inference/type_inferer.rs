@@ -32,10 +32,7 @@ impl TypeInferer {
                     );
                 }
                 Definition::ValueDefinition(value_definition) => {
-                    variables.insert(
-                        value_definition.name(),
-                        value_definition.type_().clone(),
-                    );
+                    variables.insert(value_definition.name(), value_definition.type_().clone());
                 }
             }
         }
@@ -46,7 +43,7 @@ impl TypeInferer {
                     self.infer_function_definition(function_definition, &variables)?;
                 }
                 Definition::ValueDefinition(value_definition) => {
-                    self.infer_value_definition(value_definition, &variables)
+                    self.infer_value_definition(value_definition, &variables)?;
                 }
             };
         }
@@ -76,7 +73,8 @@ impl TypeInferer {
             }
         }
 
-        let type_ = self.infer_expression(function_definition.body(), &variables);
+        let type_ = self.infer_expression(function_definition.body(), &variables)?;
+
         self.equations
             .push(Equation::new(type_, function_type.result().clone()));
 
@@ -87,21 +85,24 @@ impl TypeInferer {
         &mut self,
         value_definition: &ValueDefinition,
         variables: &HashMap<&str, Type>,
-    ) {
-        let type_ = self.infer_expression(value_definition.body(), &variables);
+    ) -> Result<(), TypeInferenceError> {
+        let type_ = self.infer_expression(value_definition.body(), &variables)?;
+
         self.equations
             .push(Equation::new(type_, value_definition.type_().clone()));
+
+        Ok(())
     }
 
     fn infer_expression(
         &mut self,
         expression: &Expression,
         variables: &HashMap<&str, Type>,
-    ) -> Type {
+    ) -> Result<Type, TypeInferenceError> {
         match expression {
             Expression::Application(application) => {
-                let function = self.infer_expression(application.function(), variables);
-                let argument = self.infer_expression(application.argument(), variables);
+                let function = self.infer_expression(application.function(), variables)?;
+                let argument = self.infer_expression(application.argument(), variables)?;
                 let result = Type::Variable(types::Variable::new());
 
                 self.equations.push(Equation::new(
@@ -109,17 +110,52 @@ impl TypeInferer {
                     Type::Function(types::Function::new(argument, result.clone())),
                 ));
 
-                result
+                Ok(result)
             }
-            Expression::Number(_) => Type::Number,
+            Expression::Let(let_) => {
+                let mut variables = variables.clone();
+
+                for definition in let_.definitions() {
+                    match definition {
+                        Definition::FunctionDefinition(function_definition) => {
+                            variables.insert(
+                                function_definition.name(),
+                                function_definition.type_().clone().into(),
+                            );
+                        }
+                        Definition::ValueDefinition(_) => {}
+                    }
+                }
+
+                for definition in let_.definitions() {
+                    match definition {
+                        Definition::FunctionDefinition(function_definition) => {
+                            self.infer_function_definition(function_definition, &variables)?;
+                        }
+                        Definition::ValueDefinition(value_definition) => {
+                            self.infer_value_definition(value_definition, &variables)?;
+
+                            variables
+                                .insert(value_definition.name(), value_definition.type_().clone());
+                        }
+                    }
+                }
+
+                self.infer_expression(let_.expression(), &variables)
+            }
+            Expression::Number(_) => Ok(Type::Number),
             Expression::Operation(operation) => {
-                let lhs = self.infer_expression(operation.lhs(), variables);
+                let lhs = self.infer_expression(operation.lhs(), variables)?;
                 self.equations.push(Equation::new(lhs, Type::Number));
-                let rhs = self.infer_expression(operation.rhs(), variables);
+                let rhs = self.infer_expression(operation.rhs(), variables)?;
                 self.equations.push(Equation::new(rhs, Type::Number));
-                Type::Number
+
+                Ok(Type::Number)
             }
-            Expression::Variable(variable) => variables[variable.as_str()].clone(),
+            Expression::Variable(variable) => variables
+                .get(variable.as_str())
+                .map(|type_| type_.clone())
+                .ok_or(TypeInferenceError::new("variable missing".into())),
         }
     }
 
