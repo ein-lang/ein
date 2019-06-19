@@ -5,6 +5,7 @@ use crate::types;
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionDefinition {
     name: String,
+    environment: Vec<Argument>,
     arguments: Vec<Argument>,
     body: Expression,
     result_type: types::Value,
@@ -14,6 +15,7 @@ pub struct FunctionDefinition {
 impl FunctionDefinition {
     pub fn new(
         name: String,
+        environment: Vec<Argument>,
         arguments: Vec<Argument>,
         body: Expression,
         result_type: types::Value,
@@ -28,6 +30,7 @@ impl FunctionDefinition {
 
         Self {
             name,
+            environment,
             arguments,
             body,
             result_type,
@@ -37,6 +40,10 @@ impl FunctionDefinition {
 
     pub fn name(&self) -> &str {
         &self.name
+    }
+
+    pub fn environment(&self) -> &[Argument] {
+        &self.environment
     }
 
     pub fn arguments(&self) -> &[Argument] {

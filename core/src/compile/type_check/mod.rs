@@ -37,6 +37,7 @@ mod test {
         let module = Module::new(vec![
             FunctionDefinition::new(
                 "f".into(),
+                vec![],
                 vec![Argument::new("x".into(), types::Value::Number.into())],
                 42.0.into(),
                 types::Value::Number,
@@ -57,6 +58,7 @@ mod test {
     fn check_types_of_functions() {
         let module = Module::new(vec![FunctionDefinition::new(
             "f".into(),
+            vec![],
             vec![Argument::new("x".into(), types::Value::Number.into())],
             42.0.into(),
             types::Value::Number,
@@ -71,6 +73,7 @@ mod test {
         let module = Module::new(vec![
             FunctionDefinition::new(
                 "f".into(),
+                vec![],
                 vec![Argument::new("x".into(), types::Value::Number.into())],
                 42.0.into(),
                 types::Value::Number,
@@ -78,6 +81,7 @@ mod test {
             .into(),
             FunctionDefinition::new(
                 "g".into(),
+                vec![],
                 vec![Argument::new("x".into(), types::Value::Number.into())],
                 Expression::Variable("f".into()).into(),
                 types::Value::Number,
@@ -93,6 +97,7 @@ mod test {
         let module = Module::new(vec![
             FunctionDefinition::new(
                 "f".into(),
+                vec![],
                 vec![Argument::new("x".into(), types::Value::Number.into())],
                 42.0.into(),
                 types::Value::Number,
@@ -118,6 +123,7 @@ mod test {
         let module = Module::new(vec![
             FunctionDefinition::new(
                 "f".into(),
+                vec![],
                 vec![Argument::new("x".into(), types::Value::Number.into())],
                 42.0.into(),
                 types::Value::Number,
@@ -182,6 +188,7 @@ mod test {
         let module = Module::new(vec![
             FunctionDefinition::new(
                 "f".into(),
+                vec![],
                 vec![Argument::new("x".into(), types::Value::Number.into())],
                 42.0.into(),
                 types::Value::Number,

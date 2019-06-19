@@ -39,6 +39,7 @@ impl ModuleCompiler {
     ) -> Result<core::ast::FunctionDefinition, CompileError> {
         Ok(core::ast::FunctionDefinition::new(
             function_definition.name().into(),
+            vec![],
             function_definition
                 .arguments()
                 .iter()
