@@ -16,8 +16,7 @@ impl TypeInferer {
 
     pub fn infer(&mut self, module: &Module) -> Result<Module, TypeInferenceError> {
         self.collect_equations(module)?;
-        self.reduce_equations()?;
-        Ok(module.clone())
+        Ok(module.substitute_type_variables(&self.reduce_equations()?))
     }
 
     fn collect_equations(&mut self, module: &Module) -> Result<(), TypeInferenceError> {
@@ -159,7 +158,7 @@ impl TypeInferer {
         }
     }
 
-    fn reduce_equations(&mut self) -> Result<(), TypeInferenceError> {
+    fn reduce_equations(&mut self) -> Result<HashMap<usize, Type>, TypeInferenceError> {
         let mut substitutions = HashMap::<usize, Type>::new();
 
         while let Some(equation) = self.equations.pop() {
@@ -204,6 +203,6 @@ impl TypeInferer {
             }
         }
 
-        Ok(())
+        Ok(substitutions)
     }
 }

@@ -2,6 +2,7 @@ mod function;
 mod variable;
 
 pub use function::*;
+use std::collections::HashMap;
 pub use variable::*;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -13,20 +14,14 @@ pub enum Type {
 
 impl Type {
     pub fn substitute_variable(&self, variable: &Variable, type_: &Self) -> Self {
+        self.substitute_variables(&vec![(variable.id(), type_.clone())].into_iter().collect())
+    }
+
+    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
-            Type::Function(function) => Function::new(
-                function.argument().substitute_variable(variable, type_),
-                function.result().substitute_variable(variable, type_),
-            )
-            .into(),
+            Type::Function(function) => function.substitute_variables(substitutions).into(),
             Type::Number => Type::Number,
-            Type::Variable(another_variable) => {
-                if variable.id() == another_variable.id() {
-                    type_.clone()
-                } else {
-                    another_variable.clone().into()
-                }
-            }
+            Type::Variable(variable) => variable.substitute_variables(substitutions),
         }
     }
 }

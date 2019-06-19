@@ -1,4 +1,5 @@
 use super::Type;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -40,5 +41,12 @@ impl Function {
             Type::Function(function) => function.result(),
             _ => &self.result,
         }
+    }
+
+    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+        Self::new(
+            self.argument.substitute_variables(substitutions),
+            self.result.substitute_variables(substitutions),
+        )
     }
 }

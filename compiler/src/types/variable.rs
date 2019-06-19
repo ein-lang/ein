@@ -1,3 +1,5 @@
+use crate::types::Type;
+use std::collections::HashMap;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 static GLOBAL_ID: AtomicUsize = AtomicUsize::new(0);
@@ -16,6 +18,13 @@ impl Variable {
 
     pub fn id(&self) -> usize {
         self.id
+    }
+
+    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Type {
+        match substitutions.get(&self.id) {
+            Some(type_) => type_.clone(),
+            None => self.clone().into(),
+        }
     }
 }
 

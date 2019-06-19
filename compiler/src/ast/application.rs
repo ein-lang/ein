@@ -1,4 +1,6 @@
 use super::expression::Expression;
+use crate::types::Type;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -21,5 +23,12 @@ impl Application {
 
     pub fn argument(&self) -> &Expression {
         &self.argument
+    }
+
+    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+        Self::new(
+            self.function.substitute_type_variables(substitutions),
+            self.argument.substitute_type_variables(substitutions),
+        )
     }
 }

@@ -1,5 +1,6 @@
 use super::expression::Expression;
 use crate::types::Type;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ValueDefinition {
@@ -23,5 +24,13 @@ impl ValueDefinition {
 
     pub fn type_(&self) -> &Type {
         &self.type_
+    }
+
+    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.body.substitute_type_variables(substitutions),
+            self.type_.substitute_variables(substitutions),
+        )
     }
 }

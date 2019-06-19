@@ -224,6 +224,40 @@ mod test {
     }
 
     #[test]
+    fn infer_types_of_let_values_with_type_variables() {
+        assert_eq!(
+            infer_types(&Module::new(vec![ValueDefinition::new(
+                "x".into(),
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "y".into(),
+                        Expression::Number(42.0),
+                        types::Variable::new().into()
+                    )
+                    .into(),],
+                    Expression::Variable("y".into()),
+                )
+                .into(),
+                Type::Number,
+            )
+            .into()])),
+            Ok(Module::new(vec![ValueDefinition::new(
+                "x".into(),
+                Let::new(
+                    vec![
+                        ValueDefinition::new("y".into(), Expression::Number(42.0), Type::Number)
+                            .into(),
+                    ],
+                    Expression::Variable("y".into()),
+                )
+                .into(),
+                Type::Number,
+            )
+            .into()]))
+        );
+    }
+
+    #[test]
     fn fail_to_infer_types_with_missing_variables() {
         let module = Module::new(vec![ValueDefinition::new(
             "x".into(),

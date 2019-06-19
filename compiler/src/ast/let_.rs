@@ -1,5 +1,7 @@
 use super::definition::*;
 use super::expression::*;
+use crate::types::Type;
+use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -22,5 +24,15 @@ impl Let {
 
     pub fn expression(&self) -> &Expression {
         &self.expression
+    }
+
+    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+        Self::new(
+            self.definitions
+                .iter()
+                .map(|definition| definition.substitute_type_variables(substitutions))
+                .collect::<Vec<_>>(),
+            self.expression.substitute_type_variables(substitutions),
+        )
     }
 }

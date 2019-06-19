@@ -29,3 +29,19 @@ Feature: Variables
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Use untyped let-values expression
+    Given a file named "main.sl" with:
+    """
+    main : Number -> Number
+    main x = (
+      let
+        y = x
+      in
+        y
+    )
+    """
+    And I successfully run `sloth main.sl`
+    When I run `sh -c ./a.out`
+    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    And the exit status should be 0
