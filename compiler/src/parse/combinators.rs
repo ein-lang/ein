@@ -12,18 +12,30 @@ const KEYWORDS: &[&str] = &["in", "let"];
 
 pub fn module(input: Input) -> IResult<Input, Module> {
     terminated(
-        many0(definition),
+        many0(terminated(typed_definition, line_break)),
         tuple((convert_combinator(multispace0), eof)),
     )(input)
     .map(|(input, definitions)| (input, Module::new(definitions)))
 }
 
-fn definition(input: Input) -> IResult<Input, Definition> {
+fn typed_definition(input: Input) -> IResult<Input, Definition> {
     alt((
         map(function_definition, |function_definition| {
             function_definition.into()
         }),
         map(value_definition, |value_definition| value_definition.into()),
+    ))(input)
+}
+
+fn definition(input: Input) -> IResult<Input, Definition> {
+    alt((
+        typed_definition,
+        map(untyped_function_definition, |function_definition| {
+            function_definition.into()
+        }),
+        map(untyped_value_definition, |value_definition| {
+            value_definition.into()
+        }),
     ))(input)
 }
 
@@ -37,10 +49,9 @@ fn function_definition(original_input: Input) -> IResult<Input, FunctionDefiniti
         many1(identifier),
         keyword("="),
         expression,
-        line_break,
     ))(original_input.clone())
     .and_then(
-        |(input, (name, _, type_, _, same_name, arguments, _, body, _))| {
+        |(input, (name, _, type_, _, same_name, arguments, _, body))| {
             if name == same_name {
                 Ok((input, FunctionDefinition::new(name, arguments, body, type_)))
             } else {
@@ -59,9 +70,8 @@ fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
         identifier,
         keyword("="),
         expression,
-        line_break,
     ))(original_input.clone())
-    .and_then(|(input, (name, _, type_, _, same_name, _, body, _))| {
+    .and_then(|(input, (name, _, type_, _, same_name, _, body))| {
         if name == same_name {
             Ok((input, ValueDefinition::new(name, body, type_)))
         } else {
@@ -72,14 +82,8 @@ fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
 
 fn untyped_function_definition(input: Input) -> IResult<Input, FunctionDefinition> {
     map(
-        tuple((
-            identifier,
-            many1(identifier),
-            keyword("="),
-            expression,
-            line_break,
-        )),
-        |(name, arguments, _, body, _)| {
+        tuple((identifier, many1(identifier), keyword("="), expression)),
+        |(name, arguments, _, body)| {
             FunctionDefinition::new(
                 name,
                 arguments,
@@ -92,8 +96,8 @@ fn untyped_function_definition(input: Input) -> IResult<Input, FunctionDefinitio
 
 fn untyped_value_definition(input: Input) -> IResult<Input, ValueDefinition> {
     map(
-        tuple((identifier, keyword("="), expression, line_break)),
-        |(name, _, body, _)| ValueDefinition::new(name, body, types::Variable::new().into()),
+        tuple((identifier, keyword("="), expression)),
+        |(name, _, body)| ValueDefinition::new(name, body, types::Variable::new().into()),
     )(input)
 }
 
@@ -108,22 +112,22 @@ fn let_(input: Input) -> IResult<Input, Let> {
     map(
         tuple((
             keyword("let"),
-            many1(alt((
-                map(function_definition, |function_definition| {
-                    function_definition.into()
-                }),
-                map(value_definition, |value_definition| value_definition.into()),
-                map(untyped_function_definition, |function_definition| {
-                    function_definition.into()
-                }),
-                map(untyped_value_definition, |value_definition| {
-                    value_definition.into()
-                }),
-            ))),
+            definition,
+            many0(preceded(line_break, definition)),
+            opt(line_break),
             keyword("in"),
             expression,
         )),
-        |(_, definitions, _, expression)| Let::new(definitions, expression),
+        |(_, definition, definitions, _, _, expression)| {
+            Let::new(
+                [definition]
+                    .iter()
+                    .chain(&definitions)
+                    .map(|definition| definition.clone())
+                    .collect::<Vec<_>>(),
+                expression,
+            )
+        },
     )(input)
 }
 
@@ -293,7 +297,7 @@ fn eof(input: Input) -> IResult<Input, ()> {
     if input.source() == "" {
         Ok((input, ()))
     } else {
-        Err(nom::Err::Failure((input, ErrorKind::Eof)))
+        Err(nom::Err::Error((input, ErrorKind::Eof)))
     }
 }
 
@@ -515,7 +519,7 @@ mod test {
     }
 
     #[test]
-    fn parse_mdoule() {
+    fn parse_module() {
         assert_eq!(
             module(Input::new("", 0)),
             Ok((Input::new("", 0), Module::new(vec![])))
@@ -530,7 +534,7 @@ mod test {
         );
         assert_eq!(
             module(Input::new("x", 0)),
-            Err(nom::Err::Failure((Input::new("x", 0), ErrorKind::Eof)))
+            Err(nom::Err::Error((Input::new("x", 0), ErrorKind::Eof)))
         );
     }
 
@@ -623,6 +627,21 @@ mod test {
     fn parse_let() {
         assert_eq!(
             let_(Input::new("let x = 42\nin x", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "x".into(),
+                        Expression::Number(42.0),
+                        types::Variable::new().into()
+                    )
+                    .into()],
+                    Expression::Variable("x".into())
+                )
+            ))
+        );
+        assert_eq!(
+            let_(Input::new("let x = 42 in x", 0)),
             Ok((
                 Input::new("", 0),
                 Let::new(
