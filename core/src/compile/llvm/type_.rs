@@ -22,17 +22,15 @@ impl Type {
     }
 
     pub unsafe fn struct_elements(&self) -> Vec<Type> {
-        let mut elements = Vec::with_capacity(LLVMCountStructElementTypes(self.into()) as usize);
-
-        for _ in 0..elements.capacity() {
-            elements.push(std::mem::uninitialized());
-        }
+        let mut elements = (0..(LLVMCountStructElementTypes(self.into()) as usize))
+            .map(|_| std::mem::uninitialized())
+            .collect::<Vec<LLVMTypeRef>>();
 
         LLVMGetStructElementTypes(self.into(), elements.as_mut_ptr());
 
         elements
             .iter()
-            .map(|type_| type_.clone().into())
+            .map(|type_| (*type_).into())
             .collect::<Vec<_>>()
     }
 

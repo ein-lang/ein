@@ -27,13 +27,15 @@ impl ExpressionCompiler {
                     arguments.push(application.argument());
                 }
 
-                let mut core_arguments = Vec::with_capacity(arguments.len());
-
-                for argument in arguments.iter().rev() {
-                    core_arguments.push(self.compile(argument)?);
-                }
-
-                Ok(core::ast::Application::new(self.compile(function)?, core_arguments).into())
+                Ok(core::ast::Application::new(
+                    self.compile(function)?,
+                    arguments
+                        .iter()
+                        .rev()
+                        .map(|argument| self.compile(argument))
+                        .collect::<Result<_, _>>()?,
+                )
+                .into())
             }
             ast::Expression::Let(let_) => match let_.definitions()[0] {
                 ast::Definition::FunctionDefinition(_) => unimplemented!(),
