@@ -1,6 +1,7 @@
 use super::super::ast;
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
+use super::function_compiler::FunctionCompiler;
 use super::llvm;
 use super::type_compiler::TypeCompiler;
 use std::collections::HashMap;
@@ -10,17 +11,23 @@ const GLOBAL_INITIALIZER_NAME: &str = "sloth_init";
 pub struct ModuleCompiler<'a> {
     module: &'a llvm::Module,
     ast_module: &'a ast::Module,
-    type_compiler: TypeCompiler,
+    function_compiler: FunctionCompiler<'a>,
+    type_compiler: &'a TypeCompiler,
     variables: HashMap<String, llvm::Value>,
     initializers: Vec<llvm::Value>,
 }
 
 impl<'a> ModuleCompiler<'a> {
-    pub fn new(module: &'a llvm::Module, ast_module: &'a ast::Module) -> ModuleCompiler<'a> {
+    pub fn new(
+        module: &'a llvm::Module,
+        ast_module: &'a ast::Module,
+        type_compiler: &'a TypeCompiler,
+    ) -> ModuleCompiler<'a> {
         ModuleCompiler {
             module,
             ast_module,
-            type_compiler: TypeCompiler::new(),
+            function_compiler: FunctionCompiler::new(module, type_compiler),
+            type_compiler,
             variables: HashMap::new(),
             initializers: vec![],
         }
@@ -77,30 +84,9 @@ impl<'a> ModuleCompiler<'a> {
         &self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<(), CompileError> {
-        let closure = self.variables[function_definition.name()];
-        let entry_function = self.module.add_function(
-            &Self::generate_closure_entry_name(function_definition.name()),
-            self.type_compiler
-                .compile_function(&function_definition.type_()),
-        );
-        closure.set_initializer(llvm::const_struct(&[entry_function]));
-
-        let mut arguments = self.variables.clone();
-
-        for (index, argument) in function_definition.arguments().iter().enumerate() {
-            arguments.insert(
-                argument.name().into(),
-                llvm::get_param(entry_function, index as u32 + 1),
-            );
-        }
-
-        let builder = llvm::Builder::new(entry_function);
-        builder.position_at_end(builder.append_basic_block("entry"));
-        builder.build_ret(
-            ExpressionCompiler::new(&builder).compile(&function_definition.body(), &arguments)?,
-        );
-
-        llvm::verify_function(entry_function);
+        self.variables[function_definition.name()].set_initializer(llvm::const_struct(&[self
+            .function_compiler
+            .compile(function_definition, &self.variables)?]));
 
         Ok(())
     }
@@ -158,9 +144,5 @@ impl<'a> ModuleCompiler<'a> {
 
     fn generate_initializer_name(name: &str) -> String {
         [name, ".$init"].concat()
-    }
-
-    fn generate_closure_entry_name(name: &str) -> String {
-        [name, ".$entry"].concat()
     }
 }
