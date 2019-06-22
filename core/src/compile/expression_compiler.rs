@@ -1,15 +1,27 @@
 use super::error::CompileError;
+use super::function_compiler::FunctionCompiler;
 use super::llvm;
+use super::type_compiler::TypeCompiler;
 use crate::ast;
 use std::collections::HashMap;
 
 pub struct ExpressionCompiler<'a> {
     builder: &'a llvm::Builder,
+    function_compiler: &'a FunctionCompiler<'a>,
+    type_compiler: &'a TypeCompiler,
 }
 
 impl<'a> ExpressionCompiler<'a> {
-    pub fn new(builder: &'a llvm::Builder) -> Self {
-        Self { builder }
+    pub fn new(
+        builder: &'a llvm::Builder,
+        function_compiler: &'a FunctionCompiler,
+        type_compiler: &'a TypeCompiler,
+    ) -> Self {
+        Self {
+            builder,
+            function_compiler,
+            type_compiler,
+        }
     }
 
     pub fn compile(
@@ -50,6 +62,40 @@ impl<'a> ExpressionCompiler<'a> {
                         )),
                         &arguments,
                     ))
+                }
+                ast::Expression::LetFunctions(let_functions) => {
+                    let mut variables = variables.clone();
+
+                    for definition in let_functions.definitions() {
+                        let closure_type = self.type_compiler.compile_closure(definition);
+
+                        variables.insert(
+                            definition.name().into(),
+                            self.builder.build_bit_cast(
+                                self.builder.build_malloc(closure_type.size()),
+                                llvm::Type::pointer(closure_type),
+                            ),
+                        );
+                    }
+
+                    for definition in let_functions.definitions() {
+                        self.builder.build_store(
+                            variables[definition.name()],
+                            llvm::const_struct(
+                                &vec![Some(
+                                    self.function_compiler.compile(definition, &variables)?,
+                                )]
+                                .into_iter()
+                                .chain(definition.environment().iter().map(|argument| {
+                                    variables.get(argument.name()).map(|value| value.clone())
+                                }))
+                                .collect::<Option<Vec<llvm::Value>>>()
+                                .ok_or(CompileError::new("variable not found"))?,
+                            ),
+                        );
+                    }
+
+                    self.compile(let_functions.expression(), &variables)
                 }
                 ast::Expression::LetValues(let_values) => {
                     let mut variables = variables.clone();

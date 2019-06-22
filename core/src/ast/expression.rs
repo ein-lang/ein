@@ -1,10 +1,12 @@
 use super::application::Application;
+use super::let_functions::LetFunctions;
 use super::let_values::LetValues;
 use super::operation::Operation;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
     Application(Application),
+    LetFunctions(LetFunctions),
     LetValues(LetValues),
     Number(f64),
     Operation(Operation),
@@ -20,6 +22,12 @@ impl From<f64> for Expression {
 impl From<Application> for Expression {
     fn from(application: Application) -> Expression {
         Expression::Application(application)
+    }
+}
+
+impl From<LetFunctions> for Expression {
+    fn from(let_functions: LetFunctions) -> Expression {
+        Expression::LetFunctions(let_functions)
     }
 }
 

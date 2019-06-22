@@ -41,7 +41,8 @@ impl<'a> FunctionCompiler<'a> {
         let builder = llvm::Builder::new(entry_function);
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_ret(
-            ExpressionCompiler::new(&builder).compile(&function_definition.body(), &arguments)?,
+            ExpressionCompiler::new(&builder, &self, self.type_compiler)
+                .compile(&function_definition.body(), &arguments)?,
         );
 
         llvm::verify_function(entry_function);

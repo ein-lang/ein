@@ -1,4 +1,5 @@
 use super::type_kind::*;
+use super::value::Value;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 use std::os::raw::c_uint;
@@ -32,6 +33,10 @@ impl Type {
             .iter()
             .map(|type_| (*type_).into())
             .collect::<Vec<_>>()
+    }
+
+    pub unsafe fn size(&self) -> Value {
+        LLVMSizeOf(self.into()).into()
     }
 
     #[allow(dead_code)]

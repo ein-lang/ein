@@ -52,7 +52,11 @@ impl TypeChecker {
     ) -> Result<(), TypeCheckError> {
         let mut variables = variables.clone();
 
-        for argument in function_definition.arguments() {
+        for argument in function_definition
+            .environment()
+            .iter()
+            .chain(function_definition.arguments())
+        {
             variables.insert(argument.name(), argument.type_().clone());
         }
 
@@ -107,16 +111,24 @@ impl TypeChecker {
                     Type::Value(_) => Err(TypeCheckError),
                 }
             }
+            Expression::LetFunctions(let_functions) => {
+                let mut variables = variables.clone();
+
+                for definition in let_functions.definitions() {
+                    variables.insert(definition.name(), definition.type_().clone().into());
+                }
+
+                for definition in let_functions.definitions() {
+                    self.check_function_definition(definition, &variables)?;
+                }
+
+                self.check_expression(let_functions.expression(), &variables)
+            }
             Expression::LetValues(let_values) => {
                 let mut variables = variables.clone();
 
                 for definition in let_values.definitions() {
-                    if self.check_expression(definition.body(), &variables)?
-                        != definition.type_().clone().into()
-                    {
-                        return Err(TypeCheckError);
-                    }
-
+                    self.check_value_definition(definition, &variables)?;
                     variables.insert(definition.name(), definition.type_().clone().into());
                 }
 

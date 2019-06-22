@@ -116,7 +116,8 @@ impl<'a> ModuleCompiler<'a> {
         let builder = llvm::Builder::new(initializer);
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_store(
-            ExpressionCompiler::new(&builder).compile(&value_definition.body(), &self.variables)?,
+            ExpressionCompiler::new(&builder, &self.function_compiler, &self.type_compiler)
+                .compile(&value_definition.body(), &self.variables)?,
             global,
         );
         builder.build_ret_void();

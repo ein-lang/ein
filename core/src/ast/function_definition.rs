@@ -24,7 +24,7 @@ impl FunctionDefinition {
             arguments
                 .iter()
                 .map(|argument| argument.type_().clone())
-                .collect::<Vec<_>>(),
+                .collect(),
             result_type.clone(),
         );
 
