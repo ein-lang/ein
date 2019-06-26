@@ -39,7 +39,10 @@ impl<'a> FunctionCompiler<'a> {
 
         let environment = builder.build_bit_cast(
             llvm::get_param(entry_function, 0),
-            llvm::Type::pointer(self.type_compiler.compile_closure(function_definition)),
+            llvm::Type::pointer(
+                self.type_compiler
+                    .compile_environment(function_definition.environment()),
+            ),
         );
 
         let mut variables = self.global_variables.clone();
@@ -51,7 +54,7 @@ impl<'a> FunctionCompiler<'a> {
                     environment,
                     &[
                         llvm::const_int(llvm::Type::i32(), 0),
-                        llvm::const_int(llvm::Type::i32(), index as u64 + 1),
+                        llvm::const_int(llvm::Type::i32(), index as u64),
                     ],
                 )),
             );

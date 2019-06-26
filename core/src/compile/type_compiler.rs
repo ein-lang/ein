@@ -36,6 +36,15 @@ impl TypeCompiler {
         llvm::Type::function(self.compile_value(function.result()), &mut arguments)
     }
 
+    pub unsafe fn compile_environment(&self, free_variables: &[ast::Argument]) -> llvm::Type {
+        llvm::Type::struct_(
+            &free_variables
+                .iter()
+                .map(|argument| self.compile(argument.type_()))
+                .collect::<Vec<_>>(),
+        )
+    }
+
     pub unsafe fn compile_closure(
         &self,
         function_definition: &ast::FunctionDefinition,
