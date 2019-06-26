@@ -16,11 +16,9 @@ use type_compiler::TypeCompiler;
 pub fn compile(ast_module: &ast::Module, bit_code_path: &str) -> Result<(), CompileError> {
     check_types(&ast_module).map_err(|error| CompileError::new(error.description()))?;
 
-    unsafe {
-        let module = llvm::Module::new("main");
-        ModuleCompiler::new(module, ast_module, &TypeCompiler::new()).compile()?;
-        llvm::write_bitcode_to_file(module, bit_code_path);
-    }
+    let module = llvm::Module::new("main");
+    ModuleCompiler::new(module, ast_module, &TypeCompiler::new()).compile()?;
+    llvm::write_bitcode_to_file(module, bit_code_path);
 
     Ok(())
 }

@@ -32,7 +32,7 @@ impl<'a> ModuleCompiler<'a> {
     }
 
     pub fn compile(&mut self) -> Result<(), CompileError> {
-        unsafe {
+        {
             self.module.declare_intrinsics();
 
             for definition in self.ast_module.definitions() {
@@ -65,7 +65,7 @@ impl<'a> ModuleCompiler<'a> {
         Ok(())
     }
 
-    unsafe fn declare_function(&mut self, function_definition: &ast::FunctionDefinition) {
+    fn declare_function(&mut self, function_definition: &ast::FunctionDefinition) {
         self.global_variables.insert(
             function_definition.name().into(),
             self.module.add_global(
@@ -78,7 +78,7 @@ impl<'a> ModuleCompiler<'a> {
         );
     }
 
-    unsafe fn compile_function(
+    fn compile_function(
         &self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<(), CompileError> {
@@ -90,7 +90,7 @@ impl<'a> ModuleCompiler<'a> {
         Ok(())
     }
 
-    unsafe fn declare_global_variable(&mut self, value_definition: &ast::ValueDefinition) {
+    fn declare_global_variable(&mut self, value_definition: &ast::ValueDefinition) {
         self.global_variables.insert(
             value_definition.name().into(),
             self.module.add_global(
@@ -100,7 +100,7 @@ impl<'a> ModuleCompiler<'a> {
         );
     }
 
-    unsafe fn compile_global_variable(
+    fn compile_global_variable(
         &mut self,
         value_definition: &ast::ValueDefinition,
     ) -> Result<(), CompileError> {
@@ -131,7 +131,7 @@ impl<'a> ModuleCompiler<'a> {
         Ok(())
     }
 
-    unsafe fn compile_global_initializer(&self) {
+    fn compile_global_initializer(&self) {
         let initializer = self.module.add_function(
             GLOBAL_INITIALIZER_NAME,
             llvm::Type::function(llvm::Type::void(), &[]),

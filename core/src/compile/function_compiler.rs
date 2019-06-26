@@ -24,7 +24,7 @@ impl<'a> FunctionCompiler<'a> {
         }
     }
 
-    pub unsafe fn compile(
+    pub fn compile(
         &self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<llvm::Value, CompileError> {

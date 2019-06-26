@@ -29,117 +29,112 @@ impl<'a> ExpressionCompiler<'a> {
         expression: &ast::Expression,
         variables: &HashMap<String, llvm::Value>,
     ) -> Result<llvm::Value, CompileError> {
-        unsafe {
-            match expression {
-                ast::Expression::Application(application) => {
-                    let closure = self.compile(application.function(), variables)?;
+        match expression {
+            ast::Expression::Application(application) => {
+                let closure = self.compile(application.function(), variables)?;
 
-                    let mut arguments = vec![self.builder.build_gep(
-                        self.builder.build_bit_cast(
-                            closure,
-                            llvm::Type::pointer(llvm::Type::struct_(&[
-                                closure.type_().element().struct_elements()[0],
-                                llvm::Type::i8(),
-                            ])),
-                        ),
+                let mut arguments = vec![self.builder.build_gep(
+                    self.builder.build_bit_cast(
+                        closure,
+                        llvm::Type::pointer(llvm::Type::struct_(&[
+                            closure.type_().element().struct_elements()[0],
+                            llvm::Type::i8(),
+                        ])),
+                    ),
+                    &[
+                        llvm::const_int(llvm::Type::i32(), 0),
+                        llvm::const_int(llvm::Type::i32(), 1),
+                    ],
+                )];
+
+                for argument in application.arguments() {
+                    arguments.push(self.compile(argument, variables)?);
+                }
+
+                Ok(self.builder.build_call(
+                    self.builder.build_load(self.builder.build_gep(
+                        closure,
                         &[
                             llvm::const_int(llvm::Type::i32(), 0),
-                            llvm::const_int(llvm::Type::i32(), 1),
+                            llvm::const_int(llvm::Type::i32(), 0),
                         ],
-                    )];
+                    )),
+                    &arguments,
+                ))
+            }
+            ast::Expression::LetFunctions(let_functions) => {
+                let mut variables = variables.clone();
 
-                    for argument in application.arguments() {
-                        arguments.push(self.compile(argument, variables)?);
-                    }
+                for definition in let_functions.definitions() {
+                    let closure_type = self.type_compiler.compile_closure(definition);
 
-                    Ok(self.builder.build_call(
-                        self.builder.build_load(self.builder.build_gep(
-                            closure,
-                            &[
-                                llvm::const_int(llvm::Type::i32(), 0),
-                                llvm::const_int(llvm::Type::i32(), 0),
-                            ],
-                        )),
-                        &arguments,
-                    ))
+                    variables.insert(
+                        definition.name().into(),
+                        self.builder.build_bit_cast(
+                            self.builder.build_malloc(closure_type.size()),
+                            llvm::Type::pointer(closure_type),
+                        ),
+                    );
                 }
-                ast::Expression::LetFunctions(let_functions) => {
-                    let mut variables = variables.clone();
 
-                    for definition in let_functions.definitions() {
-                        let closure_type = self.type_compiler.compile_closure(definition);
-
-                        variables.insert(
-                            definition.name().into(),
-                            self.builder.build_bit_cast(
-                                self.builder.build_malloc(closure_type.size()),
-                                llvm::Type::pointer(closure_type),
+                for definition in let_functions.definitions() {
+                    for (index, value) in vec![Some(self.function_compiler.compile(definition)?)]
+                        .into_iter()
+                        .chain(definition.environment().iter().map(|argument| {
+                            variables.get(argument.name()).map(|value| value.clone())
+                        }))
+                        .collect::<Option<Vec<_>>>()
+                        .ok_or(CompileError::new("variable not found"))?
+                        .iter()
+                        .enumerate()
+                    {
+                        self.builder.build_store(
+                            *value,
+                            self.builder.build_gep(
+                                variables[definition.name()],
+                                &[
+                                    llvm::const_int(llvm::Type::i32(), 0),
+                                    llvm::const_int(llvm::Type::i32(), index as u64),
+                                ],
                             ),
                         );
                     }
-
-                    for definition in let_functions.definitions() {
-                        for (index, value) in
-                            vec![Some(self.function_compiler.compile(definition)?)]
-                                .into_iter()
-                                .chain(definition.environment().iter().map(|argument| {
-                                    variables.get(argument.name()).map(|value| value.clone())
-                                }))
-                                .collect::<Option<Vec<_>>>()
-                                .ok_or(CompileError::new("variable not found"))?
-                                .iter()
-                                .enumerate()
-                        {
-                            self.builder.build_store(
-                                *value,
-                                self.builder.build_gep(
-                                    variables[definition.name()],
-                                    &[
-                                        llvm::const_int(llvm::Type::i32(), 0),
-                                        llvm::const_int(llvm::Type::i32(), index as u64),
-                                    ],
-                                ),
-                            );
-                        }
-                    }
-
-                    self.compile(let_functions.expression(), &variables)
                 }
-                ast::Expression::LetValues(let_values) => {
-                    let mut variables = variables.clone();
 
-                    for definition in let_values.definitions() {
-                        variables.insert(
-                            definition.name().into(),
-                            self.compile(definition.body(), &variables)?,
-                        );
-                    }
-
-                    self.compile(let_values.expression(), &variables)
-                }
-                ast::Expression::Number(number) => {
-                    Ok(llvm::const_real(llvm::Type::double(), *number))
-                }
-                ast::Expression::Operation(operation) => {
-                    let lhs = self.compile(operation.lhs(), variables)?;
-                    let rhs = self.compile(operation.rhs(), variables)?;
-
-                    Ok(match operation.operator() {
-                        ast::Operator::Add => self.builder.build_fadd(lhs, rhs),
-                        ast::Operator::Subtract => self.builder.build_fsub(lhs, rhs),
-                        ast::Operator::Multiply => self.builder.build_fmul(lhs, rhs),
-                        ast::Operator::Divide => self.builder.build_fdiv(lhs, rhs),
-                    })
-                }
-                ast::Expression::Variable(name) => match variables.get(name) {
-                    Some(value) => Ok(self.unwrap_value(*value)),
-                    None => Err(CompileError::new("variable not found")),
-                },
+                self.compile(let_functions.expression(), &variables)
             }
+            ast::Expression::LetValues(let_values) => {
+                let mut variables = variables.clone();
+
+                for definition in let_values.definitions() {
+                    variables.insert(
+                        definition.name().into(),
+                        self.compile(definition.body(), &variables)?,
+                    );
+                }
+
+                self.compile(let_values.expression(), &variables)
+            }
+            ast::Expression::Number(number) => Ok(llvm::const_real(llvm::Type::double(), *number)),
+            ast::Expression::Operation(operation) => {
+                let lhs = self.compile(operation.lhs(), variables)?;
+                let rhs = self.compile(operation.rhs(), variables)?;
+
+                Ok(match operation.operator() {
+                    ast::Operator::Add => self.builder.build_fadd(lhs, rhs),
+                    ast::Operator::Subtract => self.builder.build_fsub(lhs, rhs),
+                    ast::Operator::Multiply => self.builder.build_fmul(lhs, rhs),
+                    ast::Operator::Divide => self.builder.build_fdiv(lhs, rhs),
+                })
+            }
+            ast::Expression::Variable(name) => match variables.get(name) {
+                Some(value) => Ok(self.unwrap_value(*value)),
+                None => Err(CompileError::new("variable not found")),
+            },
         }
     }
 
-    unsafe fn unwrap_value(&self, value: llvm::Value) -> llvm::Value {
+    fn unwrap_value(&self, value: llvm::Value) -> llvm::Value {
         if value.type_().kind() == llvm::TypeKind::Pointer {
             match value.type_().element().kind() {
                 llvm::TypeKind::Double => self.builder.build_load(value),

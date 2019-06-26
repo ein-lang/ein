@@ -14,20 +14,20 @@ impl Type {
         Self { internal }
     }
 
-    pub unsafe fn kind(&self) -> TypeKind {
-        LLVMGetTypeKind(self.into()).into()
+    pub fn kind(&self) -> TypeKind {
+        unsafe { LLVMGetTypeKind(self.into()) }.into()
     }
 
-    pub unsafe fn element(&self) -> Type {
-        LLVMGetElementType(self.into()).into()
+    pub fn element(&self) -> Type {
+        unsafe { LLVMGetElementType(self.into()) }.into()
     }
 
-    pub unsafe fn struct_elements(&self) -> Vec<Type> {
-        let mut elements = (0..(LLVMCountStructElementTypes(self.into()) as usize))
-            .map(|_| std::mem::uninitialized())
+    pub fn struct_elements(&self) -> Vec<Type> {
+        let mut elements = (0..(unsafe { LLVMCountStructElementTypes(self.into()) } as usize))
+            .map(|_| unsafe { std::mem::uninitialized() })
             .collect::<Vec<LLVMTypeRef>>();
 
-        LLVMGetStructElementTypes(self.into(), elements.as_mut_ptr());
+        unsafe { LLVMGetStructElementTypes(self.into(), elements.as_mut_ptr()) };
 
         elements
             .iter()
@@ -35,79 +35,83 @@ impl Type {
             .collect::<Vec<_>>()
     }
 
-    pub unsafe fn size(&self) -> Value {
-        LLVMSizeOf(self.into()).into()
+    pub fn size(&self) -> Value {
+        unsafe { LLVMSizeOf(self.into()) }.into()
     }
 
     #[allow(dead_code)]
-    pub unsafe fn dump(&self) {
-        LLVMDumpType(self.into())
+    pub fn dump(&self) {
+        unsafe { LLVMDumpType(self.into()) }
     }
 
-    pub unsafe fn token() -> Self {
-        LLVMTokenTypeInContext(LLVMGetGlobalContext()).into()
+    pub fn token() -> Self {
+        unsafe { LLVMTokenTypeInContext(LLVMGetGlobalContext()) }.into()
     }
 
-    pub unsafe fn generic_pointer() -> Self {
+    pub fn generic_pointer() -> Self {
         Self::pointer(Self::i8())
     }
 
-    pub unsafe fn i64() -> Self {
+    pub fn i64() -> Self {
         Self::int(64)
     }
 
-    pub unsafe fn i32() -> Self {
+    pub fn i32() -> Self {
         Self::int(32)
     }
 
-    pub unsafe fn i8() -> Self {
+    pub fn i8() -> Self {
         Self::int(8)
     }
 
-    pub unsafe fn i1() -> Self {
+    pub fn i1() -> Self {
         Self::int(1)
     }
 
-    pub unsafe fn int(bits: c_uint) -> Self {
-        LLVMIntType(bits).into()
+    pub fn int(bits: c_uint) -> Self {
+        unsafe { LLVMIntType(bits) }.into()
     }
 
-    pub unsafe fn double() -> Self {
-        LLVMDoubleType().into()
+    pub fn double() -> Self {
+        unsafe { LLVMDoubleType() }.into()
     }
 
-    pub unsafe fn pointer(content: Self) -> Self {
-        LLVMPointerType(content.into(), 0).into()
+    pub fn pointer(content: Self) -> Self {
+        unsafe { LLVMPointerType(content.into(), 0) }.into()
     }
 
-    pub unsafe fn function(result: Self, arguments: &[Self]) -> Self {
-        LLVMFunctionType(
-            result.into(),
-            arguments
-                .iter()
-                .map(|type_| type_.into())
-                .collect::<Vec<LLVMTypeRef>>()
-                .as_mut_ptr(),
-            arguments.len() as c_uint,
-            0,
-        )
+    pub fn function(result: Self, arguments: &[Self]) -> Self {
+        unsafe {
+            LLVMFunctionType(
+                result.into(),
+                arguments
+                    .iter()
+                    .map(|type_| type_.into())
+                    .collect::<Vec<LLVMTypeRef>>()
+                    .as_mut_ptr(),
+                arguments.len() as c_uint,
+                0,
+            )
+        }
         .into()
     }
 
-    pub unsafe fn void() -> Type {
-        LLVMVoidType().into()
+    pub fn void() -> Type {
+        unsafe { LLVMVoidType() }.into()
     }
 
-    pub unsafe fn struct_(elements: &[Self]) -> Type {
-        LLVMStructType(
-            elements
-                .iter()
-                .map(|type_| type_.into())
-                .collect::<Vec<LLVMTypeRef>>()
-                .as_mut_ptr(),
-            elements.len() as c_uint,
-            0,
-        )
+    pub fn struct_(elements: &[Self]) -> Type {
+        unsafe {
+            LLVMStructType(
+                elements
+                    .iter()
+                    .map(|type_| type_.into())
+                    .collect::<Vec<LLVMTypeRef>>()
+                    .as_mut_ptr(),
+                elements.len() as c_uint,
+                0,
+            )
+        }
         .into()
     }
 }
