@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::Display;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct CompileError {
     message: String,
 }

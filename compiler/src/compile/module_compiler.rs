@@ -1,17 +1,16 @@
-use super::super::ast;
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
+use crate::ast;
+use std::collections::HashMap;
 
 pub struct ModuleCompiler {
-    expression_compiler: ExpressionCompiler,
     type_compiler: TypeCompiler,
 }
 
 impl ModuleCompiler {
     pub fn new() -> Self {
         Self {
-            expression_compiler: ExpressionCompiler::new(),
             type_compiler: TypeCompiler::new(),
         }
     }
@@ -48,8 +47,15 @@ impl ModuleCompiler {
                     core::ast::Argument::new(name.clone(), self.type_compiler.compile(type_))
                 })
                 .collect::<Vec<_>>(),
-            self.expression_compiler
-                .compile(function_definition.body())?,
+            ExpressionCompiler::new(&self.type_compiler).compile(
+                function_definition.body(),
+                &function_definition
+                    .arguments()
+                    .iter()
+                    .zip(function_definition.type_().arguments())
+                    .map(|(name, type_)| (name.clone(), type_.clone()))
+                    .collect(),
+            )?,
             self.type_compiler
                 .compile_value(function_definition.type_().last_result()),
         ))
@@ -61,7 +67,8 @@ impl ModuleCompiler {
     ) -> Result<core::ast::ValueDefinition, CompileError> {
         Ok(core::ast::ValueDefinition::new(
             value_definition.name().into(),
-            self.expression_compiler.compile(value_definition.body())?,
+            ExpressionCompiler::new(&self.type_compiler)
+                .compile(value_definition.body(), &HashMap::new())?,
             self.type_compiler.compile_value(value_definition.type_()),
         ))
     }

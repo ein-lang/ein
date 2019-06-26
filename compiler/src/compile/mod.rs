@@ -1,6 +1,7 @@
 mod desugar;
 mod error;
 mod expression_compiler;
+mod free_variable_finder;
 mod module_compiler;
 mod type_compiler;
 mod type_inference;
