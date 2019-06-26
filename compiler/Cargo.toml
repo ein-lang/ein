@@ -6,4 +6,5 @@ edition = "2018"
 
 [dependencies]
 core = { path = "../core" }
+indoc = "0.3"
 nom = "5.0.0-beta2"

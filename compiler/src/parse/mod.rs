@@ -17,6 +17,7 @@ mod test {
     use super::parse;
     use crate::ast::*;
     use crate::types::{self, Type};
+    use indoc::indoc;
 
     #[test]
     fn parse_module() {
@@ -48,6 +49,54 @@ mod test {
                 )
                 .into(),
                 Type::Number
+            )
+            .into()]))
+        );
+        assert_eq!(
+            parse(indoc!(
+                "
+                main : Number -> Number
+                main x = (
+                    let
+                        f x = x
+                        y = (
+                            f x
+                        )
+                    in
+                        y
+                )
+                "
+            )),
+            Ok(Module::new(vec![FunctionDefinition::new(
+                "main".into(),
+                vec!["x".into(),],
+                Let::new(
+                    vec![
+                        FunctionDefinition::new(
+                            "f".into(),
+                            vec!["x".into(),],
+                            Expression::Variable("x".into()),
+                            types::Function::new(
+                                types::Variable::new().into(),
+                                types::Variable::new().into()
+                            )
+                        )
+                        .into(),
+                        ValueDefinition::new(
+                            "y".into(),
+                            Application::new(
+                                Expression::Variable("f".into()),
+                                Expression::Variable("x".into())
+                            )
+                            .into(),
+                            types::Variable::new().into()
+                        )
+                        .into()
+                    ],
+                    Expression::Variable("y".into())
+                )
+                .into(),
+                types::Function::new(Type::Number, Type::Number)
             )
             .into()]))
         );

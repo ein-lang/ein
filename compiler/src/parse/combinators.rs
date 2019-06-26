@@ -48,7 +48,7 @@ fn function_definition(original_input: Input) -> IResult<Input, FunctionDefiniti
         identifier,
         many1(identifier),
         keyword("="),
-        expression,
+        body,
     ))(original_input.clone())
     .and_then(
         |(input, (name, _, type_, _, same_name, arguments, _, body))| {
@@ -69,7 +69,7 @@ fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
         line_break,
         identifier,
         keyword("="),
-        expression,
+        body,
     ))(original_input.clone())
     .and_then(|(input, (name, _, type_, _, same_name, _, body))| {
         if name == same_name {
@@ -82,7 +82,7 @@ fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
 
 fn untyped_function_definition(input: Input) -> IResult<Input, FunctionDefinition> {
     map(
-        tuple((identifier, many1(identifier), keyword("="), expression)),
+        tuple((identifier, many1(identifier), keyword("="), body)),
         |(name, arguments, _, body)| {
             FunctionDefinition::new(
                 name,
@@ -96,9 +96,16 @@ fn untyped_function_definition(input: Input) -> IResult<Input, FunctionDefinitio
 
 fn untyped_value_definition(input: Input) -> IResult<Input, ValueDefinition> {
     map(
-        tuple((identifier, keyword("="), expression)),
+        tuple((identifier, keyword("="), body)),
         |(name, _, body)| ValueDefinition::new(name, body, types::Variable::new().into()),
     )(input)
+}
+
+fn body(input: Input) -> IResult<Input, Expression> {
+    let braces = input.braces();
+
+    expression(Input::new(input.source(), 0))
+        .map(|(input, expression)| (Input::new(input.source(), braces), expression))
 }
 
 fn expression(input: Input) -> IResult<Input, Expression> {
@@ -656,6 +663,29 @@ mod test {
             ))
         );
         assert_eq!(
+            let_(Input::new("let x = 42\ny = 42\nin x", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![
+                        ValueDefinition::new(
+                            "x".into(),
+                            Expression::Number(42.0),
+                            types::Variable::new().into()
+                        )
+                        .into(),
+                        ValueDefinition::new(
+                            "y".into(),
+                            Expression::Number(42.0),
+                            types::Variable::new().into()
+                        )
+                        .into()
+                    ],
+                    Expression::Variable("x".into())
+                )
+            ))
+        );
+        assert_eq!(
             let_(Input::new("let x : Number\nx = 42\nin x", 0)),
             Ok((
                 Input::new("", 0),
@@ -703,6 +733,37 @@ mod test {
                 )
             ))
         );
+        assert_eq!(
+            let_(Input::new("let f x = x\ng x = x\nin x", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![
+                        FunctionDefinition::new(
+                            "f".into(),
+                            vec!["x".into()],
+                            Expression::Variable("x".into()),
+                            types::Function::new(
+                                types::Variable::new().into(),
+                                types::Variable::new().into()
+                            )
+                        )
+                        .into(),
+                        FunctionDefinition::new(
+                            "g".into(),
+                            vec!["x".into()],
+                            Expression::Variable("x".into()),
+                            types::Function::new(
+                                types::Variable::new().into(),
+                                types::Variable::new().into()
+                            )
+                        )
+                        .into()
+                    ],
+                    Expression::Variable("x".into())
+                )
+            ))
+        );
     }
 
     #[test]
@@ -718,6 +779,30 @@ mod test {
                         types::Variable::new().into()
                     )
                     .into()],
+                    Expression::Variable("x".into())
+                )
+                .into()
+            ))
+        );
+        assert_eq!(
+            expression(Input::new("(\nlet\nx = 42\ny = 42\nin x\n)", 0)),
+            Ok((
+                Input::new("", 0),
+                Let::new(
+                    vec![
+                        ValueDefinition::new(
+                            "x".into(),
+                            Expression::Number(42.0),
+                            types::Variable::new().into()
+                        )
+                        .into(),
+                        ValueDefinition::new(
+                            "y".into(),
+                            Expression::Number(42.0),
+                            types::Variable::new().into()
+                        )
+                        .into()
+                    ],
                     Expression::Variable("x".into())
                 )
                 .into()

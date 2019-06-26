@@ -1,4 +1,5 @@
 extern crate core;
+extern crate indoc;
 extern crate nom;
 
 mod ast;

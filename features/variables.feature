@@ -45,3 +45,53 @@ Feature: Variables
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Use let-functions expression
+    Given a file named "main.sl" with:
+    """
+    main : Number -> Number
+    main x = (
+      let
+        f : Number -> Number
+        f y = y
+      in
+        f x
+    )
+    """
+    And I successfully run `sloth main.sl`
+    When I run `sh -c ./a.out`
+    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    And the exit status should be 0
+
+  Scenario: Use untyped let-functions expression
+    Given a file named "main.sl" with:
+    """
+    main : Number -> Number
+    main x = (
+      let
+        f y = y
+      in
+        f x
+    )
+    """
+    And I successfully run `sloth main.sl`
+    When I run `sh -c ./a.out`
+    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    And the exit status should be 0
+
+  Scenario: Define multiple functions in a let-functions expression
+    Given a file named "main.sl" with:
+    """
+    main : Number -> Number
+    main x = (
+      let
+        f y = y
+        g z = f z
+      in
+        g x
+    )
+    """
+    And I successfully run `sloth main.sl`
+    When I run `sh -c ./a.out`
+    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    And the exit status should be 0
