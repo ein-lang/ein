@@ -11,6 +11,7 @@ use desugar::desugar;
 use error::CompileError;
 use module_compiler::ModuleCompiler;
 use std::error::Error;
+use std::io::Write;
 use std::path::Path;
 use type_inference::infer_types;
 
@@ -30,7 +31,7 @@ pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), 
     )
     .map_err(|error| CompileError::new(error.description()))?;
 
-    std::process::Command::new("clang")
+    let output = std::process::Command::new("clang")
         .arg("-O3")
         .arg("-flto")
         .arg("-ldl")
@@ -39,6 +40,17 @@ pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), 
         .arg(Path::new(&options.root_directory).join("target/release/libruntime.a"))
         .output()
         .map_err(|error| CompileError::new(error.description().into()))?;
+
+    if !output.status.success() {
+        std::io::stderr()
+            .write(&output.stdout)
+            .map_err(|error| CompileError::new(error.description().into()))?;
+        std::io::stderr()
+            .write(&output.stderr)
+            .map_err(|error| CompileError::new(error.description().into()))?;
+
+        std::process::exit(output.status.code().unwrap_or(1));
+    }
 
     Ok(())
 }
