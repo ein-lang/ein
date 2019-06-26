@@ -46,19 +46,10 @@ impl TypeCompiler {
     }
 
     pub fn compile_closure(&self, function_definition: &ast::FunctionDefinition) -> llvm::Type {
-        llvm::Type::struct_(
-            &vec![llvm::Type::pointer(
-                self.compile_function(function_definition.type_()),
-            )]
-            .into_iter()
-            .chain(
-                function_definition
-                    .environment()
-                    .iter()
-                    .map(|argument| self.compile(argument.type_())),
-            )
-            .collect::<Vec<_>>(),
-        )
+        llvm::Type::struct_(&[
+            llvm::Type::pointer(self.compile_function(function_definition.type_())),
+            self.compile_environment(function_definition.environment()),
+        ])
     }
 
     fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {

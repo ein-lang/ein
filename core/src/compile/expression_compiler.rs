@@ -78,25 +78,39 @@ impl<'a> ExpressionCompiler<'a> {
                 }
 
                 for definition in let_functions.definitions() {
-                    for (index, value) in vec![Some(self.function_compiler.compile(definition)?)]
-                        .into_iter()
-                        .chain(definition.environment().iter().map(|argument| {
-                            variables.get(argument.name()).map(|value| value.clone())
-                        }))
+                    self.builder.build_store(
+                        self.function_compiler.compile(definition)?,
+                        self.builder.build_gep(
+                            variables[definition.name()],
+                            &[
+                                llvm::const_int(llvm::Type::i32(), 0),
+                                llvm::const_int(llvm::Type::i32(), 0),
+                            ],
+                        ),
+                    );
+
+                    for (index, value) in definition
+                        .environment()
+                        .iter()
+                        .map(|argument| variables.get(argument.name()).map(|value| value.clone()))
                         .collect::<Option<Vec<_>>>()
                         .ok_or(CompileError::new("variable not found"))?
                         .iter()
                         .enumerate()
                     {
+                        let pointer = self.builder.build_gep(
+                            variables[definition.name()],
+                            &[
+                                llvm::const_int(llvm::Type::i32(), 0),
+                                llvm::const_int(llvm::Type::i32(), 1),
+                                llvm::const_int(llvm::Type::i32(), index as u64),
+                            ],
+                        );
+
                         self.builder.build_store(
-                            *value,
-                            self.builder.build_gep(
-                                variables[definition.name()],
-                                &[
-                                    llvm::const_int(llvm::Type::i32(), 0),
-                                    llvm::const_int(llvm::Type::i32(), index as u64),
-                                ],
-                            ),
+                            self.builder
+                                .build_bit_cast(*value, pointer.type_().element()),
+                            pointer,
                         );
                     }
                 }

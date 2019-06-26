@@ -19,10 +19,14 @@ impl Type {
     }
 
     pub fn element(&self) -> Type {
+        assert_eq!(self.kind(), TypeKind::Pointer);
+
         unsafe { LLVMGetElementType(self.into()) }.into()
     }
 
     pub fn struct_elements(&self) -> Vec<Type> {
+        assert_eq!(self.kind(), TypeKind::Struct);
+
         let mut elements = (0..(unsafe { LLVMCountStructElementTypes(self.into()) } as usize))
             .map(|_| unsafe { std::mem::uninitialized() })
             .collect::<Vec<LLVMTypeRef>>();

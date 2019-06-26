@@ -70,10 +70,7 @@ impl<'a> ModuleCompiler<'a> {
             function_definition.name().into(),
             self.module.add_global(
                 function_definition.name(),
-                llvm::Type::struct_(&[llvm::Type::pointer(
-                    self.type_compiler
-                        .compile_function(function_definition.type_()),
-                )]),
+                self.type_compiler.compile_closure(function_definition),
             ),
         );
     }
@@ -85,6 +82,7 @@ impl<'a> ModuleCompiler<'a> {
         self.global_variables[function_definition.name()].set_initializer(llvm::const_struct(&[
             FunctionCompiler::new(self.module, self.type_compiler, &self.global_variables)
                 .compile(function_definition)?,
+            llvm::const_struct(&[]),
         ]));
 
         Ok(())
