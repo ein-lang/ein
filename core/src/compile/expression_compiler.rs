@@ -33,18 +33,15 @@ impl<'a> ExpressionCompiler<'a> {
             ast::Expression::Application(application) => {
                 let closure = self.compile(application.function(), variables)?;
 
-                let mut arguments = vec![self.builder.build_gep(
-                    self.builder.build_bit_cast(
+                let mut arguments = vec![self.builder.build_bit_cast(
+                    self.builder.build_gep(
                         closure,
-                        llvm::Type::pointer(llvm::Type::struct_(&[
-                            closure.type_().element().struct_elements()[0],
-                            llvm::Type::i8(),
-                        ])),
+                        &[
+                            llvm::const_int(llvm::Type::i32(), 0),
+                            llvm::const_int(llvm::Type::i32(), 1),
+                        ],
                     ),
-                    &[
-                        llvm::const_int(llvm::Type::i32(), 0),
-                        llvm::const_int(llvm::Type::i32(), 1),
-                    ],
+                    llvm::Type::pointer(llvm::Type::struct_(&[])),
                 )];
 
                 for argument in application.arguments() {
