@@ -79,20 +79,28 @@ impl<'a> ExpressionCompiler<'a> {
                     }
 
                     for definition in let_functions.definitions() {
-                        self.builder.build_store(
-                            llvm::const_struct(
-                                &vec![Some(
-                                    self.function_compiler.compile(definition, &variables)?,
-                                )]
+                        for (index, value) in
+                            vec![Some(self.function_compiler.compile(definition)?)]
                                 .into_iter()
                                 .chain(definition.environment().iter().map(|argument| {
                                     variables.get(argument.name()).map(|value| value.clone())
                                 }))
-                                .collect::<Option<Vec<llvm::Value>>>()
-                                .ok_or(CompileError::new("variable not found"))?,
-                            ),
-                            variables[definition.name()],
-                        );
+                                .collect::<Option<Vec<_>>>()
+                                .ok_or(CompileError::new("variable not found"))?
+                                .iter()
+                                .enumerate()
+                        {
+                            self.builder.build_store(
+                                *value,
+                                self.builder.build_gep(
+                                    variables[definition.name()],
+                                    &[
+                                        llvm::const_int(llvm::Type::i32(), 0),
+                                        llvm::const_int(llvm::Type::i32(), index as u64),
+                                    ],
+                                ),
+                            );
+                        }
                     }
 
                     self.compile(let_functions.expression(), &variables)

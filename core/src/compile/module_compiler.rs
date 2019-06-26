@@ -11,9 +11,8 @@ const GLOBAL_INITIALIZER_NAME: &str = "sloth_init";
 pub struct ModuleCompiler<'a> {
     module: &'a llvm::Module,
     ast_module: &'a ast::Module,
-    function_compiler: FunctionCompiler<'a>,
     type_compiler: &'a TypeCompiler,
-    variables: HashMap<String, llvm::Value>,
+    global_variables: HashMap<String, llvm::Value>,
     initializers: Vec<llvm::Value>,
 }
 
@@ -26,9 +25,8 @@ impl<'a> ModuleCompiler<'a> {
         ModuleCompiler {
             module,
             ast_module,
-            function_compiler: FunctionCompiler::new(module, type_compiler),
             type_compiler,
-            variables: HashMap::new(),
+            global_variables: HashMap::new(),
             initializers: vec![],
         }
     }
@@ -68,7 +66,7 @@ impl<'a> ModuleCompiler<'a> {
     }
 
     unsafe fn declare_function(&mut self, function_definition: &ast::FunctionDefinition) {
-        self.variables.insert(
+        self.global_variables.insert(
             function_definition.name().into(),
             self.module.add_global(
                 function_definition.name(),
@@ -84,15 +82,16 @@ impl<'a> ModuleCompiler<'a> {
         &self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<(), CompileError> {
-        self.variables[function_definition.name()].set_initializer(llvm::const_struct(&[self
-            .function_compiler
-            .compile(function_definition, &self.variables)?]));
+        self.global_variables[function_definition.name()].set_initializer(llvm::const_struct(&[
+            FunctionCompiler::new(self.module, self.type_compiler, &self.global_variables)
+                .compile(function_definition)?,
+        ]));
 
         Ok(())
     }
 
     unsafe fn declare_global_variable(&mut self, value_definition: &ast::ValueDefinition) {
-        self.variables.insert(
+        self.global_variables.insert(
             value_definition.name().into(),
             self.module.add_global(
                 value_definition.name(),
@@ -105,8 +104,8 @@ impl<'a> ModuleCompiler<'a> {
         &mut self,
         value_definition: &ast::ValueDefinition,
     ) -> Result<(), CompileError> {
-        let global = self.variables[value_definition.name()];
-        global.set_initializer(llvm::get_undef(global.type_().element()));
+        let global_variable = self.global_variables[value_definition.name()];
+        global_variable.set_initializer(llvm::get_undef(global_variable.type_().element()));
 
         let initializer = self.module.add_function(
             &Self::generate_initializer_name(value_definition.name()),
@@ -116,9 +115,13 @@ impl<'a> ModuleCompiler<'a> {
         let builder = llvm::Builder::new(initializer);
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_store(
-            ExpressionCompiler::new(&builder, &self.function_compiler, &self.type_compiler)
-                .compile(&value_definition.body(), &self.variables)?,
-            global,
+            ExpressionCompiler::new(
+                &builder,
+                &FunctionCompiler::new(self.module, self.type_compiler, &self.global_variables),
+                &self.type_compiler,
+            )
+            .compile(&value_definition.body(), &self.global_variables)?,
+            global_variable,
         );
         builder.build_ret_void();
 

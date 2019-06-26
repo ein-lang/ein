@@ -11,7 +11,7 @@ impl TypeCompiler {
 
     pub unsafe fn compile(&self, type_: &Type) -> llvm::Type {
         match type_ {
-            Type::Function(function) => self.compile_function(function),
+            Type::Function(function) => llvm::Type::pointer(self.compile_unsized_closure(function)),
             Type::Value(value) => self.compile_value(value),
         }
     }
@@ -53,5 +53,9 @@ impl TypeCompiler {
             )
             .collect::<Vec<_>>(),
         )
+    }
+
+    unsafe fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {
+        llvm::Type::struct_(&[llvm::Type::pointer(self.compile_function(function))])
     }
 }
