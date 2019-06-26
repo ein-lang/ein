@@ -18,7 +18,7 @@ pub fn compile(ast_module: &ast::Module, bit_code_path: &str) -> Result<(), Comp
 
     unsafe {
         let module = llvm::Module::new("main");
-        ModuleCompiler::new(&module, ast_module, &TypeCompiler::new()).compile()?;
+        ModuleCompiler::new(module, ast_module, &TypeCompiler::new()).compile()?;
         llvm::write_bitcode_to_file(module, bit_code_path);
     }
 

@@ -9,7 +9,7 @@ use std::collections::HashMap;
 const GLOBAL_INITIALIZER_NAME: &str = "sloth_init";
 
 pub struct ModuleCompiler<'a> {
-    module: &'a llvm::Module,
+    module: llvm::Module,
     ast_module: &'a ast::Module,
     type_compiler: &'a TypeCompiler,
     global_variables: HashMap<String, llvm::Value>,
@@ -18,7 +18,7 @@ pub struct ModuleCompiler<'a> {
 
 impl<'a> ModuleCompiler<'a> {
     pub fn new(
-        module: &'a llvm::Module,
+        module: llvm::Module,
         ast_module: &'a ast::Module,
         type_compiler: &'a TypeCompiler,
     ) -> ModuleCompiler<'a> {

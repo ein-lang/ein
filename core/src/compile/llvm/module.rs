@@ -4,6 +4,7 @@ use super::value::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
+#[derive(Clone, Copy, Debug)]
 pub struct Module {
     internal: LLVMModuleRef,
 }
