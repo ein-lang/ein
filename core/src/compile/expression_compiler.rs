@@ -80,7 +80,6 @@ impl<'a> ExpressionCompiler<'a> {
 
                     for definition in let_functions.definitions() {
                         self.builder.build_store(
-                            variables[definition.name()],
                             llvm::const_struct(
                                 &vec![Some(
                                     self.function_compiler.compile(definition, &variables)?,
@@ -92,6 +91,7 @@ impl<'a> ExpressionCompiler<'a> {
                                 .collect::<Option<Vec<llvm::Value>>>()
                                 .ok_or(CompileError::new("variable not found"))?,
                             ),
+                            variables[definition.name()],
                         );
                     }
 

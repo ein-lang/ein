@@ -29,8 +29,8 @@ impl Builder {
         LLVMBuildLoad(self.builder, pointer.into(), c_string("").as_ptr()).into()
     }
 
-    pub unsafe fn build_store(&self, pointer: Value, value: Value) {
-        LLVMBuildStore(self.builder, pointer.into(), value.into());
+    pub unsafe fn build_store(&self, value: Value, pointer: Value) {
+        LLVMBuildStore(self.builder, value.into(), pointer.into());
     }
 
     pub unsafe fn build_br(&self, block: BasicBlock) {

@@ -79,7 +79,7 @@ impl Module {
             &[Type::generic_pointer()],
         );
 
-        self.declare_function("malloc", Type::generic_pointer(), &[Type::i32()]);
+        self.declare_function("malloc", Type::generic_pointer(), &[Type::i64()]);
         self.declare_function("free", Type::void().into(), &[Type::generic_pointer()]);
     }
 
