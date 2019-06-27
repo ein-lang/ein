@@ -4,8 +4,7 @@ use crate::ast::*;
 use crate::debug::Location;
 use crate::types::{self, Type};
 use nom::{
-    branch::*, bytes::complete::*, character::complete::*, combinator::*, error::*, multi::*,
-    sequence::*, Err, IResult,
+    branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
 };
 use std::str::FromStr;
 
@@ -194,12 +193,9 @@ fn create_operator<'a>(
 
 fn number_literal(input: Input) -> IResult<Input, f64> {
     token(tuple((
-        opt(convert_combinator(tag("-"))),
-        many1(convert_character_combinator(one_of("123456789"))),
-        opt(tuple((
-            convert_combinator(tag(".")),
-            many1(convert_combinator(digit1)),
-        ))),
+        opt(tag("-")),
+        many1(one_of("123456789")),
+        opt(tuple((tag("."), many1(convert_combinator(digit1))))),
     )))(input)
     .map(|(input, (sign, head, tail))| {
         (
@@ -273,7 +269,7 @@ fn number_type(input: Input) -> IResult<Input, Type> {
 }
 
 fn keyword<'a>(keyword: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'a>, ()> {
-    nullify(token(convert_combinator(tag(keyword))))
+    nullify(token(tag(keyword)))
 }
 
 fn nullify<'a, T>(
@@ -289,9 +285,11 @@ fn token<'a, T>(
 }
 
 fn blank(input: Input) -> IResult<Input, ()> {
-    nullify(many0(convert_character_combinator(one_of(
-        if input.braces() > 0 { " \t\n" } else { " \t" },
-    ))))(input)
+    nullify(many0(one_of(if input.braces() > 0 {
+        " \t\n"
+    } else {
+        " \t"
+    })))(input)
 }
 
 fn line_break(input: Input) -> IResult<Input, ()> {
@@ -305,7 +303,7 @@ fn line_break(input: Input) -> IResult<Input, ()> {
 }
 
 fn white_space(input: Input) -> IResult<Input, ()> {
-    nullify(many0(convert_character_combinator(one_of(" \t"))))(input)
+    nullify(many0(one_of(" \t")))(input)
 }
 
 fn eof(input: Input) -> IResult<Input, ()> {
@@ -314,6 +312,14 @@ fn eof(input: Input) -> IResult<Input, ()> {
     } else {
         Err(nom::Err::Error((input, ErrorKind::Eof)))
     }
+}
+
+fn tag<'a>(tag: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'a>, &str> {
+    convert_combinator(nom::bytes::complete::tag(tag))
+}
+
+fn one_of<'a>(characters: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'a>, char> {
+    convert_character_combinator(nom::character::complete::one_of(characters))
 }
 
 fn convert_combinator<'a>(
