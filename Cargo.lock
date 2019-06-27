@@ -86,7 +86,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "nom"
-version = "5.0.0-beta2"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "lexical-core 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -168,7 +168,7 @@ version = "0.1.0"
 dependencies = [
  "core 0.1.0",
  "indoc 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "nom 5.0.0-beta2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nom 5.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -251,7 +251,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum libc 0.2.55 (registry+https://github.com/rust-lang/crates.io-index)" = "42914d39aad277d9e176efbdad68acb1d5443ab65afe0e0e4f0d49352a950880"
 "checksum llvm-sys 80.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b9dcaea5f4dfe861b2b514bbf7b19176f1f1f5f4fd3097c55a7dfbf07da7105a"
 "checksum memchr 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2efc7bc57c883d4a4d6e3246905283d8dae951bb3bd32f49d6ef297f546e1c39"
-"checksum nom 5.0.0-beta2 (registry+https://github.com/rust-lang/crates.io-index)" = "cfa215de9f747c2b3290ceee185976eb6ffc936087e19d810b57ba3ff85ae28c"
+"checksum nom 5.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e9761d859320e381010a4f7f8ed425f2c924de33ad121ace447367c713ad561b"
 "checksum proc-macro-hack 0.5.7 (registry+https://github.com/rust-lang/crates.io-index)" = "0c1dd4172a1e1f96f709341418f49b11ea6c2d95d53dca08c0f74cbd332d9cf3"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
 "checksum quote 0.6.12 (registry+https://github.com/rust-lang/crates.io-index)" = "faf4799c5d274f3868a4aae320a0a182cbd2baee377b378f080e16a23e9d80db"
