@@ -41,7 +41,7 @@ impl<'a> ExpressionCompiler<'a> {
                             llvm::const_int(llvm::Type::i32(), 1),
                         ],
                     ),
-                    llvm::Type::pointer(llvm::Type::struct_(&[])),
+                    llvm::Type::pointer(self.type_compiler.compile_unsized_environment()),
                 )];
 
                 for argument in application.arguments() {
