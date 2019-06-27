@@ -61,24 +61,36 @@ impl<'a> ExpressionCompiler<'a> {
             }
             ast::Expression::LetFunctions(let_functions) => {
                 let mut variables = variables.clone();
+                let mut closures = HashMap::<&str, llvm::Value>::new();
 
                 for definition in let_functions.definitions() {
                     let closure_type = self.type_compiler.compile_closure(definition);
+                    let pointer = self.builder.build_malloc(closure_type.size());
 
                     variables.insert(
                         definition.name().into(),
                         self.builder.build_bit_cast(
-                            self.builder.build_malloc(closure_type.size()),
-                            llvm::Type::pointer(closure_type),
+                            pointer,
+                            llvm::Type::pointer(
+                                self.type_compiler
+                                    .compile_unsized_closure(definition.type_()),
+                            ),
                         ),
+                    );
+                    closures.insert(
+                        definition.name(),
+                        self.builder
+                            .build_bit_cast(pointer, llvm::Type::pointer(closure_type)),
                     );
                 }
 
                 for definition in let_functions.definitions() {
+                    let closure = closures[definition.name()];
+
                     self.builder.build_store(
                         self.function_compiler.compile(definition)?,
                         self.builder.build_gep(
-                            variables[definition.name()],
+                            closure,
                             &[
                                 llvm::const_int(llvm::Type::i32(), 0),
                                 llvm::const_int(llvm::Type::i32(), 0),
@@ -95,19 +107,16 @@ impl<'a> ExpressionCompiler<'a> {
                         .iter()
                         .enumerate()
                     {
-                        let pointer = self.builder.build_gep(
-                            variables[definition.name()],
-                            &[
-                                llvm::const_int(llvm::Type::i32(), 0),
-                                llvm::const_int(llvm::Type::i32(), 1),
-                                llvm::const_int(llvm::Type::i32(), index as u64),
-                            ],
-                        );
-
                         self.builder.build_store(
-                            self.builder
-                                .build_bit_cast(*value, pointer.type_().element()),
-                            pointer,
+                            *value,
+                            self.builder.build_gep(
+                                closure,
+                                &[
+                                    llvm::const_int(llvm::Type::i32(), 0),
+                                    llvm::const_int(llvm::Type::i32(), 1),
+                                    llvm::const_int(llvm::Type::i32(), index as u64),
+                                ],
+                            ),
                         );
                     }
                 }

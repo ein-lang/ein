@@ -36,6 +36,20 @@ impl TypeCompiler {
         llvm::Type::function(self.compile_value(function.result()), &mut arguments)
     }
 
+    pub fn compile_closure(&self, function_definition: &ast::FunctionDefinition) -> llvm::Type {
+        llvm::Type::struct_(&[
+            llvm::Type::pointer(self.compile_function(function_definition.type_())),
+            self.compile_environment(function_definition.environment()),
+        ])
+    }
+
+    pub fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {
+        llvm::Type::struct_(&[
+            llvm::Type::pointer(self.compile_function(function)),
+            self.compile_unsized_environment(),
+        ])
+    }
+
     pub fn compile_environment(&self, free_variables: &[ast::Argument]) -> llvm::Type {
         llvm::Type::struct_(
             &free_variables
@@ -45,21 +59,7 @@ impl TypeCompiler {
         )
     }
 
-    pub fn compile_closure(&self, function_definition: &ast::FunctionDefinition) -> llvm::Type {
-        llvm::Type::struct_(&[
-            llvm::Type::pointer(self.compile_function(function_definition.type_())),
-            self.compile_environment(function_definition.environment()),
-        ])
-    }
-
     pub fn compile_unsized_environment(&self) -> llvm::Type {
         llvm::Type::struct_(&[])
-    }
-
-    fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {
-        llvm::Type::struct_(&[
-            llvm::Type::pointer(self.compile_function(function)),
-            self.compile_unsized_environment(),
-        ])
     }
 }
