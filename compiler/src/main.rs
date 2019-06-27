@@ -4,6 +4,7 @@ extern crate nom;
 
 mod ast;
 mod compile;
+mod debug;
 mod environment;
 mod parse;
 mod types;

@@ -7,7 +7,7 @@ use error::ParseError;
 use input::Input;
 
 pub fn parse(source: &str) -> Result<crate::ast::Module, error::ParseError> {
-    combinators::module(Input::new(source, 0))
+    combinators::module(Input::new(source))
         .map(|(_, module)| module)
         .map_err(|_| ParseError::new("syntax error".into()))
 }
