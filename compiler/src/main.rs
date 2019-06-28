@@ -12,26 +12,31 @@ mod types;
 use compile::{compile, CompileOptions};
 use parse::parse;
 
-fn main() -> std::io::Result<()> {
+fn main() {
     compile(
-        &parse(&std::fs::read_to_string(
-            std::env::args()
-                .collect::<Vec<String>>()
-                .get(1)
-                .ok_or(invalid_input_error("no input file"))?,
-        )?)
-        .map_err(map_error)?,
+        &parse(
+            &std::fs::read_to_string(
+                std::env::args()
+                    .collect::<Vec<String>>()
+                    .get(1)
+                    .ok_or(invalid_input_error("no input file"))
+                    .unwrap_or_else(handle_error),
+            )
+            .unwrap_or_else(handle_error),
+        )
+        .unwrap_or_else(handle_error),
         CompileOptions {
-            root_directory: environment::root_directory().map_err(map_error)?,
+            root_directory: environment::root_directory().unwrap_or_else(handle_error),
         },
     )
-    .map_err(map_error)
-}
-
-fn map_error<E: std::error::Error>(error: E) -> std::io::Error {
-    invalid_input_error(error.description())
+    .unwrap_or_else(handle_error);
 }
 
 fn invalid_input_error(description: &str) -> std::io::Error {
     std::io::Error::new(std::io::ErrorKind::InvalidInput, description)
+}
+
+fn handle_error<T, E: std::error::Error + std::fmt::Display>(error: E) -> T {
+    eprintln!("{}", error);
+    std::process::exit(1);
 }

@@ -3,13 +3,19 @@ mod error;
 mod input;
 mod utilities;
 
+use crate::debug::Location;
 use error::ParseError;
 use input::Input;
+use nom::Err;
 
 pub fn parse(source: &str) -> Result<crate::ast::Module, error::ParseError> {
     combinators::module(Input::new(source))
         .map(|(_, module)| module)
-        .map_err(|_| ParseError::new("syntax error".into()))
+        .map_err(|error| match error {
+            Err::Error((input, _)) => ParseError::new(input.location()),
+            Err::Failure((input, _)) => ParseError::new(input.location()),
+            Err::Incomplete(_) => ParseError::new(Location::default()),
+        })
 }
 
 #[cfg(test)]

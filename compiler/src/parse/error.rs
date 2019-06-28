@@ -1,25 +1,31 @@
+use crate::debug::Location;
 use std::error::Error;
 use std::fmt::Display;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ParseError {
-    message: String,
+    location: Location,
 }
 
 impl ParseError {
-    pub fn new(message: String) -> Self {
-        ParseError { message }
+    pub fn new(location: Location) -> Self {
+        ParseError { location }
     }
 }
 
 impl Display for ParseError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "{}", self.message)
+        write!(
+            formatter,
+            "ParseError:{}:{}",
+            self.location.line_number(),
+            self.location.column_number()
+        )
     }
 }
 
 impl Error for ParseError {
     fn description(&self) -> &str {
-        &self.message
+        "parse error"
     }
 }
