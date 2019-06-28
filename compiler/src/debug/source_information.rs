@@ -2,20 +2,29 @@ use super::location::Location;
 
 #[derive(Clone, Debug, PartialEq)]
 struct SourceInformation {
-    line: String,
+    filename: String,
     location: Location,
+    line: String,
 }
 
 impl SourceInformation {
-    pub fn new(line: String, location: Location) -> Self {
-        Self { line, location }
+    pub fn new(filename: String, location: Location, line: String) -> Self {
+        Self {
+            filename,
+            location,
+            line,
+        }
     }
 
-    pub fn line(&self) -> &str {
-        &self.line
+    pub fn filename(&self) -> &str {
+        &self.filename
     }
 
     pub fn location(&self) -> &Location {
         &self.location
+    }
+
+    pub fn line(&self) -> &str {
+        &self.line
     }
 }
