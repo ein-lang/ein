@@ -3,18 +3,17 @@ mod error;
 mod input;
 mod utilities;
 
-use crate::debug::Location;
 use error::ParseError;
 use input::Input;
 use nom::Err;
 
-pub fn parse(source: &str) -> Result<crate::ast::Module, error::ParseError> {
-    combinators::module(Input::new(source))
+pub fn parse(source: &str, filename: &str) -> Result<crate::ast::Module, error::ParseError> {
+    combinators::module(Input::new(source, filename))
         .map(|(_, module)| module)
         .map_err(|error| match error {
-            Err::Error((input, _)) => ParseError::new(input.location()),
-            Err::Failure((input, _)) => ParseError::new(input.location()),
-            Err::Incomplete(_) => ParseError::new(Location::default()),
+            Err::Error((input, _)) => ParseError::new(&input),
+            Err::Failure((input, _)) => ParseError::new(&input),
+            Err::Incomplete(_) => ParseError::new(&Input::new(source, filename)),
         })
 }
 
@@ -28,7 +27,7 @@ mod test {
     #[test]
     fn parse_module() {
         assert_eq!(
-            parse("foo : Number -> Number -> Number\nfoo x y = 42"),
+            parse("foo : Number -> Number -> Number\nfoo x y = 42", ""),
             Ok(Module::new(vec![FunctionDefinition::new(
                 "foo".into(),
                 vec!["x".into(), "y".into()],
@@ -40,8 +39,9 @@ mod test {
             )
             .into()]))
         );
+
         assert_eq!(
-            parse("x : Number\nx = (let x = 42\nin x)"),
+            parse("x : Number\nx = (let x = 42\nin x)", ""),
             Ok(Module::new(vec![ValueDefinition::new(
                 "x".into(),
                 Let::new(
@@ -58,21 +58,25 @@ mod test {
             )
             .into()]))
         );
+
         assert_eq!(
-            parse(indoc!(
+            parse(
+                indoc!(
+                    "
+                    main : Number -> Number
+                    main x = (
+                        let
+                            f x = x
+                            y = (
+                                f x
+                            )
+                        in
+                            y
+                    )
                 "
-                main : Number -> Number
-                main x = (
-                    let
-                        f x = x
-                        y = (
-                            f x
-                        )
-                    in
-                        y
-                )
-                "
-            )),
+                ),
+                ""
+            ),
             Ok(Module::new(vec![FunctionDefinition::new(
                 "main".into(),
                 vec!["x".into(),],

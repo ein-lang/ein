@@ -1,7 +1,6 @@
 use super::input::Input;
 use super::utilities::*;
 use crate::ast::*;
-use crate::debug::Location;
 use crate::types::{self, Type};
 use nom::{
     branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
@@ -333,7 +332,7 @@ fn convert_combinator<'a>(
             .map(|(source, string)| {
                 (
                     {
-                        Input::with_metadata(
+                        input.from_str(
                             source,
                             braces + string.matches("(").count() - string.matches(")").count(),
                             string
@@ -351,7 +350,7 @@ fn convert_combinator<'a>(
                     string,
                 )
             })
-            .map_err(|error| convert_error(error, braces, location))
+            .map_err(|error| convert_error(error, &input))
     }
 }
 
@@ -366,42 +365,29 @@ fn convert_character_combinator<'a>(
             .map(|(source, character)| {
                 (
                     match character {
-                        '\n' => {
-                            Input::with_metadata(source, braces, location.increment_line_number())
+                        '\n' => input.from_str(source, braces, location.increment_line_number()),
+                        '(' => {
+                            input.from_str(source, braces + 1, location.increment_column_number())
                         }
-                        '(' => Input::with_metadata(
-                            source,
-                            braces + 1,
-                            location.increment_column_number(),
-                        ),
-                        ')' => Input::with_metadata(
-                            source,
-                            braces - 1,
-                            location.increment_column_number(),
-                        ),
-                        _ => {
-                            Input::with_metadata(source, braces, location.increment_column_number())
+                        ')' => {
+                            input.from_str(source, braces - 1, location.increment_column_number())
                         }
+                        _ => input.from_str(source, braces, location.increment_column_number()),
                     },
                     character,
                 )
             })
-            .map_err(|error| convert_error(error, braces, location))
+            .map_err(|error| convert_error(error, &input))
     }
 }
 
-fn convert_error(
-    error: Err<(&str, ErrorKind)>,
-    braces: usize,
-    location: Location,
-) -> Err<(Input, ErrorKind)> {
+fn convert_error<'a>(
+    error: Err<(&'a str, ErrorKind)>,
+    input: &Input<'a>,
+) -> Err<(Input<'a>, ErrorKind)> {
     match error {
-        Err::Error((source, kind)) => {
-            Err::Error((Input::with_metadata(source, braces, location), kind))
-        }
-        Err::Failure((source, kind)) => {
-            Err::Failure((Input::with_metadata(source, braces, location), kind))
-        }
+        Err::Error((_, kind)) => Err::Error((input.clone(), kind)),
+        Err::Failure((_, kind)) => Err::Failure((input.clone(), kind)),
         Err::Incomplete(needed) => Err::Incomplete(needed),
     }
 }
@@ -419,45 +405,64 @@ mod test {
 
     #[test]
     fn parse_blank() {
+        let input = Input::new("", "");
+
         assert_eq!(
-            blank(Input::new("")),
-            Ok((Input::with_metadata("", 0, Location::default()), ()))
+            blank(input.clone()),
+            Ok((input.from_str("", 0, Location::default()), ()))
         );
+
+        let input = Input::new(" ", "");
+
         assert_eq!(
-            blank(Input::new(" ")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 2)), ()))
+            blank(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 2)), ()))
         );
+
+        let input = Input::new("\t", "");
+
         assert_eq!(
-            blank(Input::new("\t")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 2)), ()))
+            blank(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 2)), ()))
         );
+
+        let input = Input::new("  ", "");
+
         assert_eq!(
-            blank(Input::new("  ")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 3)), ()))
+            blank(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 3)), ()))
         );
+
+        let input = Input::new("", "");
+
         assert_eq!(
-            blank(Input::with_metadata("\n", 1, Location::default())),
-            Ok((Input::with_metadata("", 1, Location::new(2, 1)), ()))
+            blank(input.from_str("\n", 1, Location::default())),
+            Ok((input.from_str("", 1, Location::new(2, 1)), ()))
         );
+
+        let input = Input::new("\n", "");
+
         assert_eq!(
-            blank(Input::new("\n")),
-            Ok((Input::with_metadata("\n", 0, Location::default()), ()))
+            blank(input.clone()),
+            Ok((input.from_str("\n", 0, Location::default()), ()))
         );
     }
 
     #[test]
     fn parse_number_type() {
+        let input = Input::new("Number", "");
+
         assert_eq!(
-            number_type(Input::new("Number")),
-            Ok((
-                Input::with_metadata("", 0, Location::new(1, 7)),
-                Type::Number
-            ))
+            number_type(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 7)), Type::Number))
         );
+
+        let input = Input::new("Numbe", "");
+
         assert_eq!(
-            number_type(Input::new("Numbe")),
+            number_type(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("Numbe", 0, Location::default()),
+                input.from_str("Numbe", 0, Location::default()),
                 ErrorKind::Tag
             )))
         );
@@ -465,38 +470,43 @@ mod test {
 
     #[test]
     fn parse_type() {
+        let input = Input::new("Number", "");
+
         assert_eq!(
-            type_(Input::new("Number")),
-            Ok((
-                Input::with_metadata("", 0, Location::new(1, 7)),
-                Type::Number
-            ))
+            type_(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 7)), Type::Number))
         );
+
+        let input = Input::new("(Number)", "");
+
         assert_eq!(
-            type_(Input::new("(Number)")),
-            Ok((
-                Input::with_metadata("", 0, Location::new(1, 9)),
-                Type::Number
-            ))
+            type_(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 9)), Type::Number))
         );
+
+        let input = Input::new("( Number )", "");
+
         assert_eq!(
-            type_(Input::new("( Number )")),
-            Ok((
-                Input::with_metadata("", 0, Location::new(1, 11)),
-                Type::Number
-            ))
+            type_(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 11)), Type::Number))
         );
+
+        let input = Input::new("Number -> Number", "");
+
         assert_eq!(
-            type_(Input::new("Number -> Number")),
+            type_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 17)),
+                input.from_str("", 0, Location::new(1, 17)),
                 Type::Function(types::Function::new(Type::Number, Type::Number))
             ))
         );
+
+        let input = Input::new("Number -> Number -> Number", "");
+
         assert_eq!(
-            type_(Input::new("Number -> Number -> Number")),
+            type_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 27)),
+                input.from_str("", 0, Location::new(1, 27)),
                 Type::Function(types::Function::new(
                     Type::Number,
                     Type::Function(types::Function::new(Type::Number, Type::Number))
@@ -507,14 +517,19 @@ mod test {
 
     #[test]
     fn parse_keyword() {
+        let input = Input::new("foo", "");
+
         assert_eq!(
-            keyword("foo")(Input::new("foo")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 4)), ()))
+            keyword("foo")(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 4)), ()))
         );
+
+        let input = Input::new("fo", "");
+
         assert_eq!(
-            keyword("foo")(Input::new("fo")),
+            keyword("foo")(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("fo", 0, Location::default()),
+                input.from_str("fo", 0, Location::default()),
                 ErrorKind::Tag
             )))
         );
@@ -522,38 +537,46 @@ mod test {
 
     #[test]
     fn parse_identifier() {
+        let input = Input::new("foo", "");
+
         assert_eq!(
-            identifier(Input::new("foo")),
-            Ok((
-                Input::with_metadata("", 0, Location::new(1, 4)),
-                "foo".into()
-            ))
+            identifier(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 4)), "foo".into()))
         );
+
+        let input = Input::new("x1", "");
+
         assert_eq!(
-            identifier(Input::new("x1")),
-            Ok((
-                Input::with_metadata("", 0, Location::new(1, 3)),
-                "x1".into()
-            ))
+            identifier(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 3)), "x1".into()))
         );
+
+        let input = Input::new("1st", "");
+
         assert_eq!(
-            identifier(Input::new("1st")),
+            identifier(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("1st", 0, Location::default()),
+                input.from_str("1st", 0, Location::default()),
                 ErrorKind::Alpha
             )))
         );
+
+        let input = Input::new("let", "");
+
         assert_eq!(
-            identifier(Input::new("let")),
+            identifier(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("let", 0, Location::default()),
+                input.from_str("let", 0, Location::default()),
                 ErrorKind::Verify
             )))
         );
+
+        let input = Input::new("in", "");
+
         assert_eq!(
-            identifier(Input::new("in")),
+            identifier(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("in", 0, Location::default()),
+                input.from_str("in", 0, Location::default()),
                 ErrorKind::Verify
             )))
         );
@@ -561,51 +584,73 @@ mod test {
 
     #[test]
     fn parse_number_literal() {
+        let input = Input::new("1", "");
+
         assert_eq!(
-            number_literal(Input::new("1")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 2)), 1.0))
+            number_literal(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 2)), 1.0))
         );
+
+        let input = Input::new("01", "");
+
         assert_eq!(
-            number_literal(Input::new("01")),
+            number_literal(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("01", 0, Location::default()),
+                input.from_str("01", 0, Location::default()),
                 ErrorKind::OneOf
             )))
         );
+
+        let input = Input::new("-1", "");
+
         assert_eq!(
-            number_literal(Input::new("-1")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 3)), -1.0))
+            number_literal(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 3)), -1.0))
         );
+
+        let input = Input::new("42", "");
+
         assert_eq!(
-            number_literal(Input::new("42")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 3)), 42.0))
+            number_literal(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 3)), 42.0))
         );
+
+        let input = Input::new("3.14", "");
+
         assert_eq!(
-            number_literal(Input::new("3.14")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 5)), 3.14))
+            number_literal(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 5)), 3.14))
         );
     }
 
     #[test]
     fn parse_operation() {
+        let input = Input::new("1 + 2", "");
+
         assert_eq!(
-            expression(Input::new("1 + 2")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 6)),
+                input.from_str("", 0, Location::new(1, 6)),
                 Operation::new(Operator::Add, 1.0.into(), 2.0.into()).into()
             ))
         );
+
+        let input = Input::new("1 * 2", "");
+
         assert_eq!(
-            expression(Input::new("1 * 2")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 6)),
+                input.from_str("", 0, Location::new(1, 6)),
                 Operation::new(Operator::Multiply, 1.0.into(), 2.0.into()).into()
             ))
         );
+
+        let input = Input::new("1 * 2 - 3", "");
+
         assert_eq!(
-            expression(Input::new("1 * 2 - 3")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 10)),
+                input.from_str("", 0, Location::new(1, 10)),
                 Operation::new(
                     Operator::Subtract,
                     Operation::new(Operator::Multiply, 1.0.into(), 2.0.into()).into(),
@@ -614,10 +659,13 @@ mod test {
                 .into()
             ))
         );
+
+        let input = Input::new("1 + 2 * 3", "");
+
         assert_eq!(
-            expression(Input::new("1 + 2 * 3")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 10)),
+                input.from_str("", 0, Location::new(1, 10)),
                 Operation::new(
                     Operator::Add,
                     1.0.into(),
@@ -626,10 +674,13 @@ mod test {
                 .into()
             ))
         );
+
+        let input = Input::new("1 * 2 - 3 / 4", "");
+
         assert_eq!(
-            expression(Input::new("1 * 2 - 3 / 4")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 14)),
+                input.from_str("", 0, Location::new(1, 14)),
                 Operation::new(
                     Operator::Subtract,
                     Operation::new(Operator::Multiply, 1.0.into(), 2.0.into()).into(),
@@ -642,61 +693,89 @@ mod test {
 
     #[test]
     fn parse_line_break() {
+        let input = Input::new("\n", "");
+
         assert_eq!(
-            line_break(Input::new("\n")),
-            Ok((Input::with_metadata("", 0, Location::new(2, 1)), ()))
+            line_break(input.clone()),
+            Ok((input.from_str("", 0, Location::new(2, 1)), ()))
         );
+
+        let input = Input::new(" \n", "");
+
         assert_eq!(
-            line_break(Input::new(" \n")),
-            Ok((Input::with_metadata("", 0, Location::new(2, 1)), ()))
+            line_break(input.clone()),
+            Ok((input.from_str("", 0, Location::new(2, 1)), ()))
         );
+
+        let input = Input::new("\n\n", "");
+
         assert_eq!(
-            line_break(Input::new("\n\n")),
-            Ok((Input::with_metadata("", 0, Location::new(3, 1)), ()))
+            line_break(input.clone()),
+            Ok((input.from_str("", 0, Location::new(3, 1)), ()))
         );
+
+        let input = Input::new("\n \n", "");
+
         assert_eq!(
-            line_break(Input::new("\n \n")),
-            Ok((Input::with_metadata("", 0, Location::new(3, 1)), ()))
+            line_break(input.clone()),
+            Ok((input.from_str("", 0, Location::new(3, 1)), ()))
         );
 
         // EOF
+
+        let input = Input::new("", "");
+
         assert_eq!(
-            line_break(Input::new("")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 1)), ()))
+            line_break(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 1)), ()))
         );
+
+        let input = Input::new(" ", "");
+
         assert_eq!(
-            line_break(Input::new(" ")),
-            Ok((Input::with_metadata("", 0, Location::new(1, 2)), ()))
+            line_break(input.clone()),
+            Ok((input.from_str("", 0, Location::new(1, 2)), ()))
         );
     }
 
     #[test]
     fn parse_module() {
+        let input = Input::new("", "");
+
         assert_eq!(
-            module(Input::new("")),
+            module(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 1)),
+                input.from_str("", 0, Location::new(1, 1)),
                 Module::new(vec![])
             ))
         );
+
+        let input = Input::new(" ", "");
+
         assert_eq!(
-            module(Input::new(" ")),
+            module(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 2)),
+                input.from_str("", 0, Location::new(1, 2)),
                 Module::new(vec![])
             ))
         );
+
+        let input = Input::new("\n", "");
+
         assert_eq!(
-            module(Input::new("\n")),
+            module(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(2, 1)),
+                input.from_str("", 0, Location::new(2, 1)),
                 Module::new(vec![])
             ))
         );
+
+        let input = Input::new("x", "");
+
         assert_eq!(
-            module(Input::new("x")),
+            module(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("x", 0, Location::default()),
+                input.from_str("x", 0, Location::default()),
                 ErrorKind::Eof
             )))
         );
@@ -704,10 +783,12 @@ mod test {
 
     #[test]
     fn parse_function_definition() {
+        let input = Input::new("f : Number -> Number\nf x = x", "");
+
         assert_eq!(
-            function_definition(Input::new("f : Number -> Number\nf x = x")),
+            function_definition(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(2, 8)),
+                input.from_str("", 0, Location::new(2, 8)),
                 FunctionDefinition::new(
                     "f".into(),
                     vec!["x".into()],
@@ -716,10 +797,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("f : (\n  Number ->\n  Number\n)\nf x = x", "");
+
         assert_eq!(
-            function_definition(Input::new("f : (\n  Number ->\n  Number\n)\nf x = x")),
+            function_definition(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(5, 8)),
+                input.from_str("", 0, Location::new(5, 8)),
                 FunctionDefinition::new(
                     "f".into(),
                     vec!["x".into()],
@@ -728,10 +812,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("f : ((Number -> Number))\nf x = x", "");
+
         assert_eq!(
-            function_definition(Input::new("f : ((Number -> Number))\nf x = x")),
+            function_definition(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(2, 8)),
+                input.from_str("", 0, Location::new(2, 8)),
                 FunctionDefinition::new(
                     "f".into(),
                     vec!["x".into()],
@@ -744,10 +831,12 @@ mod test {
 
     #[test]
     fn parse_value_definition() {
+        let input = Input::new("x : Number\nx = 42", "");
+
         assert_eq!(
-            value_definition(Input::new("x : Number\nx = 42")),
+            value_definition(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(2, 7)),
+                input.from_str("", 0, Location::new(2, 7)),
                 ValueDefinition::new("x".into(), Expression::Number(42.0), Type::Number)
             ))
         );
@@ -755,10 +844,12 @@ mod test {
 
     #[test]
     fn parse_application() {
+        let input = Input::new("f x", "");
+
         assert_eq!(
-            expression(Input::new("f x")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 4)),
+                input.from_str("", 0, Location::new(1, 4)),
                 Application::new(
                     Expression::Variable("f".into()),
                     Expression::Variable("x".into())
@@ -766,10 +857,13 @@ mod test {
                 .into()
             ))
         );
+
+        let input = Input::new("f x y", "");
+
         assert_eq!(
-            expression(Input::new("f x y")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 6)),
+                input.from_str("", 0, Location::new(1, 6)),
                 Application::new(
                     Application::new(
                         Expression::Variable("f".into()),
@@ -781,10 +875,13 @@ mod test {
                 .into()
             ))
         );
+
+        let input = Input::new("f", "");
+
         assert_eq!(
-            application(Input::new("f")),
+            application(input.clone()),
             Err(nom::Err::Error((
-                Input::with_metadata("", 0, Location::new(1, 2)),
+                input.from_str("", 0, Location::new(1, 2)),
                 ErrorKind::Tag
             )))
         );
@@ -792,10 +889,12 @@ mod test {
 
     #[test]
     fn parse_let() {
+        let input = Input::new("let x = 42\nin x", "");
+
         assert_eq!(
-            let_(Input::new("let x = 42\nin x")),
+            let_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(2, 5)),
+                input.from_str("", 0, Location::new(2, 5)),
                 Let::new(
                     vec![ValueDefinition::new(
                         "x".into(),
@@ -807,10 +906,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("let x = 42 in x", "");
+
         assert_eq!(
-            let_(Input::new("let x = 42 in x")),
+            let_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(1, 16)),
+                input.from_str("", 0, Location::new(1, 16)),
                 Let::new(
                     vec![ValueDefinition::new(
                         "x".into(),
@@ -822,10 +924,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("let x = 42\ny = 42\nin x", "");
+
         assert_eq!(
-            let_(Input::new("let x = 42\ny = 42\nin x")),
+            let_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(3, 5)),
+                input.from_str("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![
                         ValueDefinition::new(
@@ -845,10 +950,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("let x : Number\nx = 42\nin x", "");
+
         assert_eq!(
-            let_(Input::new("let x : Number\nx = 42\nin x")),
+            let_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(3, 5)),
+                input.from_str("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![
                         ValueDefinition::new("x".into(), Expression::Number(42.0), Type::Number)
@@ -858,10 +966,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("let f x = x\nin f", "");
+
         assert_eq!(
-            let_(Input::new("let f x = x\nin f")),
+            let_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(2, 5)),
+                input.from_str("", 0, Location::new(2, 5)),
                 Let::new(
                     vec![FunctionDefinition::new(
                         "f".into(),
@@ -877,10 +988,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("let f : Number -> Number\nf x = x\nin f", "");
+
         assert_eq!(
-            let_(Input::new("let f : Number -> Number\nf x = x\nin f")),
+            let_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(3, 5)),
+                input.from_str("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![FunctionDefinition::new(
                         "f".into(),
@@ -893,10 +1007,13 @@ mod test {
                 )
             ))
         );
+
+        let input = Input::new("let f x = x\ng x = x\nin x", "");
+
         assert_eq!(
-            let_(Input::new("let f x = x\ng x = x\nin x")),
+            let_(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(3, 5)),
+                input.from_str("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![
                         FunctionDefinition::new(
@@ -928,10 +1045,12 @@ mod test {
 
     #[test]
     fn parse_let_as_expression() {
+        let input = Input::new("let x = 42\nin x", "");
+
         assert_eq!(
-            expression(Input::new("let x = 42\nin x")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(2, 5)),
+                input.from_str("", 0, Location::new(2, 5)),
                 Let::new(
                     vec![ValueDefinition::new(
                         "x".into(),
@@ -944,10 +1063,13 @@ mod test {
                 .into()
             ))
         );
+
+        let input = Input::new("(\nlet\nx = 42\ny = 42\nin x\n)", "");
+
         assert_eq!(
-            expression(Input::new("(\nlet\nx = 42\ny = 42\nin x\n)")),
+            expression(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(6, 2)),
+                input.from_str("", 0, Location::new(6, 2)),
                 Let::new(
                     vec![
                         ValueDefinition::new(
@@ -972,10 +1094,12 @@ mod test {
 
     #[test]
     fn parse_let_in_definition() {
+        let input = Input::new("x : Number\nx = (let y = 42\nin y)", "");
+
         assert_eq!(
-            value_definition(Input::new("x : Number\nx = (let y = 42\nin y)")),
+            value_definition(input.clone()),
             Ok((
-                Input::with_metadata("", 0, Location::new(3, 6)),
+                input.from_str("", 0, Location::new(3, 6)),
                 ValueDefinition::new(
                     "x".into(),
                     Let::new(
