@@ -1,7 +1,7 @@
 use super::location::Location;
 
 #[derive(Clone, Debug, PartialEq)]
-struct SourceInformation {
+pub struct SourceInformation {
     filename: String,
     location: Location,
     line: String,
