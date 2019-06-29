@@ -28,3 +28,16 @@ impl SourceInformation {
         &self.line
     }
 }
+
+impl std::fmt::Display for SourceInformation {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        write!(
+            formatter,
+            "{}:{}:{}:{}",
+            self.filename,
+            self.location.line_number(),
+            self.location.column_number(),
+            self.line,
+        )
+    }
+}
