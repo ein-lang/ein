@@ -36,13 +36,18 @@ impl ModuleCompiler {
         &self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<core::ast::FunctionDefinition, CompileError> {
+        let type_ = function_definition
+            .type_()
+            .to_function()
+            .ok_or(CompileError::new("function expected"))?;
+
         Ok(core::ast::FunctionDefinition::new(
             function_definition.name().into(),
             vec![],
             function_definition
                 .arguments()
                 .iter()
-                .zip(function_definition.type_().arguments())
+                .zip(type_.arguments())
                 .map(|(name, type_)| {
                     core::ast::Argument::new(name.clone(), self.type_compiler.compile(type_))
                 })
@@ -52,12 +57,11 @@ impl ModuleCompiler {
                 &function_definition
                     .arguments()
                     .iter()
-                    .zip(function_definition.type_().arguments())
+                    .zip(type_.arguments())
                     .map(|(name, type_)| (name.clone(), type_.clone()))
                     .collect(),
             )?,
-            self.type_compiler
-                .compile_value(function_definition.type_().last_result()),
+            self.type_compiler.compile_value(type_.last_result()),
         ))
     }
 

@@ -42,7 +42,7 @@ fn function_definition(original_input: Input) -> IResult<Input, FunctionDefiniti
     tuple((
         identifier,
         keyword(":"),
-        function_type,
+        type_,
         line_break,
         identifier,
         many1(identifier),
@@ -229,14 +229,10 @@ fn identifier(original_input: Input) -> IResult<Input, String> {
 }
 
 fn type_(input: Input) -> IResult<Input, Type> {
-    alt((map(bare_function_type, |type_| type_.into()), atomic_type))(input)
+    alt((map(function_type, |type_| type_.into()), atomic_type))(input)
 }
 
 fn function_type(input: Input) -> IResult<Input, types::Function> {
-    alt((bare_function_type, parenthesesed(function_type)))(input)
-}
-
-fn bare_function_type(input: Input) -> IResult<Input, types::Function> {
     tuple((atomic_type, keyword("->"), type_))(input)
         .map(|(input, (argument, _, result))| (input, types::Function::new(argument, result)))
 }
@@ -793,7 +789,7 @@ mod test {
                     "f".into(),
                     vec!["x".into()],
                     Expression::Variable("x".into()),
-                    types::Function::new(Type::Number, Type::Number).into()
+                    types::Function::new(Type::Number, Type::Number)
                 )
             ))
         );
@@ -808,7 +804,7 @@ mod test {
                     "f".into(),
                     vec!["x".into()],
                     Expression::Variable("x".into()),
-                    types::Function::new(Type::Number, Type::Number).into()
+                    types::Function::new(Type::Number, Type::Number)
                 )
             ))
         );
@@ -823,7 +819,7 @@ mod test {
                     "f".into(),
                     vec!["x".into()],
                     Expression::Variable("x".into()),
-                    types::Function::new(Type::Number, Type::Number).into()
+                    types::Function::new(Type::Number, Type::Number)
                 )
             ))
         );

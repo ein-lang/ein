@@ -24,6 +24,14 @@ impl Type {
             Type::Variable(variable) => variable.substitute_variables(substitutions),
         }
     }
+
+    pub fn to_function(&self) -> Option<&Function> {
+        if let Type::Function(function) = self {
+            Some(function)
+        } else {
+            None
+        }
+    }
 }
 
 impl From<Function> for Type {

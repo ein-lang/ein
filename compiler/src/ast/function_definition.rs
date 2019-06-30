@@ -1,5 +1,5 @@
 use super::expression::Expression;
-use crate::types::{self, Type};
+use crate::types::Type;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -7,21 +7,21 @@ pub struct FunctionDefinition {
     name: String,
     arguments: Vec<String>,
     body: Expression,
-    type_: types::Function,
+    type_: Type,
 }
 
 impl FunctionDefinition {
-    pub fn new(
+    pub fn new<T: Into<Type>>(
         name: String,
         arguments: Vec<String>,
         body: Expression,
-        type_: types::Function,
+        type_: T,
     ) -> Self {
         Self {
             name,
             arguments,
             body,
-            type_,
+            type_: type_.into(),
         }
     }
 
@@ -37,7 +37,7 @@ impl FunctionDefinition {
         &self.body
     }
 
-    pub fn type_(&self) -> &types::Function {
+    pub fn type_(&self) -> &Type {
         &self.type_
     }
 

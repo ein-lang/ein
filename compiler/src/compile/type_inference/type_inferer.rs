@@ -56,26 +56,24 @@ impl TypeInferer {
         variables: &HashMap<&str, Type>,
     ) -> Result<(), TypeInferenceError> {
         let mut variables = variables.clone();
-        let mut function_type = function_definition.type_();
+        let mut type_ = function_definition.type_().clone();
 
-        for (index, argument) in function_definition.arguments().iter().enumerate() {
-            variables.insert(argument, function_type.argument().clone());
+        for argument_name in function_definition.arguments() {
+            let argument_type: Type = types::Variable::new().into();
+            let result_type: Type = types::Variable::new().into();
 
-            if index == function_definition.arguments().len() - 1 {
-                continue;
-            }
+            self.equations.push(Equation::new(
+                type_,
+                types::Function::new(argument_type.clone(), result_type.clone()).into(),
+            ));
 
-            if let Type::Function(function) = function_type.result() {
-                function_type = function;
-            } else {
-                return Err(TypeInferenceError::new("type inference error".into()));
-            }
+            variables.insert(argument_name, argument_type);
+
+            type_ = result_type;
         }
 
-        let type_ = self.infer_expression(function_definition.body(), &variables)?;
-
-        self.equations
-            .push(Equation::new(type_, function_type.result().clone()));
+        let body_type = self.infer_expression(function_definition.body(), &variables)?;
+        self.equations.push(Equation::new(body_type, type_));
 
         Ok(())
     }

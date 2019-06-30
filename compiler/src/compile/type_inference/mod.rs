@@ -54,7 +54,7 @@ mod test {
             "f".into(),
             vec!["x".into()],
             42.0.into(),
-            types::Function::new(Type::Number, Type::Number).into(),
+            types::Function::new(Type::Number, Type::Number),
         )
         .into()]);
 
@@ -70,8 +70,7 @@ mod test {
             types::Function::new(
                 Type::Number,
                 types::Function::new(Type::Number, Type::Number).into(),
-            )
-            .into(),
+            ),
         )
         .into()]);
 
@@ -88,7 +87,7 @@ mod test {
                 "f".into(),
                 vec!["x".into()],
                 42.0.into(),
-                types::Function::new(Type::Number, Type::Number).into(),
+                types::Function::new(Type::Number, Type::Number),
             )
             .into(),
             ValueDefinition::new(
@@ -109,7 +108,7 @@ mod test {
                 "f".into(),
                 vec!["x".into()],
                 42.0.into(),
-                types::Function::new(Type::Number, Type::Number).into(),
+                types::Function::new(Type::Number, Type::Number),
             )
             .into(),
             ValueDefinition::new(
