@@ -39,7 +39,7 @@ impl Display for SourceInformation {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         write!(
             formatter,
-            "{}:{}:{}:{}",
+            "{}:{}:{}:\t{}",
             self.filename,
             self.location.line_number(),
             self.location.column_number(),

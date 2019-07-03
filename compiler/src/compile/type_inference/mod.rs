@@ -3,7 +3,7 @@ mod error;
 mod type_inferer;
 
 use crate::ast::*;
-use error::*;
+pub use error::*;
 use type_inferer::*;
 
 pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {

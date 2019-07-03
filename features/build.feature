@@ -20,5 +20,5 @@ Feature: Build
     main x = f x
     """
     And I run `sloth main.sl`
-    Then stderr from "sloth main.sl" should contain "type inference error"
+    Then stderr from "sloth main.sl" should contain "TypeInferenceError"
     And the exit status should not be 0

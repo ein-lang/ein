@@ -1,4 +1,4 @@
-use super::error::CompileError;
+use super::error::{CompileError, InternalCompileError};
 use super::free_variable_finder::FreeVariableFinder;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
@@ -70,8 +70,8 @@ impl<'a> ExpressionCompiler<'a> {
             .iter()
             .map(|definition| match definition {
                 ast::Definition::FunctionDefinition(function_definition) => Ok(function_definition),
-                ast::Definition::ValueDefinition(_) => Err(CompileError::new(
-                    "cannot define values together with functions",
+                ast::Definition::ValueDefinition(_) => Err(CompileError::Internal(
+                    InternalCompileError::MixedDefinitionsInLet,
                 )),
             })
             .collect::<Result<Vec<&ast::FunctionDefinition>, _>>()?;
@@ -94,7 +94,7 @@ impl<'a> ExpressionCompiler<'a> {
                     let type_ = function_definition
                         .type_()
                         .to_function()
-                        .ok_or(CompileError::new("function expected"))?;
+                        .expect("function type");
 
                     Ok(core::ast::FunctionDefinition::new(
                         function_definition.name(),
@@ -139,7 +139,7 @@ impl<'a> ExpressionCompiler<'a> {
                         self.type_compiler.compile_value(type_.last_result()),
                     ))
                 })
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<Vec<_>, CompileError>>()?,
             self.compile(let_.expression(), variables)?,
         ))
     }
@@ -153,8 +153,8 @@ impl<'a> ExpressionCompiler<'a> {
             .definitions()
             .iter()
             .map(|definition| match definition {
-                ast::Definition::FunctionDefinition(_) => Err(CompileError::new(
-                    "cannot define functions together with values",
+                ast::Definition::FunctionDefinition(_) => Err(CompileError::Internal(
+                    InternalCompileError::MixedDefinitionsInLet,
                 )),
                 ast::Definition::ValueDefinition(value_definition) => Ok(value_definition),
             })
@@ -181,7 +181,7 @@ impl<'a> ExpressionCompiler<'a> {
                         self.type_compiler.compile_value(value_definition.type_()),
                     ))
                 })
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<Vec<_>, CompileError>>()?,
             self.compile(let_.expression(), variables)?,
         ))
     }

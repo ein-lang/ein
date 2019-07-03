@@ -28,7 +28,7 @@ impl ModuleCompiler {
                         Ok(self.compile_value_definition(value_definition)?.into())
                     }
                 })
-                .collect::<Result<Vec<_>, _>>()?,
+                .collect::<Result<Vec<_>, CompileError>>()?,
         ))
     }
 
@@ -39,7 +39,7 @@ impl ModuleCompiler {
         let type_ = function_definition
             .type_()
             .to_function()
-            .ok_or(CompileError::new("function expected"))?;
+            .expect("function type");
 
         Ok(core::ast::FunctionDefinition::new(
             function_definition.name(),

@@ -7,7 +7,7 @@ mod type_check;
 mod type_compiler;
 
 use crate::ast;
-use error::CompileError;
+pub use error::CompileError;
 use module_compiler::ModuleCompiler;
 use std::error::Error;
 use type_check::check_types;
