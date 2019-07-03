@@ -55,16 +55,22 @@ impl TypeInferer {
         function_definition: &FunctionDefinition,
         variables: &HashMap<&str, Type>,
     ) -> Result<(), TypeInferenceError> {
+        let source_information = function_definition.source_information();
         let mut variables = variables.clone();
         let mut type_ = function_definition.type_().clone();
 
         for argument_name in function_definition.arguments() {
-            let argument_type: Type = types::Variable::new().into();
-            let result_type: Type = types::Variable::new().into();
+            let argument_type: Type = types::Variable::new(source_information.clone()).into();
+            let result_type: Type = types::Variable::new(source_information.clone()).into();
 
             self.equations.push(Equation::new(
                 type_,
-                types::Function::new(argument_type.clone(), result_type.clone()).into(),
+                types::Function::new(
+                    argument_type.clone(),
+                    result_type.clone(),
+                    source_information.clone(),
+                )
+                .into(),
             ));
 
             variables.insert(argument_name, argument_type);
@@ -100,11 +106,17 @@ impl TypeInferer {
             Expression::Application(application) => {
                 let function = self.infer_expression(application.function(), variables)?;
                 let argument = self.infer_expression(application.argument(), variables)?;
-                let result = Type::Variable(types::Variable::new());
+                let result: Type =
+                    types::Variable::new(application.source_information().clone()).into();
 
                 self.equations.push(Equation::new(
                     function,
-                    Type::Function(types::Function::new(argument, result.clone())),
+                    types::Function::new(
+                        argument,
+                        result.clone(),
+                        application.source_information().clone(),
+                    )
+                    .into(),
                 ));
 
                 Ok(result)
@@ -140,19 +152,26 @@ impl TypeInferer {
 
                 self.infer_expression(let_.expression(), &variables)
             }
-            Expression::Number(_) => Ok(Type::Number),
+            Expression::Number(number) => {
+                Ok(types::Number::new(number.source_information().clone()).into())
+            }
             Expression::Operation(operation) => {
-                let lhs = self.infer_expression(operation.lhs(), variables)?;
-                self.equations.push(Equation::new(lhs, Type::Number));
-                let rhs = self.infer_expression(operation.rhs(), variables)?;
-                self.equations.push(Equation::new(rhs, Type::Number));
+                let type_: Type = types::Number::new(operation.source_information().clone()).into();
 
-                Ok(Type::Number)
+                let lhs = self.infer_expression(operation.lhs(), variables)?;
+                self.equations.push(Equation::new(lhs, type_.clone()));
+                let rhs = self.infer_expression(operation.rhs(), variables)?;
+                self.equations.push(Equation::new(rhs, type_.clone()));
+
+                Ok(type_)
             }
             Expression::Variable(variable) => variables
-                .get(variable.as_str())
+                .get(variable.name())
                 .map(|type_| type_.clone())
-                .ok_or(TypeInferenceError::new("variable missing".into())),
+                .ok_or(TypeInferenceError::new(
+                    TypeInferenceErrorKind::VariableNotFound,
+                    variable.source_information().clone(),
+                )),
         }
     }
 
@@ -160,32 +179,34 @@ impl TypeInferer {
         let mut substitutions = HashMap::<usize, Type>::new();
 
         while let Some(equation) = self.equations.pop() {
-            match (equation.lhs(), equation.rhs()) {
-                (Type::Variable(variable), type_) => {
-                    if let Type::Variable(another_variable) = type_ {
+            let lhs = equation.lhs();
+            let rhs = equation.rhs();
+
+            match (lhs, rhs) {
+                (Type::Variable(variable), _) => {
+                    if let Type::Variable(another_variable) = rhs {
                         if variable.id() == another_variable.id() {
                             break;
                         }
                     }
 
                     for (_, substituted_type) in substitutions.iter_mut() {
-                        *substituted_type = substituted_type
-                            .clone()
-                            .substitute_variable(variable, type_);
+                        *substituted_type =
+                            substituted_type.clone().substitute_variable(variable, rhs);
                     }
 
                     for equation in self.equations.iter_mut() {
                         *equation = Equation::new(
-                            equation.lhs().substitute_variable(variable, type_),
-                            equation.rhs().substitute_variable(variable, type_),
+                            equation.lhs().substitute_variable(variable, rhs),
+                            equation.rhs().substitute_variable(variable, rhs),
                         )
                     }
 
-                    substitutions.insert(variable.id(), type_.clone());
+                    substitutions.insert(variable.id(), rhs.clone());
                 }
-                (type_, Type::Variable(variable)) => self
-                    .equations
-                    .push(Equation::new(variable.clone().into(), type_.clone())),
+                (_, Type::Variable(_)) => {
+                    self.equations.push(Equation::new(rhs.clone(), lhs.clone()))
+                }
                 (Type::Function(function1), Type::Function(function2)) => {
                     self.equations.push(Equation::new(
                         function1.argument().clone(),
@@ -196,8 +217,13 @@ impl TypeInferer {
                         function2.result().clone(),
                     ));
                 }
-                (Type::Number, Type::Number) => {}
-                (_, _) => return Err(TypeInferenceError::new("type inference error".into())),
+                (Type::Number(_), Type::Number(_)) => {}
+                (_, _) => {
+                    return Err(TypeInferenceError::new(
+                        TypeInferenceErrorKind::TypesNotMatched,
+                        lhs.source_information().clone(),
+                    ))
+                }
             }
         }
 

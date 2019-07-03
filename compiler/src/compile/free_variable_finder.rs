@@ -80,11 +80,11 @@ impl FreeVariableFinder {
                 .into_iter()
                 .chain(self.find_in_expression(operation.rhs(), variables))
                 .collect(),
-            ast::Expression::Variable(name) => {
-                if variables.contains(name) {
+            ast::Expression::Variable(variable) => {
+                if variables.contains(variable.name()) {
                     vec![]
                 } else {
-                    vec![name.clone()]
+                    vec![variable.name().into()]
                 }
             }
         }
@@ -95,16 +95,22 @@ impl FreeVariableFinder {
 mod test {
     use super::FreeVariableFinder;
     use crate::ast::*;
+    use crate::debug::*;
     use crate::types;
 
     #[test]
     fn find_no_free_variables() {
         assert_eq!(
             FreeVariableFinder::new().find(&FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
-                Expression::Variable("x".into()),
-                types::Function::new(types::Variable::new().into(), types::Variable::new().into())
+                Variable::new("x", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Variable::new(SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )),
             Vec::<String>::new()
         );
@@ -114,10 +120,15 @@ mod test {
     fn find_free_variables() {
         assert_eq!(
             FreeVariableFinder::new().find(&FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
-                Expression::Variable("y".into()),
-                types::Function::new(types::Variable::new().into(), types::Variable::new().into())
+                Variable::new("y", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Variable::new(SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )),
             vec!["y".to_string()]
         );
@@ -127,19 +138,23 @@ mod test {
     fn find_no_free_variables_in_let_values() {
         assert_eq!(
             FreeVariableFinder::new().find(&FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
                 Let::new(
                     vec![ValueDefinition::new(
-                        "y".into(),
-                        Expression::Variable("x".into()),
-                        types::Variable::new().into()
+                        "y",
+                        Variable::new("x", SourceInformation::dummy()),
+                        types::Variable::new(SourceInformation::dummy())
                     )
                     .into()],
-                    Expression::Variable("y".into())
-                )
-                .into(),
-                types::Function::new(types::Variable::new().into(), types::Variable::new().into())
+                    Variable::new("y", SourceInformation::dummy()),
+                ),
+                types::Function::new(
+                    types::Variable::new(SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )),
             Vec::<String>::new()
         );
@@ -149,19 +164,23 @@ mod test {
     fn find_free_variables_in_let_values() {
         assert_eq!(
             FreeVariableFinder::new().find(&FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
                 Let::new(
                     vec![ValueDefinition::new(
-                        "y".into(),
-                        Expression::Variable("z".into()),
-                        types::Variable::new().into()
+                        "y",
+                        Variable::new("z", SourceInformation::dummy()),
+                        types::Variable::new(SourceInformation::dummy())
                     )
                     .into()],
-                    Expression::Variable("y".into())
-                )
-                .into(),
-                types::Function::new(types::Variable::new().into(), types::Variable::new().into())
+                    Variable::new("y", SourceInformation::dummy())
+                ),
+                types::Function::new(
+                    types::Variable::new(SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )),
             vec!["z".to_string()]
         );
@@ -171,23 +190,29 @@ mod test {
     fn find_no_free_variables_in_let_functions() {
         assert_eq!(
             FreeVariableFinder::new().find(&FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
                 Let::new(
                     vec![FunctionDefinition::new(
-                        "f".into(),
+                        "f",
                         vec!["y".into()],
-                        Expression::Variable("y".into()),
+                        Variable::new("y", SourceInformation::dummy()),
                         types::Function::new(
-                            types::Variable::new().into(),
-                            types::Variable::new().into()
-                        )
+                            types::Variable::new(SourceInformation::dummy()),
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy()
                     )
                     .into()],
-                    Expression::Variable("f".into())
-                )
-                .into(),
-                types::Function::new(types::Variable::new().into(), types::Variable::new().into())
+                    Variable::new("f", SourceInformation::dummy())
+                ),
+                types::Function::new(
+                    types::Variable::new(SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )),
             Vec::<String>::new()
         );
@@ -197,23 +222,29 @@ mod test {
     fn find_free_variables_in_let_functions() {
         assert_eq!(
             FreeVariableFinder::new().find(&FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
                 Let::new(
                     vec![FunctionDefinition::new(
-                        "f".into(),
+                        "f",
                         vec!["y".into()],
-                        Expression::Variable("z".into()),
+                        Variable::new("z", SourceInformation::dummy()),
                         types::Function::new(
-                            types::Variable::new().into(),
-                            types::Variable::new().into()
-                        )
+                            types::Variable::new(SourceInformation::dummy()),
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy()
                     )
                     .into()],
-                    Expression::Variable("f".into())
-                )
-                .into(),
-                types::Function::new(types::Variable::new().into(), types::Variable::new().into())
+                    Variable::new("f", SourceInformation::dummy())
+                ),
+                types::Function::new(
+                    types::Variable::new(SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )),
             vec!["z".to_string()]
         );

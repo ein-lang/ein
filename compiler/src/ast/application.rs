@@ -1,4 +1,5 @@
 use super::expression::Expression;
+use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -7,13 +8,19 @@ use std::rc::Rc;
 pub struct Application {
     function: Rc<Expression>,
     argument: Rc<Expression>,
+    source_information: Rc<SourceInformation>,
 }
 
 impl Application {
-    pub fn new(function: Expression, argument: Expression) -> Self {
+    pub fn new(
+        function: impl Into<Expression>,
+        argument: impl Into<Expression>,
+        source_information: impl Into<Rc<SourceInformation>>,
+    ) -> Self {
         Self {
-            function: Rc::new(function),
-            argument: Rc::new(argument),
+            function: Rc::new(function.into()),
+            argument: Rc::new(argument.into()),
+            source_information: source_information.into(),
         }
     }
 
@@ -25,10 +32,15 @@ impl Application {
         &self.argument
     }
 
+    pub fn source_information(&self) -> &Rc<SourceInformation> {
+        &self.source_information
+    }
+
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         Self::new(
             self.function.substitute_type_variables(substitutions),
             self.argument.substitute_type_variables(substitutions),
+            self.source_information.clone(),
         )
     }
 }

@@ -47,14 +47,16 @@ impl<'a> ExpressionCompiler<'a> {
                     Ok(self.compile_let_values(let_, variables)?.into())
                 }
             },
-            ast::Expression::Number(number) => Ok(core::ast::Expression::Number(*number)),
+            ast::Expression::Number(number) => Ok(core::ast::Expression::Number(number.value())),
             ast::Expression::Operation(operation) => Ok(core::ast::Operation::new(
                 operation.operator().into(),
                 self.compile(operation.lhs(), variables)?,
                 self.compile(operation.rhs(), variables)?,
             )
             .into()),
-            ast::Expression::Variable(name) => Ok(core::ast::Expression::Variable(name.clone())),
+            ast::Expression::Variable(variable) => {
+                Ok(core::ast::Expression::Variable(variable.name().into()))
+            }
         }
     }
 
@@ -95,7 +97,7 @@ impl<'a> ExpressionCompiler<'a> {
                         .ok_or(CompileError::new("function expected"))?;
 
                     Ok(core::ast::FunctionDefinition::new(
-                        function_definition.name().into(),
+                        function_definition.name(),
                         FreeVariableFinder::new()
                             .find(function_definition)
                             .iter()
@@ -174,7 +176,7 @@ impl<'a> ExpressionCompiler<'a> {
                 .iter()
                 .map(|value_definition| {
                     Ok(core::ast::ValueDefinition::new(
-                        value_definition.name().into(),
+                        value_definition.name(),
                         self.compile(value_definition.body(), variables)?,
                         self.type_compiler.compile_value(value_definition.type_()),
                     ))
@@ -190,17 +192,24 @@ mod test {
     use super::super::type_compiler::TypeCompiler;
     use super::ExpressionCompiler;
     use crate::ast::*;
-    use crate::types::{self, Type};
+    use crate::debug::SourceInformation;
+    use crate::types;
     use std::collections::HashMap;
 
     #[test]
     fn compile_operation() {
         assert_eq!(
             ExpressionCompiler::new(&TypeCompiler::new()).compile(
-                &Operation::new(Operator::Add, 1.0.into(), 2.0.into()).into(),
+                &Operation::new(
+                    Operator::Add,
+                    Number::new(1.0, SourceInformation::dummy()),
+                    Number::new(2.0, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
                 &HashMap::new()
             ),
-            Ok(core::ast::Operation::new(core::ast::Operator::Add, 1.0.into(), 2.0.into()).into())
+            Ok(core::ast::Operation::new(core::ast::Operator::Add, 1.0.into(), 2.0.into(),).into())
         );
     }
 
@@ -209,18 +218,20 @@ mod test {
         assert_eq!(
             ExpressionCompiler::new(&TypeCompiler::new()).compile(
                 &Let::new(
-                    vec![
-                        ValueDefinition::new("x".into(), Expression::Number(42.0), Type::Number)
-                            .into()
-                    ],
-                    Expression::Variable("x".into())
+                    vec![ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy())
+                    )
+                    .into()],
+                    Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
                 &HashMap::new()
             ),
             Ok(core::ast::LetValues::new(
                 vec![core::ast::ValueDefinition::new(
-                    "x".into(),
+                    "x",
                     core::ast::Expression::Number(42.0),
                     core::types::Value::Number,
                 )],
@@ -236,20 +247,25 @@ mod test {
             ExpressionCompiler::new(&TypeCompiler::new()).compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
-                        "f".into(),
+                        "f",
                         vec!["x".into()],
-                        Expression::Number(42.0),
-                        types::Function::new(Type::Number, Type::Number)
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy()
                     )
                     .into()],
-                    Expression::Variable("x".into())
+                    Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
                 &HashMap::new()
             ),
             Ok(core::ast::LetFunctions::new(
                 vec![core::ast::FunctionDefinition::new(
-                    "f".into(),
+                    "f",
                     vec![],
                     vec![core::ast::Argument::new(
                         "x".into(),
@@ -270,24 +286,29 @@ mod test {
             ExpressionCompiler::new(&TypeCompiler::new()).compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
-                        "f".into(),
+                        "f",
                         vec!["x".into()],
                         Application::new(
-                            Expression::Variable("f".into()),
-                            Expression::Variable("x".into())
-                        )
-                        .into(),
-                        types::Function::new(Type::Number, Type::Number)
+                            Variable::new("f", SourceInformation::dummy()),
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy()
                     )
                     .into()],
-                    Expression::Variable("x".into())
+                    Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
                 &HashMap::new()
             ),
             Ok(core::ast::LetFunctions::new(
                 vec![core::ast::FunctionDefinition::new(
-                    "f".into(),
+                    "f",
                     vec![core::ast::Argument::new(
                         "f".into(),
                         core::types::Function::new(
@@ -319,30 +340,39 @@ mod test {
             ExpressionCompiler::new(&TypeCompiler::new()).compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
-                        "f".into(),
+                        "f",
                         vec!["x".into()],
                         Let::new(
                             vec![FunctionDefinition::new(
-                                "g".into(),
+                                "g",
                                 vec!["y".into()],
-                                Expression::Variable("x".into()),
-                                types::Function::new(Type::Number, Type::Number)
+                                Variable::new("x", SourceInformation::dummy()),
+                                types::Function::new(
+                                    types::Number::new(SourceInformation::dummy()),
+                                    types::Number::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy()
+                                ),
+                                SourceInformation::dummy()
                             )
                             .into()],
-                            Expression::Variable("x".into())
-                        )
-                        .into(),
-                        types::Function::new(Type::Number, Type::Number)
+                            Variable::new("x", SourceInformation::dummy())
+                        ),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy()
                     )
                     .into()],
-                    Expression::Variable("x".into())
+                    Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
                 &HashMap::new()
             ),
             Ok(core::ast::LetFunctions::new(
                 vec![core::ast::FunctionDefinition::new(
-                    "f".into(),
+                    "f",
                     vec![],
                     vec![core::ast::Argument::new(
                         "x".into(),
@@ -350,7 +380,7 @@ mod test {
                     )],
                     core::ast::LetFunctions::new(
                         vec![core::ast::FunctionDefinition::new(
-                            "g".into(),
+                            "g",
                             vec![core::ast::Argument::new(
                                 "x".into(),
                                 core::types::Value::Number.into()
@@ -378,34 +408,40 @@ mod test {
         assert_eq!(
             ExpressionCompiler::new(&TypeCompiler::new()).compile(
                 &Let::new(
-                    vec![
-                        ValueDefinition::new("y".into(), Expression::Number(42.0), Type::Number)
-                            .into()
-                    ],
+                    vec![ValueDefinition::new(
+                        "y",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy())
+                    )
+                    .into()],
                     Let::new(
                         vec![FunctionDefinition::new(
-                            "f".into(),
+                            "f",
                             vec!["x".into()],
-                            Expression::Variable("y".into()).into(),
-                            types::Function::new(Type::Number, Type::Number)
+                            Variable::new("y", SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            SourceInformation::dummy()
                         )
                         .into()],
-                        Expression::Variable("y".into())
+                        Variable::new("y", SourceInformation::dummy())
                     )
-                    .into()
                 )
                 .into(),
                 &HashMap::new()
             ),
             Ok(core::ast::LetValues::new(
                 vec![core::ast::ValueDefinition::new(
-                    "y".into(),
+                    "y",
                     core::ast::Expression::Number(42.0),
                     core::types::Value::Number,
                 )],
                 core::ast::LetFunctions::new(
                     vec![core::ast::FunctionDefinition::new(
-                        "f".into(),
+                        "f",
                         vec![core::ast::Argument::new(
                             "y".into(),
                             core::types::Value::Number.into()

@@ -14,7 +14,7 @@ pub struct FunctionDefinition {
 
 impl FunctionDefinition {
     pub fn new(
-        name: String,
+        name: impl Into<String>,
         environment: Vec<Argument>,
         arguments: Vec<Argument>,
         body: Expression,
@@ -29,7 +29,7 @@ impl FunctionDefinition {
         );
 
         Self {
-            name,
+            name: name.into(),
             environment,
             arguments,
             body,

@@ -15,7 +15,8 @@ mod test {
     use super::error::*;
     use super::infer_types;
     use crate::ast::*;
-    use crate::types::{self, Type};
+    use crate::debug::*;
+    use crate::types;
 
     #[test]
     fn infer_types_with_empty_modules() {
@@ -25,9 +26,9 @@ mod test {
     #[test]
     fn infer_types_of_variables() {
         let module = Module::new(vec![ValueDefinition::new(
-            "x".into(),
-            42.0.into(),
-            Type::Number,
+            "x",
+            Number::new(42.0, SourceInformation::dummy()),
+            types::Number::new(SourceInformation::dummy()),
         )
         .into()]);
         assert_eq!(infer_types(&module), Ok(module));
@@ -36,25 +37,37 @@ mod test {
     #[test]
     fn fail_to_infer_types_of_variables() {
         let module = Module::new(vec![ValueDefinition::new(
-            "x".into(),
-            42.0.into(),
-            types::Function::new(Type::Number, Type::Number).into(),
+            "x",
+            Number::new(42.0, SourceInformation::dummy()),
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
         )
         .into()]);
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new("type inference error".into()))
+            Err(TypeInferenceError::new(
+                TypeInferenceErrorKind::TypesNotMatched,
+                SourceInformation::dummy()
+            ))
         );
     }
 
     #[test]
     fn infer_types_of_functions() {
         let module = Module::new(vec![FunctionDefinition::new(
-            "f".into(),
+            "f",
             vec!["x".into()],
-            42.0.into(),
-            types::Function::new(Type::Number, Type::Number),
+            Number::new(42.0, SourceInformation::dummy()),
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            SourceInformation::dummy(),
         )
         .into()]);
 
@@ -64,19 +77,28 @@ mod test {
     #[test]
     fn fail_to_infer_types_of_functions() {
         let module = Module::new(vec![FunctionDefinition::new(
-            "f".into(),
+            "f",
             vec!["x".into()],
-            42.0.into(),
+            Number::new(42.0, SourceInformation::dummy()),
             types::Function::new(
-                Type::Number,
-                types::Function::new(Type::Number, Type::Number).into(),
+                types::Number::new(SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
             ),
+            SourceInformation::dummy(),
         )
         .into()]);
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new("type inference error".into()))
+            Err(TypeInferenceError::new(
+                TypeInferenceErrorKind::TypesNotMatched,
+                SourceInformation::dummy()
+            ))
         );
     }
 
@@ -84,16 +106,25 @@ mod test {
     fn infer_types_of_applications() {
         let module = Module::new(vec![
             FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
-                42.0.into(),
-                types::Function::new(Type::Number, Type::Number),
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
             )
             .into(),
             ValueDefinition::new(
-                "x".into(),
-                Application::new(Expression::Variable("f".into()), Expression::Number(42.0)).into(),
-                Type::Number,
+                "x",
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Number::new(SourceInformation::dummy()),
             )
             .into(),
         ]);
@@ -105,43 +136,56 @@ mod test {
     fn fail_to_infer_types_of_applications() {
         let module = Module::new(vec![
             FunctionDefinition::new(
-                "f".into(),
+                "f",
                 vec!["x".into()],
-                42.0.into(),
-                types::Function::new(Type::Number, Type::Number),
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
             )
             .into(),
             ValueDefinition::new(
-                "x".into(),
+                "x",
                 Application::new(
-                    Application::new(Expression::Variable("f".into()), Expression::Number(42.0))
-                        .into(),
-                    Expression::Number(42.0),
-                )
-                .into(),
-                Type::Number,
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Number::new(SourceInformation::dummy()),
             )
             .into(),
         ]);
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new("type inference error".into()))
+            Err(TypeInferenceError::new(
+                TypeInferenceErrorKind::TypesNotMatched,
+                SourceInformation::dummy()
+            ))
         );
     }
 
     #[test]
     fn infer_types_of_let_values() {
         let module = Module::new(vec![ValueDefinition::new(
-            "x".into(),
+            "x",
             Let::new(
-                vec![
-                    ValueDefinition::new("y".into(), Expression::Number(42.0), Type::Number).into(),
-                ],
-                Expression::Variable("y".into()),
-            )
-            .into(),
-            Type::Number,
+                vec![ValueDefinition::new(
+                    "y",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                )
+                .into()],
+                Variable::new("y", SourceInformation::dummy()),
+            ),
+            types::Number::new(SourceInformation::dummy()),
         )
         .into()]);
 
@@ -151,43 +195,57 @@ mod test {
     #[test]
     fn fail_to_infer_types_of_let_values() {
         let module = Module::new(vec![ValueDefinition::new(
-            "x".into(),
+            "x",
             Let::new(
                 vec![ValueDefinition::new(
-                    "y".into(),
-                    Expression::Number(42.0),
-                    types::Function::new(Type::Number, Type::Number).into(),
+                    "y",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
                 )
                 .into()],
-                Expression::Variable("y".into()),
-            )
-            .into(),
-            Type::Number,
+                Variable::new("y", SourceInformation::dummy()),
+            ),
+            types::Number::new(SourceInformation::dummy()),
         )
         .into()]);
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new("type inference error".into()))
+            Err(TypeInferenceError::new(
+                TypeInferenceErrorKind::TypesNotMatched,
+                SourceInformation::dummy()
+            ))
         );
     }
 
     #[test]
     fn infer_types_of_let_functions() {
         let module = Module::new(vec![ValueDefinition::new(
-            "x".into(),
+            "x",
             Let::new(
                 vec![FunctionDefinition::new(
-                    "f".into(),
+                    "f",
                     vec!["z".into()],
-                    Expression::Variable("z".into()),
-                    types::Function::new(Type::Number, Type::Number),
+                    Variable::new("z", SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
                 )
                 .into()],
-                Application::new(Expression::Variable("f".into()), Expression::Number(42.0)).into(),
-            )
-            .into(),
-            Type::Number,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            types::Number::new(SourceInformation::dummy()),
         )
         .into()]);
 
@@ -197,28 +255,40 @@ mod test {
     #[test]
     fn fail_to_infer_types_of_let_functions() {
         let module = Module::new(vec![ValueDefinition::new(
-            "x".into(),
+            "x",
             Let::new(
                 vec![FunctionDefinition::new(
-                    "f".into(),
+                    "f",
                     vec!["z".into()],
-                    Expression::Variable("z".into()),
+                    Variable::new("z", SourceInformation::dummy()),
                     types::Function::new(
-                        Type::Number,
-                        types::Function::new(Type::Number, Type::Number).into(),
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
                     ),
+                    SourceInformation::dummy(),
                 )
                 .into()],
-                Application::new(Expression::Variable("f".into()), Expression::Number(42.0)).into(),
-            )
-            .into(),
-            Type::Number,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            types::Number::new(SourceInformation::dummy()),
         )
         .into()]);
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new("type inference error".into()))
+            Err(TypeInferenceError::new(
+                TypeInferenceErrorKind::TypesNotMatched,
+                SourceInformation::dummy()
+            ))
         );
     }
 
@@ -226,31 +296,31 @@ mod test {
     fn infer_types_of_let_values_with_type_variables() {
         assert_eq!(
             infer_types(&Module::new(vec![ValueDefinition::new(
-                "x".into(),
+                "x",
                 Let::new(
                     vec![ValueDefinition::new(
-                        "y".into(),
-                        Expression::Number(42.0),
-                        types::Variable::new().into()
+                        "y",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Variable::new(SourceInformation::dummy())
                     )
-                    .into(),],
-                    Expression::Variable("y".into()),
-                )
-                .into(),
-                Type::Number,
+                    .into()],
+                    Variable::new("y", SourceInformation::dummy()),
+                ),
+                types::Number::new(SourceInformation::dummy()),
             )
             .into()])),
             Ok(Module::new(vec![ValueDefinition::new(
-                "x".into(),
+                "x",
                 Let::new(
-                    vec![
-                        ValueDefinition::new("y".into(), Expression::Number(42.0), Type::Number)
-                            .into(),
-                    ],
-                    Expression::Variable("y".into()),
-                )
-                .into(),
-                Type::Number,
+                    vec![ValueDefinition::new(
+                        "y",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy())
+                    )
+                    .into(),],
+                    Variable::new("y", SourceInformation::dummy()),
+                ),
+                types::Number::new(SourceInformation::dummy()),
             )
             .into()]))
         );
@@ -259,15 +329,18 @@ mod test {
     #[test]
     fn fail_to_infer_types_with_missing_variables() {
         let module = Module::new(vec![ValueDefinition::new(
-            "x".into(),
-            Expression::Variable("y".into()),
-            Type::Number,
+            "x",
+            Variable::new("y", SourceInformation::dummy()),
+            types::Number::new(SourceInformation::dummy()),
         )
         .into()]);
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new("variable missing".into()))
+            Err(TypeInferenceError::new(
+                TypeInferenceErrorKind::VariableNotFound,
+                SourceInformation::dummy()
+            ))
         );
     }
 }

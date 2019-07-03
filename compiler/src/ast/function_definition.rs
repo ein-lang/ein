@@ -1,6 +1,8 @@
 use super::expression::Expression;
+use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionDefinition {
@@ -8,20 +10,23 @@ pub struct FunctionDefinition {
     arguments: Vec<String>,
     body: Expression,
     type_: Type,
+    source_information: Rc<SourceInformation>,
 }
 
 impl FunctionDefinition {
-    pub fn new<T: Into<Type>>(
-        name: String,
+    pub fn new(
+        name: impl Into<String>,
         arguments: Vec<String>,
-        body: Expression,
-        type_: T,
+        body: impl Into<Expression>,
+        type_: impl Into<Type>,
+        source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            name,
+            name: name.into(),
             arguments,
-            body,
+            body: body.into(),
             type_: type_.into(),
+            source_information: source_information.into(),
         }
     }
 
@@ -41,12 +46,17 @@ impl FunctionDefinition {
         &self.type_
     }
 
+    pub fn source_information(&self) -> &Rc<SourceInformation> {
+        &self.source_information
+    }
+
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         Self::new(
             self.name.clone(),
             self.arguments.clone(),
             self.body.substitute_type_variables(substitutions),
             self.type_.substitute_variables(substitutions),
+            self.source_information.clone(),
         )
     }
 }

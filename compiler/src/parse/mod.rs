@@ -21,7 +21,8 @@ pub fn parse(source: &str, filename: &str) -> Result<crate::ast::Module, error::
 mod test {
     use super::parse;
     use crate::ast::*;
-    use crate::types::{self, Type};
+    use crate::debug::SourceInformation;
+    use crate::types;
     use indoc::indoc;
 
     #[test]
@@ -29,13 +30,19 @@ mod test {
         assert_eq!(
             parse("foo : Number -> Number -> Number\nfoo x y = 42", ""),
             Ok(Module::new(vec![FunctionDefinition::new(
-                "foo".into(),
+                "foo",
                 vec!["x".into(), "y".into()],
-                42.0.into(),
+                Number::new(42.0, SourceInformation::dummy()),
                 types::Function::new(
-                    Type::Number,
-                    types::Function::new(Type::Number, Type::Number).into()
-                )
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )
             .into()]))
         );
@@ -43,18 +50,17 @@ mod test {
         assert_eq!(
             parse("x : Number\nx = (let x = 42\nin x)", ""),
             Ok(Module::new(vec![ValueDefinition::new(
-                "x".into(),
+                "x",
                 Let::new(
                     vec![ValueDefinition::new(
-                        "x".into(),
-                        Expression::Number(42.0),
-                        types::Variable::new().into()
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Variable::new(SourceInformation::dummy())
                     )
                     .into()],
-                    Expression::Variable("x".into())
-                )
-                .into(),
-                Type::Number
+                    Variable::new("x", SourceInformation::dummy())
+                ),
+                types::Number::new(SourceInformation::dummy())
             )
             .into()]))
         );
@@ -78,35 +84,41 @@ mod test {
                 ""
             ),
             Ok(Module::new(vec![FunctionDefinition::new(
-                "main".into(),
+                "main",
                 vec!["x".into(),],
                 Let::new(
                     vec![
                         FunctionDefinition::new(
-                            "f".into(),
+                            "f",
                             vec!["x".into(),],
-                            Expression::Variable("x".into()),
+                            Variable::new("x", SourceInformation::dummy()),
                             types::Function::new(
-                                types::Variable::new().into(),
-                                types::Variable::new().into()
-                            )
+                                types::Variable::new(SourceInformation::dummy()),
+                                types::Variable::new(SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            SourceInformation::dummy()
                         )
                         .into(),
                         ValueDefinition::new(
-                            "y".into(),
+                            "y",
                             Application::new(
-                                Expression::Variable("f".into()),
-                                Expression::Variable("x".into())
-                            )
-                            .into(),
-                            types::Variable::new().into()
+                                Variable::new("f", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            types::Variable::new(SourceInformation::dummy())
                         )
                         .into()
                     ],
-                    Expression::Variable("y".into())
-                )
-                .into(),
-                types::Function::new(Type::Number, Type::Number)
+                    Variable::new("y", SourceInformation::dummy())
+                ),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
             )
             .into()]))
         );

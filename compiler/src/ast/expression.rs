@@ -1,6 +1,8 @@
 use super::application::Application;
 use super::let_::Let;
+use super::number::Number;
 use super::operation::Operation;
+use super::variable::Variable;
 use crate::types::Type;
 use std::collections::HashMap;
 
@@ -8,9 +10,9 @@ use std::collections::HashMap;
 pub enum Expression {
     Application(Application),
     Let(Let),
-    Number(f64),
+    Number(Number),
     Operation(Operation),
-    Variable(String),
+    Variable(Variable),
 }
 
 impl Expression {
@@ -20,18 +22,12 @@ impl Expression {
                 application.substitute_type_variables(substitutions).into()
             }
             Expression::Let(let_) => let_.substitute_type_variables(substitutions).into(),
-            Expression::Number(number) => Expression::Number(*number),
+            Expression::Number(number) => Expression::Number(number.clone()),
             Expression::Operation(operation) => {
                 operation.substitute_type_variables(substitutions).into()
             }
             Expression::Variable(variable) => Expression::Variable(variable.clone()),
         }
-    }
-}
-
-impl From<f64> for Expression {
-    fn from(number: f64) -> Expression {
-        Expression::Number(number)
     }
 }
 
@@ -47,8 +43,20 @@ impl From<Let> for Expression {
     }
 }
 
+impl From<Number> for Expression {
+    fn from(number: Number) -> Expression {
+        Expression::Number(number)
+    }
+}
+
 impl From<Operation> for Expression {
     fn from(operation: Operation) -> Expression {
         Expression::Operation(operation)
+    }
+}
+
+impl From<Variable> for Expression {
+    fn from(variable: Variable) -> Expression {
+        Expression::Variable(variable)
     }
 }

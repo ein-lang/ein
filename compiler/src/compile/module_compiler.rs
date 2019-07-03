@@ -42,7 +42,7 @@ impl ModuleCompiler {
             .ok_or(CompileError::new("function expected"))?;
 
         Ok(core::ast::FunctionDefinition::new(
-            function_definition.name().into(),
+            function_definition.name(),
             vec![],
             function_definition
                 .arguments()
@@ -70,7 +70,7 @@ impl ModuleCompiler {
         value_definition: &ast::ValueDefinition,
     ) -> Result<core::ast::ValueDefinition, CompileError> {
         Ok(core::ast::ValueDefinition::new(
-            value_definition.name().into(),
+            value_definition.name(),
             ExpressionCompiler::new(&self.type_compiler)
                 .compile(value_definition.body(), &HashMap::new())?,
             self.type_compiler.compile_value(value_definition.type_()),

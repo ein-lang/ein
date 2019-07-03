@@ -1,6 +1,7 @@
 use super::location::Location;
+use std::fmt::Display;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct SourceInformation {
     filename: String,
     location: Location,
@@ -8,11 +9,11 @@ pub struct SourceInformation {
 }
 
 impl SourceInformation {
-    pub fn new(filename: String, location: Location, line: String) -> Self {
+    pub fn new(filename: impl Into<String>, location: Location, line: impl Into<String>) -> Self {
         Self {
-            filename,
+            filename: filename.into(),
             location,
-            line,
+            line: line.into(),
         }
     }
 
@@ -27,9 +28,14 @@ impl SourceInformation {
     pub fn line(&self) -> &str {
         &self.line
     }
+
+    #[cfg(test)]
+    pub fn dummy() -> Self {
+        Self::new("", Location::new(0, 0), "")
+    }
 }
 
-impl std::fmt::Display for SourceInformation {
+impl Display for SourceInformation {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         write!(
             formatter,
@@ -39,5 +45,11 @@ impl std::fmt::Display for SourceInformation {
             self.location.column_number(),
             self.line,
         )
+    }
+}
+
+impl PartialEq for SourceInformation {
+    fn eq(&self, _: &Self) -> bool {
+        true
     }
 }

@@ -1,25 +1,31 @@
 use crate::ast::*;
+use crate::debug::SourceInformation;
 use std::collections::VecDeque;
 
 pub fn reduce_operations(
     lhs: Expression,
-    mut pairs: VecDeque<(Operator, Expression)>,
+    mut pairs: VecDeque<(Operator, Expression, SourceInformation)>,
 ) -> Operation {
     if pairs.len() == 0 {
         panic!("foo");
     }
 
-    let pair = pairs.pop_front().unwrap();
+    let (operator, rhs, source_information) = pairs.pop_front().unwrap();
 
     if pairs.len() == 0 {
-        Operation::new(pair.0, lhs, pair.1)
-    } else if operator_priority(pair.0) > operator_priority(pairs[0].0) {
+        Operation::new(operator, lhs, rhs, source_information)
+    } else if operator_priority(operator) > operator_priority(pairs[0].0) {
         reduce_operations(
-            Expression::Operation(Operation::new(pair.0, lhs, pair.1)),
+            Expression::Operation(Operation::new(operator, lhs, rhs, source_information)),
             pairs,
         )
     } else {
-        Operation::new(pair.0, lhs, reduce_operations(pair.1, pairs).into())
+        Operation::new(
+            operator,
+            lhs,
+            reduce_operations(rhs, pairs),
+            source_information,
+        )
     }
 }
 

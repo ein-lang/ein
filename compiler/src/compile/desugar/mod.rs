@@ -9,10 +9,11 @@ pub fn desugar(module: &Module) -> Module {
             .iter()
             .map(|definition| match definition {
                 Definition::FunctionDefinition(function_definition) => FunctionDefinition::new(
-                    convert_function_name(function_definition.name()).into(),
+                    convert_function_name(function_definition.name()),
                     function_definition.arguments().to_vec(),
                     function_definition.body().clone(),
                     function_definition.type_().clone(),
+                    function_definition.source_information().clone(),
                 )
                 .into(),
                 definition => definition.clone(),

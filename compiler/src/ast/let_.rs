@@ -11,10 +11,10 @@ pub struct Let {
 }
 
 impl Let {
-    pub fn new(definitions: Vec<Definition>, expression: Expression) -> Self {
+    pub fn new(definitions: Vec<Definition>, expression: impl Into<Expression>) -> Self {
         Self {
             definitions,
-            expression: Rc::new(expression),
+            expression: Rc::new(expression.into()),
         }
     }
 
