@@ -17,18 +17,6 @@ impl SourceInformation {
         }
     }
 
-    pub fn filename(&self) -> &str {
-        &self.filename
-    }
-
-    pub fn location(&self) -> &Location {
-        &self.location
-    }
-
-    pub fn line(&self) -> &str {
-        &self.line
-    }
-
     #[cfg(test)]
     pub fn dummy() -> Self {
         Self::new("", Location::new(0, 0), "")
