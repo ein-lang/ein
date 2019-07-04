@@ -29,7 +29,7 @@ impl TypeCompiler {
     pub fn compile_value(&self, type_: &Type) -> core::types::Value {
         match type_ {
             Type::Function(_) => unreachable!(),
-            Type::Number(_) => core::types::Value::Number.into(),
+            Type::Number(_) => core::types::Value::Number,
             Type::Variable(_) => unreachable!(),
         }
     }

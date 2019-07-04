@@ -142,10 +142,7 @@ fn body(input: Input) -> IResult<Input, Expression> {
 }
 
 fn expression(input: Input) -> IResult<Input, Expression> {
-    alt((
-        map(operation, |operation| Expression::Operation(operation)),
-        term,
-    ))(input)
+    alt((map(operation, Expression::Operation), term))(input)
 }
 
 fn let_(input: Input) -> IResult<Input, Let> {
@@ -163,7 +160,7 @@ fn let_(input: Input) -> IResult<Input, Let> {
                 [definition]
                     .iter()
                     .chain(&definitions)
-                    .map(|definition| definition.clone())
+                    .cloned()
                     .collect::<Vec<_>>(),
                 expression,
             )
@@ -263,7 +260,7 @@ fn number_literal(input: Input) -> IResult<Input, f64> {
                     &[
                         head.iter().collect(),
                         tail.map(|(_, digits)| [".", &digits.concat()].concat())
-                            .unwrap_or("".into()),
+                            .unwrap_or_else(|| "".into()),
                     ]
                     .concat(),
                 )
@@ -406,19 +403,16 @@ fn convert_combinator<'a>(
             .map(|(source, string)| {
                 (
                     {
-                        input.from_str(
+                        input.set(
                             source,
-                            braces + string.matches("(").count() - string.matches(")").count(),
-                            string
-                                .chars()
-                                .into_iter()
-                                .fold(location, |location, character| {
-                                    if character == '\n' {
-                                        location.increment_line_number()
-                                    } else {
-                                        location.increment_column_number()
-                                    }
-                                }),
+                            braces + string.matches('(').count() - string.matches(')').count(),
+                            string.chars().fold(location, |location, character| {
+                                if character == '\n' {
+                                    location.increment_line_number()
+                                } else {
+                                    location.increment_column_number()
+                                }
+                            }),
                         )
                     },
                     string,
@@ -439,14 +433,10 @@ fn convert_character_combinator<'a>(
             .map(|(source, character)| {
                 (
                     match character {
-                        '\n' => input.from_str(source, braces, location.increment_line_number()),
-                        '(' => {
-                            input.from_str(source, braces + 1, location.increment_column_number())
-                        }
-                        ')' => {
-                            input.from_str(source, braces - 1, location.increment_column_number())
-                        }
-                        _ => input.from_str(source, braces, location.increment_column_number()),
+                        '\n' => input.set(source, braces, location.increment_line_number()),
+                        '(' => input.set(source, braces + 1, location.increment_column_number()),
+                        ')' => input.set(source, braces - 1, location.increment_column_number()),
+                        _ => input.set(source, braces, location.increment_column_number()),
                     },
                     character,
                 )
@@ -483,42 +473,42 @@ mod test {
 
         assert_eq!(
             blank(input.clone()),
-            Ok((input.from_str("", 0, Location::default()), ()))
+            Ok((input.set("", 0, Location::default()), ()))
         );
 
         let input = Input::new(" ", "");
 
         assert_eq!(
             blank(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 2)), ()))
+            Ok((input.set("", 0, Location::new(1, 2)), ()))
         );
 
         let input = Input::new("\t", "");
 
         assert_eq!(
             blank(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 2)), ()))
+            Ok((input.set("", 0, Location::new(1, 2)), ()))
         );
 
         let input = Input::new("  ", "");
 
         assert_eq!(
             blank(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 3)), ()))
+            Ok((input.set("", 0, Location::new(1, 3)), ()))
         );
 
         let input = Input::new("", "");
 
         assert_eq!(
-            blank(input.from_str("\n", 1, Location::default())),
-            Ok((input.from_str("", 1, Location::new(2, 1)), ()))
+            blank(input.set("\n", 1, Location::default())),
+            Ok((input.set("", 1, Location::new(2, 1)), ()))
         );
 
         let input = Input::new("\n", "");
 
         assert_eq!(
             blank(input.clone()),
-            Ok((input.from_str("\n", 0, Location::default()), ()))
+            Ok((input.set("\n", 0, Location::default()), ()))
         );
     }
 
@@ -529,7 +519,7 @@ mod test {
         assert_eq!(
             number_type(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 7)),
+                input.set("", 0, Location::new(1, 7)),
                 types::Number::new(SourceInformation::dummy()).into()
             ))
         );
@@ -539,7 +529,7 @@ mod test {
         assert_eq!(
             number_type(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("Numbe", 0, Location::default()),
+                input.set("Numbe", 0, Location::default()),
                 ErrorKind::Tag
             )))
         );
@@ -552,30 +542,21 @@ mod test {
 
         assert_eq!(
             type_(input.clone()),
-            Ok((
-                input.from_str("", 0, Location::new(1, 7)),
-                number_type.clone()
-            ))
+            Ok((input.set("", 0, Location::new(1, 7)), number_type.clone()))
         );
 
         let input = Input::new("(Number)", "");
 
         assert_eq!(
             type_(input.clone()),
-            Ok((
-                input.from_str("", 0, Location::new(1, 9)),
-                number_type.clone()
-            ))
+            Ok((input.set("", 0, Location::new(1, 9)), number_type.clone()))
         );
 
         let input = Input::new("( Number )", "");
 
         assert_eq!(
             type_(input.clone()),
-            Ok((
-                input.from_str("", 0, Location::new(1, 11)),
-                number_type.clone()
-            ))
+            Ok((input.set("", 0, Location::new(1, 11)), number_type.clone()))
         );
 
         let input = Input::new("Number -> Number", "");
@@ -583,7 +564,7 @@ mod test {
         assert_eq!(
             type_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 17)),
+                input.set("", 0, Location::new(1, 17)),
                 types::Function::new(
                     number_type.clone(),
                     number_type.clone(),
@@ -598,7 +579,7 @@ mod test {
         assert_eq!(
             type_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 27)),
+                input.set("", 0, Location::new(1, 27)),
                 Type::Function(types::Function::new(
                     number_type.clone(),
                     Type::Function(types::Function::new(
@@ -618,7 +599,7 @@ mod test {
 
         assert_eq!(
             keyword("foo")(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 4)), ()))
+            Ok((input.set("", 0, Location::new(1, 4)), ()))
         );
 
         let input = Input::new("fo", "");
@@ -626,7 +607,7 @@ mod test {
         assert_eq!(
             keyword("foo")(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("fo", 0, Location::default()),
+                input.set("fo", 0, Location::default()),
                 ErrorKind::Tag
             )))
         );
@@ -638,14 +619,14 @@ mod test {
 
         assert_eq!(
             identifier(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 4)), "foo".into()))
+            Ok((input.set("", 0, Location::new(1, 4)), "foo".into()))
         );
 
         let input = Input::new("x1", "");
 
         assert_eq!(
             identifier(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 3)), "x1".into()))
+            Ok((input.set("", 0, Location::new(1, 3)), "x1".into()))
         );
 
         let input = Input::new("1st", "");
@@ -653,7 +634,7 @@ mod test {
         assert_eq!(
             identifier(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("1st", 0, Location::default()),
+                input.set("1st", 0, Location::default()),
                 ErrorKind::Alpha
             )))
         );
@@ -663,7 +644,7 @@ mod test {
         assert_eq!(
             identifier(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("let", 0, Location::default()),
+                input.set("let", 0, Location::default()),
                 ErrorKind::Verify
             )))
         );
@@ -673,7 +654,7 @@ mod test {
         assert_eq!(
             identifier(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("in", 0, Location::default()),
+                input.set("in", 0, Location::default()),
                 ErrorKind::Verify
             )))
         );
@@ -685,7 +666,7 @@ mod test {
 
         assert_eq!(
             number_literal(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 2)), 1.0))
+            Ok((input.set("", 0, Location::new(1, 2)), 1.0))
         );
 
         let input = Input::new("01", "");
@@ -693,7 +674,7 @@ mod test {
         assert_eq!(
             number_literal(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("01", 0, Location::default()),
+                input.set("01", 0, Location::default()),
                 ErrorKind::OneOf
             )))
         );
@@ -702,21 +683,21 @@ mod test {
 
         assert_eq!(
             number_literal(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 3)), -1.0))
+            Ok((input.set("", 0, Location::new(1, 3)), -1.0))
         );
 
         let input = Input::new("42", "");
 
         assert_eq!(
             number_literal(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 3)), 42.0))
+            Ok((input.set("", 0, Location::new(1, 3)), 42.0))
         );
 
         let input = Input::new("3.14", "");
 
         assert_eq!(
             number_literal(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 5)), 3.14))
+            Ok((input.set("", 0, Location::new(1, 5)), 3.14))
         );
     }
 
@@ -727,7 +708,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 6)),
+                input.set("", 0, Location::new(1, 6)),
                 Operation::new(
                     Operator::Add,
                     Number::new(1.0, SourceInformation::dummy()),
@@ -743,7 +724,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 6)),
+                input.set("", 0, Location::new(1, 6)),
                 Operation::new(
                     Operator::Multiply,
                     Number::new(1.0, SourceInformation::dummy()),
@@ -759,7 +740,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 10)),
+                input.set("", 0, Location::new(1, 10)),
                 Operation::new(
                     Operator::Subtract,
                     Operation::new(
@@ -780,7 +761,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 10)),
+                input.set("", 0, Location::new(1, 10)),
                 Operation::new(
                     Operator::Add,
                     Number::new(1.0, SourceInformation::dummy()),
@@ -801,7 +782,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 14)),
+                input.set("", 0, Location::new(1, 14)),
                 Operation::new(
                     Operator::Subtract,
                     Operation::new(
@@ -829,28 +810,28 @@ mod test {
 
         assert_eq!(
             line_break(input.clone()),
-            Ok((input.from_str("", 0, Location::new(2, 1)), ()))
+            Ok((input.set("", 0, Location::new(2, 1)), ()))
         );
 
         let input = Input::new(" \n", "");
 
         assert_eq!(
             line_break(input.clone()),
-            Ok((input.from_str("", 0, Location::new(2, 1)), ()))
+            Ok((input.set("", 0, Location::new(2, 1)), ()))
         );
 
         let input = Input::new("\n\n", "");
 
         assert_eq!(
             line_break(input.clone()),
-            Ok((input.from_str("", 0, Location::new(3, 1)), ()))
+            Ok((input.set("", 0, Location::new(3, 1)), ()))
         );
 
         let input = Input::new("\n \n", "");
 
         assert_eq!(
             line_break(input.clone()),
-            Ok((input.from_str("", 0, Location::new(3, 1)), ()))
+            Ok((input.set("", 0, Location::new(3, 1)), ()))
         );
 
         // EOF
@@ -859,14 +840,14 @@ mod test {
 
         assert_eq!(
             line_break(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 1)), ()))
+            Ok((input.set("", 0, Location::new(1, 1)), ()))
         );
 
         let input = Input::new(" ", "");
 
         assert_eq!(
             line_break(input.clone()),
-            Ok((input.from_str("", 0, Location::new(1, 2)), ()))
+            Ok((input.set("", 0, Location::new(1, 2)), ()))
         );
     }
 
@@ -876,30 +857,21 @@ mod test {
 
         assert_eq!(
             module(input.clone()),
-            Ok((
-                input.from_str("", 0, Location::new(1, 1)),
-                Module::new(vec![])
-            ))
+            Ok((input.set("", 0, Location::new(1, 1)), Module::new(vec![])))
         );
 
         let input = Input::new(" ", "");
 
         assert_eq!(
             module(input.clone()),
-            Ok((
-                input.from_str("", 0, Location::new(1, 2)),
-                Module::new(vec![])
-            ))
+            Ok((input.set("", 0, Location::new(1, 2)), Module::new(vec![])))
         );
 
         let input = Input::new("\n", "");
 
         assert_eq!(
             module(input.clone()),
-            Ok((
-                input.from_str("", 0, Location::new(2, 1)),
-                Module::new(vec![])
-            ))
+            Ok((input.set("", 0, Location::new(2, 1)), Module::new(vec![])))
         );
 
         let input = Input::new("x", "");
@@ -907,7 +879,7 @@ mod test {
         assert_eq!(
             module(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("x", 0, Location::default()),
+                input.set("x", 0, Location::default()),
                 ErrorKind::Eof
             )))
         );
@@ -920,7 +892,7 @@ mod test {
         assert_eq!(
             function_definition(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(2, 8)),
+                input.set("", 0, Location::new(2, 8)),
                 FunctionDefinition::new(
                     "f",
                     vec!["x".into()],
@@ -940,7 +912,7 @@ mod test {
         assert_eq!(
             function_definition(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(5, 8)),
+                input.set("", 0, Location::new(5, 8)),
                 FunctionDefinition::new(
                     "f",
                     vec!["x".into()],
@@ -960,7 +932,7 @@ mod test {
         assert_eq!(
             function_definition(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(2, 8)),
+                input.set("", 0, Location::new(2, 8)),
                 FunctionDefinition::new(
                     "f",
                     vec!["x".into()],
@@ -983,7 +955,7 @@ mod test {
         assert_eq!(
             value_definition(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(2, 7)),
+                input.set("", 0, Location::new(2, 7)),
                 ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
@@ -1001,7 +973,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 4)),
+                input.set("", 0, Location::new(1, 4)),
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),
                     Variable::new("x", SourceInformation::dummy()),
@@ -1016,7 +988,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 6)),
+                input.set("", 0, Location::new(1, 6)),
                 Application::new(
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
@@ -1035,7 +1007,7 @@ mod test {
         assert_eq!(
             application(input.clone()),
             Err(nom::Err::Error((
-                input.from_str("", 0, Location::new(1, 2)),
+                input.set("", 0, Location::new(1, 2)),
                 ErrorKind::Tag
             )))
         );
@@ -1048,7 +1020,7 @@ mod test {
         assert_eq!(
             let_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(2, 5)),
+                input.set("", 0, Location::new(2, 5)),
                 Let::new(
                     vec![ValueDefinition::new(
                         "x",
@@ -1067,7 +1039,7 @@ mod test {
         assert_eq!(
             let_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(1, 16)),
+                input.set("", 0, Location::new(1, 16)),
                 Let::new(
                     vec![ValueDefinition::new(
                         "x",
@@ -1086,7 +1058,7 @@ mod test {
         assert_eq!(
             let_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(3, 5)),
+                input.set("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![
                         ValueDefinition::new(
@@ -1114,7 +1086,7 @@ mod test {
         assert_eq!(
             let_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(3, 5)),
+                input.set("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![ValueDefinition::new(
                         "x",
@@ -1133,7 +1105,7 @@ mod test {
         assert_eq!(
             let_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(2, 5)),
+                input.set("", 0, Location::new(2, 5)),
                 Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -1157,7 +1129,7 @@ mod test {
         assert_eq!(
             let_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(3, 5)),
+                input.set("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -1181,7 +1153,7 @@ mod test {
         assert_eq!(
             let_(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(3, 5)),
+                input.set("", 0, Location::new(3, 5)),
                 Let::new(
                     vec![
                         FunctionDefinition::new(
@@ -1222,7 +1194,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(2, 5)),
+                input.set("", 0, Location::new(2, 5)),
                 Let::new(
                     vec![ValueDefinition::new(
                         "x",
@@ -1242,7 +1214,7 @@ mod test {
         assert_eq!(
             expression(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(6, 2)),
+                input.set("", 0, Location::new(6, 2)),
                 Let::new(
                     vec![
                         ValueDefinition::new(
@@ -1274,7 +1246,7 @@ mod test {
         assert_eq!(
             value_definition(input.clone()),
             Ok((
-                input.from_str("", 0, Location::new(3, 6)),
+                input.set("", 0, Location::new(3, 6)),
                 ValueDefinition::new(
                     "x",
                     Let::new(

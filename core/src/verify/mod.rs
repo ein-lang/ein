@@ -15,7 +15,7 @@ pub fn verify(module: &Module) -> Result<(), VerificationError> {
 fn check_global_free_variables(module: &Module) -> Result<(), VerificationError> {
     for definition in module.definitions() {
         if let Definition::FunctionDefinition(function_definition) = definition {
-            if function_definition.environment().len() != 0 {
+            if !function_definition.environment().is_empty() {
                 return Err(VerificationError::InvalidFreeVariable);
             }
         }

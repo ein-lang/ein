@@ -14,17 +14,17 @@ impl Type {
         Self { internal }
     }
 
-    pub fn kind(&self) -> TypeKind {
+    pub fn kind(self) -> TypeKind {
         unsafe { LLVMGetTypeKind(self.into()) }.into()
     }
 
-    pub fn element(&self) -> Type {
+    pub fn element(self) -> Type {
         assert_eq!(self.kind(), TypeKind::Pointer);
 
         unsafe { LLVMGetElementType(self.into()) }.into()
     }
 
-    pub fn struct_elements(&self) -> Vec<Type> {
+    pub fn struct_elements(self) -> Vec<Type> {
         assert_eq!(self.kind(), TypeKind::Struct);
 
         let mut elements = (0..(unsafe { LLVMCountStructElementTypes(self.into()) } as usize))
@@ -39,12 +39,12 @@ impl Type {
             .collect::<Vec<_>>()
     }
 
-    pub fn size(&self) -> Value {
+    pub fn size(self) -> Value {
         unsafe { LLVMSizeOf(self.into()) }.into()
     }
 
     #[allow(dead_code)]
-    pub fn dump(&self) {
+    pub fn dump(self) {
         unsafe { LLVMDumpType(self.into()) }
     }
 

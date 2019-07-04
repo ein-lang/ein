@@ -79,12 +79,12 @@ impl<'a> ExpressionCompiler<'a> {
             .collect::<Result<Vec<&ast::FunctionDefinition>, _>>()?;
 
         let variables = &variables
-            .into_iter()
+            .iter()
             .map(|(name, type_)| (name.clone(), type_.clone()))
             .chain(function_definitions.iter().map(|function_definition| {
                 (
                     function_definition.name().into(),
-                    function_definition.type_().clone().into(),
+                    function_definition.type_().clone(),
                 )
             }))
             .collect::<HashMap<_, _>>();
@@ -112,7 +112,7 @@ impl<'a> ExpressionCompiler<'a> {
                                 })
                             })
                             .collect::<Option<_>>()
-                            .unwrap_or(vec![]),
+                            .unwrap_or_else(|| vec![]),
                         function_definition
                             .arguments()
                             .iter()
@@ -127,7 +127,7 @@ impl<'a> ExpressionCompiler<'a> {
                         self.compile(
                             function_definition.body(),
                             &variables
-                                .into_iter()
+                                .iter()
                                 .map(|(name, type_)| (name.clone(), type_.clone()))
                                 .chain(
                                     function_definition
@@ -165,12 +165,12 @@ impl<'a> ExpressionCompiler<'a> {
             .collect::<Result<Vec<_>, _>>()?;
 
         let variables = &variables
-            .into_iter()
+            .iter()
             .map(|(name, type_)| (name.clone(), type_.clone()))
             .chain(value_definitions.iter().map(|value_definition| {
                 (
                     value_definition.name().into(),
-                    value_definition.type_().clone().into(),
+                    value_definition.type_().clone(),
                 )
             }))
             .collect::<HashMap<_, _>>();

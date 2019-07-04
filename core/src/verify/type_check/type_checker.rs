@@ -145,7 +145,7 @@ impl TypeChecker {
             }
             Expression::Variable(variable) => variables
                 .get(variable.as_str())
-                .map(|type_| type_.clone())
+                .cloned()
                 .ok_or(TypeCheckError),
         }
     }

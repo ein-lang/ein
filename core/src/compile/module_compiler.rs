@@ -59,7 +59,7 @@ impl<'a> ModuleCompiler<'a> {
 
             self.compile_global_initializer();
 
-            llvm::verify_module(&self.module);
+            llvm::verify_module(self.module);
         }
 
         Ok(())

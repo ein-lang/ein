@@ -20,14 +20,9 @@ impl FreeVariableFinder {
         self.find_in_expression(
             function_definition.body(),
             &variables
-                .into_iter()
-                .map(|name| name.clone())
-                .chain(
-                    function_definition
-                        .arguments()
-                        .iter()
-                        .map(|name| name.clone()),
-                )
+                .iter()
+                .cloned()
+                .chain(function_definition.arguments().iter().cloned())
                 .collect(),
         )
     }

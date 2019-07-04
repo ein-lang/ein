@@ -16,7 +16,7 @@ fn main() {
     let arguments = std::env::args().collect::<Vec<String>>();
     let filename = arguments
         .get(1)
-        .ok_or(invalid_input_error("no input file"))
+        .ok_or_else(|| invalid_input_error("no input file"))
         .unwrap_or_else(handle_error);
 
     compile(

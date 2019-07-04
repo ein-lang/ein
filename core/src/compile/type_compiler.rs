@@ -33,7 +33,7 @@ impl TypeCompiler {
                 .collect::<Vec<_>>(),
         );
 
-        llvm::Type::function(self.compile_value(function.result()), &mut arguments)
+        llvm::Type::function(self.compile_value(function.result()), &arguments)
     }
 
     pub fn compile_closure(&self, function_definition: &ast::FunctionDefinition) -> llvm::Type {

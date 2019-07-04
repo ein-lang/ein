@@ -11,7 +11,7 @@ pub fn verify_function(function: Value) {
     };
 }
 
-pub fn verify_module(module: &Module) {
+pub fn verify_module(module: Module) {
     unsafe {
         LLVMVerifyModule(
             module.internal(),

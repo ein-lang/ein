@@ -16,27 +16,27 @@ impl Module {
         }
     }
 
-    pub(super) fn internal(&self) -> LLVMModuleRef {
+    pub(super) fn internal(self) -> LLVMModuleRef {
         self.internal
     }
 
-    pub fn add_function(&self, name: &str, function_type: Type) -> Value {
+    pub fn add_function(self, name: &str, function_type: Type) -> Value {
         unsafe { LLVMAddFunction(self.internal, c_string(name).as_ptr(), function_type.into()) }
             .into()
     }
 
-    pub fn add_global(&self, name: &str, type_: Type) -> Value {
+    pub fn add_global(self, name: &str, type_: Type) -> Value {
         unsafe { LLVMAddGlobal(self.internal, type_.into(), c_string(name).as_ptr()) }.into()
     }
 
-    pub fn declare_function(&self, name: &str, return_type: Type, arguments: &[Type]) {
+    pub fn declare_function(self, name: &str, return_type: Type, arguments: &[Type]) {
         self.add_function(name, Type::function(return_type, arguments));
     }
 
-    pub fn declare_intrinsics(&self) {
+    pub fn declare_intrinsics(self) {
         self.declare_function(
             "llvm.coro.id",
-            Type::token().into(),
+            Type::token(),
             &[
                 Type::i32(),
                 Type::generic_pointer(),
@@ -75,18 +75,14 @@ impl Module {
             Type::generic_pointer(),
             &[Type::generic_pointer(), Type::i32(), Type::i1()],
         );
-        self.declare_function(
-            "llvm.coro.resume",
-            Type::void().into(),
-            &[Type::generic_pointer()],
-        );
+        self.declare_function("llvm.coro.resume", Type::void(), &[Type::generic_pointer()]);
 
         self.declare_function("malloc", Type::generic_pointer(), &[Type::i64()]);
-        self.declare_function("free", Type::void().into(), &[Type::generic_pointer()]);
+        self.declare_function("free", Type::void(), &[Type::generic_pointer()]);
     }
 
     #[allow(dead_code)]
-    pub fn dump(&self) {
+    pub fn dump(self) {
         unsafe { LLVMDumpModule(self.internal) }
     }
 }

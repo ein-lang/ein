@@ -98,7 +98,7 @@ impl<'a> ExpressionCompiler<'a> {
                     for (index, value) in definition
                         .environment()
                         .iter()
-                        .map(|argument| variables.get(argument.name()).map(|value| value.clone()))
+                        .map(|argument| variables.get(argument.name()).copied())
                         .collect::<Option<Vec<_>>>()
                         .ok_or(CompileError::VariableNotFound)?
                         .iter()

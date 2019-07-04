@@ -17,11 +17,11 @@ impl<'a> Input<'a> {
             braces: 0,
             location: Location::default(),
             filename,
-            lines: source.split("\n").collect::<Vec<_>>().into(),
+            lines: source.split('\n').collect::<Vec<_>>().into(),
         }
     }
 
-    pub fn from_str(&self, source: &'a str, braces: usize, location: Location) -> Self {
+    pub fn set(&self, source: &'a str, braces: usize, location: Location) -> Self {
         Self {
             source,
             braces,
@@ -52,6 +52,6 @@ impl<'a> Input<'a> {
     }
 
     pub fn set_braces(&self, braces: usize) -> Self {
-        self.from_str(self.source, braces, self.location)
+        self.set(self.source, braces, self.location)
     }
 }

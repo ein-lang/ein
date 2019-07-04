@@ -27,7 +27,7 @@ impl Display for SourceInformation {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         write!(
             formatter,
-            "{}:{}:{}:\t{}\n{}\t{}{}",
+            "{}:{}:{}:\t{}\n{}\t{}^",
             self.filename,
             self.location.line_number(),
             self.location.column_number(),
@@ -44,7 +44,6 @@ impl Display for SourceInformation {
                     + 3
             ),
             str::repeat(" ", self.location.column_number() - 1),
-            "^"
         )
     }
 }

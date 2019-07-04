@@ -27,7 +27,7 @@ impl TypeInferer {
                 Definition::FunctionDefinition(function_definition) => {
                     variables.insert(
                         function_definition.name(),
-                        function_definition.type_().clone().into(),
+                        function_definition.type_().clone(),
                     );
                 }
                 Definition::ValueDefinition(value_definition) => {
@@ -129,7 +129,7 @@ impl TypeInferer {
                         Definition::FunctionDefinition(function_definition) => {
                             variables.insert(
                                 function_definition.name(),
-                                function_definition.type_().clone().into(),
+                                function_definition.type_().clone(),
                             );
                         }
                         Definition::ValueDefinition(_) => {}
@@ -165,13 +165,14 @@ impl TypeInferer {
 
                 Ok(type_)
             }
-            Expression::Variable(variable) => variables
-                .get(variable.name())
-                .map(|type_| type_.clone())
-                .ok_or(TypeInferenceError::VariableNotFound(
-                    variable.name().into(),
-                    variable.source_information().clone(),
-                )),
+            Expression::Variable(variable) => {
+                variables.get(variable.name()).cloned().ok_or_else(|| {
+                    TypeInferenceError::VariableNotFound(
+                        variable.name().into(),
+                        variable.source_information().clone(),
+                    )
+                })
+            }
         }
     }
 

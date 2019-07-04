@@ -12,20 +12,20 @@ impl Value {
         Self { internal }
     }
 
-    pub fn set_initializer(&self, value: Value) {
+    pub fn set_initializer(self, value: Value) {
         unsafe { LLVMSetInitializer(self.into(), value.into()) };
     }
 
-    pub fn type_(&self) -> Type {
+    pub fn type_(self) -> Type {
         unsafe { LLVMTypeOf(self.into()) }.into()
     }
 
-    pub fn is_global_variable(&self) -> Value {
+    pub fn is_global_variable(self) -> Value {
         unsafe { LLVMIsAGlobalVariable(self.into()) }.into()
     }
 
     #[allow(dead_code)]
-    pub fn dump(&self) {
+    pub fn dump(self) {
         unsafe { LLVMDumpValue(self.into()) }
     }
 }
