@@ -1,7 +1,9 @@
 use super::type_inference::TypeInferenceError;
+use crate::debug::*;
 use std::error::Error;
 use std::fmt::Display;
 use std::io;
+use std::rc::Rc;
 
 #[derive(Debug, PartialEq)]
 pub enum CompileError {
@@ -17,7 +19,7 @@ impl Display for CompileError {
                 "{}\n\nCompileError: Failed to compile due to the reason above",
                 error
             ),
-            CompileError::Internal(error) => write!(formatter, "CompileError: {}", error),
+            CompileError::Internal(error) => write!(formatter, "{}", error),
         }
     }
 }
@@ -96,17 +98,18 @@ impl From<TypeInferenceError> for ExternalCompileError {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum InternalCompileError {
-    MixedDefinitionsInLet,
+    MixedDefinitionsInLet(Rc<SourceInformation>),
 }
 
 impl Display for InternalCompileError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
-            InternalCompileError::MixedDefinitionsInLet => write!(
+            InternalCompileError::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
-                "Cannot mix function and value definitions in a let expression",
+                "CompileError: Cannot mix function and value definitions in a let expression\n{}",
+                source_information
             ),
         }
     }

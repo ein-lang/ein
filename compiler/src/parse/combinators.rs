@@ -68,6 +68,7 @@ fn function_definition(original_input: Input) -> IResult<Input, FunctionDefiniti
 
 fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
     tuple((
+        source_information,
         identifier,
         keyword(":"),
         type_,
@@ -76,13 +77,18 @@ fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
         keyword("="),
         body,
     ))(original_input.clone())
-    .and_then(|(input, (name, _, type_, _, same_name, _, body))| {
-        if name == same_name {
-            Ok((input, ValueDefinition::new(name, body, type_)))
-        } else {
-            Err(nom::Err::Error((original_input, ErrorKind::Verify)))
-        }
-    })
+    .and_then(
+        |(input, (source_information, name, _, type_, _, same_name, _, body))| {
+            if name == same_name {
+                Ok((
+                    input,
+                    ValueDefinition::new(name, body, type_, source_information),
+                ))
+            } else {
+                Err(nom::Err::Error((original_input, ErrorKind::Verify)))
+            }
+        },
+    )
 }
 
 fn untyped_function_definition(input: Input) -> IResult<Input, FunctionDefinition> {
@@ -116,7 +122,14 @@ fn untyped_value_definition(input: Input) -> IResult<Input, ValueDefinition> {
     map(
         tuple((source_information, identifier, keyword("="), body)),
         |(source_information, name, _, body)| {
-            ValueDefinition::new(name, body, types::Variable::new(source_information))
+            let source_information = Rc::new(source_information);
+
+            ValueDefinition::new(
+                name,
+                body,
+                types::Variable::new(source_information.clone()),
+                source_information,
+            )
         },
     )(input)
 }
@@ -974,7 +987,8 @@ mod test {
                 ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy())
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             ))
         );
@@ -1039,7 +1053,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy())
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("x", SourceInformation::dummy())
@@ -1057,7 +1072,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy())
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("x", SourceInformation::dummy())
@@ -1076,13 +1092,15 @@ mod test {
                         ValueDefinition::new(
                             "x",
                             Number::new(42.0, SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy())
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
                         )
                         .into(),
                         ValueDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy())
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
                         )
                         .into()
                     ],
@@ -1101,7 +1119,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Number::new(SourceInformation::dummy())
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("x", SourceInformation::dummy())
@@ -1208,7 +1227,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy())
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("x", SourceInformation::dummy())
@@ -1228,13 +1248,15 @@ mod test {
                         ValueDefinition::new(
                             "x",
                             Number::new(42.0, SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy())
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
                         )
                         .into(),
                         ValueDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy())
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
                         )
                         .into()
                     ],
@@ -1259,12 +1281,14 @@ mod test {
                         vec![ValueDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy())
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
                         )
                         .into()],
                         Variable::new("y", SourceInformation::dummy())
                     ),
-                    types::Number::new(SourceInformation::dummy())
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
                 .into()
             ))

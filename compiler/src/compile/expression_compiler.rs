@@ -70,8 +70,10 @@ impl<'a> ExpressionCompiler<'a> {
             .iter()
             .map(|definition| match definition {
                 ast::Definition::FunctionDefinition(function_definition) => Ok(function_definition),
-                ast::Definition::ValueDefinition(_) => Err(CompileError::Internal(
-                    InternalCompileError::MixedDefinitionsInLet,
+                ast::Definition::ValueDefinition(value_definition) => Err(CompileError::Internal(
+                    InternalCompileError::MixedDefinitionsInLet(
+                        value_definition.source_information().clone(),
+                    ),
                 )),
             })
             .collect::<Result<Vec<&ast::FunctionDefinition>, _>>()?;
@@ -153,9 +155,11 @@ impl<'a> ExpressionCompiler<'a> {
             .definitions()
             .iter()
             .map(|definition| match definition {
-                ast::Definition::FunctionDefinition(_) => Err(CompileError::Internal(
-                    InternalCompileError::MixedDefinitionsInLet,
-                )),
+                ast::Definition::FunctionDefinition(function_definition) => Err(
+                    CompileError::Internal(InternalCompileError::MixedDefinitionsInLet(
+                        function_definition.source_information().clone(),
+                    )),
+                ),
                 ast::Definition::ValueDefinition(value_definition) => Ok(value_definition),
             })
             .collect::<Result<Vec<_>, _>>()?;
@@ -221,7 +225,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Number::new(SourceInformation::dummy())
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("x", SourceInformation::dummy())
@@ -393,7 +398,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Number::new(SourceInformation::dummy())
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Let::new(

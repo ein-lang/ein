@@ -29,6 +29,7 @@ mod test {
             "x",
             Number::new(42.0, SourceInformation::dummy()),
             types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
         )
         .into()]);
         assert_eq!(infer_types(&module), Ok(module));
@@ -44,6 +45,7 @@ mod test {
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             ),
+            SourceInformation::dummy(),
         )
         .into()]);
 
@@ -125,6 +127,7 @@ mod test {
                     SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
             )
             .into(),
         ]);
@@ -159,6 +162,7 @@ mod test {
                     SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
             )
             .into(),
         ]);
@@ -181,11 +185,13 @@ mod test {
                     "y",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 )
                 .into()],
                 Variable::new("y", SourceInformation::dummy()),
             ),
             types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
         )
         .into()]);
 
@@ -205,11 +211,13 @@ mod test {
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
+                    SourceInformation::dummy(),
                 )
                 .into()],
                 Variable::new("y", SourceInformation::dummy()),
             ),
             types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
         )
         .into()]);
 
@@ -246,6 +254,7 @@ mod test {
                 ),
             ),
             types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
         )
         .into()]);
 
@@ -280,6 +289,7 @@ mod test {
                 ),
             ),
             types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
         )
         .into()]);
 
@@ -301,12 +311,14 @@ mod test {
                     vec![ValueDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy())
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("y", SourceInformation::dummy()),
                 ),
                 types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
             )
             .into()])),
             Ok(Module::new(vec![ValueDefinition::new(
@@ -315,12 +327,14 @@ mod test {
                     vec![ValueDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Number::new(SourceInformation::dummy())
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into(),],
                     Variable::new("y", SourceInformation::dummy()),
                 ),
                 types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
             )
             .into()]))
         );
@@ -332,6 +346,7 @@ mod test {
             "x",
             Variable::new("y", SourceInformation::dummy()),
             types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
         )
         .into()]);
 

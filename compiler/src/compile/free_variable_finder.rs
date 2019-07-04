@@ -144,7 +144,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "y",
                         Variable::new("x", SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy())
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("y", SourceInformation::dummy()),
@@ -170,7 +171,8 @@ mod test {
                     vec![ValueDefinition::new(
                         "y",
                         Variable::new("z", SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy())
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()],
                     Variable::new("y", SourceInformation::dummy())
