@@ -372,12 +372,14 @@ fn one_of<'a>(characters: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'
     convert_character_combinator(nom::character::complete::one_of(characters))
 }
 
-fn source_information(input: Input) -> IResult<Input, SourceInformation> {
-    blank(input.clone()).map(|(_, _)| {
-        let source_information =
-            SourceInformation::new(input.filename(), input.location(), input.line());
-        (input, source_information)
-    })
+fn source_information(original_input: Input) -> IResult<Input, SourceInformation> {
+    convert_combinator(nom::character::complete::space0)(original_input.clone()).map(
+        |(input, _)| {
+            let source_information =
+                SourceInformation::new(input.filename(), input.location(), input.line());
+            (original_input, source_information)
+        },
+    )
 }
 
 fn convert_combinator<'a>(
@@ -455,7 +457,7 @@ fn convert_error<'a>(
 mod test {
     use super::{
         application, blank, expression, function_definition, identifier, keyword, let_, line_break,
-        module, number_literal, number_type, type_, value_definition, Input,
+        module, number_literal, number_type, source_information, type_, value_definition, Input,
     };
     use crate::ast::*;
     use crate::debug::*;
@@ -1266,6 +1268,22 @@ mod test {
                 )
                 .into()
             ))
+        );
+    }
+
+    #[test]
+    fn get_source_information() {
+        assert_eq!(
+            format!("{}", source_information(Input::new("x", "file")).unwrap().1),
+            "file:1:1:\tx"
+        );
+
+        assert_eq!(
+            format!(
+                "{}",
+                source_information(Input::new(" x", "file")).unwrap().1
+            ),
+            "file:1:2:\t x"
         );
     }
 }
