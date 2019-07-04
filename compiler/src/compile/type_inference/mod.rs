@@ -49,9 +49,9 @@ mod test {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new(
-                TypeInferenceErrorKind::TypesNotMatched,
-                SourceInformation::dummy()
+            Err(TypeInferenceError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
             ))
         );
     }
@@ -95,9 +95,9 @@ mod test {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new(
-                TypeInferenceErrorKind::TypesNotMatched,
-                SourceInformation::dummy()
+            Err(TypeInferenceError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
             ))
         );
     }
@@ -165,9 +165,9 @@ mod test {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new(
-                TypeInferenceErrorKind::TypesNotMatched,
-                SourceInformation::dummy()
+            Err(TypeInferenceError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
             ))
         );
     }
@@ -215,9 +215,9 @@ mod test {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new(
-                TypeInferenceErrorKind::TypesNotMatched,
-                SourceInformation::dummy()
+            Err(TypeInferenceError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
             ))
         );
     }
@@ -285,9 +285,9 @@ mod test {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new(
-                TypeInferenceErrorKind::TypesNotMatched,
-                SourceInformation::dummy()
+            Err(TypeInferenceError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
             ))
         );
     }
@@ -337,9 +337,8 @@ mod test {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::new(
-                TypeInferenceErrorKind::VariableNotFound,
-                SourceInformation::dummy()
+            Err(TypeInferenceError::VariableNotFound(
+                SourceInformation::dummy().into()
             ))
         );
     }

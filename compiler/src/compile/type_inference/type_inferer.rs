@@ -168,8 +168,7 @@ impl TypeInferer {
             Expression::Variable(variable) => variables
                 .get(variable.name())
                 .map(|type_| type_.clone())
-                .ok_or(TypeInferenceError::new(
-                    TypeInferenceErrorKind::VariableNotFound,
+                .ok_or(TypeInferenceError::VariableNotFound(
                     variable.source_information().clone(),
                 )),
         }
@@ -219,9 +218,9 @@ impl TypeInferer {
                 }
                 (Type::Number(_), Type::Number(_)) => {}
                 (_, _) => {
-                    return Err(TypeInferenceError::new(
-                        TypeInferenceErrorKind::TypesNotMatched,
+                    return Err(TypeInferenceError::TypesNotMatched(
                         lhs.source_information().clone(),
+                        rhs.source_information().clone(),
                     ))
                 }
             }

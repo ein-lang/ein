@@ -3,51 +3,31 @@ use std::error::Error;
 use std::fmt::Display;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TypeInferenceErrorKind {
-    TypesNotMatched,
-    VariableNotFound,
+#[derive(Clone, Debug, PartialEq)]
+pub enum TypeInferenceError {
+    TypesNotMatched(Rc<SourceInformation>, Rc<SourceInformation>),
+    VariableNotFound(Rc<SourceInformation>),
 }
 
-impl TypeInferenceError {
-    pub fn new(
-        kind: TypeInferenceErrorKind,
-        source_information: impl Into<Rc<SourceInformation>>,
-    ) -> Self {
-        Self {
-            kind,
-            source_information: source_information.into(),
+impl TypeInferenceError {}
+
+impl Display for TypeInferenceError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        match self {
+            TypeInferenceError::TypesNotMatched(lhs_source_information, rhs_source_information) => {
+                write!(
+                    formatter,
+                    "TypeInferenceError: Types do not match\n{}\n{}",
+                    lhs_source_information, rhs_source_information
+                )
+            }
+            TypeInferenceError::VariableNotFound(source_information) => write!(
+                formatter,
+                "TypeInferenceError: Variable not found\n{}",
+                source_information
+            ),
         }
     }
 }
 
-impl Display for TypeInferenceError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(
-            formatter,
-            "TypeInferenceError: {}\n{}",
-            self.kind, self.source_information
-        )
-    }
-}
-
 impl Error for TypeInferenceError {}
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct TypeInferenceError {
-    kind: TypeInferenceErrorKind,
-    source_information: Rc<SourceInformation>,
-}
-
-impl Display for TypeInferenceErrorKind {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(
-            formatter,
-            "{}",
-            match self {
-                TypeInferenceErrorKind::TypesNotMatched => "Types do not match",
-                TypeInferenceErrorKind::VariableNotFound => "Variable not found",
-            }
-        )
-    }
-}
