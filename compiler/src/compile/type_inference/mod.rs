@@ -353,6 +353,7 @@ mod test {
         assert_eq!(
             infer_types(&module),
             Err(TypeInferenceError::VariableNotFound(
+                "y".into(),
                 SourceInformation::dummy().into()
             ))
         );

@@ -169,6 +169,7 @@ impl TypeInferer {
                 .get(variable.name())
                 .map(|type_| type_.clone())
                 .ok_or(TypeInferenceError::VariableNotFound(
+                    variable.name().into(),
                     variable.source_information().clone(),
                 )),
         }

@@ -6,7 +6,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug, PartialEq)]
 pub enum TypeInferenceError {
     TypesNotMatched(Rc<SourceInformation>, Rc<SourceInformation>),
-    VariableNotFound(Rc<SourceInformation>),
+    VariableNotFound(String, Rc<SourceInformation>),
 }
 
 impl TypeInferenceError {}
@@ -21,10 +21,10 @@ impl Display for TypeInferenceError {
                     lhs_source_information, rhs_source_information
                 )
             }
-            TypeInferenceError::VariableNotFound(source_information) => write!(
+            TypeInferenceError::VariableNotFound(name, source_information) => write!(
                 formatter,
-                "TypeInferenceError: Variable not found\n{}",
-                source_information
+                "TypeInferenceError: Variable \"{}\" not found\n{}",
+                name, source_information
             ),
         }
     }
