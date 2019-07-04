@@ -17,7 +17,7 @@ impl FunctionDefinition {
         name: impl Into<String>,
         environment: Vec<Argument>,
         arguments: Vec<Argument>,
-        body: Expression,
+        body: impl Into<Expression>,
         result_type: types::Value,
     ) -> Self {
         let type_ = types::Function::new(
@@ -32,7 +32,7 @@ impl FunctionDefinition {
             name: name.into(),
             environment,
             arguments,
-            body,
+            body: body.into(),
             result_type,
             type_,
         }

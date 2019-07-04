@@ -9,11 +9,11 @@ pub struct Operation {
 }
 
 impl Operation {
-    pub fn new(operator: Operator, lhs: Expression, rhs: Expression) -> Self {
+    pub fn new(operator: Operator, lhs: impl Into<Expression>, rhs: impl Into<Expression>) -> Self {
         Self {
             operator,
-            lhs: Box::new(lhs),
-            rhs: Box::new(rhs),
+            lhs: Box::new(lhs.into()),
+            rhs: Box::new(rhs.into()),
         }
     }
 

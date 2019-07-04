@@ -8,10 +8,10 @@ pub struct LetFunctions {
 }
 
 impl LetFunctions {
-    pub fn new(definitions: Vec<FunctionDefinition>, expression: Expression) -> Self {
+    pub fn new(definitions: Vec<FunctionDefinition>, expression: impl Into<Expression>) -> Self {
         Self {
             definitions,
-            expression: Box::new(expression),
+            expression: Box::new(expression.into()),
         }
     }
 

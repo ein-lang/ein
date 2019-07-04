@@ -209,7 +209,7 @@ mod test {
                 .into(),
                 &HashMap::new()
             ),
-            Ok(core::ast::Operation::new(core::ast::Operator::Add, 1.0.into(), 2.0.into(),).into())
+            Ok(core::ast::Operation::new(core::ast::Operator::Add, 1.0, 2.0).into())
         );
     }
 
@@ -267,11 +267,8 @@ mod test {
                 vec![core::ast::FunctionDefinition::new(
                     "f",
                     vec![],
-                    vec![core::ast::Argument::new(
-                        "x".into(),
-                        core::types::Value::Number.into()
-                    )],
-                    core::ast::Expression::Number(42.0),
+                    vec![core::ast::Argument::new("x", core::types::Value::Number)],
+                    42.0,
                     core::types::Value::Number,
                 )],
                 core::ast::Expression::Variable("x".into())
@@ -310,22 +307,17 @@ mod test {
                 vec![core::ast::FunctionDefinition::new(
                     "f",
                     vec![core::ast::Argument::new(
-                        "f".into(),
+                        "f",
                         core::types::Function::new(
                             vec![core::types::Value::Number.into()],
-                            core::types::Value::Number.into()
+                            core::types::Value::Number
                         )
-                        .into()
                     )],
-                    vec![core::ast::Argument::new(
-                        "x".into(),
-                        core::types::Value::Number.into()
-                    )],
+                    vec![core::ast::Argument::new("x", core::types::Value::Number)],
                     core::ast::Application::new(
                         core::ast::Expression::Variable("f".into()),
                         vec![core::ast::Expression::Variable("x".into())]
-                    )
-                    .into(),
+                    ),
                     core::types::Value::Number,
                 )],
                 core::ast::Expression::Variable("x".into())
@@ -374,27 +366,17 @@ mod test {
                 vec![core::ast::FunctionDefinition::new(
                     "f",
                     vec![],
-                    vec![core::ast::Argument::new(
-                        "x".into(),
-                        core::types::Value::Number.into()
-                    )],
+                    vec![core::ast::Argument::new("x", core::types::Value::Number)],
                     core::ast::LetFunctions::new(
                         vec![core::ast::FunctionDefinition::new(
                             "g",
-                            vec![core::ast::Argument::new(
-                                "x".into(),
-                                core::types::Value::Number.into()
-                            )],
-                            vec![core::ast::Argument::new(
-                                "y".into(),
-                                core::types::Value::Number.into()
-                            )],
+                            vec![core::ast::Argument::new("x", core::types::Value::Number)],
+                            vec![core::ast::Argument::new("y", core::types::Value::Number)],
                             core::ast::Expression::Variable("x".into()),
                             core::types::Value::Number,
                         )],
                         core::ast::Expression::Variable("x".into())
-                    )
-                    .into(),
+                    ),
                     core::types::Value::Number,
                 )],
                 core::ast::Expression::Variable("x".into())
@@ -436,26 +418,19 @@ mod test {
             Ok(core::ast::LetValues::new(
                 vec![core::ast::ValueDefinition::new(
                     "y",
-                    core::ast::Expression::Number(42.0),
+                    42.0,
                     core::types::Value::Number,
                 )],
                 core::ast::LetFunctions::new(
                     vec![core::ast::FunctionDefinition::new(
                         "f",
-                        vec![core::ast::Argument::new(
-                            "y".into(),
-                            core::types::Value::Number.into()
-                        )],
-                        vec![core::ast::Argument::new(
-                            "x".into(),
-                            core::types::Value::Number.into()
-                        )],
+                        vec![core::ast::Argument::new("y", core::types::Value::Number)],
+                        vec![core::ast::Argument::new("x", core::types::Value::Number)],
                         core::ast::Expression::Variable("y".into()),
                         core::types::Value::Number,
                     )],
                     core::ast::Expression::Variable("y".into())
                 )
-                .into()
             )
             .into())
         );

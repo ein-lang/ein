@@ -23,12 +23,9 @@ mod test {
 
     #[test]
     fn check_types_of_variables() {
-        let module = Module::new(vec![ValueDefinition::new(
-            "x",
-            42.0.into(),
-            types::Value::Number,
-        )
-        .into()]);
+        let module = Module::new(vec![
+            ValueDefinition::new("x", 42.0, types::Value::Number).into()
+        ]);
         assert_eq!(check_types(&module), Ok(()));
     }
 
@@ -38,17 +35,13 @@ mod test {
             FunctionDefinition::new(
                 "f",
                 vec![],
-                vec![Argument::new("x".into(), types::Value::Number.into())],
-                42.0.into(),
+                vec![Argument::new("x", types::Value::Number)],
+                42.0,
                 types::Value::Number,
             )
             .into(),
-            ValueDefinition::new(
-                "x",
-                Expression::Variable("f".into()).into(),
-                types::Value::Number,
-            )
-            .into(),
+            ValueDefinition::new("x", Expression::Variable("f".into()), types::Value::Number)
+                .into(),
         ]);
 
         assert_eq!(check_types(&module), Err(TypeCheckError));
@@ -59,8 +52,8 @@ mod test {
         let module = Module::new(vec![FunctionDefinition::new(
             "f",
             vec![],
-            vec![Argument::new("x".into(), types::Value::Number.into())],
-            42.0.into(),
+            vec![Argument::new("x", types::Value::Number)],
+            42.0,
             types::Value::Number,
         )
         .into()]);
@@ -74,16 +67,16 @@ mod test {
             FunctionDefinition::new(
                 "f",
                 vec![],
-                vec![Argument::new("x".into(), types::Value::Number.into())],
-                42.0.into(),
+                vec![Argument::new("x", types::Value::Number)],
+                42.0,
                 types::Value::Number,
             )
             .into(),
             FunctionDefinition::new(
                 "g",
                 vec![],
-                vec![Argument::new("x".into(), types::Value::Number.into())],
-                Expression::Variable("f".into()).into(),
+                vec![Argument::new("x", types::Value::Number)],
+                Expression::Variable("f".into()),
                 types::Value::Number,
             )
             .into(),
@@ -98,8 +91,8 @@ mod test {
             FunctionDefinition::new(
                 "f",
                 vec![],
-                vec![Argument::new("x".into(), types::Value::Number.into())],
-                42.0.into(),
+                vec![Argument::new("x", types::Value::Number)],
+                42.0,
                 types::Value::Number,
             )
             .into(),
@@ -108,8 +101,7 @@ mod test {
                 Application::new(
                     Expression::Variable("f".into()),
                     vec![Expression::Number(42.0)],
-                )
-                .into(),
+                ),
                 types::Value::Number,
             )
             .into(),
@@ -124,8 +116,8 @@ mod test {
             FunctionDefinition::new(
                 "f",
                 vec![],
-                vec![Argument::new("x".into(), types::Value::Number.into())],
-                42.0.into(),
+                vec![Argument::new("x", types::Value::Number)],
+                42.0,
                 types::Value::Number,
             )
             .into(),
@@ -134,8 +126,7 @@ mod test {
                 Application::new(
                     Expression::Variable("f".into()),
                     vec![Expression::Number(42.0), Expression::Number(42.0)],
-                )
-                .into(),
+                ),
                 types::Value::Number,
             )
             .into(),
@@ -148,7 +139,7 @@ mod test {
     fn fail_to_check_types_because_of_missing_variables() {
         let module = Module::new(vec![ValueDefinition::new(
             "x",
-            Expression::Variable("y".into()).into(),
+            Expression::Variable("y".into()),
             types::Value::Number,
         )
         .into()]);
@@ -162,7 +153,7 @@ mod test {
             "x",
             LetValues::new(
                 vec![
-                    ValueDefinition::new("y", Expression::Number(42.0), types::Value::Number),
+                    ValueDefinition::new("y", 42.0, types::Value::Number),
                     ValueDefinition::new(
                         "z",
                         Expression::Variable("y".into()),
@@ -170,8 +161,7 @@ mod test {
                     ),
                 ],
                 Expression::Variable("z".into()),
-            )
-            .into(),
+            ),
             types::Value::Number,
         )
         .into()]);
@@ -185,8 +175,8 @@ mod test {
             FunctionDefinition::new(
                 "f",
                 vec![],
-                vec![Argument::new("x".into(), types::Value::Number.into())],
-                42.0.into(),
+                vec![Argument::new("x", types::Value::Number)],
+                42.0,
                 types::Value::Number,
             )
             .into(),
@@ -199,8 +189,7 @@ mod test {
                         types::Value::Number,
                     )],
                     Expression::Variable("y".into()),
-                )
-                .into(),
+                ),
                 types::Value::Number,
             )
             .into(),

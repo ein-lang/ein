@@ -7,8 +7,11 @@ pub struct Argument {
 }
 
 impl Argument {
-    pub fn new(name: String, type_: Type) -> Self {
-        Self { name, type_ }
+    pub fn new(name: impl Into<String>, type_: impl Into<Type>) -> Self {
+        Self {
+            name: name.into(),
+            type_: type_.into(),
+        }
     }
 
     pub fn name(&self) -> &str {
