@@ -1299,7 +1299,7 @@ mod test {
     fn get_source_information() {
         assert_eq!(
             format!("{}", source_information(Input::new("x", "file")).unwrap().1),
-            "file:1:1:\tx"
+            "file:1:1:\tx\n         \t^"
         );
 
         assert_eq!(
@@ -1307,7 +1307,7 @@ mod test {
                 "{}",
                 source_information(Input::new(" x", "file")).unwrap().1
             ),
-            "file:1:2:\t x"
+            "file:1:2:\t x\n         \t ^"
         );
     }
 }
