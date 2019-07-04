@@ -1,27 +1,23 @@
+use super::super::verify::VerificationError;
 use std::error::Error;
 use std::fmt::Display;
 
 #[derive(Debug)]
-pub struct CompileError {
-    message: String,
-}
-
-impl CompileError {
-    pub fn new(message: &str) -> Self {
-        CompileError {
-            message: message.into(),
-        }
-    }
+pub enum CompileError {
+    VariableNotFound,
+    Verification,
 }
 
 impl Display for CompileError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "{}", self.message)
+        write!(formatter, "{:?}", self)
     }
 }
 
-impl Error for CompileError {
-    fn description(&self) -> &str {
-        &self.message
+impl Error for CompileError {}
+
+impl From<VerificationError> for CompileError {
+    fn from(_: VerificationError) -> Self {
+        CompileError::Verification
     }
 }

@@ -100,7 +100,7 @@ impl<'a> ExpressionCompiler<'a> {
                         .iter()
                         .map(|argument| variables.get(argument.name()).map(|value| value.clone()))
                         .collect::<Option<Vec<_>>>()
-                        .ok_or(CompileError::new("variable not found"))?
+                        .ok_or(CompileError::VariableNotFound)?
                         .iter()
                         .enumerate()
                     {
@@ -146,7 +146,7 @@ impl<'a> ExpressionCompiler<'a> {
             }
             ast::Expression::Variable(name) => match variables.get(name) {
                 Some(value) => Ok(self.unwrap_value(*value)),
-                None => Err(CompileError::new("variable not found")),
+                None => Err(CompileError::VariableNotFound),
             },
         }
     }

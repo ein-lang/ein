@@ -2,7 +2,7 @@ mod error;
 mod type_checker;
 
 use crate::ast::*;
-use error::*;
+pub use error::*;
 use type_checker::*;
 
 pub fn check_types(module: &Module) -> Result<(), TypeCheckError> {

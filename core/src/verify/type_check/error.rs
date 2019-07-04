@@ -6,12 +6,8 @@ pub struct TypeCheckError;
 
 impl Display for TypeCheckError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        write!(formatter, "type check error")
+        write!(formatter, "{:?}", self)
     }
 }
 
-impl Error for TypeCheckError {
-    fn description(&self) -> &str {
-        "type check error"
-    }
-}
+impl Error for TypeCheckError {}
