@@ -6,9 +6,12 @@ jobs:
     steps:
       - checkout
       - run: |
-          pacman -Syu --noconfirm base-devel clang llvm ruby-bundler rust
+          pacman -Syu --noconfirm base-devel clang llvm ruby-bundler rustup
+          rustup default stable
+          rustup component add clippy
           bundler install
       - run: cargo build
+      - run: cargo clippy
       - run: cargo test --all --exclude runtime
       - run: |
           cargo build --release
