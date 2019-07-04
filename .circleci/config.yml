@@ -8,10 +8,11 @@ jobs:
       - run: |
           pacman -Syu --noconfirm base-devel clang llvm ruby-bundler rustup
           rustup default stable
-          rustup component add clippy
+          rustup component add clippy rustfmt
           bundler install
       - run: cargo build
       - run: cargo clippy
+      - run: cargo fmt -- --check
       - run: cargo test --all --exclude runtime
       - run: |
           cargo build --release
