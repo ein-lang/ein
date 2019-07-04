@@ -36,8 +36,8 @@ pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), 
         .output()?;
 
     if !output.status.success() {
-        std::io::stderr().write(&output.stdout)?;
-        std::io::stderr().write(&output.stderr)?;
+        std::io::stderr().write_all(&output.stdout)?;
+        std::io::stderr().write_all(&output.stderr)?;
 
         std::process::exit(output.status.code().unwrap_or(1));
     }
