@@ -5,29 +5,32 @@ extern crate nom;
 mod ast;
 mod compile;
 mod debug;
-mod environment;
 mod parse;
 mod types;
 
-use compile::{compile, CompileOptions};
+use compile::compile;
 use parse::parse;
 
 fn main() {
     let arguments = std::env::args().collect::<Vec<String>>();
-    let filename = arguments
+
+    let input_filename = arguments
         .get(1)
         .ok_or_else(|| invalid_input_error("no input file"))
         .unwrap_or_else(handle_error);
 
+    let output_filename = arguments
+        .get(2)
+        .ok_or_else(|| invalid_input_error("no output file"))
+        .unwrap_or_else(handle_error);
+
     compile(
         &parse(
-            &std::fs::read_to_string(filename).unwrap_or_else(handle_error),
-            filename,
+            &std::fs::read_to_string(input_filename).unwrap_or_else(handle_error),
+            input_filename,
         )
         .unwrap_or_else(handle_error),
-        CompileOptions {
-            root_directory: environment::root_directory().unwrap_or_else(handle_error),
-        },
+        output_filename,
     )
     .unwrap_or_else(handle_error);
 }

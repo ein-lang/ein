@@ -23,6 +23,15 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "compiler"
+version = "0.1.0"
+dependencies = [
+ "core 0.1.0",
+ "indoc 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nom 5.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "core"
 version = "0.1.0"
 dependencies = [
@@ -165,15 +174,6 @@ dependencies = [
 name = "semver-parser"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "sloth"
-version = "0.1.0"
-dependencies = [
- "core 0.1.0",
- "indoc 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "nom 5.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "stackvector"

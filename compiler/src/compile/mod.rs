@@ -10,37 +10,13 @@ use crate::ast;
 use desugar::desugar;
 use error::CompileError;
 use module_compiler::ModuleCompiler;
-use std::io::Write;
-use std::path::Path;
 use type_inference::infer_types;
 
-pub struct CompileOptions {
-    pub root_directory: String,
-}
-
-const BC_PATH: &str = "sloth.bc";
-
-pub fn compile(ast_module: &ast::Module, options: CompileOptions) -> Result<(), CompileError> {
+pub fn compile(ast_module: &ast::Module, destination: &str) -> Result<(), CompileError> {
     core::compile::compile(
         &ModuleCompiler::new().compile(&infer_types(&desugar(ast_module))?)?,
-        BC_PATH,
+        destination,
     )?;
-
-    let output = std::process::Command::new("clang")
-        .arg("-O3")
-        .arg("-flto")
-        .arg("-ldl")
-        .arg("-lpthread")
-        .arg(BC_PATH)
-        .arg(Path::new(&options.root_directory).join("target/release/libruntime.a"))
-        .output()?;
-
-    if !output.status.success() {
-        std::io::stderr().write_all(&output.stdout)?;
-        std::io::stderr().write_all(&output.stderr)?;
-
-        std::process::exit(output.status.code().unwrap_or(1));
-    }
 
     Ok(())
 }

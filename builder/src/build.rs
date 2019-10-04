@@ -7,9 +7,8 @@ const BC_PATH: &str = "sloth.bc";
 pub fn build(root_directory: String) -> Result<(), BuildError> {
     run_command(
         std::process::Command::new(Path::new(&root_directory).join("target/release/compiler"))
-            .arg("-o")
-            .arg(BC_PATH)
-            .arg("main.sl"),
+            .arg("main.sl")
+            .arg(BC_PATH),
     )?;
 
     run_command(
