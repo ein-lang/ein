@@ -2,7 +2,7 @@ use crate::error::BuildError;
 use std::io::Write;
 use std::path::Path;
 
-const BC_PATH: &str = "sloth.bc";
+const BC_PATH: &str = "main.bc";
 
 pub fn build(root_directory: String) -> Result<(), BuildError> {
     run_command(
