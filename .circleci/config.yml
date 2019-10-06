@@ -13,7 +13,7 @@ jobs:
       - run: cargo build
       - run: cargo clippy
       - run: cargo fmt -- --check
-      - run: cargo test --all --exclude runtime
+      - run: cargo test
       - run: |
           cargo build --release
           SLOTH_ROOT=$PWD PATH=target/release:$PATH bundler exec cucumber

@@ -3,6 +3,7 @@ extern "C" {
     static sloth_main: extern "C" fn(environment: *const u8, argument: f64) -> f64;
 }
 
+#[cfg(not(test))]
 #[no_mangle]
 pub extern "C" fn main() -> std::os::raw::c_int {
     unsafe { sloth_init() }
