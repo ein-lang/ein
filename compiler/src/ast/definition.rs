@@ -20,6 +20,19 @@ impl Definition {
                 .into(),
         }
     }
+
+    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
+        let definition = match self {
+            Self::FunctionDefinition(function_definition) => {
+                function_definition.convert_definitions(convert).into()
+            }
+            Self::ValueDefinition(value_definition) => {
+                value_definition.convert_definitions(convert).into()
+            }
+        };
+
+        convert(&definition)
+    }
 }
 
 impl From<FunctionDefinition> for Definition {

@@ -24,4 +24,13 @@ impl Module {
                 .collect::<Vec<_>>(),
         )
     }
+
+    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
+        Self::new(
+            self.definitions
+                .iter()
+                .map(|definition| definition.convert_definitions(convert))
+                .collect(),
+        )
+    }
 }

@@ -1,4 +1,5 @@
 use super::application::Application;
+use super::definition::Definition;
 use super::let_::Let;
 use super::number::Number;
 use super::operation::Operation;
@@ -27,6 +28,14 @@ impl Expression {
                 operation.substitute_type_variables(substitutions).into()
             }
             Expression::Variable(variable) => Expression::Variable(variable.clone()),
+        }
+    }
+
+    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
+        match self {
+            Self::Application(application) => application.convert_definitions(convert).into(),
+            Self::Let(let_) => let_.convert_definitions(convert).into(),
+            _ => self.clone(),
         }
     }
 }

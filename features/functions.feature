@@ -37,3 +37,36 @@ Feature: Functions
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Define a function with an omitted argument
+    Given a file named "main.sl" with:
+    """
+    f : Number -> Number
+    f x = x
+
+    main : Number -> Number
+    main = f
+    """
+    And I successfully run `builder`
+    When I run `sh -c ./a.out`
+    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    And the exit status should be 0
+
+  Scenario: Define a function with one of its arguments omitted
+    Given a file named "main.sl" with:
+    """
+    f : Number -> Number -> Number
+    f x = (
+      let
+        g y = x
+      in
+        g
+    )
+
+    main : Number -> Number
+    main x = f x 13
+    """
+    And I successfully run `builder`
+    When I run `sh -c ./a.out`
+    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    And the exit status should be 0

@@ -1,3 +1,4 @@
+use super::definition::Definition;
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
@@ -56,6 +57,16 @@ impl FunctionDefinition {
             self.arguments.clone(),
             self.body.substitute_type_variables(substitutions),
             self.type_.substitute_variables(substitutions),
+            self.source_information.clone(),
+        )
+    }
+
+    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.arguments.clone(),
+            self.body.convert_definitions(convert),
+            self.type_.clone(),
             self.source_information.clone(),
         )
     }

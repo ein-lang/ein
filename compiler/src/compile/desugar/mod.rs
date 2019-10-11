@@ -1,31 +1,14 @@
+mod argument_omission;
+mod main_function_name;
+
 use crate::ast::*;
+use argument_omission::*;
+use main_function_name::*;
 
-const MAIN_FUNCTION_NAME: &str = "sloth_main";
-
-pub fn desugar(module: &Module) -> Module {
-    Module::new(
-        module
-            .definitions()
-            .iter()
-            .map(|definition| match definition {
-                Definition::FunctionDefinition(function_definition) => FunctionDefinition::new(
-                    convert_function_name(function_definition.name()),
-                    function_definition.arguments().to_vec(),
-                    function_definition.body().clone(),
-                    function_definition.type_().clone(),
-                    function_definition.source_information().clone(),
-                )
-                .into(),
-                definition => definition.clone(),
-            })
-            .collect(),
-    )
+pub fn desugar_without_types(module: &Module) -> Module {
+    desugar_main_function_name(module)
 }
 
-fn convert_function_name(name: &str) -> &str {
-    if name == "main" {
-        MAIN_FUNCTION_NAME
-    } else {
-        name
-    }
+pub fn desugar_with_types(module: &Module) -> Module {
+    desugar_argument_omission(module)
 }

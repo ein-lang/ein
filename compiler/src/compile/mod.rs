@@ -3,18 +3,21 @@ mod error;
 mod expression_compiler;
 mod free_variable_finder;
 mod module_compiler;
+mod name_generator;
 mod type_compiler;
 mod type_inference;
 
 use crate::ast;
-use desugar::desugar;
+use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use module_compiler::ModuleCompiler;
 use type_inference::infer_types;
 
 pub fn compile(ast_module: &ast::Module, destination: &str) -> Result<(), CompileError> {
     core::compile::compile(
-        &ModuleCompiler::new().compile(&infer_types(&desugar(ast_module))?)?,
+        &ModuleCompiler::new().compile(&desugar_with_types(&infer_types(
+            &desugar_without_types(ast_module),
+        )?))?,
         destination,
     )?;
 
