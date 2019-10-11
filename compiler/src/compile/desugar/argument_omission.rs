@@ -17,7 +17,7 @@ pub fn desugar_argument_omission(module: &Module) -> Module {
                     .collect::<Vec<_>>();
 
                 FunctionDefinition::new(
-                    value_definition.name().clone(),
+                    value_definition.name(),
                     arguments.clone(),
                     append_arguments_to_expression(
                         value_definition.body(),
