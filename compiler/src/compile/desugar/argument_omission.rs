@@ -7,7 +7,44 @@ pub fn desugar_argument_omission(module: &Module) -> Module {
     let mut name_generator = NameGenerator::new("omitted_argument_");
 
     module.convert_definitions(&mut |definition| match definition {
-        Definition::FunctionDefinition(function_definition) => function_definition.clone().into(),
+        Definition::FunctionDefinition(function_definition) => match function_definition.type_() {
+            Type::Function(function_type) => {
+                if function_definition.arguments().len() == function_type.arguments().len() {
+                    function_definition.clone().into()
+                } else {
+                    let omitted_arguments = (0..(function_type.arguments().len()
+                        - function_definition.arguments().len()))
+                        .map(|_| name_generator.generate())
+                        .collect::<Vec<_>>();
+
+                    FunctionDefinition::new(
+                        function_definition.name(),
+                        function_definition
+                            .arguments()
+                            .iter()
+                            .chain(omitted_arguments.iter())
+                            .map(|argument| argument.clone())
+                            .collect(),
+                        append_arguments_to_expression(
+                            function_definition.body(),
+                            &omitted_arguments
+                                .iter()
+                                .map(|argument| {
+                                    Variable::new(
+                                        argument,
+                                        function_definition.source_information().clone(),
+                                    )
+                                })
+                                .collect::<Vec<Variable>>(),
+                        ),
+                        function_definition.type_().clone(),
+                        function_definition.source_information().clone(),
+                    )
+                    .into()
+                }
+            }
+            _ => unreachable!(),
+        },
         Definition::ValueDefinition(value_definition) => match value_definition.type_() {
             Type::Function(function_type) => {
                 let arguments = function_type
@@ -154,6 +191,106 @@ mod test {
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        );
+    }
+
+    #[test]
+    fn complement_an_omitted_argument_of_function_definition() {
+        assert_eq!(
+            desugar_argument_omission(&Module::new(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into()],
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
+            Module::new(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into(), "omitted_argument_0".into()],
+                Application::new(
+                    Variable::new("g", SourceInformation::dummy()),
+                    Variable::new("omitted_argument_0", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        );
+    }
+
+    #[test]
+    fn complement_2_omitted_arguments_of_function_definition() {
+        assert_eq!(
+            desugar_argument_omission(&Module::new(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into()],
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
+            Module::new(vec![FunctionDefinition::new(
+                "f",
+                vec![
+                    "x".into(),
+                    "omitted_argument_0".into(),
+                    "omitted_argument_1".into()
+                ],
+                Application::new(
+                    Application::new(
+                        Variable::new("g", SourceInformation::dummy()),
+                        Variable::new("omitted_argument_0", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    Variable::new("omitted_argument_1", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
                         SourceInformation::dummy()
                     ),
                     SourceInformation::dummy()
