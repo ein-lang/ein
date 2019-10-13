@@ -5,7 +5,7 @@ mod error;
 use build::build;
 
 fn main() {
-    if std::env::args().collect::<Vec<String>>().len() > 1 {
+    if std::env::args().count() > 1 {
         handle_error::<(), std::io::Error>(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
             "too many arguments",

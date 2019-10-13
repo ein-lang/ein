@@ -23,7 +23,7 @@ pub fn desugar_argument_omission(module: &Module) -> Module {
                             .arguments()
                             .iter()
                             .chain(omitted_arguments.iter())
-                            .map(|argument| argument.clone())
+                            .cloned()
                             .collect(),
                         append_arguments_to_expression(
                             function_definition.body(),

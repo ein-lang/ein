@@ -39,7 +39,8 @@ fn run_command(command: &mut std::process::Command) -> Result<(), BuildError> {
                 .status
                 .code()
                 .map(|code| format!("a command exited with status code {}", code))
-                .unwrap_or("a command exited with no status code".into()),
-        ))?
+                .unwrap_or_else(|| "a command exited with no status code".into()),
+        )
+        .into())
     }
 }

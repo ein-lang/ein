@@ -40,8 +40,7 @@ mod test {
                 types::Value::Number,
             )
             .into(),
-            ValueDefinition::new("x", Variable::new("f"), types::Value::Number)
-                .into(),
+            ValueDefinition::new("x", Variable::new("f"), types::Value::Number).into(),
         ]);
 
         assert_eq!(check_types(&module), Err(TypeCheckError));
@@ -98,10 +97,7 @@ mod test {
             .into(),
             ValueDefinition::new(
                 "x",
-                Application::new(
-                    Variable::new("f"),
-                    vec![Expression::Number(42.0)],
-                ),
+                Application::new(Variable::new("f"), vec![Expression::Number(42.0)]),
                 types::Value::Number,
             )
             .into(),
@@ -154,11 +150,7 @@ mod test {
             LetValues::new(
                 vec![
                     ValueDefinition::new("y", 42.0, types::Value::Number),
-                    ValueDefinition::new(
-                        "z",
-                        Variable::new("y"),
-                        types::Value::Number,
-                    ),
+                    ValueDefinition::new("z", Variable::new("y"), types::Value::Number),
                 ],
                 Variable::new("z"),
             ),
