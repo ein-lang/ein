@@ -9,6 +9,7 @@ mod module;
 mod operation;
 mod operator;
 mod value_definition;
+mod variable;
 
 pub use application::*;
 pub use argument::*;
@@ -21,3 +22,4 @@ pub use module::*;
 pub use operation::*;
 pub use operator::*;
 pub use value_definition::*;
+pub use variable::*;

@@ -1,20 +1,21 @@
 use super::expression::Expression;
+use super::variable::Variable;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Application {
-    function: Box<Expression>,
+    function: Variable,
     arguments: Vec<Expression>,
 }
 
 impl Application {
-    pub fn new(function: Expression, arguments: Vec<Expression>) -> Self {
+    pub fn new(function: Variable, arguments: Vec<Expression>) -> Self {
         Self {
-            function: Box::new(function),
+            function,
             arguments,
         }
     }
 
-    pub fn function(&self) -> &Expression {
+    pub fn function(&self) -> &Variable {
         &self.function
     }
 

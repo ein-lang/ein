@@ -30,7 +30,10 @@ impl<'a> ExpressionCompiler<'a> {
                 }
 
                 Ok(core::ast::Application::new(
-                    self.compile(function, variables)?,
+                    self.compile(function, variables)?
+                        .to_variable()
+                        .expect("variable")
+                        .clone(),
                     arguments
                         .iter()
                         .rev()
@@ -54,9 +57,9 @@ impl<'a> ExpressionCompiler<'a> {
                 self.compile(operation.rhs(), variables)?,
             )
             .into()),
-            ast::Expression::Variable(variable) => {
-                Ok(core::ast::Expression::Variable(variable.name().into()))
-            }
+            ast::Expression::Variable(variable) => Ok(core::ast::Expression::Variable(
+                core::ast::Variable::new(variable.name()),
+            )),
         }
     }
 
@@ -240,7 +243,7 @@ mod test {
                     core::ast::Expression::Number(42.0),
                     core::types::Value::Number,
                 )],
-                core::ast::Expression::Variable("x".into())
+                core::ast::Variable::new("x")
             )
             .into())
         );
@@ -276,7 +279,7 @@ mod test {
                     42.0,
                     core::types::Value::Number,
                 )],
-                core::ast::Expression::Variable("x".into())
+                core::ast::Variable::new("x")
             )
             .into())
         );
@@ -320,12 +323,12 @@ mod test {
                     )],
                     vec![core::ast::Argument::new("x", core::types::Value::Number)],
                     core::ast::Application::new(
-                        core::ast::Expression::Variable("f".into()),
-                        vec![core::ast::Expression::Variable("x".into())]
+                        core::ast::Variable::new("f"),
+                        vec![core::ast::Variable::new("x").into()]
                     ),
                     core::types::Value::Number,
                 )],
-                core::ast::Expression::Variable("x".into())
+                core::ast::Variable::new("x")
             )
             .into())
         );
@@ -377,14 +380,14 @@ mod test {
                             "g",
                             vec![core::ast::Argument::new("x", core::types::Value::Number)],
                             vec![core::ast::Argument::new("y", core::types::Value::Number)],
-                            core::ast::Expression::Variable("x".into()),
+                            core::ast::Variable::new("x"),
                             core::types::Value::Number,
                         )],
-                        core::ast::Expression::Variable("x".into())
+                        core::ast::Variable::new("x")
                     ),
                     core::types::Value::Number,
                 )],
-                core::ast::Expression::Variable("x".into())
+                core::ast::Variable::new("x")
             )
             .into())
         );
@@ -432,10 +435,10 @@ mod test {
                         "f",
                         vec![core::ast::Argument::new("y", core::types::Value::Number)],
                         vec![core::ast::Argument::new("x", core::types::Value::Number)],
-                        core::ast::Expression::Variable("y".into()),
+                        core::ast::Variable::new("y"),
                         core::types::Value::Number,
                     )],
-                    core::ast::Expression::Variable("y".into())
+                    core::ast::Variable::new("y")
                 )
             )
             .into())

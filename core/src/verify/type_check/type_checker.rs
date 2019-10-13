@@ -90,7 +90,7 @@ impl TypeChecker {
     ) -> Result<Type, TypeCheckError> {
         match expression {
             Expression::Application(application) => {
-                match self.check_expression(application.function(), variables)? {
+                match self.check_variable(application.function(), variables)? {
                     Type::Function(function_type) => {
                         if function_type.arguments().len() != application.arguments().len() {
                             return Err(TypeCheckError);
@@ -143,10 +143,18 @@ impl TypeChecker {
 
                 Ok(types::Value::Number.into())
             }
-            Expression::Variable(variable) => variables
-                .get(variable.as_str())
-                .cloned()
-                .ok_or(TypeCheckError),
+            Expression::Variable(variable) => self.check_variable(variable, variables),
         }
+    }
+
+    fn check_variable(
+        &self,
+        variable: &Variable,
+        variables: &HashMap<&str, Type>,
+    ) -> Result<Type, TypeCheckError> {
+        variables
+            .get(variable.name())
+            .cloned()
+            .ok_or(TypeCheckError)
     }
 }

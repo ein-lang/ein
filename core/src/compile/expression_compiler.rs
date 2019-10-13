@@ -31,7 +31,7 @@ impl<'a> ExpressionCompiler<'a> {
     ) -> Result<llvm::Value, CompileError> {
         match expression {
             ast::Expression::Application(application) => {
-                let closure = self.compile(application.function(), variables)?;
+                let closure = self.compile_variable(application.function(), variables)?;
 
                 let mut arguments = vec![self.builder.build_gep(
                     closure,
@@ -144,10 +144,18 @@ impl<'a> ExpressionCompiler<'a> {
                     ast::Operator::Divide => self.builder.build_fdiv(lhs, rhs),
                 })
             }
-            ast::Expression::Variable(name) => match variables.get(name) {
-                Some(value) => Ok(self.unwrap_value(*value)),
-                None => Err(CompileError::VariableNotFound),
-            },
+            ast::Expression::Variable(variable) => self.compile_variable(variable, variables),
+        }
+    }
+
+    fn compile_variable(
+        &self,
+        variable: &ast::Variable,
+        variables: &HashMap<String, llvm::Value>,
+    ) -> Result<llvm::Value, CompileError> {
+        match variables.get(variable.name()) {
+            Some(value) => Ok(self.unwrap_value(*value)),
+            None => Err(CompileError::VariableNotFound),
         }
     }
 

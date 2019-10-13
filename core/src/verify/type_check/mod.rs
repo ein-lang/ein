@@ -40,7 +40,7 @@ mod test {
                 types::Value::Number,
             )
             .into(),
-            ValueDefinition::new("x", Expression::Variable("f".into()), types::Value::Number)
+            ValueDefinition::new("x", Variable::new("f"), types::Value::Number)
                 .into(),
         ]);
 
@@ -76,7 +76,7 @@ mod test {
                 "g",
                 vec![],
                 vec![Argument::new("x", types::Value::Number)],
-                Expression::Variable("f".into()),
+                Variable::new("f"),
                 types::Value::Number,
             )
             .into(),
@@ -99,7 +99,7 @@ mod test {
             ValueDefinition::new(
                 "x",
                 Application::new(
-                    Expression::Variable("f".into()),
+                    Variable::new("f"),
                     vec![Expression::Number(42.0)],
                 ),
                 types::Value::Number,
@@ -124,7 +124,7 @@ mod test {
             ValueDefinition::new(
                 "x",
                 Application::new(
-                    Expression::Variable("f".into()),
+                    Variable::new("f"),
                     vec![Expression::Number(42.0), Expression::Number(42.0)],
                 ),
                 types::Value::Number,
@@ -139,7 +139,7 @@ mod test {
     fn fail_to_check_types_because_of_missing_variables() {
         let module = Module::new(vec![ValueDefinition::new(
             "x",
-            Expression::Variable("y".into()),
+            Variable::new("y"),
             types::Value::Number,
         )
         .into()]);
@@ -156,11 +156,11 @@ mod test {
                     ValueDefinition::new("y", 42.0, types::Value::Number),
                     ValueDefinition::new(
                         "z",
-                        Expression::Variable("y".into()),
+                        Variable::new("y"),
                         types::Value::Number,
                     ),
                 ],
-                Expression::Variable("z".into()),
+                Variable::new("z"),
             ),
             types::Value::Number,
         )
@@ -185,10 +185,10 @@ mod test {
                 LetValues::new(
                     vec![ValueDefinition::new(
                         "y",
-                        Expression::Variable("f".into()),
+                        Variable::new("f"),
                         types::Value::Number,
                     )],
-                    Expression::Variable("y".into()),
+                    Variable::new("y"),
                 ),
                 types::Value::Number,
             )

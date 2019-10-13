@@ -2,6 +2,7 @@ use super::application::Application;
 use super::let_functions::LetFunctions;
 use super::let_values::LetValues;
 use super::operation::Operation;
+use super::variable::Variable;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
@@ -10,7 +11,16 @@ pub enum Expression {
     LetValues(LetValues),
     Number(f64),
     Operation(Operation),
-    Variable(String),
+    Variable(Variable),
+}
+
+impl Expression {
+    pub fn to_variable(&self) -> Option<&Variable> {
+        match self {
+            Self::Variable(variable) => Some(variable),
+            _ => None,
+        }
+    }
 }
 
 impl From<f64> for Expression {
@@ -40,5 +50,11 @@ impl From<LetValues> for Expression {
 impl From<Operation> for Expression {
     fn from(operation: Operation) -> Expression {
         Expression::Operation(operation)
+    }
+}
+
+impl From<Variable> for Expression {
+    fn from(variable: Variable) -> Expression {
+        Expression::Variable(variable)
     }
 }
