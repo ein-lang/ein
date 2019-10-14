@@ -61,4 +61,13 @@ impl ValueDefinition {
             self.source_information.clone(),
         )
     }
+
+    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.body.convert_expressions(convert),
+            self.type_.clone(),
+            self.source_information.clone(),
+        )
+    }
 }

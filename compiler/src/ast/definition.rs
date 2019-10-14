@@ -1,3 +1,4 @@
+use super::expression::Expression;
 use super::function_definition::*;
 use super::value_definition::*;
 use crate::types::Type;
@@ -32,6 +33,17 @@ impl Definition {
         };
 
         convert(&definition)
+    }
+
+    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+        match self {
+            Self::FunctionDefinition(function_definition) => {
+                function_definition.convert_expressions(convert).into()
+            }
+            Self::ValueDefinition(value_definition) => {
+                value_definition.convert_expressions(convert).into()
+            }
+        }
     }
 }
 

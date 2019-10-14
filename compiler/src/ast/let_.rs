@@ -45,4 +45,14 @@ impl Let {
             self.expression.convert_definitions(convert),
         )
     }
+
+    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+        Self::new(
+            self.definitions
+                .iter()
+                .map(|definition| definition.convert_expressions(convert))
+                .collect(),
+            self.expression.convert_expressions(convert),
+        )
+    }
 }

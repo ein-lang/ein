@@ -52,4 +52,12 @@ impl Application {
             self.source_information.clone(),
         )
     }
+
+    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+        Self::new(
+            self.function.convert_expressions(convert),
+            self.argument.convert_expressions(convert),
+            self.source_information.clone(),
+        )
+    }
 }

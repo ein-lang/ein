@@ -38,6 +38,16 @@ impl Expression {
             _ => self.clone(),
         }
     }
+
+    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+        let expression = match self {
+            Self::Application(application) => application.convert_expressions(convert).into(),
+            Self::Let(let_) => let_.convert_expressions(convert).into(),
+            _ => self.clone(),
+        };
+
+        convert(&expression)
+    }
 }
 
 impl From<Application> for Expression {

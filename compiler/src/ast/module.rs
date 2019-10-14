@@ -1,4 +1,5 @@
 use super::definition::Definition;
+use super::expression::Expression;
 use crate::types::Type;
 use std::collections::HashMap;
 
@@ -30,6 +31,15 @@ impl Module {
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_definitions(convert))
+                .collect(),
+        )
+    }
+
+    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+        Self::new(
+            self.definitions
+                .iter()
+                .map(|definition| definition.convert_expressions(convert))
                 .collect(),
         )
     }
