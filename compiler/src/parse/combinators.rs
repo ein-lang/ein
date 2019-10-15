@@ -6,17 +6,49 @@ use crate::types::{self, Type};
 use nom::{
     branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
 };
+use std::collections::HashSet;
 use std::rc::Rc;
 use std::str::FromStr;
 
-const KEYWORDS: &[&str] = &["in", "let"];
+const KEYWORDS: &[&str] = &["export", "in", "let"];
 
 pub fn module(input: Input) -> IResult<Input, Module> {
     terminated(
-        many0(terminated(typed_definition, line_break)),
+        tuple((
+            opt(terminated(export, line_break)),
+            many0(terminated(typed_definition, line_break)),
+        )),
         tuple((convert_combinator(multispace0), eof)),
     )(input)
-    .map(|(input, definitions)| (input, Module::new(definitions)))
+    .map(|(input, (exported_names, definitions))| {
+        (
+            input,
+            Module::new(
+                definitions,
+                exported_names.unwrap_or_else(|| Default::default()),
+            ),
+        )
+    })
+}
+
+fn export(input: Input) -> IResult<Input, HashSet<String>> {
+    map(
+        delimited(
+            tuple((keyword("export"), left_brace)),
+            terminated(
+                tuple((identifier, many0(preceded(comma, identifier)))),
+                opt(comma),
+            ),
+            right_brace,
+        ),
+        |(identifier, identifiers)| {
+            vec![identifier]
+                .iter()
+                .chain(identifiers.iter())
+                .cloned()
+                .collect()
+        },
+    )(input)
 }
 
 fn typed_definition(input: Input) -> IResult<Input, Definition> {
@@ -321,6 +353,18 @@ fn right_parenthesis(input: Input) -> IResult<Input, ()> {
     keyword(")")(input)
 }
 
+fn left_brace(input: Input) -> IResult<Input, ()> {
+    keyword("{")(input)
+}
+
+fn right_brace(input: Input) -> IResult<Input, ()> {
+    keyword("}")(input)
+}
+
+fn comma(input: Input) -> IResult<Input, ()> {
+    keyword(",")(input)
+}
+
 fn number_type(input: Input) -> IResult<Input, Type> {
     map(
         tuple((source_information, keyword("Number"))),
@@ -459,8 +503,9 @@ fn convert_error<'a>(
 #[cfg(test)]
 mod test {
     use super::{
-        application, blank, expression, function_definition, identifier, keyword, let_, line_break,
-        module, number_literal, number_type, source_information, type_, value_definition, Input,
+        application, blank, export, expression, function_definition, identifier, keyword, let_,
+        line_break, module, number_literal, number_type, source_information, type_,
+        value_definition, Input,
     };
     use crate::ast::*;
     use crate::debug::*;
@@ -857,21 +902,30 @@ mod test {
 
         assert_eq!(
             module(input.clone()),
-            Ok((input.set("", 0, Location::new(1, 1)), Module::new(vec![])))
+            Ok((
+                input.set("", 0, Location::new(1, 1)),
+                Module::without_exported_names(vec![])
+            ))
         );
 
         let input = Input::new(" ", "");
 
         assert_eq!(
             module(input.clone()),
-            Ok((input.set("", 0, Location::new(1, 2)), Module::new(vec![])))
+            Ok((
+                input.set("", 0, Location::new(1, 2)),
+                Module::without_exported_names(vec![])
+            ))
         );
 
         let input = Input::new("\n", "");
 
         assert_eq!(
             module(input.clone()),
-            Ok((input.set("", 0, Location::new(2, 1)), Module::new(vec![])))
+            Ok((
+                input.set("", 0, Location::new(2, 1)),
+                Module::without_exported_names(vec![])
+            ))
         );
 
         let input = Input::new("x", "");
@@ -1280,6 +1334,52 @@ mod test {
                 source_information(Input::new(" x", "file")).unwrap().1
             ),
             "file:1:2:\t x\n         \t ^"
+        );
+    }
+
+    #[test]
+    fn parse_export() {
+        let input = Input::new("export {}", "");
+
+        assert_eq!(
+            export(input.clone()),
+            Err(nom::Err::Error((
+                input.set("}", 0, Location::new(1, 9)),
+                ErrorKind::Alpha
+            )))
+        );
+
+        let input = Input::new("export { name }", "");
+
+        assert_eq!(
+            export(input.clone()),
+            Ok((
+                input.set("", 0, Location::new(1, 16)),
+                vec!["name".into()].iter().cloned().collect()
+            ))
+        );
+
+        let input = Input::new("export { name, }", "");
+
+        assert_eq!(
+            export(input.clone()),
+            Ok((
+                input.set("", 0, Location::new(1, 17)),
+                vec!["name".into()].iter().cloned().collect()
+            ))
+        );
+
+        let input = Input::new("export { name, anotherName }", "");
+
+        assert_eq!(
+            export(input.clone()),
+            Ok((
+                input.set("", 0, Location::new(1, 29)),
+                vec!["name".into(), "anotherName".into()]
+                    .iter()
+                    .cloned()
+                    .collect()
+            ))
         );
     }
 }

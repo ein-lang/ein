@@ -20,12 +20,15 @@ mod test {
 
     #[test]
     fn infer_types_with_empty_modules() {
-        assert_eq!(infer_types(&Module::new(vec![])), Ok(Module::new(vec![])));
+        assert_eq!(
+            infer_types(&Module::without_exported_names(vec![])),
+            Ok(Module::without_exported_names(vec![]))
+        );
     }
 
     #[test]
     fn infer_types_of_variables() {
-        let module = Module::new(vec![ValueDefinition::new(
+        let module = Module::without_exported_names(vec![ValueDefinition::new(
             "x",
             Number::new(42.0, SourceInformation::dummy()),
             types::Number::new(SourceInformation::dummy()),
@@ -37,7 +40,7 @@ mod test {
 
     #[test]
     fn fail_to_infer_types_of_variables() {
-        let module = Module::new(vec![ValueDefinition::new(
+        let module = Module::without_exported_names(vec![ValueDefinition::new(
             "x",
             Number::new(42.0, SourceInformation::dummy()),
             types::Function::new(
@@ -60,7 +63,7 @@ mod test {
 
     #[test]
     fn infer_types_of_functions() {
-        let module = Module::new(vec![FunctionDefinition::new(
+        let module = Module::without_exported_names(vec![FunctionDefinition::new(
             "f",
             vec!["x".into()],
             Number::new(42.0, SourceInformation::dummy()),
@@ -78,7 +81,7 @@ mod test {
 
     #[test]
     fn fail_to_infer_types_of_functions() {
-        let module = Module::new(vec![FunctionDefinition::new(
+        let module = Module::without_exported_names(vec![FunctionDefinition::new(
             "f",
             vec!["x".into()],
             Number::new(42.0, SourceInformation::dummy()),
@@ -106,7 +109,7 @@ mod test {
 
     #[test]
     fn infer_types_of_applications() {
-        let module = Module::new(vec![
+        let module = Module::without_exported_names(vec![
             FunctionDefinition::new(
                 "f",
                 vec!["x".into()],
@@ -137,7 +140,7 @@ mod test {
 
     #[test]
     fn fail_to_infer_types_of_applications() {
-        let module = Module::new(vec![
+        let module = Module::without_exported_names(vec![
             FunctionDefinition::new(
                 "f",
                 vec!["x".into()],
@@ -178,7 +181,7 @@ mod test {
 
     #[test]
     fn infer_types_of_let_values() {
-        let module = Module::new(vec![ValueDefinition::new(
+        let module = Module::without_exported_names(vec![ValueDefinition::new(
             "x",
             Let::new(
                 vec![ValueDefinition::new(
@@ -200,7 +203,7 @@ mod test {
 
     #[test]
     fn fail_to_infer_types_of_let_values() {
-        let module = Module::new(vec![ValueDefinition::new(
+        let module = Module::without_exported_names(vec![ValueDefinition::new(
             "x",
             Let::new(
                 vec![ValueDefinition::new(
@@ -232,7 +235,7 @@ mod test {
 
     #[test]
     fn infer_types_of_let_functions() {
-        let module = Module::new(vec![ValueDefinition::new(
+        let module = Module::without_exported_names(vec![ValueDefinition::new(
             "x",
             Let::new(
                 vec![FunctionDefinition::new(
@@ -263,7 +266,7 @@ mod test {
 
     #[test]
     fn fail_to_infer_types_of_let_functions() {
-        let module = Module::new(vec![ValueDefinition::new(
+        let module = Module::without_exported_names(vec![ValueDefinition::new(
             "x",
             Let::new(
                 vec![FunctionDefinition::new(
@@ -305,7 +308,7 @@ mod test {
     #[test]
     fn infer_types_of_let_values_with_type_variables() {
         assert_eq!(
-            infer_types(&Module::new(vec![ValueDefinition::new(
+            infer_types(&Module::without_exported_names(vec![ValueDefinition::new(
                 "x",
                 Let::new(
                     vec![ValueDefinition::new(
@@ -321,7 +324,7 @@ mod test {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Ok(Module::new(vec![ValueDefinition::new(
+            Ok(Module::without_exported_names(vec![ValueDefinition::new(
                 "x",
                 Let::new(
                     vec![ValueDefinition::new(
@@ -342,7 +345,7 @@ mod test {
 
     #[test]
     fn fail_to_infer_types_with_missing_variables() {
-        let module = Module::new(vec![ValueDefinition::new(
+        let module = Module::without_exported_names(vec![ValueDefinition::new(
             "x",
             Variable::new("y", SourceInformation::dummy()),
             types::Number::new(SourceInformation::dummy()),

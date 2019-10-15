@@ -5,6 +5,7 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+clap = "2"
 core = { path = "../core" }
 indoc = "0.3"
 nom = "5"

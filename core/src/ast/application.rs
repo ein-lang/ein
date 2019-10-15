@@ -1,5 +1,6 @@
 use super::expression::Expression;
 use super::variable::Variable;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Application {
@@ -21,5 +22,15 @@ impl Application {
 
     pub fn arguments(&self) -> &[Expression] {
         &self.arguments
+    }
+
+    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+        Self::new(
+            self.function.rename_variables(names),
+            self.arguments
+                .iter()
+                .map(|argument| argument.rename_variables(names))
+                .collect(),
+        )
     }
 }

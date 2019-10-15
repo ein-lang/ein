@@ -29,27 +29,29 @@ mod test {
     fn parse_module() {
         assert_eq!(
             parse("foo : Number -> Number -> Number\nfoo x y = 42", ""),
-            Ok(Module::new(vec![FunctionDefinition::new(
-                "foo",
-                vec!["x".into(), "y".into()],
-                Number::new(42.0, SourceInformation::dummy()),
-                types::Function::new(
-                    types::Number::new(SourceInformation::dummy()),
+            Ok(Module::without_exported_names(vec![
+                FunctionDefinition::new(
+                    "foo",
+                    vec!["x".into(), "y".into()],
+                    Number::new(42.0, SourceInformation::dummy()),
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
-                        types::Number::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
                         SourceInformation::dummy()
                     ),
                     SourceInformation::dummy()
-                ),
-                SourceInformation::dummy()
-            )
-            .into()]))
+                )
+                .into()
+            ]))
         );
 
         assert_eq!(
             parse("x : Number\nx = (let x = 42\nin x)", ""),
-            Ok(Module::new(vec![ValueDefinition::new(
+            Ok(Module::without_exported_names(vec![ValueDefinition::new(
                 "x",
                 Let::new(
                     vec![ValueDefinition::new(
@@ -85,45 +87,47 @@ mod test {
                 ),
                 ""
             ),
-            Ok(Module::new(vec![FunctionDefinition::new(
-                "main",
-                vec!["x".into(),],
-                Let::new(
-                    vec![
-                        FunctionDefinition::new(
-                            "f",
-                            vec!["x".into(),],
-                            Variable::new("x", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Variable::new(SourceInformation::dummy()),
-                                types::Variable::new(SourceInformation::dummy()),
-                                SourceInformation::dummy()
-                            ),
-                            SourceInformation::dummy()
-                        )
-                        .into(),
-                        ValueDefinition::new(
-                            "y",
-                            Application::new(
-                                Variable::new("f", SourceInformation::dummy()),
+            Ok(Module::without_exported_names(vec![
+                FunctionDefinition::new(
+                    "main",
+                    vec!["x".into(),],
+                    Let::new(
+                        vec![
+                            FunctionDefinition::new(
+                                "f",
+                                vec!["x".into(),],
                                 Variable::new("x", SourceInformation::dummy()),
+                                types::Function::new(
+                                    types::Variable::new(SourceInformation::dummy()),
+                                    types::Variable::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy()
+                                ),
                                 SourceInformation::dummy()
-                            ),
-                            types::Variable::new(SourceInformation::dummy()),
-                            SourceInformation::dummy()
-                        )
-                        .into()
-                    ],
-                    Variable::new("y", SourceInformation::dummy())
-                ),
-                types::Function::new(
-                    types::Number::new(SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy()),
+                            )
+                            .into(),
+                            ValueDefinition::new(
+                                "y",
+                                Application::new(
+                                    Variable::new("f", SourceInformation::dummy()),
+                                    Variable::new("x", SourceInformation::dummy()),
+                                    SourceInformation::dummy()
+                                ),
+                                types::Variable::new(SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            )
+                            .into()
+                        ],
+                        Variable::new("y", SourceInformation::dummy())
+                    ),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
                     SourceInformation::dummy()
-                ),
-                SourceInformation::dummy()
-            )
-            .into()]))
+                )
+                .into()
+            ]))
         );
     }
 }

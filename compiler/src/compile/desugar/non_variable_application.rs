@@ -42,32 +42,34 @@ mod test {
     #[test]
     fn convert_non_variable_applications() {
         assert_eq!(
-            desugar_non_variable_applications(&Module::new(vec![ValueDefinition::new(
-                "x",
-                Application::new(
-                    Let::new(
-                        vec![FunctionDefinition::new(
-                            "f",
-                            vec!["y".into()],
-                            Variable::new("y", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy()
-                            ),
-                            SourceInformation::dummy(),
-                        )
-                        .into()],
-                        Variable::new("f", SourceInformation::dummy())
+            desugar_non_variable_applications(&Module::without_exported_names(vec![
+                ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Let::new(
+                            vec![FunctionDefinition::new(
+                                "f",
+                                vec!["y".into()],
+                                Variable::new("y", SourceInformation::dummy()),
+                                types::Function::new(
+                                    types::Number::new(SourceInformation::dummy()),
+                                    types::Number::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy()
+                                ),
+                                SourceInformation::dummy(),
+                            )
+                            .into()],
+                            Variable::new("f", SourceInformation::dummy())
+                        ),
+                        Variable::new("z", SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     ),
-                    Variable::new("z", SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()])),
-            Module::new(vec![ValueDefinition::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])),
+            Module::without_exported_names(vec![ValueDefinition::new(
                 "x",
                 Let::new(
                     vec![ValueDefinition::new(
@@ -107,18 +109,20 @@ mod test {
     #[test]
     fn do_no_convert_variable_applications() {
         assert_eq!(
-            desugar_non_variable_applications(&Module::new(vec![ValueDefinition::new(
-                "x",
-                Application::new(
-                    Variable::new("f", SourceInformation::dummy()),
-                    Variable::new("y", SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()])),
-            Module::new(vec![ValueDefinition::new(
+            desugar_non_variable_applications(&Module::without_exported_names(vec![
+                ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Variable::new("y", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])),
+            Module::without_exported_names(vec![ValueDefinition::new(
                 "x",
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),

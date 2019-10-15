@@ -3,6 +3,7 @@ use super::let_functions::LetFunctions;
 use super::let_values::LetValues;
 use super::operation::Operation;
 use super::variable::Variable;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
@@ -19,6 +20,16 @@ impl Expression {
         match self {
             Self::Variable(variable) => Some(variable),
             _ => None,
+        }
+    }
+
+    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+        match self {
+            Self::Application(application) => application.rename_variables(names).into(),
+            Self::LetFunctions(let_functions) => let_functions.rename_variables(names).into(),
+            Self::LetValues(let_values) => let_values.rename_variables(names).into(),
+            Self::Variable(variable) => variable.rename_variables(names).into(),
+            _ => self.clone(),
         }
     }
 }

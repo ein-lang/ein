@@ -1,6 +1,7 @@
 use super::expression::Expression;
 use super::Argument;
 use crate::types;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionDefinition {
@@ -60,5 +61,27 @@ impl FunctionDefinition {
 
     pub fn type_(&self) -> &types::Function {
         &self.type_
+    }
+
+    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+        let mut names = names.clone();
+
+        names.remove(self.name.as_str());
+
+        for free_variable in &self.environment {
+            names.remove(free_variable.name());
+        }
+
+        for argument in &self.arguments {
+            names.remove(argument.name());
+        }
+
+        Self::new(
+            self.name.clone(),
+            self.environment.clone(),
+            self.arguments.clone(),
+            self.body.rename_variables(&names),
+            self.result_type.clone(),
+        )
     }
 }

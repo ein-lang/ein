@@ -1,5 +1,6 @@
 use super::expression::Expression;
 use crate::types;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ValueDefinition {
@@ -27,5 +28,13 @@ impl ValueDefinition {
 
     pub fn type_(&self) -> &types::Value {
         &self.type_
+    }
+
+    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.body.rename_variables(names),
+            self.type_.clone(),
+        )
     }
 }
