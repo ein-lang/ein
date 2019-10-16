@@ -10,22 +10,24 @@ use std::collections::HashSet;
 use std::rc::Rc;
 use std::str::FromStr;
 
-const KEYWORDS: &[&str] = &["export", "in", "let"];
+const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
 
 pub fn module(input: Input) -> IResult<Input, Module> {
     terminated(
         tuple((
             opt(terminated(export, line_break)),
+            many0(terminated(import, line_break)),
             many0(terminated(typed_definition, line_break)),
         )),
         tuple((convert_combinator(multispace0), eof)),
     )(input)
-    .map(|(input, (exported_names, definitions))| {
+    .map(|(input, (exported_names, imports, definitions))| {
         (
             input,
             Module::new(
-                definitions,
                 exported_names.unwrap_or_else(|| Default::default()),
+                imports,
+                definitions,
             ),
         )
     })
@@ -47,6 +49,33 @@ fn export(input: Input) -> IResult<Input, HashSet<String>> {
                 .chain(identifiers.iter())
                 .cloned()
                 .collect()
+        },
+    )(input)
+}
+
+fn import(input: Input) -> IResult<Input, Import> {
+    map(preceded(keyword("import"), module_path), |module_path| {
+        Import::new(module_path)
+    })(input)
+}
+
+fn module_path(input: Input) -> IResult<Input, ModulePath> {
+    map(
+        tuple((
+            opt(keyword(".")),
+            identifier,
+            many0(preceded(tag("."), identifier)),
+        )),
+        |(period, identifier, identifiers)| {
+            (match period {
+                Some(_) => ModulePath::Internal,
+                None => ModulePath::External,
+            })(
+                vec![identifier]
+                    .into_iter()
+                    .chain(identifiers.into_iter())
+                    .collect(),
+            )
         },
     )(input)
 }
@@ -503,8 +532,8 @@ fn convert_error<'a>(
 #[cfg(test)]
 mod test {
     use super::{
-        application, blank, export, expression, function_definition, identifier, keyword, let_,
-        line_break, module, number_literal, number_type, source_information, type_,
+        application, blank, export, expression, function_definition, identifier, import, keyword,
+        let_, line_break, module, number_literal, number_type, source_information, type_,
         value_definition, Input,
     };
     use crate::ast::*;
@@ -1379,6 +1408,29 @@ mod test {
                     .iter()
                     .cloned()
                     .collect()
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_import() {
+        let input = Input::new("import external", "");
+
+        assert_eq!(
+            import(input.clone()),
+            Ok((
+                input.set("", 0, Location::new(1, 16)),
+                Import::new(ModulePath::External(vec!["external".into()]))
+            ))
+        );
+
+        let input = Input::new("import .internal", "");
+
+        assert_eq!(
+            import(input.clone()),
+            Ok((
+                input.set("", 0, Location::new(1, 17)),
+                Import::new(ModulePath::Internal(vec!["internal".into()]))
             ))
         );
     }
