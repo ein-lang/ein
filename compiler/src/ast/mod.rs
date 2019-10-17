@@ -1,5 +1,6 @@
 mod application;
 mod definition;
+mod export;
 mod expression;
 mod function_definition;
 mod import;
@@ -14,6 +15,7 @@ mod variable;
 
 pub use application::*;
 pub use definition::*;
+pub use export::*;
 pub use expression::*;
 pub use function_definition::*;
 pub use import::*;

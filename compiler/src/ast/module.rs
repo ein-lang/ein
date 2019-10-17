@@ -1,25 +1,22 @@
 use super::definition::Definition;
+use super::export::Export;
 use super::expression::Expression;
 use super::import::Import;
 use crate::types::Type;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
     definitions: Vec<Definition>,
-    exported_names: HashSet<String>,
+    export: Export,
     imports: Vec<Import>,
 }
 
 impl Module {
-    pub fn new(
-        exported_names: HashSet<String>,
-        imports: Vec<Import>,
-        definitions: Vec<Definition>,
-    ) -> Self {
+    pub fn new(export: Export, imports: Vec<Import>, definitions: Vec<Definition>) -> Self {
         Self {
             definitions,
-            exported_names,
+            export,
             imports,
         }
     }
@@ -28,7 +25,7 @@ impl Module {
     pub fn without_exported_names(definitions: Vec<Definition>) -> Self {
         Self {
             definitions,
-            exported_names: Default::default(),
+            export: Export::new(Default::default()),
             imports: vec![],
         }
     }
@@ -37,13 +34,13 @@ impl Module {
         &self.definitions
     }
 
-    pub fn exported_names(&self) -> &HashSet<String> {
-        &self.exported_names
+    pub fn export(&self) -> &Export {
+        &self.export
     }
 
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         Self::new(
-            self.exported_names.clone(),
+            self.export.clone(),
             self.imports.clone(),
             self.definitions
                 .iter()
@@ -54,7 +51,7 @@ impl Module {
 
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         Self::new(
-            self.exported_names.clone(),
+            self.export.clone(),
             self.imports.clone(),
             self.definitions
                 .iter()
@@ -65,7 +62,7 @@ impl Module {
 
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         Self::new(
-            self.exported_names.clone(),
+            self.export.clone(),
             self.imports.clone(),
             self.definitions
                 .iter()

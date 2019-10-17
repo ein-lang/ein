@@ -9,6 +9,13 @@ pub enum Definition {
 }
 
 impl Definition {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::FunctionDefinition(function_definition) => function_definition.name(),
+            Self::ValueDefinition(value_definition) => value_definition.name(),
+        }
+    }
+
     pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
         match self {
             Self::FunctionDefinition(function_definition) => {

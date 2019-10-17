@@ -11,7 +11,7 @@ use crate::ast;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use module_compiler::ModuleCompiler;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::io::Write;
 use type_inference::infer_types;
 
@@ -26,28 +26,23 @@ pub fn compile(
                 &desugar_without_types(module),
             )?))?,
             module_name,
-            module.exported_names(),
         ),
     )?)?;
 
     Ok(())
 }
 
-fn rename_top_level_variables(
-    module: &core::ast::Module,
-    module_name: &str,
-    exported_names: &HashSet<String>,
-) -> core::ast::Module {
+fn rename_top_level_variables(module: &core::ast::Module, module_name: &str) -> core::ast::Module {
     let mut names = HashMap::new();
 
-    names.insert("main", "sloth_main".into());
-
-    for exported_name in exported_names {
+    for definition in module.definitions() {
         names.insert(
-            exported_name.as_str(),
-            format!("{}.{}", module_name, exported_name),
+            definition.name(),
+            format!("{}.{}", module_name, definition.name()),
         );
     }
+
+    names.insert("main", "sloth_main".into());
 
     core::ast::Module::new(
         module

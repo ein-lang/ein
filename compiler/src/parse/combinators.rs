@@ -6,7 +6,6 @@ use crate::types::{self, Type};
 use nom::{
     branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
 };
-use std::collections::HashSet;
 use std::rc::Rc;
 use std::str::FromStr;
 
@@ -21,11 +20,11 @@ pub fn module(input: Input) -> IResult<Input, Module> {
         )),
         tuple((convert_combinator(multispace0), eof)),
     )(input)
-    .map(|(input, (exported_names, imports, definitions))| {
+    .map(|(input, (export, imports, definitions))| {
         (
             input,
             Module::new(
-                exported_names.unwrap_or_else(|| Default::default()),
+                export.unwrap_or_else(|| Export::new(Default::default())),
                 imports,
                 definitions,
             ),
@@ -33,7 +32,7 @@ pub fn module(input: Input) -> IResult<Input, Module> {
     })
 }
 
-fn export(input: Input) -> IResult<Input, HashSet<String>> {
+fn export(input: Input) -> IResult<Input, Export> {
     map(
         delimited(
             tuple((keyword("export"), left_brace)),
@@ -44,11 +43,12 @@ fn export(input: Input) -> IResult<Input, HashSet<String>> {
             right_brace,
         ),
         |(identifier, identifiers)| {
-            vec![identifier]
-                .iter()
-                .chain(identifiers.iter())
-                .cloned()
-                .collect()
+            Export::new(
+                vec![identifier]
+                    .into_iter()
+                    .chain(identifiers.into_iter())
+                    .collect(),
+            )
         },
     )(input)
 }
@@ -1384,7 +1384,7 @@ mod test {
             export(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 16)),
-                vec!["name".into()].iter().cloned().collect()
+                Export::new(vec!["name".into()].iter().cloned().collect())
             ))
         );
 
@@ -1394,7 +1394,7 @@ mod test {
             export(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 17)),
-                vec!["name".into()].iter().cloned().collect()
+                Export::new(vec!["name".into()].iter().cloned().collect())
             ))
         );
 
@@ -1404,10 +1404,12 @@ mod test {
             export(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 29)),
-                vec!["name".into(), "anotherName".into()]
-                    .iter()
-                    .cloned()
-                    .collect()
+                Export::new(
+                    vec!["name".into(), "anotherName".into()]
+                        .iter()
+                        .cloned()
+                        .collect()
+                )
             ))
         );
     }
