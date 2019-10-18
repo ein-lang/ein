@@ -11,12 +11,11 @@ pub use error::CompileError;
 use module_compiler::ModuleCompiler;
 use type_compiler::TypeCompiler;
 
-pub fn compile(ast_module: &ast::Module, bit_code_path: &str) -> Result<(), CompileError> {
+pub fn compile(ast_module: &ast::Module) -> Result<&'static [u8], CompileError> {
     verify(&ast_module)?;
 
     let module = llvm::Module::new("main");
     ModuleCompiler::new(module, ast_module, &TypeCompiler::new()).compile()?;
-    llvm::write_bitcode_to_file(module, bit_code_path);
 
-    Ok(())
+    Ok(llvm::write_bitcode_to_memory_buffer(module))
 }
