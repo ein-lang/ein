@@ -3,15 +3,16 @@ mod error;
 mod expression_compiler;
 mod free_variable_finder;
 mod module_compiler;
+mod module_interface_compiler;
 mod name_generator;
 mod type_compiler;
 mod type_inference;
 
 use crate::ast;
-use crate::types::Type;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use module_compiler::ModuleCompiler;
+use module_interface_compiler::ModuleInterfaceCompiler;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
@@ -30,8 +31,9 @@ pub fn compile(
         module_name,
     ))?)?;
 
-    File::create(Path::new(destination).with_extension("json"))?
-        .write_all(serde_json::to_string(&compile_types(&module))?.as_bytes())?;
+    File::create(Path::new(destination).with_extension("json"))?.write_all(
+        serde_json::to_string(&ModuleInterfaceCompiler::new().compile(&module))?.as_bytes(),
+    )?;
 
     Ok(())
 }
@@ -81,13 +83,4 @@ fn rename_top_level_variables(module: &core::ast::Module, module_name: &str) -> 
             })
             .collect(),
     )
-}
-
-fn compile_types(module: &ast::Module) -> HashMap<String, Type> {
-    module
-        .definitions()
-        .iter()
-        .filter(|definition| module.export().names().contains(definition.name()))
-        .map(|definition| (definition.name().into(), definition.type_().clone()))
-        .collect()
 }
