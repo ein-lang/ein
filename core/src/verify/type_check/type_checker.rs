@@ -14,6 +14,10 @@ impl TypeChecker {
     pub fn check(&mut self, module: &Module) -> Result<(), TypeCheckError> {
         let mut variables = HashMap::<&str, Type>::new();
 
+        for declaration in module.declarations() {
+            variables.insert(declaration.name(), declaration.type_().clone());
+        }
+
         for definition in module.definitions() {
             match definition {
                 Definition::FunctionDefinition(function_definition) => {

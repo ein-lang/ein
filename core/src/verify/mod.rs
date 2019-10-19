@@ -34,14 +34,17 @@ mod test {
     #[test]
     fn check_no_global_free_variables() {
         assert_eq!(
-            check_global_free_variables(&Module::new(vec![FunctionDefinition::new(
-                "f",
+            check_global_free_variables(&Module::new(
                 vec![],
-                vec![Argument::new("x", types::Value::Number)],
-                42.0,
-                types::Value::Number,
-            )
-            .into()])),
+                vec![FunctionDefinition::new(
+                    "f",
+                    vec![],
+                    vec![Argument::new("x", types::Value::Number)],
+                    42.0,
+                    types::Value::Number,
+                )
+                .into()]
+            )),
             Ok(())
         );
     }
@@ -49,14 +52,17 @@ mod test {
     #[test]
     fn fail_to_check_global_free_variables() {
         assert_eq!(
-            check_global_free_variables(&Module::new(vec![FunctionDefinition::new(
-                "f",
-                vec![Argument::new("y", types::Value::Number)],
-                vec![Argument::new("x", types::Value::Number)],
-                42.0,
-                types::Value::Number,
-            )
-            .into()])),
+            check_global_free_variables(&Module::new(
+                vec![],
+                vec![FunctionDefinition::new(
+                    "f",
+                    vec![Argument::new("y", types::Value::Number)],
+                    vec![Argument::new("x", types::Value::Number)],
+                    42.0,
+                    types::Value::Number,
+                )
+                .into()]
+            )),
             Err(VerificationError::InvalidFreeVariable)
         );
     }

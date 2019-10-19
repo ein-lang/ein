@@ -49,6 +49,7 @@ fn rename_top_level_variables(module: &core::ast::Module, module_name: &str) -> 
     names.insert("main", "sloth_main".into());
 
     core::ast::Module::new(
+        module.declarations().iter().cloned().collect(),
         module
             .definitions()
             .iter()

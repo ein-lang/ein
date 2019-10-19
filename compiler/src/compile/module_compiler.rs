@@ -17,6 +17,7 @@ impl ModuleCompiler {
 
     pub fn compile(&self, module: &ast::Module) -> Result<core::ast::Module, CompileError> {
         Ok(core::ast::Module::new(
+            vec![],
             module
                 .definitions()
                 .iter()
