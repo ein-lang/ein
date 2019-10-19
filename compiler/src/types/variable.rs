@@ -1,10 +1,11 @@
 use crate::debug::SourceInformation;
+use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 static GLOBAL_ID: AtomicUsize = AtomicUsize::new(0);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Variable {
     id: usize,
     source_information: Rc<SourceInformation>,

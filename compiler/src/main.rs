@@ -2,6 +2,8 @@ extern crate clap;
 extern crate core;
 extern crate indoc;
 extern crate nom;
+extern crate serde;
+extern crate serde_json;
 
 mod ast;
 mod compile;

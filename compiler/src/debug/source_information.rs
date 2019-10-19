@@ -1,7 +1,8 @@
 use super::location::Location;
+use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SourceInformation {
     filename: String,
     location: Location,

@@ -5,11 +5,12 @@ mod variable;
 use crate::debug::SourceInformation;
 pub use function::*;
 pub use number::*;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
 pub use variable::*;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub enum Type {
     Function(Function),
     Number(Number),

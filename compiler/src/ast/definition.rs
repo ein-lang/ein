@@ -11,12 +11,26 @@ pub enum Definition {
 }
 
 impl Definition {
+    pub fn name(&self) -> &str {
+        match self {
+            Self::FunctionDefinition(function_definition) => function_definition.name(),
+            Self::ValueDefinition(value_definition) => value_definition.name(),
+        }
+    }
+
+    pub fn type_(&self) -> &Type {
+        match self {
+            Self::FunctionDefinition(function_definition) => function_definition.type_(),
+            Self::ValueDefinition(value_definition) => value_definition.type_(),
+        }
+    }
+
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
-            Definition::FunctionDefinition(function_definition) => function_definition
+            Self::FunctionDefinition(function_definition) => function_definition
                 .substitute_type_variables(substitutions)
                 .into(),
-            Definition::ValueDefinition(value_definition) => value_definition
+            Self::ValueDefinition(value_definition) => value_definition
                 .substitute_type_variables(substitutions)
                 .into(),
         }

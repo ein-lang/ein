@@ -1,9 +1,10 @@
 use super::Type;
 use crate::debug::SourceInformation;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Function {
     argument: Rc<Type>,
     result: Rc<Type>,
