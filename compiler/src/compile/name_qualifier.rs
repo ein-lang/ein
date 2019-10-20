@@ -6,14 +6,16 @@ pub struct NameQualifier {
     names: HashMap<String, String>,
 }
 
+// NameQualifier is not meant to qualify names in the original modules but
+// names in their products on compilation.
 impl NameQualifier {
-    pub fn new(module_name: &str, module: &ast::Module) -> Self {
+    pub fn new(module: &ast::Module) -> Self {
         let mut names = HashMap::new();
 
         for definition in module.definitions() {
             names.insert(
                 definition.name().into(),
-                format!("{}.{}", module_name, definition.name()),
+                format!("{}.{}", module.name(), definition.name()),
             );
         }
 

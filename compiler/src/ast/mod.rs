@@ -10,6 +10,7 @@ mod module_interface;
 mod number;
 mod operation;
 mod operator;
+mod unresolved_module;
 mod value_definition;
 mod variable;
 
@@ -25,5 +26,6 @@ pub use module_interface::*;
 pub use number::*;
 pub use operation::*;
 pub use operator::*;
+pub use unresolved_module::*;
 pub use value_definition::*;
 pub use variable::*;

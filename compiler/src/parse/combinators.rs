@@ -12,7 +12,7 @@ use std::str::FromStr;
 
 const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
 
-pub fn module(input: Input) -> IResult<Input, Module> {
+pub fn module(input: Input) -> IResult<Input, UnresolvedModule> {
     terminated(
         tuple((
             opt(terminated(export, line_break)),
@@ -24,7 +24,7 @@ pub fn module(input: Input) -> IResult<Input, Module> {
     .map(|(input, (export, imports, definitions))| {
         (
             input,
-            Module::new(
+            UnresolvedModule::new(
                 export.unwrap_or_else(|| Export::new(Default::default())),
                 imports,
                 definitions,
@@ -935,7 +935,7 @@ mod test {
             module(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 1)),
-                Module::without_exported_names(vec![])
+                UnresolvedModule::from_definitions(vec![])
             ))
         );
 
@@ -945,7 +945,7 @@ mod test {
             module(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 2)),
-                Module::without_exported_names(vec![])
+                UnresolvedModule::from_definitions(vec![])
             ))
         );
 
@@ -955,7 +955,7 @@ mod test {
             module(input.clone()),
             Ok((
                 input.set("", 0, Location::new(2, 1)),
-                Module::without_exported_names(vec![])
+                UnresolvedModule::from_definitions(vec![])
             ))
         );
 

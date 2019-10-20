@@ -126,7 +126,7 @@ mod test {
     #[test]
     fn complement_an_omitted_argument_of_value_definition() {
         assert_eq!(
-            desugar_argument_omission(&Module::without_exported_names(vec![ValueDefinition::new(
+            desugar_argument_omission(&Module::from_definitions(vec![ValueDefinition::new(
                 "f",
                 Variable::new("g", SourceInformation::dummy()),
                 types::Function::new(
@@ -137,7 +137,7 @@ mod test {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Module::without_exported_names(vec![FunctionDefinition::new(
+            Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["omitted_argument_0".into()],
                 Application::new(
@@ -159,7 +159,7 @@ mod test {
     #[test]
     fn complement_2_omitted_arguments_of_value_definition() {
         assert_eq!(
-            desugar_argument_omission(&Module::without_exported_names(vec![ValueDefinition::new(
+            desugar_argument_omission(&Module::from_definitions(vec![ValueDefinition::new(
                 "f",
                 Variable::new("g", SourceInformation::dummy()),
                 types::Function::new(
@@ -174,7 +174,7 @@ mod test {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Module::without_exported_names(vec![FunctionDefinition::new(
+            Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["omitted_argument_0".into(), "omitted_argument_1".into()],
                 Application::new(
@@ -204,25 +204,23 @@ mod test {
     #[test]
     fn complement_an_omitted_argument_of_function_definition() {
         assert_eq!(
-            desugar_argument_omission(&Module::without_exported_names(vec![
-                FunctionDefinition::new(
-                    "f",
-                    vec!["x".into()],
-                    Variable::new("g", SourceInformation::dummy()),
+            desugar_argument_omission(&Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into()],
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
-                        types::Function::new(
-                            types::Number::new(SourceInformation::dummy()),
-                            types::Number::new(SourceInformation::dummy()),
-                            SourceInformation::dummy()
-                        ),
+                        types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])),
-            Module::without_exported_names(vec![FunctionDefinition::new(
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
+            Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["x".into(), "omitted_argument_0".into()],
                 Application::new(
@@ -248,29 +246,27 @@ mod test {
     #[test]
     fn complement_2_omitted_arguments_of_function_definition() {
         assert_eq!(
-            desugar_argument_omission(&Module::without_exported_names(vec![
-                FunctionDefinition::new(
-                    "f",
-                    vec!["x".into()],
-                    Variable::new("g", SourceInformation::dummy()),
+            desugar_argument_omission(&Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into()],
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
                         types::Function::new(
                             types::Number::new(SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy()
-                            ),
+                            types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
                     ),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])),
-            Module::without_exported_names(vec![FunctionDefinition::new(
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
+            Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec![
                     "x".into(),

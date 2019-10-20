@@ -42,7 +42,7 @@ mod test {
     #[test]
     fn convert_non_variable_applications() {
         assert_eq!(
-            desugar_non_variable_applications(&Module::without_exported_names(vec![
+            desugar_non_variable_applications(&Module::from_definitions(vec![
                 ValueDefinition::new(
                     "x",
                     Application::new(
@@ -69,7 +69,7 @@ mod test {
                 )
                 .into()
             ])),
-            Module::without_exported_names(vec![ValueDefinition::new(
+            Module::from_definitions(vec![ValueDefinition::new(
                 "x",
                 Let::new(
                     vec![ValueDefinition::new(
@@ -109,7 +109,7 @@ mod test {
     #[test]
     fn do_no_convert_variable_applications() {
         assert_eq!(
-            desugar_non_variable_applications(&Module::without_exported_names(vec![
+            desugar_non_variable_applications(&Module::from_definitions(vec![
                 ValueDefinition::new(
                     "x",
                     Application::new(
@@ -122,7 +122,7 @@ mod test {
                 )
                 .into()
             ])),
-            Module::without_exported_names(vec![ValueDefinition::new(
+            Module::from_definitions(vec![ValueDefinition::new(
                 "x",
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),

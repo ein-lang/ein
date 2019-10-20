@@ -65,19 +65,22 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     compile(
-        arguments.value_of("module_name").expect("module name"),
-        &module,
-        &module
-            .imports()
-            .iter()
-            .map(
-                |import| -> Result<ModuleInterface, Box<dyn std::error::Error>> {
-                    Ok(serde_json::from_str(&std::fs::read_to_string(
-                        module_path_resolver.resolve_module_interface(import.module_path()),
-                    )?)?)
-                },
-            )
-            .collect::<Result<Vec<_>, _>>()?,
+        &ast::Module::new(
+            arguments.value_of("module_name").expect("module name"),
+            module.export().clone(),
+            module
+                .imports()
+                .iter()
+                .map(
+                    |import| -> Result<ModuleInterface, Box<dyn std::error::Error>> {
+                        Ok(serde_json::from_str(&std::fs::read_to_string(
+                            module_path_resolver.resolve_module_interface(import.module_path()),
+                        )?)?)
+                    },
+                )
+                .collect::<Result<Vec<_>, _>>()?,
+            module.definitions().to_vec(),
+        ),
         arguments
             .value_of("output_filename")
             .expect("output filename"),

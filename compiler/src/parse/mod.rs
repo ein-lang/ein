@@ -7,7 +7,10 @@ use error::ParseError;
 use input::Input;
 use nom::Err;
 
-pub fn parse(source: &str, filename: &str) -> Result<crate::ast::Module, error::ParseError> {
+pub fn parse(
+    source: &str,
+    filename: &str,
+) -> Result<crate::ast::UnresolvedModule, error::ParseError> {
     combinators::module(Input::new(source, filename))
         .map(|(_, module)| module)
         .map_err(|error| match error {
@@ -29,7 +32,7 @@ mod test {
     fn parse_module() {
         assert_eq!(
             parse("foo : Number -> Number -> Number\nfoo x y = 42", ""),
-            Ok(Module::without_exported_names(vec![
+            Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "foo",
                     vec!["x".into(), "y".into()],
@@ -51,22 +54,24 @@ mod test {
 
         assert_eq!(
             parse("x : Number\nx = (let x = 42\nin x)", ""),
-            Ok(Module::without_exported_names(vec![ValueDefinition::new(
-                "x",
-                Let::new(
-                    vec![ValueDefinition::new(
-                        "x",
-                        Number::new(42.0, SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )
-                    .into()],
-                    Variable::new("x", SourceInformation::dummy())
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()]))
+            Ok(UnresolvedModule::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "x",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Variable::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()],
+                        Variable::new("x", SourceInformation::dummy())
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            ]))
         );
 
         assert_eq!(
@@ -87,7 +92,7 @@ mod test {
                 ),
                 ""
             ),
-            Ok(Module::without_exported_names(vec![
+            Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "main",
                     vec!["x".into(),],
