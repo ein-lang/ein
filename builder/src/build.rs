@@ -7,6 +7,8 @@ const BC_PATH: &str = "main.bc";
 pub fn build(root_directory: String) -> Result<(), BuildError> {
     run_command(
         std::process::Command::new(Path::new(&root_directory).join("target/release/compiler"))
+            .arg("-i")
+            .arg(".")
             .arg("-m")
             .arg("main")
             .arg("-o")

@@ -22,12 +22,13 @@ use type_inference::infer_types;
 pub fn compile(
     module_name: &str,
     module: &ast::Module,
+    imported_modules: &[ast::ModuleInterface],
     destination: &str,
 ) -> Result<(), CompileError> {
     let module = desugar_with_types(&infer_types(&desugar_without_types(module))?);
 
     File::create(destination)?.write_all(core::compile::compile(&rename_top_level_variables(
-        &ModuleCompiler::new().compile(&module)?,
+        &ModuleCompiler::new().compile(&module, imported_modules)?,
         module_name,
     ))?)?;
 

@@ -15,9 +15,20 @@ impl ModuleCompiler {
         }
     }
 
-    pub fn compile(&self, module: &ast::Module) -> Result<core::ast::Module, CompileError> {
+    pub fn compile(
+        &self,
+        module: &ast::Module,
+        imported_modules: &[ast::ModuleInterface],
+    ) -> Result<core::ast::Module, CompileError> {
         Ok(core::ast::Module::new(
-            vec![],
+            imported_modules
+                .iter()
+                .flat_map(|module_interface| {
+                    module_interface.types().iter().map(|(name, type_)| {
+                        core::ast::Declaration::new(name, self.type_compiler.compile(type_))
+                    })
+                })
+                .collect(),
             module
                 .definitions()
                 .iter()

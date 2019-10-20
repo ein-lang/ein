@@ -38,6 +38,10 @@ impl Module {
         &self.export
     }
 
+    pub fn imports(&self) -> &[Import] {
+        &self.imports
+    }
+
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         Self::new(
             self.export.clone(),
