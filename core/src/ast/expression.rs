@@ -23,7 +23,7 @@ impl Expression {
         }
     }
 
-    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
         match self {
             Self::Application(application) => application.rename_variables(names).into(),
             Self::LetFunctions(let_functions) => let_functions.rename_variables(names).into(),

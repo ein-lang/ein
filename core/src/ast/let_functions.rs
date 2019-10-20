@@ -24,7 +24,7 @@ impl LetFunctions {
         &self.expression
     }
 
-    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
         let mut names = names.clone();
 
         for definition in &self.definitions {

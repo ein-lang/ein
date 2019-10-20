@@ -16,7 +16,7 @@ impl Definition {
         }
     }
 
-    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
         match self {
             Self::FunctionDefinition(function_definition) => {
                 function_definition.rename_variables(names).into()

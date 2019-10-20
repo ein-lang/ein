@@ -24,7 +24,7 @@ impl Application {
         &self.arguments
     }
 
-    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
         Self::new(
             self.function.rename_variables(names),
             self.arguments

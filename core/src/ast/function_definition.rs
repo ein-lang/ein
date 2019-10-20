@@ -63,7 +63,7 @@ impl FunctionDefinition {
         &self.type_
     }
 
-    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
         let mut names = names.clone();
 
         names.remove(self.name.as_str());

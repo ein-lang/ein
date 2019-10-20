@@ -30,7 +30,7 @@ impl ValueDefinition {
         &self.type_
     }
 
-    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
         Self::new(
             self.name.clone(),
             self.body.rename_variables(names),

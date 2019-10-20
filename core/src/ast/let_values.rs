@@ -24,7 +24,7 @@ impl LetValues {
         &self.expression
     }
 
-    pub fn rename_variables(&self, names: &HashMap<&str, String>) -> Self {
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
         let mut names = names.clone();
         let mut definitions = Vec::with_capacity(self.definitions.len());
 
