@@ -9,10 +9,12 @@ mod ast;
 mod compile;
 mod debug;
 mod parse;
+mod path;
 mod types;
 
 use compile::compile;
 use parse::parse;
+use path::ModulePathResolver;
 
 fn main() {
     let arguments = clap::App::new("Sloth Compiler")
@@ -54,6 +56,13 @@ fn main() {
     )
     .unwrap_or_else(handle_error);
 
+    let module_path_resolver = ModulePathResolver::new(
+        arguments
+            .value_of("module_interface_directory")
+            .ok_or_else(|| invalid_input_error("no module interface directory"))
+            .unwrap_or_else(handle_error),
+    );
+
     compile(
         arguments
             .value_of("module_name")
@@ -65,13 +74,9 @@ fn main() {
             .iter()
             .map(|import| {
                 serde_json::from_str(
-                    &std::fs::read_to_string(resolve_absolute_module_path(
-                        import.module_path(),
-                        arguments
-                            .value_of("input_filename")
-                            .ok_or_else(|| invalid_input_error("no module interface directory"))
-                            .unwrap_or_else(handle_error),
-                    ))
+                    &std::fs::read_to_string(
+                        module_path_resolver.resolve_module_interface(import.module_path()),
+                    )
                     .unwrap_or_else(handle_error),
                 )
             })
@@ -92,19 +97,4 @@ fn invalid_input_error(description: &str) -> std::io::Error {
 fn handle_error<T, E: std::error::Error + std::fmt::Display>(error: E) -> T {
     eprintln!("{}", error);
     std::process::exit(1);
-}
-
-fn resolve_absolute_module_path(module_path: &ast::ModulePath, root_directory: &str) -> String {
-    vec![root_directory]
-        .iter()
-        .map(|string| *string)
-        .chain(
-            match module_path {
-                ast::ModulePath::External(_) => unimplemented!(),
-                ast::ModulePath::Internal(path_elements) => path_elements.iter(),
-            }
-            .map(|string| string.as_str()),
-        )
-        .collect::<Vec<&str>>()
-        .concat()
 }

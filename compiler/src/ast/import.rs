@@ -1,4 +1,4 @@
-use super::module_path::ModulePath;
+use crate::path::ModulePath;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Import {

@@ -2,6 +2,7 @@ use super::input::Input;
 use super::utilities::*;
 use crate::ast::*;
 use crate::debug::SourceInformation;
+use crate::path::ModulePath;
 use crate::types::{self, Type};
 use nom::{
     branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
@@ -538,6 +539,7 @@ mod test {
     };
     use crate::ast::*;
     use crate::debug::*;
+    use crate::path::ModulePath;
     use crate::types::{self, Type};
     use nom::error::*;
 
