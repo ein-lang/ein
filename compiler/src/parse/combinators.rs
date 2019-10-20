@@ -60,7 +60,7 @@ fn import(input: Input) -> IResult<Input, Import> {
     })(input)
 }
 
-fn module_path(input: Input) -> IResult<Input, ModulePath> {
+pub fn module_path(input: Input) -> IResult<Input, ModulePath> {
     map(
         tuple((
             opt(keyword(".")),

@@ -2,12 +2,13 @@ use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
 use super::module_interface::ModuleInterface;
+use crate::path::ModulePath;
 use crate::types::Type;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
-    name: String,
+    path: ModulePath,
     definitions: Vec<Definition>,
     export: Export,
     imported_modules: Vec<ModuleInterface>,
@@ -15,13 +16,13 @@ pub struct Module {
 
 impl Module {
     pub fn new(
-        name: impl Into<String>,
+        path: ModulePath,
         export: Export,
         imported_modules: Vec<ModuleInterface>,
         definitions: Vec<Definition>,
     ) -> Self {
         Self {
-            name: name.into(),
+            path: path.into(),
             definitions,
             export,
             imported_modules,
@@ -30,11 +31,16 @@ impl Module {
 
     #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
-        Self::new("", Export::new(Default::default()), vec![], definitions)
+        Self::new(
+            ModulePath::Internal(vec![]),
+            Export::new(Default::default()),
+            vec![],
+            definitions,
+        )
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn path(&self) -> &ModulePath {
+        &self.path
     }
 
     pub fn definitions(&self) -> &[Definition] {
@@ -51,7 +57,7 @@ impl Module {
 
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         Self::new(
-            self.name.clone(),
+            self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
             self.definitions
@@ -63,7 +69,7 @@ impl Module {
 
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         Self::new(
-            self.name.clone(),
+            self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
             self.definitions
@@ -75,7 +81,7 @@ impl Module {
 
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         Self::new(
-            self.name.clone(),
+            self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
             self.definitions

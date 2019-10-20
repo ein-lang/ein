@@ -15,7 +15,7 @@ impl NameQualifier {
         for definition in module.definitions() {
             names.insert(
                 definition.name().into(),
-                format!("{}.{}", module.name(), definition.name()),
+                module.path().qualify_name(definition.name()),
             );
         }
 

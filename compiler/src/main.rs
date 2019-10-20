@@ -14,7 +14,7 @@ mod types;
 
 use ast::ModuleInterface;
 use compile::compile;
-use parse::parse_module;
+use parse::{parse_module, parse_module_path};
 use path::ModulePathResolver;
 
 fn main() {
@@ -28,7 +28,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let arguments = clap::App::new("Sloth Compiler")
         .version("0.1.0")
         .arg(
-            clap::Arg::with_name("module_name")
+            clap::Arg::with_name("module_path")
                 .short("m")
                 .takes_value(true)
                 .required(true),
@@ -66,7 +66,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     compile(
         &ast::Module::new(
-            arguments.value_of("module_name").expect("module name"),
+            parse_module_path(
+                arguments.value_of("module_path").expect("module path"),
+                "<module path argument>",
+            )?,
             module.export().clone(),
             module
                 .imports()

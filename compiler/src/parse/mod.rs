@@ -3,6 +3,8 @@ mod error;
 mod input;
 mod utilities;
 
+use crate::ast;
+use crate::path::ModulePath;
 use error::ParseError;
 use input::Input;
 use nom::Err;
@@ -10,13 +12,23 @@ use nom::Err;
 pub fn parse_module(
     source: &str,
     filename: &str,
-) -> Result<crate::ast::UnresolvedModule, error::ParseError> {
+) -> Result<ast::UnresolvedModule, error::ParseError> {
     combinators::module(Input::new(source, filename))
         .map(|(_, module)| module)
         .map_err(|error| match error {
             Err::Error((input, _)) => ParseError::new(&input),
             Err::Failure((input, _)) => ParseError::new(&input),
             Err::Incomplete(_) => ParseError::new(&Input::new(source, filename)),
+        })
+}
+
+pub fn parse_module_path(path: &str, filename: &str) -> Result<ModulePath, error::ParseError> {
+    combinators::module_path(Input::new(path, filename))
+        .map(|(_, module_path)| module_path)
+        .map_err(|error| match error {
+            Err::Error((input, _)) => ParseError::new(&input),
+            Err::Failure((input, _)) => ParseError::new(&input),
+            Err::Incomplete(_) => ParseError::new(&Input::new(path, filename)),
         })
 }
 
@@ -133,6 +145,38 @@ mod test {
                 )
                 .into()
             ]))
+        );
+    }
+
+    #[test]
+    fn parse_external_module_path() {
+        assert_eq!(
+            parse_module_path("foo", ""),
+            Ok(ModulePath::External(vec!["foo".into()]))
+        );
+    }
+
+    #[test]
+    fn parse_external_module_path_with_subpath() {
+        assert_eq!(
+            parse_module_path("foo.bar", ""),
+            Ok(ModulePath::External(vec!["foo".into(), "bar".into()]))
+        );
+    }
+
+    #[test]
+    fn parse_internal_module_path() {
+        assert_eq!(
+            parse_module_path(".foo", ""),
+            Ok(ModulePath::Internal(vec!["foo".into()]))
+        );
+    }
+
+    #[test]
+    fn parse_internal_module_path_with_subpath() {
+        assert_eq!(
+            parse_module_path(".foo.bar", ""),
+            Ok(ModulePath::Internal(vec!["foo".into(), "bar".into()]))
         );
     }
 }
