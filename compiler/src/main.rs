@@ -14,7 +14,7 @@ mod types;
 
 use ast::ModuleInterface;
 use compile::compile;
-use parse::parse;
+use parse::parse_module;
 use path::ModulePathResolver;
 
 fn main() {
@@ -56,7 +56,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .value_of("input_filename")
         .expect("input filename");
 
-    let module = parse(&std::fs::read_to_string(input_filename)?, input_filename)?;
+    let module = parse_module(&std::fs::read_to_string(input_filename)?, input_filename)?;
 
     let module_path_resolver = ModulePathResolver::new(
         arguments

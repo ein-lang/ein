@@ -7,7 +7,7 @@ use error::ParseError;
 use input::Input;
 use nom::Err;
 
-pub fn parse(
+pub fn parse_module(
     source: &str,
     filename: &str,
 ) -> Result<crate::ast::UnresolvedModule, error::ParseError> {
@@ -22,16 +22,16 @@ pub fn parse(
 
 #[cfg(test)]
 mod test {
-    use super::parse;
+    use super::*;
     use crate::ast::*;
     use crate::debug::SourceInformation;
     use crate::types;
     use indoc::indoc;
 
     #[test]
-    fn parse_module() {
+    fn parse_module_() {
         assert_eq!(
-            parse("foo : Number -> Number -> Number\nfoo x y = 42", ""),
+            parse_module("foo : Number -> Number -> Number\nfoo x y = 42", ""),
             Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "foo",
@@ -53,7 +53,7 @@ mod test {
         );
 
         assert_eq!(
-            parse("x : Number\nx = (let x = 42\nin x)", ""),
+            parse_module("x : Number\nx = (let x = 42\nin x)", ""),
             Ok(UnresolvedModule::from_definitions(vec![
                 ValueDefinition::new(
                     "x",
@@ -75,7 +75,7 @@ mod test {
         );
 
         assert_eq!(
-            parse(
+            parse_module(
                 indoc!(
                     "
                     main : Number -> Number
