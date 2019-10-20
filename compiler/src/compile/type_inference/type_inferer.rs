@@ -22,6 +22,12 @@ impl TypeInferer {
     fn collect_equations(&mut self, module: &Module) -> Result<(), TypeInferenceError> {
         let mut variables = HashMap::<&str, Type>::new();
 
+        for imported_module in module.imported_modules() {
+            for (name, type_) in imported_module.types() {
+                variables.insert(name, type_.clone());
+            }
+        }
+
         for definition in module.definitions() {
             match definition {
                 Definition::FunctionDefinition(function_definition) => {

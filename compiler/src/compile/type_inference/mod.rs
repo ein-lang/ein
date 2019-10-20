@@ -16,6 +16,7 @@ mod test {
     use super::infer_types;
     use crate::ast::*;
     use crate::debug::*;
+    use crate::path::*;
     use crate::types;
 
     #[test]
@@ -360,5 +361,29 @@ mod test {
                 SourceInformation::dummy().into()
             ))
         );
+    }
+
+    #[test]
+    fn infer_types_of_variables_with_imported_mdoules() {
+        let module = Module::new(
+            ModulePath::Internal(vec![]),
+            Export::new(Default::default()),
+            vec![ModuleInterface::new(
+                vec![(
+                    "m.x".into(),
+                    types::Number::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+            )],
+            vec![ValueDefinition::new(
+                "y",
+                Variable::new("m.x", SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
     }
 }
