@@ -32,7 +32,7 @@ impl Module {
     #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
         Self::new(
-            ModulePath::Internal(vec![]),
+            ModulePath::Relative(vec![]),
             Export::new(Default::default()),
             vec![],
             definitions,

@@ -69,8 +69,8 @@ pub fn module_path(input: Input) -> IResult<Input, ModulePath> {
         )),
         |(period, identifier, identifiers)| {
             (match period {
-                Some(_) => ModulePath::Internal,
-                None => ModulePath::External,
+                Some(_) => ModulePath::Relative,
+                None => ModulePath::Absolute,
             })(
                 vec![identifier]
                     .into_iter()
@@ -1418,23 +1418,23 @@ mod test {
 
     #[test]
     fn parse_import() {
-        let input = Input::new("import external", "");
+        let input = Input::new("import module", "");
 
         assert_eq!(
             import(input.clone()),
             Ok((
-                input.set("", 0, Location::new(1, 16)),
-                Import::new(ModulePath::External(vec!["external".into()]))
+                input.set("", 0, Location::new(1, 14)),
+                Import::new(ModulePath::Absolute(vec!["module".into()]))
             ))
         );
 
-        let input = Input::new("import .internal", "");
+        let input = Input::new("import .module", "");
 
         assert_eq!(
             import(input.clone()),
             Ok((
-                input.set("", 0, Location::new(1, 17)),
-                Import::new(ModulePath::Internal(vec!["internal".into()]))
+                input.set("", 0, Location::new(1, 15)),
+                Import::new(ModulePath::Relative(vec!["module".into()]))
             ))
         );
     }

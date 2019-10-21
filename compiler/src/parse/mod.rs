@@ -149,34 +149,34 @@ mod test {
     }
 
     #[test]
-    fn parse_external_module_path() {
+    fn parse_absolute_module_path() {
         assert_eq!(
             parse_module_path("foo", ""),
-            Ok(ModulePath::External(vec!["foo".into()]))
+            Ok(ModulePath::Absolute(vec!["foo".into()]))
         );
     }
 
     #[test]
-    fn parse_external_module_path_with_subpath() {
+    fn parse_absolute_module_path_with_subpath() {
         assert_eq!(
             parse_module_path("foo.bar", ""),
-            Ok(ModulePath::External(vec!["foo".into(), "bar".into()]))
+            Ok(ModulePath::Absolute(vec!["foo".into(), "bar".into()]))
         );
     }
 
     #[test]
-    fn parse_internal_module_path() {
+    fn parse_relative_module_path() {
         assert_eq!(
             parse_module_path(".foo", ""),
-            Ok(ModulePath::Internal(vec!["foo".into()]))
+            Ok(ModulePath::Relative(vec!["foo".into()]))
         );
     }
 
     #[test]
-    fn parse_internal_module_path_with_subpath() {
+    fn parse_relative_module_path_with_subpath() {
         assert_eq!(
             parse_module_path(".foo.bar", ""),
-            Ok(ModulePath::Internal(vec!["foo".into(), "bar".into()]))
+            Ok(ModulePath::Relative(vec!["foo".into(), "bar".into()]))
         );
     }
 }
