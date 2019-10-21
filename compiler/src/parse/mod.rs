@@ -1,6 +1,7 @@
 mod combinators;
 mod error;
 mod input;
+mod source;
 mod utilities;
 
 use crate::ast;
@@ -8,30 +9,25 @@ use crate::path::AbsoluteModulePath;
 use error::ParseError;
 use input::Input;
 use nom::Err;
+pub use source::Source;
 
-pub fn parse_module(
-    source: &str,
-    filename: &str,
-) -> Result<ast::UnresolvedModule, error::ParseError> {
-    combinators::module(Input::new(source, filename))
+pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, error::ParseError> {
+    combinators::module(Input::new(source))
         .map(|(_, module)| module)
         .map_err(|error| match error {
             Err::Error((input, _)) => ParseError::new(&input),
             Err::Failure((input, _)) => ParseError::new(&input),
-            Err::Incomplete(_) => ParseError::new(&Input::new(source, filename)),
+            Err::Incomplete(_) => ParseError::new(&Input::new(source)),
         })
 }
 
-pub fn parse_absolute_module_path(
-    path: &str,
-    source_name: &str,
-) -> Result<AbsoluteModulePath, error::ParseError> {
-    combinators::absolute_module_path(Input::new(path, source_name))
+pub fn parse_absolute_module_path(source: Source) -> Result<AbsoluteModulePath, error::ParseError> {
+    combinators::absolute_module_path(Input::new(source))
         .map(|(_, module_path)| module_path)
         .map_err(|error| match error {
             Err::Error((input, _)) => ParseError::new(&input),
             Err::Failure((input, _)) => ParseError::new(&input),
-            Err::Incomplete(_) => ParseError::new(&Input::new(path, source_name)),
+            Err::Incomplete(_) => ParseError::new(&Input::new(source)),
         })
 }
 
@@ -46,7 +42,10 @@ mod test {
     #[test]
     fn parse_module_() {
         assert_eq!(
-            parse_module("foo : Number -> Number -> Number\nfoo x y = 42", ""),
+            parse_module(Source::new(
+                "",
+                "foo : Number -> Number -> Number\nfoo x y = 42"
+            ),),
             Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "foo",
@@ -68,7 +67,7 @@ mod test {
         );
 
         assert_eq!(
-            parse_module("x : Number\nx = (let x = 42\nin x)", ""),
+            parse_module(Source::new("", "x : Number\nx = (let x = 42\nin x)")),
             Ok(UnresolvedModule::from_definitions(vec![
                 ValueDefinition::new(
                     "x",
@@ -90,23 +89,23 @@ mod test {
         );
 
         assert_eq!(
-            parse_module(
+            parse_module(Source::new(
+                "",
                 indoc!(
                     "
-                    main : Number -> Number
-                    main x = (
-                        let
-                            f x = x
-                            y = (
-                                f x
-                            )
-                        in
-                            y
-                    )
-                "
-                ),
-                ""
-            ),
+                        main : Number -> Number
+                        main x = (
+                            let
+                                f x = x
+                                y = (
+                                    f x
+                                )
+                            in
+                                y
+                        )
+                    "
+                )
+            )),
             Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "main",
@@ -154,7 +153,7 @@ mod test {
     #[test]
     fn parse_absolute_module_path_() {
         assert_eq!(
-            parse_absolute_module_path("foo", ""),
+            parse_absolute_module_path(Source::new("", "foo")),
             Ok(AbsoluteModulePath::new(vec!["foo".into()]))
         );
     }
@@ -162,7 +161,7 @@ mod test {
     #[test]
     fn parse_absolute_module_path_with_subpath() {
         assert_eq!(
-            parse_absolute_module_path("foo.bar", ""),
+            parse_absolute_module_path(Source::new("", "foo.bar")),
             Ok(AbsoluteModulePath::new(vec!["foo".into(), "bar".into()]))
         );
     }

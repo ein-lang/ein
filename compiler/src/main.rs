@@ -13,7 +13,7 @@ mod path;
 mod types;
 
 use compile::compile;
-use parse::{parse_absolute_module_path, parse_module};
+use parse::{parse_absolute_module_path, parse_module, Source};
 use path::ModulePathResolver;
 
 fn main() {
@@ -55,7 +55,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .value_of("input_filename")
         .expect("input filename");
 
-    let module = parse_module(&std::fs::read_to_string(input_filename)?, input_filename)?;
+    let module = parse_module(Source::new(
+        input_filename,
+        &std::fs::read_to_string(input_filename)?,
+    ))?;
 
     let module_path_resolver = ModulePathResolver::new(
         arguments
@@ -65,10 +68,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     compile(
         &ast::Module::new(
-            parse_absolute_module_path(
-                arguments.value_of("module_path").expect("module path"),
+            parse_absolute_module_path(Source::new(
                 "<module path argument>",
-            )?,
+                arguments.value_of("module_path").expect("module path"),
+            ))?,
             module.export().clone(),
             module
                 .imports()

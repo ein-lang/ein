@@ -454,7 +454,7 @@ fn white_space(input: Input) -> IResult<Input, ()> {
 }
 
 fn eof(input: Input) -> IResult<Input, ()> {
-    if input.source() == "" {
+    if input.source().content() == "" {
         Ok((input, ()))
     } else {
         Err(nom::Err::Error((input, ErrorKind::Eof)))
@@ -473,7 +473,7 @@ fn source_information(original_input: Input) -> IResult<Input, SourceInformation
     convert_combinator(nom::character::complete::space0)(original_input.clone()).map(
         |(input, _)| {
             let source_information =
-                SourceInformation::new(input.filename(), input.location(), input.line());
+                SourceInformation::new(input.source().name(), input.location(), input.line());
             (original_input, source_information)
         },
     )
@@ -486,12 +486,12 @@ fn convert_combinator<'a>(
         let braces = input.braces();
         let location = input.location();
 
-        combinator(input.source())
-            .map(|(source, string)| {
+        combinator(input.source().content())
+            .map(|(source_content, string)| {
                 (
                     {
                         input.set(
-                            source,
+                            source_content,
                             braces + string.matches('(').count() - string.matches(')').count(),
                             string.chars().fold(location, |location, character| {
                                 if character == '\n' {
@@ -516,14 +516,22 @@ fn convert_character_combinator<'a>(
         let braces = input.braces();
         let location = input.location();
 
-        combinator(input.source())
-            .map(|(source, character)| {
+        combinator(input.source().content())
+            .map(|(source_content, character)| {
                 (
                     match character {
-                        '\n' => input.set(source, braces, location.increment_line_number()),
-                        '(' => input.set(source, braces + 1, location.increment_column_number()),
-                        ')' => input.set(source, braces - 1, location.increment_column_number()),
-                        _ => input.set(source, braces, location.increment_column_number()),
+                        '\n' => input.set(source_content, braces, location.increment_line_number()),
+                        '(' => input.set(
+                            source_content,
+                            braces + 1,
+                            location.increment_column_number(),
+                        ),
+                        ')' => input.set(
+                            source_content,
+                            braces - 1,
+                            location.increment_column_number(),
+                        ),
+                        _ => input.set(source_content, braces, location.increment_column_number()),
                     },
                     character,
                 )
@@ -545,6 +553,7 @@ fn convert_error<'a>(
 
 #[cfg(test)]
 mod test {
+    use super::super::Source;
     use super::{
         application, blank, export, expression, function_definition, identifier, import, keyword,
         let_, line_break, module, number_literal, number_type, source_information, type_,
@@ -558,42 +567,42 @@ mod test {
 
     #[test]
     fn parse_blank() {
-        let input = Input::new("", "");
+        let input = Input::new(Source::new("", ""));
 
         assert_eq!(
             blank(input.clone()),
             Ok((input.set("", 0, Location::default()), ()))
         );
 
-        let input = Input::new(" ", "");
+        let input = Input::new(Source::new("", " "));
 
         assert_eq!(
             blank(input.clone()),
             Ok((input.set("", 0, Location::new(1, 2)), ()))
         );
 
-        let input = Input::new("\t", "");
+        let input = Input::new(Source::new("", "\t"));
 
         assert_eq!(
             blank(input.clone()),
             Ok((input.set("", 0, Location::new(1, 2)), ()))
         );
 
-        let input = Input::new("  ", "");
+        let input = Input::new(Source::new("", "  "));
 
         assert_eq!(
             blank(input.clone()),
             Ok((input.set("", 0, Location::new(1, 3)), ()))
         );
 
-        let input = Input::new("", "");
+        let input = Input::new(Source::new("", ""));
 
         assert_eq!(
             blank(input.set("\n", 1, Location::default())),
             Ok((input.set("", 1, Location::new(2, 1)), ()))
         );
 
-        let input = Input::new("\n", "");
+        let input = Input::new(Source::new("", "\n"));
 
         assert_eq!(
             blank(input.clone()),
@@ -603,7 +612,7 @@ mod test {
 
     #[test]
     fn parse_number_type() {
-        let input = Input::new("Number", "");
+        let input = Input::new(Source::new("", "Number"));
 
         assert_eq!(
             number_type(input.clone()),
@@ -613,7 +622,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("Numbe", "");
+        let input = Input::new(Source::new("", "Numbe"));
 
         assert_eq!(
             number_type(input.clone()),
@@ -627,28 +636,28 @@ mod test {
     #[test]
     fn parse_type() {
         let number_type: Type = types::Number::new(SourceInformation::dummy()).into();
-        let input = Input::new("Number", "");
+        let input = Input::new(Source::new("", "Number"));
 
         assert_eq!(
             type_(input.clone()),
             Ok((input.set("", 0, Location::new(1, 7)), number_type.clone()))
         );
 
-        let input = Input::new("(Number)", "");
+        let input = Input::new(Source::new("", "(Number)"));
 
         assert_eq!(
             type_(input.clone()),
             Ok((input.set("", 0, Location::new(1, 9)), number_type.clone()))
         );
 
-        let input = Input::new("( Number )", "");
+        let input = Input::new(Source::new("", "( Number )"));
 
         assert_eq!(
             type_(input.clone()),
             Ok((input.set("", 0, Location::new(1, 11)), number_type.clone()))
         );
 
-        let input = Input::new("Number -> Number", "");
+        let input = Input::new(Source::new("", "Number -> Number"));
 
         assert_eq!(
             type_(input.clone()),
@@ -663,7 +672,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("Number -> Number -> Number", "");
+        let input = Input::new(Source::new("", "Number -> Number -> Number"));
 
         assert_eq!(
             type_(input.clone()),
@@ -684,14 +693,14 @@ mod test {
 
     #[test]
     fn parse_keyword() {
-        let input = Input::new("foo", "");
+        let input = Input::new(Source::new("", "foo"));
 
         assert_eq!(
             keyword("foo")(input.clone()),
             Ok((input.set("", 0, Location::new(1, 4)), ()))
         );
 
-        let input = Input::new("fo", "");
+        let input = Input::new(Source::new("", "fo"));
 
         assert_eq!(
             keyword("foo")(input.clone()),
@@ -704,21 +713,21 @@ mod test {
 
     #[test]
     fn parse_identifier() {
-        let input = Input::new("foo", "");
+        let input = Input::new(Source::new("", "foo"));
 
         assert_eq!(
             identifier(input.clone()),
             Ok((input.set("", 0, Location::new(1, 4)), "foo".into()))
         );
 
-        let input = Input::new("x1", "");
+        let input = Input::new(Source::new("", "x1"));
 
         assert_eq!(
             identifier(input.clone()),
             Ok((input.set("", 0, Location::new(1, 3)), "x1".into()))
         );
 
-        let input = Input::new("1st", "");
+        let input = Input::new(Source::new("", "1st"));
 
         assert_eq!(
             identifier(input.clone()),
@@ -728,7 +737,7 @@ mod test {
             )))
         );
 
-        let input = Input::new("let", "");
+        let input = Input::new(Source::new("", "let"));
 
         assert_eq!(
             identifier(input.clone()),
@@ -738,7 +747,7 @@ mod test {
             )))
         );
 
-        let input = Input::new("in", "");
+        let input = Input::new(Source::new("", "in"));
 
         assert_eq!(
             identifier(input.clone()),
@@ -751,14 +760,14 @@ mod test {
 
     #[test]
     fn parse_number_literal() {
-        let input = Input::new("1", "");
+        let input = Input::new(Source::new("", "1"));
 
         assert_eq!(
             number_literal(input.clone()),
             Ok((input.set("", 0, Location::new(1, 2)), 1.0))
         );
 
-        let input = Input::new("01", "");
+        let input = Input::new(Source::new("", "01"));
 
         assert_eq!(
             number_literal(input.clone()),
@@ -768,21 +777,21 @@ mod test {
             )))
         );
 
-        let input = Input::new("-1", "");
+        let input = Input::new(Source::new("", "-1"));
 
         assert_eq!(
             number_literal(input.clone()),
             Ok((input.set("", 0, Location::new(1, 3)), -1.0))
         );
 
-        let input = Input::new("42", "");
+        let input = Input::new(Source::new("", "42"));
 
         assert_eq!(
             number_literal(input.clone()),
             Ok((input.set("", 0, Location::new(1, 3)), 42.0))
         );
 
-        let input = Input::new("3.14", "");
+        let input = Input::new(Source::new("", "3.14"));
 
         assert_eq!(
             number_literal(input.clone()),
@@ -792,7 +801,7 @@ mod test {
 
     #[test]
     fn parse_operation() {
-        let input = Input::new("1 + 2", "");
+        let input = Input::new(Source::new("", "1 + 2"));
 
         assert_eq!(
             expression(input.clone()),
@@ -808,7 +817,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("1 * 2", "");
+        let input = Input::new(Source::new("", "1 * 2"));
 
         assert_eq!(
             expression(input.clone()),
@@ -824,7 +833,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("1 * 2 - 3", "");
+        let input = Input::new(Source::new("", "1 * 2 - 3"));
 
         assert_eq!(
             expression(input.clone()),
@@ -845,7 +854,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("1 + 2 * 3", "");
+        let input = Input::new(Source::new("", "1 + 2 * 3"));
 
         assert_eq!(
             expression(input.clone()),
@@ -866,7 +875,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("1 * 2 - 3 / 4", "");
+        let input = Input::new(Source::new("", "1 * 2 - 3 / 4"));
 
         assert_eq!(
             expression(input.clone()),
@@ -895,28 +904,28 @@ mod test {
 
     #[test]
     fn parse_line_break() {
-        let input = Input::new("\n", "");
+        let input = Input::new(Source::new("", "\n"));
 
         assert_eq!(
             line_break(input.clone()),
             Ok((input.set("", 0, Location::new(2, 1)), ()))
         );
 
-        let input = Input::new(" \n", "");
+        let input = Input::new(Source::new("", " \n"));
 
         assert_eq!(
             line_break(input.clone()),
             Ok((input.set("", 0, Location::new(2, 1)), ()))
         );
 
-        let input = Input::new("\n\n", "");
+        let input = Input::new(Source::new("", "\n\n"));
 
         assert_eq!(
             line_break(input.clone()),
             Ok((input.set("", 0, Location::new(3, 1)), ()))
         );
 
-        let input = Input::new("\n \n", "");
+        let input = Input::new(Source::new("", "\n \n"));
 
         assert_eq!(
             line_break(input.clone()),
@@ -925,14 +934,14 @@ mod test {
 
         // EOF
 
-        let input = Input::new("", "");
+        let input = Input::new(Source::new("", ""));
 
         assert_eq!(
             line_break(input.clone()),
             Ok((input.set("", 0, Location::new(1, 1)), ()))
         );
 
-        let input = Input::new(" ", "");
+        let input = Input::new(Source::new("", " "));
 
         assert_eq!(
             line_break(input.clone()),
@@ -942,7 +951,7 @@ mod test {
 
     #[test]
     fn parse_module() {
-        let input = Input::new("", "");
+        let input = Input::new(Source::new("", ""));
 
         assert_eq!(
             module(input.clone()),
@@ -952,7 +961,7 @@ mod test {
             ))
         );
 
-        let input = Input::new(" ", "");
+        let input = Input::new(Source::new("", " "));
 
         assert_eq!(
             module(input.clone()),
@@ -962,7 +971,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("\n", "");
+        let input = Input::new(Source::new("", "\n"));
 
         assert_eq!(
             module(input.clone()),
@@ -972,7 +981,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("x", "");
+        let input = Input::new(Source::new("", "x"));
 
         assert_eq!(
             module(input.clone()),
@@ -985,7 +994,7 @@ mod test {
 
     #[test]
     fn parse_function_definition() {
-        let input = Input::new("f : Number -> Number\nf x = x", "");
+        let input = Input::new(Source::new("", "f : Number -> Number\nf x = x"));
 
         assert_eq!(
             function_definition(input.clone()),
@@ -1005,7 +1014,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("f : (\n  Number ->\n  Number\n)\nf x = x", "");
+        let input = Input::new(Source::new("", "f : (\n  Number ->\n  Number\n)\nf x = x"));
 
         assert_eq!(
             function_definition(input.clone()),
@@ -1025,7 +1034,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("f : ((Number -> Number))\nf x = x", "");
+        let input = Input::new(Source::new("", "f : ((Number -> Number))\nf x = x"));
 
         assert_eq!(
             function_definition(input.clone()),
@@ -1048,7 +1057,7 @@ mod test {
 
     #[test]
     fn parse_value_definition() {
-        let input = Input::new("x : Number\nx = 42", "");
+        let input = Input::new(Source::new("", "x : Number\nx = 42"));
 
         assert_eq!(
             value_definition(input.clone()),
@@ -1066,7 +1075,7 @@ mod test {
 
     #[test]
     fn parse_application() {
-        let input = Input::new("f x", "");
+        let input = Input::new(Source::new("", "f x"));
 
         assert_eq!(
             expression(input.clone()),
@@ -1081,7 +1090,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("f x y", "");
+        let input = Input::new(Source::new("", "f x y"));
 
         assert_eq!(
             expression(input.clone()),
@@ -1100,7 +1109,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("f", "");
+        let input = Input::new(Source::new("", "f"));
 
         assert_eq!(
             application(input.clone()),
@@ -1113,7 +1122,7 @@ mod test {
 
     #[test]
     fn parse_let() {
-        let input = Input::new("let x = 42\nin x", "");
+        let input = Input::new(Source::new("", "let x = 42\nin x"));
 
         assert_eq!(
             let_(input.clone()),
@@ -1132,7 +1141,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("let x = 42 in x", "");
+        let input = Input::new(Source::new("", "let x = 42 in x"));
 
         assert_eq!(
             let_(input.clone()),
@@ -1151,7 +1160,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("let x = 42\ny = 42\nin x", "");
+        let input = Input::new(Source::new("", "let x = 42\ny = 42\nin x"));
 
         assert_eq!(
             let_(input.clone()),
@@ -1179,7 +1188,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("let x : Number\nx = 42\nin x", "");
+        let input = Input::new(Source::new("", "let x : Number\nx = 42\nin x"));
 
         assert_eq!(
             let_(input.clone()),
@@ -1198,7 +1207,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("let f x = x\nin f", "");
+        let input = Input::new(Source::new("", "let f x = x\nin f"));
 
         assert_eq!(
             let_(input.clone()),
@@ -1222,7 +1231,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("let f : Number -> Number\nf x = x\nin f", "");
+        let input = Input::new(Source::new("", "let f : Number -> Number\nf x = x\nin f"));
 
         assert_eq!(
             let_(input.clone()),
@@ -1246,7 +1255,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("let f x = x\ng x = x\nin x", "");
+        let input = Input::new(Source::new("", "let f x = x\ng x = x\nin x"));
 
         assert_eq!(
             let_(input.clone()),
@@ -1287,7 +1296,7 @@ mod test {
 
     #[test]
     fn parse_let_as_expression() {
-        let input = Input::new("let x = 42\nin x", "");
+        let input = Input::new(Source::new("", "let x = 42\nin x"));
 
         assert_eq!(
             expression(input.clone()),
@@ -1307,7 +1316,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("(\nlet\nx = 42\ny = 42\nin x\n)", "");
+        let input = Input::new(Source::new("", "(\nlet\nx = 42\ny = 42\nin x\n)"));
 
         assert_eq!(
             expression(input.clone()),
@@ -1339,7 +1348,7 @@ mod test {
 
     #[test]
     fn parse_let_in_definition() {
-        let input = Input::new("x : Number\nx = (let y = 42\nin y)", "");
+        let input = Input::new(Source::new("", "x : Number\nx = (let y = 42\nin y)"));
 
         assert_eq!(
             value_definition(input.clone()),
@@ -1368,14 +1377,21 @@ mod test {
     #[test]
     fn get_source_information() {
         assert_eq!(
-            format!("{}", source_information(Input::new("x", "file")).unwrap().1),
+            format!(
+                "{}",
+                source_information(Input::new(Source::new("file", "x")))
+                    .unwrap()
+                    .1
+            ),
             "file:1:1:\tx\n         \t^"
         );
 
         assert_eq!(
             format!(
                 "{}",
-                source_information(Input::new(" x", "file")).unwrap().1
+                source_information(Input::new(Source::new("file", " x")))
+                    .unwrap()
+                    .1
             ),
             "file:1:2:\t x\n         \t ^"
         );
@@ -1383,7 +1399,7 @@ mod test {
 
     #[test]
     fn parse_export() {
-        let input = Input::new("export {}", "");
+        let input = Input::new(Source::new("", "export {}"));
 
         assert_eq!(
             export(input.clone()),
@@ -1393,7 +1409,7 @@ mod test {
             )))
         );
 
-        let input = Input::new("export { name }", "");
+        let input = Input::new(Source::new("", "export { name }"));
 
         assert_eq!(
             export(input.clone()),
@@ -1403,7 +1419,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("export { name, }", "");
+        let input = Input::new(Source::new("", "export { name, }"));
 
         assert_eq!(
             export(input.clone()),
@@ -1413,7 +1429,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("export { name, anotherName }", "");
+        let input = Input::new(Source::new("", "export { name, anotherName }"));
 
         assert_eq!(
             export(input.clone()),
@@ -1431,7 +1447,7 @@ mod test {
 
     #[test]
     fn parse_import() {
-        let input = Input::new("import module", "");
+        let input = Input::new(Source::new("", "import module"));
 
         assert_eq!(
             import(input.clone()),
@@ -1441,7 +1457,7 @@ mod test {
             ))
         );
 
-        let input = Input::new("import .module", "");
+        let input = Input::new(Source::new("", "import .module"));
 
         assert_eq!(
             import(input.clone()),

@@ -4,15 +4,19 @@ use std::fmt::Display;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SourceInformation {
-    filename: String,
+    source_name: String,
     location: Location,
     line: String,
 }
 
 impl SourceInformation {
-    pub fn new(filename: impl Into<String>, location: Location, line: impl Into<String>) -> Self {
+    pub fn new(
+        source_name: impl Into<String>,
+        location: Location,
+        line: impl Into<String>,
+    ) -> Self {
         Self {
-            filename: filename.into(),
+            source_name: source_name.into(),
             location,
             line: line.into(),
         }
@@ -29,7 +33,7 @@ impl Display for SourceInformation {
         write!(
             formatter,
             "{}:{}:{}:\t{}\n{}\t{}^",
-            self.filename,
+            self.source_name,
             self.location.line_number(),
             self.location.column_number(),
             self.line,
@@ -37,7 +41,7 @@ impl Display for SourceInformation {
                 " ",
                 format!(
                     "{}{}{}",
-                    self.filename,
+                    self.source_name,
                     self.location.line_number(),
                     self.location.column_number()
                 )

@@ -12,7 +12,7 @@ impl ParseError {
     pub fn new(input: &Input) -> Self {
         ParseError {
             source_information: SourceInformation::new(
-                input.filename(),
+                input.source().name(),
                 input.location(),
                 input.line(),
             )
