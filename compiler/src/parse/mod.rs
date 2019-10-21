@@ -11,24 +11,24 @@ use input::Input;
 use nom::Err;
 pub use source::Source;
 
-pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, error::ParseError> {
+pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, ParseError> {
     combinators::module(Input::new(source))
         .map(|(_, module)| module)
-        .map_err(|error| match error {
-            Err::Error((input, _)) => ParseError::new(&input),
-            Err::Failure((input, _)) => ParseError::new(&input),
-            Err::Incomplete(_) => ParseError::new(&Input::new(source)),
-        })
+        .map_err(|error| map_error(error, source))
 }
 
-pub fn parse_absolute_module_path(source: Source) -> Result<AbsoluteModulePath, error::ParseError> {
+pub fn parse_absolute_module_path(source: Source) -> Result<AbsoluteModulePath, ParseError> {
     combinators::absolute_module_path(Input::new(source))
         .map(|(_, module_path)| module_path)
-        .map_err(|error| match error {
-            Err::Error((input, _)) => ParseError::new(&input),
-            Err::Failure((input, _)) => ParseError::new(&input),
-            Err::Incomplete(_) => ParseError::new(&Input::new(source)),
-        })
+        .map_err(|error| map_error(error, source))
+}
+
+fn map_error<T>(error: nom::Err<(Input, T)>, source: Source) -> ParseError {
+    match error {
+        Err::Error((input, _)) => ParseError::new(&input),
+        Err::Failure((input, _)) => ParseError::new(&input),
+        Err::Incomplete(_) => ParseError::new(&Input::new(source)),
+    }
 }
 
 #[cfg(test)]
