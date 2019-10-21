@@ -39,7 +39,7 @@ impl NameQualifier {
 
     pub fn qualify_core_module(&self, module: &core::ast::Module) -> core::ast::Module {
         core::ast::Module::new(
-            module.declarations().iter().cloned().collect(),
+            module.declarations().to_vec(),
             module
                 .definitions()
                 .iter()
@@ -50,8 +50,8 @@ impl NameQualifier {
                                 .get(function_definition.name())
                                 .cloned()
                                 .unwrap_or_else(|| function_definition.name().into()),
-                            function_definition.environment().iter().cloned().collect(),
-                            function_definition.arguments().iter().cloned().collect(),
+                            function_definition.environment().to_vec(),
+                            function_definition.arguments().to_vec(),
                             function_definition.body().rename_variables(&self.names),
                             function_definition.result_type().clone(),
                         )

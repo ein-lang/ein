@@ -22,7 +22,7 @@ impl Module {
         definitions: Vec<Definition>,
     ) -> Self {
         Self {
-            path: path.into(),
+            path,
             definitions,
             export,
             imported_modules,
