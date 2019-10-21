@@ -1,5 +1,5 @@
 mod basic_block;
-mod bit_code;
+mod bitcode;
 mod builder;
 mod constants;
 mod memory_buffer;
@@ -11,7 +11,7 @@ mod value;
 mod verification;
 
 pub use basic_block::*;
-pub use bit_code::*;
+pub use bitcode::*;
 pub use builder::*;
 pub use constants::*;
 pub use memory_buffer::*;
