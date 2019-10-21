@@ -12,7 +12,6 @@ mod parse;
 mod path;
 mod types;
 
-use ast::ModuleInterface;
 use compile::compile;
 use parse::{parse_absolute_module_path, parse_module};
 use path::ModulePathResolver;
@@ -75,7 +74,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .imports()
                 .iter()
                 .map(
-                    |import| -> Result<ModuleInterface, Box<dyn std::error::Error>> {
+                    |import| -> Result<ast::ModuleInterface, Box<dyn std::error::Error>> {
                         Ok(serde_json::from_str(&std::fs::read_to_string(
                             module_path_resolver.resolve_module_interface(import.module_path()),
                         )?)?)
