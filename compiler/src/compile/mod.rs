@@ -3,6 +3,7 @@ mod error;
 mod expression_compiler;
 mod free_variable_finder;
 mod module_compiler;
+mod module_interface_blob;
 mod module_interface_compiler;
 mod name_generator;
 mod name_qualifier;
@@ -13,6 +14,7 @@ use crate::ast;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use module_compiler::ModuleCompiler;
+use module_interface_blob::ModuleInterfaceBlob;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use name_qualifier::NameQualifier;
 use std::fs::File;
@@ -32,7 +34,7 @@ pub fn compile(module: &ast::Module, destination: &str) -> Result<(), CompileErr
     )?;
 
     File::create(Path::new(destination).with_extension("json"))?.write_all(
-        serde_json::to_string(
+        ModuleInterfaceBlob::new(
             &name_qualifier
                 .qualify_module_interface(&ModuleInterfaceCompiler::new().compile(&module)),
         )?
