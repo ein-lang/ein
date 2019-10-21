@@ -4,7 +4,7 @@ mod input;
 mod utilities;
 
 use crate::ast;
-use crate::path::ModulePath;
+use crate::path::AbsoluteModulePath;
 use error::ParseError;
 use input::Input;
 use nom::Err;
@@ -22,13 +22,16 @@ pub fn parse_module(
         })
 }
 
-pub fn parse_module_path(path: &str, filename: &str) -> Result<ModulePath, error::ParseError> {
-    combinators::module_path(Input::new(path, filename))
+pub fn parse_absolute_module_path(
+    path: &str,
+    source_name: &str,
+) -> Result<AbsoluteModulePath, error::ParseError> {
+    combinators::absolute_module_path(Input::new(path, source_name))
         .map(|(_, module_path)| module_path)
         .map_err(|error| match error {
             Err::Error((input, _)) => ParseError::new(&input),
             Err::Failure((input, _)) => ParseError::new(&input),
-            Err::Incomplete(_) => ParseError::new(&Input::new(path, filename)),
+            Err::Incomplete(_) => ParseError::new(&Input::new(path, source_name)),
         })
 }
 
@@ -149,34 +152,18 @@ mod test {
     }
 
     #[test]
-    fn parse_absolute_module_path() {
+    fn parse_absolute_module_path_() {
         assert_eq!(
-            parse_module_path("foo", ""),
-            Ok(ModulePath::Absolute(vec!["foo".into()]))
+            parse_absolute_module_path("foo", ""),
+            Ok(AbsoluteModulePath::new(vec!["foo".into()]))
         );
     }
 
     #[test]
     fn parse_absolute_module_path_with_subpath() {
         assert_eq!(
-            parse_module_path("foo.bar", ""),
-            Ok(ModulePath::Absolute(vec!["foo".into(), "bar".into()]))
-        );
-    }
-
-    #[test]
-    fn parse_relative_module_path() {
-        assert_eq!(
-            parse_module_path(".foo", ""),
-            Ok(ModulePath::Relative(vec!["foo".into()]))
-        );
-    }
-
-    #[test]
-    fn parse_relative_module_path_with_subpath() {
-        assert_eq!(
-            parse_module_path(".foo.bar", ""),
-            Ok(ModulePath::Relative(vec!["foo".into(), "bar".into()]))
+            parse_absolute_module_path("foo.bar", ""),
+            Ok(AbsoluteModulePath::new(vec!["foo".into(), "bar".into()]))
         );
     }
 }

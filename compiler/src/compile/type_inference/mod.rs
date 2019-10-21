@@ -366,7 +366,7 @@ mod test {
     #[test]
     fn infer_types_of_variables_with_imported_mdoules() {
         let module = Module::new(
-            ModulePath::Relative(vec![]),
+            AbsoluteModulePath::new(vec![]),
             Export::new(Default::default()),
             vec![ModuleInterface::new(
                 vec![(

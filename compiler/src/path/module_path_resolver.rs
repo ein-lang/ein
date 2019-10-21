@@ -18,8 +18,8 @@ impl ModulePathResolver {
 
         match module_path {
             ModulePath::Absolute(_) => unimplemented!(),
-            ModulePath::Relative(components) => {
-                for component in components {
+            ModulePath::Relative(relative_module_path) => {
+                for component in relative_module_path.components() {
                     path.push(component);
                 }
             }

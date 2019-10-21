@@ -2,7 +2,7 @@ use super::input::Input;
 use super::utilities::*;
 use crate::ast::*;
 use crate::debug::SourceInformation;
-use crate::path::ModulePath;
+use crate::path::*;
 use crate::types::{self, Type};
 use nom::{
     branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
@@ -60,23 +60,36 @@ fn import(input: Input) -> IResult<Input, Import> {
     })(input)
 }
 
-pub fn module_path(input: Input) -> IResult<Input, ModulePath> {
+fn module_path(input: Input) -> IResult<Input, ModulePath> {
+    alt((
+        map(absolute_module_path, |absolute_module_path| {
+            absolute_module_path.into()
+        }),
+        map(relative_module_path, |relative_module_path| {
+            relative_module_path.into()
+        }),
+    ))(input)
+}
+
+pub fn absolute_module_path(input: Input) -> IResult<Input, AbsoluteModulePath> {
+    map(path_components, AbsoluteModulePath::new)(input)
+}
+
+fn relative_module_path(input: Input) -> IResult<Input, RelativeModulePath> {
     map(
-        tuple((
-            opt(keyword(".")),
-            identifier,
-            many0(preceded(tag("."), identifier)),
-        )),
-        |(period, identifier, identifiers)| {
-            (match period {
-                Some(_) => ModulePath::Relative,
-                None => ModulePath::Absolute,
-            })(
-                vec![identifier]
-                    .into_iter()
-                    .chain(identifiers.into_iter())
-                    .collect(),
-            )
+        preceded(keyword("."), path_components),
+        RelativeModulePath::new,
+    )(input)
+}
+
+fn path_components(input: Input) -> IResult<Input, Vec<String>> {
+    map(
+        tuple((identifier, many0(preceded(tag("."), identifier)))),
+        |(identifier, identifiers)| {
+            vec![identifier]
+                .into_iter()
+                .chain(identifiers.into_iter())
+                .collect()
         },
     )(input)
 }
@@ -539,7 +552,7 @@ mod test {
     };
     use crate::ast::*;
     use crate::debug::*;
-    use crate::path::ModulePath;
+    use crate::path::*;
     use crate::types::{self, Type};
     use nom::error::*;
 
@@ -1424,7 +1437,7 @@ mod test {
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 14)),
-                Import::new(ModulePath::Absolute(vec!["module".into()]))
+                Import::new(AbsoluteModulePath::new(vec!["module".into()]))
             ))
         );
 
@@ -1434,7 +1447,7 @@ mod test {
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 15)),
-                Import::new(ModulePath::Relative(vec!["module".into()]))
+                Import::new(RelativeModulePath::new(vec!["module".into()]))
             ))
         );
     }

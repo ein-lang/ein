@@ -2,13 +2,13 @@ use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
 use super::module_interface::ModuleInterface;
-use crate::path::ModulePath;
+use crate::path::AbsoluteModulePath;
 use crate::types::Type;
 use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
-    path: ModulePath,
+    path: AbsoluteModulePath,
     definitions: Vec<Definition>,
     export: Export,
     imported_modules: Vec<ModuleInterface>,
@@ -16,7 +16,7 @@ pub struct Module {
 
 impl Module {
     pub fn new(
-        path: ModulePath,
+        path: AbsoluteModulePath,
         export: Export,
         imported_modules: Vec<ModuleInterface>,
         definitions: Vec<Definition>,
@@ -32,14 +32,14 @@ impl Module {
     #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
         Self::new(
-            ModulePath::Relative(vec![]),
+            AbsoluteModulePath::new(vec![]),
             Export::new(Default::default()),
             vec![],
             definitions,
         )
     }
 
-    pub fn path(&self) -> &ModulePath {
+    pub fn path(&self) -> &AbsoluteModulePath {
         &self.path
     }
 

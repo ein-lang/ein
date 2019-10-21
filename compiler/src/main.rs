@@ -14,7 +14,7 @@ mod types;
 
 use ast::ModuleInterface;
 use compile::compile;
-use parse::{parse_module, parse_module_path};
+use parse::{parse_absolute_module_path, parse_module};
 use path::ModulePathResolver;
 
 fn main() {
@@ -66,7 +66,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     compile(
         &ast::Module::new(
-            parse_module_path(
+            parse_absolute_module_path(
                 arguments.value_of("module_path").expect("module path"),
                 "<module path argument>",
             )?,
