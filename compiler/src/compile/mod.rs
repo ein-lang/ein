@@ -24,11 +24,12 @@ pub fn compile(module: &ast::Module, destination: &str) -> Result<(), CompileErr
     let module = desugar_with_types(&infer_types(&desugar_without_types(module))?);
     let name_qualifier = NameQualifier::new(&module);
 
-    File::create(destination)?.write_all(core::compile::compile(
-        &name_qualifier.qualify_core_module(
+    File::create(destination)?.write_all(
+        core::compile::compile(&name_qualifier.qualify_core_module(
             &ModuleCompiler::new().compile(&module, module.imported_modules())?,
-        ),
-    )?)?;
+        ))?
+        .as_bytes(),
+    )?;
 
     File::create(Path::new(destination).with_extension("json"))?.write_all(
         serde_json::to_string(
