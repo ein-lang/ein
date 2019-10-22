@@ -1,21 +1,8 @@
 extern crate clap;
-extern crate core;
-extern crate indoc;
-extern crate nom;
-extern crate serde;
+extern crate infra;
 extern crate serde_json;
+extern crate sloth;
 
-mod ast;
-mod compile;
-mod debug;
-mod infra;
-mod parse;
-mod path;
-mod types;
-
-use compile::compile;
-use infra::ModulePathResolver;
-use parse::{parse_module, parse_module_path, Source};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -59,19 +46,19 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .value_of("input_filename")
         .expect("input filename");
 
-    let module = parse_module(Source::new(
+    let module = sloth::parse_module(sloth::Source::new(
         input_filename,
         &std::fs::read_to_string(input_filename)?,
     ))?;
 
-    let module_path_resolver = ModulePathResolver::new(
+    let module_path_resolver = infra::ModulePathResolver::new(
         arguments
             .value_of("module_interface_directory")
             .expect("module interface directory"),
     );
 
-    let (object_blob, module_interface_blob) = compile(&ast::Module::new(
-        parse_module_path(Source::new(
+    let (object_blob, module_interface_blob) = sloth::compile(&sloth::ast::Module::new(
+        sloth::parse_module_path(sloth::Source::new(
             "<module path argument>",
             arguments.value_of("module_path").expect("module path"),
         ))?,
@@ -80,7 +67,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             .imports()
             .iter()
             .map(
-                |import| -> Result<ast::ModuleInterface, Box<dyn std::error::Error>> {
+                |import| -> Result<sloth::ast::ModuleInterface, Box<dyn std::error::Error>> {
                     Ok(serde_json::from_str(&std::fs::read_to_string(
                         module_path_resolver.resolve_module_interface(import.module_path()),
                     )?)?)

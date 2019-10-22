@@ -1,4 +1,5 @@
-use crate::path::ModulePath;
+extern crate sloth;
+
 use std::path::PathBuf;
 
 #[derive(Debug)]
@@ -13,7 +14,7 @@ impl ModulePathResolver {
         }
     }
 
-    pub fn resolve_module_interface(&self, module_path: &ModulePath) -> PathBuf {
+    pub fn resolve_module_interface(&self, module_path: &sloth::ModulePath) -> PathBuf {
         let mut path = PathBuf::from(&self.module_interface_directory);
 
         for component in module_path.components() {
