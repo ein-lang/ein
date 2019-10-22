@@ -6,7 +6,6 @@ pub struct MemoryBuffer {
     memory_buffer: LLVMMemoryBufferRef,
 }
 
-// TODO: impl Drop
 impl MemoryBuffer {
     pub fn new(memory_buffer: LLVMMemoryBufferRef) -> Self {
         Self { memory_buffer }

@@ -10,7 +10,7 @@ use super::verify::verify;
 use crate::ast;
 pub use error::CompileError;
 use module_compiler::ModuleCompiler;
-use object_blob::ObjectBlob;
+pub use object_blob::ObjectBlob;
 use type_compiler::TypeCompiler;
 
 pub fn compile(ast_module: &ast::Module) -> Result<ObjectBlob, CompileError> {

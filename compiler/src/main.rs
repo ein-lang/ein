@@ -15,6 +15,9 @@ mod types;
 use compile::compile;
 use parse::{parse_absolute_module_path, parse_module, Source};
 use path::ModulePathResolver;
+use std::fs::File;
+use std::io::Write;
+use std::path::Path;
 
 fn main() {
     if let Err(error) = run() {
@@ -66,30 +69,34 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             .expect("module interface directory"),
     );
 
-    compile(
-        &ast::Module::new(
-            parse_absolute_module_path(Source::new(
-                "<module path argument>",
-                arguments.value_of("module_path").expect("module path"),
-            ))?,
-            module.export().clone(),
-            module
-                .imports()
-                .iter()
-                .map(
-                    |import| -> Result<ast::ModuleInterface, Box<dyn std::error::Error>> {
-                        Ok(serde_json::from_str(&std::fs::read_to_string(
-                            module_path_resolver.resolve_module_interface(import.module_path()),
-                        )?)?)
-                    },
-                )
-                .collect::<Result<Vec<_>, _>>()?,
-            module.definitions().to_vec(),
-        ),
-        arguments
-            .value_of("output_filename")
-            .expect("output filename"),
-    )?;
+    let (object_blob, module_interface_blob) = compile(&ast::Module::new(
+        parse_absolute_module_path(Source::new(
+            "<module path argument>",
+            arguments.value_of("module_path").expect("module path"),
+        ))?,
+        module.export().clone(),
+        module
+            .imports()
+            .iter()
+            .map(
+                |import| -> Result<ast::ModuleInterface, Box<dyn std::error::Error>> {
+                    Ok(serde_json::from_str(&std::fs::read_to_string(
+                        module_path_resolver.resolve_module_interface(import.module_path()),
+                    )?)?)
+                },
+            )
+            .collect::<Result<Vec<_>, _>>()?,
+        module.definitions().to_vec(),
+    ))?;
+
+    let destination = arguments
+        .value_of("output_filename")
+        .expect("output filename");
+
+    File::create(destination)?.write_all(object_blob.as_bytes())?;
+
+    File::create(Path::new(destination).with_extension("json"))?
+        .write_all(module_interface_blob.as_bytes())?;
 
     Ok(())
 }
