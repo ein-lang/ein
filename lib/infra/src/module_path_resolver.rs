@@ -1,5 +1,3 @@
-extern crate sloth;
-
 use std::path::PathBuf;
 
 #[derive(Debug)]
