@@ -1,4 +1,4 @@
-use super::module_path::ModulePath;
+use crate::path::ModulePath;
 use std::path::PathBuf;
 
 #[derive(Debug)]

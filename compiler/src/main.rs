@@ -8,13 +8,14 @@ extern crate serde_json;
 mod ast;
 mod compile;
 mod debug;
+mod infra;
 mod parse;
 mod path;
 mod types;
 
 use compile::compile;
+use infra::ModulePathResolver;
 use parse::{parse_module, parse_module_path, Source};
-use path::ModulePathResolver;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
