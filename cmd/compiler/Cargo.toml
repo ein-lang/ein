@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 clap = "2"
-core = { path = "../core" }
+core = { path = "../../lib/core" }
 indoc = "0.3"
 nom = "5"
 serde = { version = "1", features = ["derive", "rc"] }
