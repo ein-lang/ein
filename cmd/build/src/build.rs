@@ -5,7 +5,7 @@ const BC_PATH: &str = "main.bc";
 
 pub fn build(root_directory: String) -> Result<(), std::io::Error> {
     run_command(
-        std::process::Command::new(Path::new(&root_directory).join("target/release/compiler"))
+        std::process::Command::new(Path::new(&root_directory).join("target/release/sloth-compile"))
             .arg("-i")
             .arg(".")
             .arg("-m")

@@ -8,7 +8,7 @@ Feature: Variables
     main : Number -> Number
     main x = y
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
@@ -25,7 +25,7 @@ Feature: Variables
         y
     )
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
@@ -41,7 +41,7 @@ Feature: Variables
         y
     )
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
@@ -62,7 +62,7 @@ Feature: Variables
         y
     )
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
@@ -79,7 +79,7 @@ Feature: Variables
         f x
     )
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
@@ -95,7 +95,7 @@ Feature: Variables
         f x
     )
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0
@@ -112,7 +112,7 @@ Feature: Variables
         g x
     )
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0

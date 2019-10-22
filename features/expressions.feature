@@ -14,7 +14,7 @@ Feature: Expressions
       x
     )
     """
-    And I successfully run `builder`
+    And I successfully run `sloth-build`
     When I run `sh -c ./a.out`
     Then stdout from "sh -c ./a.out" should contain exactly "42"
     And the exit status should be 0

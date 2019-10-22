@@ -1,5 +1,5 @@
 [package]
-name = "builder"
+name = "sloth-build"
 version = "0.1.0"
 authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
