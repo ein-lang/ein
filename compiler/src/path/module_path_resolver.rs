@@ -16,13 +16,8 @@ impl ModulePathResolver {
     pub fn resolve_module_interface(&self, module_path: &ModulePath) -> PathBuf {
         let mut path = PathBuf::from(&self.module_interface_directory);
 
-        match module_path {
-            ModulePath::Absolute(_) => unimplemented!(),
-            ModulePath::Relative(relative_module_path) => {
-                for component in relative_module_path.components() {
-                    path.push(component);
-                }
-            }
+        for component in module_path.components() {
+            path.push(component);
         }
 
         path

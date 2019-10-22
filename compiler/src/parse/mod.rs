@@ -5,7 +5,7 @@ mod source;
 mod utilities;
 
 use crate::ast;
-use crate::path::AbsoluteModulePath;
+use crate::path::ModulePath;
 use error::ParseError;
 use input::Input;
 use nom::Err;
@@ -17,8 +17,8 @@ pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, ParseError>
         .map_err(|error| map_error(error, source))
 }
 
-pub fn parse_absolute_module_path(source: Source) -> Result<AbsoluteModulePath, ParseError> {
-    combinators::absolute_module_path(Input::new(source))
+pub fn parse_module_path(source: Source) -> Result<ModulePath, ParseError> {
+    combinators::module_path(Input::new(source))
         .map(|(_, module_path)| module_path)
         .map_err(|error| map_error(error, source))
 }
@@ -151,18 +151,18 @@ mod test {
     }
 
     #[test]
-    fn parse_absolute_module_path_() {
+    fn parse_module_path_() {
         assert_eq!(
-            parse_absolute_module_path(Source::new("", "foo")),
-            Ok(AbsoluteModulePath::new(vec!["foo".into()]))
+            parse_module_path(Source::new("", "foo")),
+            Ok(ModulePath::new(vec!["foo".into()]))
         );
     }
 
     #[test]
-    fn parse_absolute_module_path_with_subpath() {
+    fn parse_module_path_with_subpath() {
         assert_eq!(
-            parse_absolute_module_path(Source::new("", "foo.bar")),
-            Ok(AbsoluteModulePath::new(vec!["foo".into(), "bar".into()]))
+            parse_module_path(Source::new("", "foo.bar")),
+            Ok(ModulePath::new(vec!["foo".into(), "bar".into()]))
         );
     }
 }

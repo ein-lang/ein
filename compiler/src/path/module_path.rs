@@ -1,20 +1,31 @@
-use super::absolute_module_path::AbsoluteModulePath;
-use super::relative_module_path::RelativeModulePath;
-
 #[derive(Clone, Debug, PartialEq)]
-pub enum ModulePath {
-    Absolute(AbsoluteModulePath),
-    Relative(RelativeModulePath),
+pub struct ModulePath {
+    components: Vec<String>,
 }
 
-impl From<AbsoluteModulePath> for ModulePath {
-    fn from(absolute_module_path: AbsoluteModulePath) -> Self {
-        Self::Absolute(absolute_module_path)
+impl ModulePath {
+    pub fn new(components: Vec<String>) -> Self {
+        Self { components }
+    }
+
+    pub fn components(&self) -> &[String] {
+        &self.components
+    }
+
+    pub fn qualify_name(&self, name: &str) -> String {
+        [&self.components.join("."), name].join(".")
     }
 }
 
-impl From<RelativeModulePath> for ModulePath {
-    fn from(relative_module_path: RelativeModulePath) -> Self {
-        Self::Relative(relative_module_path)
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn qualify_name() {
+        assert_eq!(
+            ModulePath::new(vec!["foo".into()]).qualify_name("bar"),
+            "foo.bar"
+        );
     }
 }

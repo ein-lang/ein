@@ -60,36 +60,16 @@ fn import(input: Input) -> IResult<Input, Import> {
     })(input)
 }
 
-fn module_path(input: Input) -> IResult<Input, ModulePath> {
-    alt((
-        map(absolute_module_path, |absolute_module_path| {
-            absolute_module_path.into()
-        }),
-        map(relative_module_path, |relative_module_path| {
-            relative_module_path.into()
-        }),
-    ))(input)
-}
-
-pub fn absolute_module_path(input: Input) -> IResult<Input, AbsoluteModulePath> {
-    map(path_components, AbsoluteModulePath::new)(input)
-}
-
-fn relative_module_path(input: Input) -> IResult<Input, RelativeModulePath> {
-    map(
-        preceded(keyword("."), path_components),
-        RelativeModulePath::new,
-    )(input)
-}
-
-fn path_components(input: Input) -> IResult<Input, Vec<String>> {
+pub fn module_path(input: Input) -> IResult<Input, ModulePath> {
     map(
         tuple((identifier, many0(preceded(tag("."), identifier)))),
         |(identifier, identifiers)| {
-            vec![identifier]
-                .into_iter()
-                .chain(identifiers.into_iter())
-                .collect()
+            ModulePath::new(
+                vec![identifier]
+                    .into_iter()
+                    .chain(identifiers.into_iter())
+                    .collect(),
+            )
         },
     )(input)
 }
@@ -1453,17 +1433,17 @@ mod test {
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 14)),
-                Import::new(AbsoluteModulePath::new(vec!["module".into()]))
+                Import::new(ModulePath::new(vec!["module".into()]))
             ))
         );
 
-        let input = Input::new(Source::new("", "import .module"));
+        let input = Input::new(Source::new("", "import module.submodule"));
 
         assert_eq!(
             import(input.clone()),
             Ok((
-                input.set("", 0, Location::new(1, 15)),
-                Import::new(RelativeModulePath::new(vec!["module".into()]))
+                input.set("", 0, Location::new(1, 24)),
+                Import::new(ModulePath::new(vec!["module".into(), "submodule".into()]))
             ))
         );
     }

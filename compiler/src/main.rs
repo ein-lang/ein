@@ -13,7 +13,7 @@ mod path;
 mod types;
 
 use compile::compile;
-use parse::{parse_absolute_module_path, parse_module, Source};
+use parse::{parse_module, parse_module_path, Source};
 use path::ModulePathResolver;
 use std::fs::File;
 use std::io::Write;
@@ -70,7 +70,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let (object_blob, module_interface_blob) = compile(&ast::Module::new(
-        parse_absolute_module_path(Source::new(
+        parse_module_path(Source::new(
             "<module path argument>",
             arguments.value_of("module_path").expect("module path"),
         ))?,
