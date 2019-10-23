@@ -1,15 +1,15 @@
 use super::error::RepositoryError;
-use super::module_product_repository::ModuleProductRepository;
-use super::product_repository::ProductRepository;
+use super::module_output_repository::ModuleOutputRepository;
+use super::output_repository::OutputRepository;
 
 pub struct ModuleInterfaceRepository<'a> {
-    module_product_repository: ModuleProductRepository<'a>,
+    module_output_repository: ModuleOutputRepository<'a>,
 }
 
 impl<'a> ModuleInterfaceRepository<'a> {
-    pub fn new(product_repository: &'a ProductRepository) -> Self {
+    pub fn new(output_repository: &'a OutputRepository) -> Self {
         Self {
-            module_product_repository: ModuleProductRepository::new(product_repository, "json"),
+            module_output_repository: ModuleOutputRepository::new(output_repository, "json"),
         }
     }
 
@@ -19,7 +19,7 @@ impl<'a> ModuleInterfaceRepository<'a> {
     ) -> Result<sloth::ast::ModuleInterface, RepositoryError> {
         let mut vec = Vec::new();
 
-        self.module_product_repository.load(module_path, &mut vec)?;
+        self.module_output_repository.load(module_path, &mut vec)?;
 
         Ok(serde_json::from_slice(&vec)?)
     }
@@ -29,7 +29,7 @@ impl<'a> ModuleInterfaceRepository<'a> {
         module_path: &sloth::ModulePath,
         module_interface: &sloth::ast::ModuleInterface,
     ) -> Result<(), RepositoryError> {
-        self.module_product_repository
+        self.module_output_repository
             .store(module_path, &serde_json::to_vec(module_interface)?)
     }
 }

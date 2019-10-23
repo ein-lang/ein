@@ -1,16 +1,16 @@
 use super::error::RepositoryError;
-use super::product_repository::ProductRepository;
+use super::output_repository::OutputRepository;
 use std::path::PathBuf;
 
-pub struct ModuleProductRepository<'a> {
-    product_repository: &'a ProductRepository,
+pub struct ModuleOutputRepository<'a> {
+    output_repository: &'a OutputRepository,
     extension: &'static str,
 }
 
-impl<'a> ModuleProductRepository<'a> {
-    pub fn new(product_repository: &'a ProductRepository, extension: &'static str) -> Self {
+impl<'a> ModuleOutputRepository<'a> {
+    pub fn new(output_repository: &'a OutputRepository, extension: &'static str) -> Self {
         Self {
-            product_repository,
+            output_repository,
             extension,
         }
     }
@@ -20,7 +20,7 @@ impl<'a> ModuleProductRepository<'a> {
         module_path: &sloth::ModulePath,
         vec: &mut Vec<u8>,
     ) -> Result<(), RepositoryError> {
-        self.product_repository
+        self.output_repository
             .load(self.resolve_module_path(module_path), vec)
     }
 
@@ -29,7 +29,7 @@ impl<'a> ModuleProductRepository<'a> {
         module_path: &sloth::ModulePath,
         data: &[u8],
     ) -> Result<(), RepositoryError> {
-        self.product_repository
+        self.output_repository
             .store(self.resolve_module_path(module_path), data)
     }
 

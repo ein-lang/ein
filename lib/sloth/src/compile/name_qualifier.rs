@@ -7,7 +7,7 @@ pub struct NameQualifier {
 }
 
 // NameQualifier is not meant to qualify names in the original modules but
-// names in their products on compilation.
+// names in their outputs on compilation.
 impl NameQualifier {
     pub fn new(module: &ast::Module) -> Self {
         let mut names = HashMap::new();

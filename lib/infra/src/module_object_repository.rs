@@ -1,15 +1,15 @@
 use super::error::RepositoryError;
-use super::module_product_repository::ModuleProductRepository;
-use super::product_repository::ProductRepository;
+use super::module_output_repository::ModuleOutputRepository;
+use super::output_repository::OutputRepository;
 
 pub struct ModuleObjectRepository<'a> {
-    module_product_repository: ModuleProductRepository<'a>,
+    module_output_repository: ModuleOutputRepository<'a>,
 }
 
 impl<'a> ModuleObjectRepository<'a> {
-    pub fn new(product_repository: &'a ProductRepository) -> Self {
+    pub fn new(output_repository: &'a OutputRepository) -> Self {
         Self {
-            module_product_repository: ModuleProductRepository::new(product_repository, "bc"),
+            module_output_repository: ModuleOutputRepository::new(output_repository, "bc"),
         }
     }
 
@@ -18,7 +18,7 @@ impl<'a> ModuleObjectRepository<'a> {
         module_path: &sloth::ModulePath,
         module_object: &sloth::ModuleObject,
     ) -> Result<(), RepositoryError> {
-        self.module_product_repository
+        self.module_output_repository
             .store(module_path, module_object.as_bytes())
     }
 }

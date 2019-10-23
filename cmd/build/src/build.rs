@@ -4,7 +4,7 @@ use std::path::Path;
 pub fn build(root_directory: String) -> Result<(), std::io::Error> {
     run_command(
         std::process::Command::new(Path::new(&root_directory).join("target/release/sloth-compile"))
-            .arg("-p")
+            .arg("-o")
             .arg(".")
             .arg("-m")
             .arg("main")

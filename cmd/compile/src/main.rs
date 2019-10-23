@@ -20,8 +20,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .required(true),
         )
         .arg(
-            clap::Arg::with_name("product_directory")
-                .short("p")
+            clap::Arg::with_name("output_directory")
+                .short("o")
                 .takes_value(true)
                 .required(true),
         )
@@ -44,12 +44,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         &std::fs::read_to_string(input_filename)?,
     ))?;
 
-    let product_repository = infra::ProductRepository::new(
+    let output_repository = infra::OutputRepository::new(
         arguments
-            .value_of("product_directory")
-            .expect("product directory"),
+            .value_of("output_directory")
+            .expect("output directory"),
     );
-    let module_interface_repository = infra::ModuleInterfaceRepository::new(&product_repository);
+    let module_interface_repository = infra::ModuleInterfaceRepository::new(&output_repository);
 
     let (module_object, module_interface) = sloth::compile(&sloth::ast::Module::new(
         module_path.clone(),
@@ -66,7 +66,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         module.definitions().to_vec(),
     ))?;
 
-    infra::ModuleObjectRepository::new(&product_repository).store(&module_path, &module_object)?;
+    infra::ModuleObjectRepository::new(&output_repository).store(&module_path, &module_object)?;
     module_interface_repository.store(&module_path, &module_interface)?;
 
     Ok(())
