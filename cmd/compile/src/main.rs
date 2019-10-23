@@ -3,10 +3,6 @@ extern crate infra;
 extern crate serde_json;
 extern crate sloth;
 
-use std::fs::File;
-use std::io::Write;
-use std::path::Path;
-
 fn main() {
     if let Err(error) = run() {
         eprintln!("{}", error);
@@ -24,14 +20,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .required(true),
         )
         .arg(
-            clap::Arg::with_name("module_interface_directory")
-                .short("i")
-                .takes_value(true)
-                .required(true),
-        )
-        .arg(
-            clap::Arg::with_name("output_filename")
-                .short("o")
+            clap::Arg::with_name("product_directory")
+                .short("p")
                 .takes_value(true)
                 .required(true),
         )
@@ -45,46 +35,39 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let input_filename = arguments
         .value_of("input_filename")
         .expect("input filename");
-
+    let module_path = sloth::parse_module_path(sloth::Source::new(
+        "<module path argument>",
+        arguments.value_of("module_path").expect("module path"),
+    ))?;
     let module = sloth::parse_module(sloth::Source::new(
         input_filename,
         &std::fs::read_to_string(input_filename)?,
     ))?;
 
-    let module_path_resolver = infra::ModulePathResolver::new(
+    let product_repository = infra::ProductRepository::new(
         arguments
-            .value_of("module_interface_directory")
-            .expect("module interface directory"),
+            .value_of("product_directory")
+            .expect("product directory"),
     );
+    let module_interface_repository = infra::ModuleInterfaceRepository::new(&product_repository);
 
-    let (object_blob, module_interface_blob) = sloth::compile(&sloth::ast::Module::new(
-        sloth::parse_module_path(sloth::Source::new(
-            "<module path argument>",
-            arguments.value_of("module_path").expect("module path"),
-        ))?,
+    let (module_object, module_interface) = sloth::compile(&sloth::ast::Module::new(
+        module_path.clone(),
         module.export().clone(),
         module
             .imports()
             .iter()
             .map(
                 |import| -> Result<sloth::ast::ModuleInterface, Box<dyn std::error::Error>> {
-                    Ok(serde_json::from_str(&std::fs::read_to_string(
-                        module_path_resolver.resolve_module_interface(import.module_path()),
-                    )?)?)
+                    Ok(module_interface_repository.load(import.module_path())?)
                 },
             )
             .collect::<Result<Vec<_>, _>>()?,
         module.definitions().to_vec(),
     ))?;
 
-    let destination = arguments
-        .value_of("output_filename")
-        .expect("output filename");
-
-    File::create(destination)?.write_all(object_blob.as_bytes())?;
-
-    File::create(Path::new(destination).with_extension("json"))?
-        .write_all(module_interface_blob.as_bytes())?;
+    infra::ModuleObjectRepository::new(&product_repository).store(&module_path, &module_object)?;
+    module_interface_repository.store(&module_path, &module_interface)?;
 
     Ok(())
 }

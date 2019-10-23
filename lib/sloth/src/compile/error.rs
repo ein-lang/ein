@@ -36,7 +36,6 @@ impl<E: Into<ExternalCompileError>> From<E> for CompileError {
 pub enum ExternalCompileError {
     CoreCompileError(core::compile::CompileError),
     IOError(io::Error),
-    SerdeError(serde_json::Error),
     TypeInferenceError(TypeInferenceError),
 }
 
@@ -47,7 +46,6 @@ impl Display for ExternalCompileError {
                 write!(formatter, "CoreCompileError: {}", error)
             }
             ExternalCompileError::IOError(error) => write!(formatter, "IOError: {}", error),
-            ExternalCompileError::SerdeError(error) => write!(formatter, "{}", error),
             ExternalCompileError::TypeInferenceError(error) => write!(formatter, "{}", error),
         }
     }
@@ -79,12 +77,6 @@ impl From<core::compile::CompileError> for ExternalCompileError {
 impl From<io::Error> for ExternalCompileError {
     fn from(error: io::Error) -> Self {
         ExternalCompileError::IOError(error)
-    }
-}
-
-impl From<serde_json::Error> for ExternalCompileError {
-    fn from(error: serde_json::Error) -> Self {
-        ExternalCompileError::SerdeError(error)
     }
 }
 

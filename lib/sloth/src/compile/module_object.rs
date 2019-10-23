@@ -1,11 +1,11 @@
 use core::compile::ObjectBlob;
 
 #[derive(Debug)]
-pub struct ModuleObjectBlob {
+pub struct ModuleObject {
     object_blob: ObjectBlob,
 }
 
-impl ModuleObjectBlob {
+impl ModuleObject {
     pub fn new(object_blob: ObjectBlob) -> Self {
         Self { object_blob }
     }

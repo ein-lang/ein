@@ -1,17 +1,13 @@
 use std::io::Write;
 use std::path::Path;
 
-const BC_PATH: &str = "main.bc";
-
 pub fn build(root_directory: String) -> Result<(), std::io::Error> {
     run_command(
         std::process::Command::new(Path::new(&root_directory).join("target/release/sloth-compile"))
-            .arg("-i")
+            .arg("-p")
             .arg(".")
             .arg("-m")
             .arg("main")
-            .arg("-o")
-            .arg(BC_PATH)
             .arg("main.sl"),
     )?;
 
@@ -21,7 +17,7 @@ pub fn build(root_directory: String) -> Result<(), std::io::Error> {
             .arg("-flto")
             .arg("-ldl")
             .arg("-lpthread")
-            .arg(BC_PATH)
+            .arg("main.bc")
             .arg(Path::new(&root_directory).join("target/release/libruntime.a")),
     )?;
 

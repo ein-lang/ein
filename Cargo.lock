@@ -94,6 +94,7 @@ dependencies = [
 name = "infra"
 version = "0.1.0"
 dependencies = [
+ "serde_json 1.0.41 (registry+https://github.com/rust-lang/crates.io-index)",
  "sloth 0.1.0",
 ]
 
@@ -264,7 +265,6 @@ dependencies = [
  "indoc 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 5.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.41 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
