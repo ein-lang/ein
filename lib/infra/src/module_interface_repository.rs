@@ -1,6 +1,6 @@
-use super::error::RepositoryError;
 use super::module_output_repository::ModuleOutputRepository;
 use super::output_repository::OutputRepository;
+use super::repository_error::RepositoryError;
 
 pub struct ModuleInterfaceRepository<'a> {
     module_output_repository: ModuleOutputRepository<'a>,

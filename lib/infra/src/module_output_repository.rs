@@ -1,5 +1,5 @@
-use super::error::RepositoryError;
 use super::output_repository::OutputRepository;
+use super::repository_error::RepositoryError;
 use std::path::PathBuf;
 
 pub struct ModuleOutputRepository<'a> {

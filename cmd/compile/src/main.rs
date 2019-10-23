@@ -14,8 +14,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let arguments = clap::App::new("Sloth Compiler")
         .version("0.1.0")
         .arg(
-            clap::Arg::with_name("module_path")
-                .short("m")
+            clap::Arg::with_name("source_directory")
+                .short("s")
                 .takes_value(true)
                 .required(true),
         )
@@ -32,23 +32,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         )
         .get_matches_safe()?;
 
-    let input_filename = arguments
-        .value_of("input_filename")
-        .expect("input filename");
-    let module_path = sloth::parse_module_path(sloth::Source::new(
-        "<module path argument>",
-        arguments.value_of("module_path").expect("module path"),
-    ))?;
+    let input_filename = arguments.value_of("input_filename").unwrap();
+    let module_path =
+        infra::ModulePathConverter::new(arguments.value_of("source_directory").unwrap())
+            .convert_from_fs_path(input_filename)?;
     let module = sloth::parse_module(sloth::Source::new(
         input_filename,
         &std::fs::read_to_string(input_filename)?,
     ))?;
 
-    let output_repository = infra::OutputRepository::new(
-        arguments
-            .value_of("output_directory")
-            .expect("output directory"),
-    );
+    let output_repository =
+        infra::OutputRepository::new(arguments.value_of("output_directory").unwrap());
     let module_interface_repository = infra::ModuleInterfaceRepository::new(&output_repository);
 
     let (module_object, module_interface) = sloth::compile(&sloth::ast::Module::new(
