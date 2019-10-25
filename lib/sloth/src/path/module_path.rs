@@ -1,4 +1,6 @@
-#[derive(Clone, Debug, PartialEq)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct ModulePath {
     components: Vec<String>,
 }
@@ -14,6 +16,12 @@ impl ModulePath {
 
     pub fn qualify_name(&self, name: &str) -> String {
         [&self.components.join("."), name].join(".")
+    }
+}
+
+impl std::fmt::Display for ModulePath {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(formatter, "{}", self.components.join("."))
     }
 }
 

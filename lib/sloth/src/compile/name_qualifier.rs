@@ -29,6 +29,7 @@ impl NameQualifier {
         module_interface: &ast::ModuleInterface,
     ) -> ast::ModuleInterface {
         ast::ModuleInterface::new(
+            module_interface.path().clone(),
             module_interface
                 .types()
                 .iter()

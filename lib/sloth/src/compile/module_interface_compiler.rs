@@ -11,6 +11,7 @@ impl ModuleInterfaceCompiler {
 
     pub fn compile(&self, module: &Module) -> ModuleInterface {
         ModuleInterface::new(
+            module.path().clone(),
             module
                 .definitions()
                 .iter()
