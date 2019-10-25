@@ -1,43 +1,35 @@
-use super::path_conversion_error::PathConversionError;
+use super::infrastructure_error::InfrastructureError;
+use super::package_configuration::PackageConfiguration;
 use std::path::Path;
 
-pub struct ModulePathConverter {
-    base_directory: Box<Path>,
+pub struct ModulePathConverter<'a> {
+    package_configuration: &'a PackageConfiguration,
 }
 
-impl ModulePathConverter {
-    pub fn new(base_directory: &str) -> Self {
+impl<'a> ModulePathConverter<'a> {
+    pub fn new(package_configuration: &'a PackageConfiguration) -> Self {
         Self {
-            base_directory: Path::new(base_directory).into(),
+            package_configuration,
         }
     }
 
     pub fn convert_from_fs_path(
         &self,
         path: impl AsRef<Path>,
-    ) -> Result<sloth::ModulePath, PathConversionError> {
+    ) -> Result<sloth::ModulePath, InfrastructureError> {
         Ok(sloth::ModulePath::new(
-            path.as_ref()
-                .canonicalize()?
-                .with_extension("")
-                .strip_prefix(&self.base_directory.canonicalize()?)?
-                .components()
+            vec![self.package_configuration.name().into()]
                 .into_iter()
-                .map(|component| component.as_os_str().to_str().unwrap().into())
+                .chain(
+                    path.as_ref()
+                        .canonicalize()?
+                        .with_extension("")
+                        .strip_prefix(self.package_configuration.source_directory())?
+                        .components()
+                        .into_iter()
+                        .map(|component| component.as_os_str().to_str().unwrap().into()),
+                )
                 .collect(),
         ))
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn convert_to_os_path() {
-        assert_eq!(
-            ModulePathConverter::new("src").convert_from_fs_path("src/lib.rs"),
-            Ok(sloth::ModulePath::new(vec!["lib".into()]))
-        );
     }
 }

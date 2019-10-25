@@ -7,5 +7,3 @@ edition = "2018"
 [lib]
 name = "runtime"
 crate-type = ["staticlib"]
-
-[dependencies]

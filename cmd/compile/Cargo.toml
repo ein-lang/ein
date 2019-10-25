@@ -7,5 +7,4 @@ edition = "2018"
 [dependencies]
 clap = "2"
 infra = { path = "../../lib/infra" }
-serde_json = "1"
 sloth = { path = "../../lib/sloth" }

@@ -19,11 +19,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     run_command(
         std::process::Command::new(Path::new(&root_directory).join("target/release/sloth-compile"))
-            .arg("-s")
-            .arg(".")
+            .arg("-p")
+            .arg("sloth-package.json")
             .arg("-o")
-            .arg(".")
-            .arg("main.sl"),
+            .arg("src/main.bc")
+            .arg("src/main.sl"),
     )?;
 
     run_command(
@@ -32,7 +32,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             .arg("-flto")
             .arg("-ldl")
             .arg("-lpthread")
-            .arg("main.bc")
+            .arg("src/main.bc")
             .arg(Path::new(&root_directory).join("target/release/libruntime.a")),
     )?;
 
