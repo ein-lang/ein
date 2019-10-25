@@ -20,7 +20,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     run_command(
         std::process::Command::new(Path::new(&root_directory).join("target/release/sloth-compile"))
             .arg("-p")
-            .arg("sloth-package.json")
+            .arg("package.json")
             .arg("-o")
             .arg("src/main.bc")
             .arg("src/main.sl"),
