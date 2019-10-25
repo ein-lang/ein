@@ -1,6 +1,16 @@
 Feature: Functions
+  Background:
+    Given a directory named "src"
+    And a file named "package.json" with:
+    """
+    {
+      "name": "command",
+      "version": "1.0.0"
+    }
+    """
+
   Scenario: Use an argument
-    Given a file named "main.sl" with:
+    Given a file named "src/main.sl" with:
     """
     main : Number -> Number
     main x = x
@@ -11,7 +21,7 @@ Feature: Functions
     And the exit status should be 0
 
   Scenario: Apply a function to arguments
-    Given a file named "main.sl" with:
+    Given a file named "src/main.sl" with:
     """
     f : Number -> Number
     f x = x
@@ -25,7 +35,7 @@ Feature: Functions
     And the exit status should be 0
 
   Scenario: Use multiple arguments
-    Given a file named "main.sl" with:
+    Given a file named "src/main.sl" with:
     """
     f : Number -> Number -> Number
     f x y = x
@@ -39,7 +49,7 @@ Feature: Functions
     And the exit status should be 0
 
   Scenario: Define a function with an omitted argument
-    Given a file named "main.sl" with:
+    Given a file named "src/main.sl" with:
     """
     f : Number -> Number
     f x = x
@@ -53,7 +63,7 @@ Feature: Functions
     And the exit status should be 0
 
   Scenario: Define a function with one of its arguments omitted
-    Given a file named "main.sl" with:
+    Given a file named "src/main.sl" with:
     """
     f : Number -> Number -> Number
     f x = (

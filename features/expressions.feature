@@ -1,6 +1,16 @@
 Feature: Expressions
+  Background:
+    Given a directory named "src"
+    And a file named "package.json" with:
+    """
+    {
+      "name": "command",
+      "version": "1.0.0"
+    }
+    """
+
   Scenario: Apply a function of a let expression to arguments
-    Given a file named "main.sl" with:
+    Given a file named "src/main.sl" with:
     """
     main : Number -> Number
     main x = (
