@@ -34,12 +34,10 @@ impl<'a> ModulePathConverter<'a> {
     }
 
     pub fn convert_to_interface_path(&self, module_path: &sloth::ModulePath) -> PathBuf {
-        let mut path = PathBuf::new();
-
-        for component in module_path.components() {
-            path.push(component);
-        }
-
-        path
+        module_path
+            .components()
+            .iter()
+            .collect::<PathBuf>()
+            .with_extension("json")
     }
 }
