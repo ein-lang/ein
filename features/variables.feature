@@ -4,7 +4,7 @@ Feature: Variables
     And a file named "package.json" with:
     """
     {
-      "name": "command",
+      "name": "package",
       "version": "1.0.0"
     }
     """
