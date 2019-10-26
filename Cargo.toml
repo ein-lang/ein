@@ -1,2 +1,7 @@
 [workspace]
-members = ["cmd/build", "cmd/compile", "lib/core", "lib/runtime"]
+members = [
+  "cmd/build",
+  "cmd/compile",
+  "lib/core",
+  "lib/runtime",
+]
