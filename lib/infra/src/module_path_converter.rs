@@ -1,6 +1,6 @@
 use super::infrastructure_error::InfrastructureError;
 use super::package_configuration::PackageConfiguration;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub struct ModulePathConverter<'a> {
     package_configuration: &'a PackageConfiguration,
@@ -13,7 +13,7 @@ impl<'a> ModulePathConverter<'a> {
         }
     }
 
-    pub fn convert_from_fs_path(
+    pub fn convert_from_source_path(
         &self,
         path: impl AsRef<Path>,
     ) -> Result<sloth::ModulePath, InfrastructureError> {
@@ -31,5 +31,15 @@ impl<'a> ModulePathConverter<'a> {
                 )
                 .collect(),
         ))
+    }
+
+    pub fn convert_to_interface_path(&self, module_path: &sloth::ModulePath) -> PathBuf {
+        let mut path = PathBuf::new();
+
+        for component in module_path.components() {
+            path.push(component);
+        }
+
+        path
     }
 }

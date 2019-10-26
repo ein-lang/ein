@@ -48,7 +48,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let module_path = infra::ModulePathConverter::new(&infra::PackageConfiguration::read(
         arguments.value_of("package_filename").unwrap(),
     )?)
-    .convert_from_fs_path(source_filename)?;
+    .convert_from_source_path(source_filename)?;
     let module = sloth::parse_module(sloth::Source::new(
         source_filename,
         &std::fs::read_to_string(source_filename)?,
