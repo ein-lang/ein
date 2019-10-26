@@ -14,6 +14,7 @@ fn main() {
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let arguments = clap::App::new("Sloth Compiler")
         .version("0.1.0")
+        .setting(clap::AppSettings::TrailingVarArg)
         .arg(
             clap::Arg::with_name("package_filename")
                 .short("p")
@@ -32,15 +33,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 .takes_value(true),
         )
         .arg(
-            clap::Arg::with_name("imported_interface_filename")
-                .short("i")
-                .takes_value(true)
-                .multiple(true),
-        )
-        .arg(
             clap::Arg::with_name("source_filename")
                 .index(1)
                 .required(true),
+        )
+        .arg(
+            clap::Arg::with_name("imported_interface_filename")
+                .index(2)
+                .takes_value(true)
+                .multiple(true),
         )
         .get_matches_safe()?;
 
