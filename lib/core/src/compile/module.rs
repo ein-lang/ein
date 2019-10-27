@@ -1,5 +1,4 @@
 use super::llvm;
-use super::object_blob::ObjectBlob;
 
 pub struct Module {
     module: llvm::Module,
@@ -10,7 +9,17 @@ impl Module {
         Self { module }
     }
 
-    pub fn to_object_blob(&self) -> ObjectBlob {
-        ObjectBlob::new(llvm::write_bitcode_to_memory_buffer(&self.module))
+    pub fn link(&mut self, module: Module) {
+        self.module.link(module.module)
+    }
+
+    pub fn deserialize(buffer: &[u8]) -> Self {
+        Self::new(llvm::get_bitcode_module(buffer.into()))
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        llvm::write_bitcode_to_memory_buffer(&self.module)
+            .as_bytes()
+            .into()
     }
 }

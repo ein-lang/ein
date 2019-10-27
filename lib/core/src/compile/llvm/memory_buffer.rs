@@ -11,6 +11,10 @@ impl MemoryBuffer {
         Self { memory_buffer }
     }
 
+    pub(super) fn internal(&self) -> LLVMMemoryBufferRef {
+        self.memory_buffer
+    }
+
     pub fn as_bytes(&self) -> &[u8] {
         unsafe {
             std::slice::from_raw_parts(
@@ -18,5 +22,17 @@ impl MemoryBuffer {
                 LLVMGetBufferSize(self.memory_buffer),
             )
         }
+    }
+}
+
+impl From<&[u8]> for MemoryBuffer {
+    fn from(buffer: &[u8]) -> Self {
+        Self::new(unsafe {
+            LLVMCreateMemoryBufferWithMemoryRangeCopy(
+                &buffer[0] as *const u8 as *const i8,
+                buffer.len(),
+                std::ptr::null(),
+            )
+        })
     }
 }

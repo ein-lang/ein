@@ -34,7 +34,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             &source,
         ))?;
 
-        let imported_target_file_path = module
+        let imported_target_file_paths = module
             .imports()
             .iter()
             .map(|import| {
@@ -46,8 +46,11 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let target_file_path =
-            Self::calculate_target_file_path(source_file_path, &source, &imported_target_file_path);
+        let target_file_path = Self::calculate_target_file_path(
+            source_file_path,
+            &source,
+            &imported_target_file_paths,
+        );
 
         if self.object_file_storage.exists(&target_file_path)
             && self.interface_file_storage.exists(&target_file_path)
@@ -55,11 +58,11 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             return Ok(target_file_path);
         }
 
-        let (module_object, module_interface) = sloth::compile(&sloth::ast::Module::new(
+        let (mut module_object, module_interface) = sloth::compile(&sloth::ast::Module::new(
             self.module_path_converter
                 .convert_from_file_path(source_file_path),
             module.export().clone(),
-            imported_target_file_path
+            imported_target_file_paths
                 .iter()
                 .map(|file_path| {
                     Ok(sloth::deserialize_module_interface(
@@ -70,10 +73,14 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             module.definitions().to_vec(),
         ))?;
 
-        // TODO: Link imported modules.
+        for file_path in &imported_target_file_paths {
+            module_object.link(sloth::ModuleObject::deserialize(
+                &self.object_file_storage.read_to_vec(file_path)?,
+            ));
+        }
 
         self.object_file_storage
-            .write(&target_file_path, module_object.to_object_blob().as_bytes())?;
+            .write(&target_file_path, &module_object.serialize())?;
         self.interface_file_storage.write(
             &target_file_path,
             &sloth::serialize_module_interface(&module_interface)?,

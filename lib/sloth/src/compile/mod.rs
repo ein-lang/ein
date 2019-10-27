@@ -17,9 +17,9 @@ use module_interface_compiler::ModuleInterfaceCompiler;
 use name_qualifier::NameQualifier;
 use type_inference::infer_types;
 
-pub fn compile(
-    module: &ast::Module,
-) -> Result<(core::compile::Module, ast::ModuleInterface), CompileError> {
+pub type ModuleObject = core::compile::Module;
+
+pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterface), CompileError> {
     let module = desugar_with_types(&infer_types(&desugar_without_types(module))?);
     let name_qualifier = NameQualifier::new(&module);
 
