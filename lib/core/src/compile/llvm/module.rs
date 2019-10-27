@@ -16,7 +16,7 @@ impl Module {
         }
     }
 
-    pub(super) fn internal(self) -> LLVMModuleRef {
+    pub(super) fn internal(&self) -> LLVMModuleRef {
         self.internal
     }
 

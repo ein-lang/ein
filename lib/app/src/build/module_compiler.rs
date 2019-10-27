@@ -73,7 +73,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         // TODO: Link imported modules.
 
         self.object_file_storage
-            .write(&target_file_path, module_object.as_bytes())?;
+            .write(&target_file_path, module_object.to_object_blob().as_bytes())?;
         self.interface_file_storage.write(
             &target_file_path,
             &sloth::serialize_module_interface(&module_interface)?,

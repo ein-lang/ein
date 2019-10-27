@@ -10,7 +10,7 @@ mod parse;
 mod path;
 pub mod types;
 
-pub use compile::{compile, ModuleObject};
+pub use compile::compile;
 pub use parse::{parse_module, parse_module_path, Source};
 pub use path::ModulePath;
 

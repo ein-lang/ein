@@ -1,6 +1,5 @@
 use super::llvm;
 
-#[derive(Debug)]
 pub struct ObjectBlob {
     memory_buffer: llvm::MemoryBuffer,
 }
