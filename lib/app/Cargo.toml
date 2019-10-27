@@ -6,6 +6,4 @@ edition = "2018"
 
 [dependencies]
 semver = "0.9"
-serde = { version = "1", features = ["derive", "rc"] }
-serde_json = "1"
 sloth = { path = "../sloth" }
