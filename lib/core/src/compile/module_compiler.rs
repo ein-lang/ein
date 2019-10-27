@@ -32,35 +32,33 @@ impl<'a> ModuleCompiler<'a> {
     }
 
     pub fn compile(&mut self) -> Result<(), CompileError> {
-        {
-            self.module.declare_intrinsics();
+        self.module.declare_intrinsics();
 
-            for definition in self.ast_module.definitions() {
-                match definition {
-                    ast::Definition::FunctionDefinition(function_definition) => {
-                        self.declare_function(function_definition)
-                    }
-                    ast::Definition::ValueDefinition(value_definition) => {
-                        self.declare_global_variable(value_definition)
-                    }
+        for definition in self.ast_module.definitions() {
+            match definition {
+                ast::Definition::FunctionDefinition(function_definition) => {
+                    self.declare_function(function_definition)
+                }
+                ast::Definition::ValueDefinition(value_definition) => {
+                    self.declare_global_variable(value_definition)
                 }
             }
-
-            for definition in self.ast_module.definitions() {
-                match definition {
-                    ast::Definition::FunctionDefinition(function_definition) => {
-                        self.compile_function(function_definition)?
-                    }
-                    ast::Definition::ValueDefinition(value_definition) => {
-                        self.compile_global_variable(value_definition)?
-                    }
-                }
-            }
-
-            self.compile_global_initializer();
-
-            llvm::verify_module(self.module);
         }
+
+        for definition in self.ast_module.definitions() {
+            match definition {
+                ast::Definition::FunctionDefinition(function_definition) => {
+                    self.compile_function(function_definition)?
+                }
+                ast::Definition::ValueDefinition(value_definition) => {
+                    self.compile_global_variable(value_definition)?
+                }
+            }
+        }
+
+        self.compile_global_initializer();
+
+        llvm::verify_module(self.module);
 
         Ok(())
     }
