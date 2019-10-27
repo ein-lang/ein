@@ -135,6 +135,7 @@ impl<'a> ModuleCompiler<'a> {
         let builder = llvm::Builder::new(initializer);
         builder.position_at_end(builder.append_basic_block("entry"));
 
+        // TODO: Sort initializers topologically.
         for initializer in &self.initializers {
             builder.build_call(*initializer, &[]);
         }
