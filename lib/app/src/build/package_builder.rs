@@ -7,6 +7,12 @@ pub struct PackageBuilder<'a, S: FileStorage, L: Linker> {
 }
 
 impl<'a, S: FileStorage, L: Linker> PackageBuilder<'a, S, L> {
+    pub fn new(module_compiler: &'a ModuleCompiler<'a, S>, linker: &'a L) -> Self {
+        Self {
+            module_compiler,
+            linker,
+        }
+    }
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.linker.link(
             &self

@@ -1,5 +1,4 @@
-use std::io::Write;
-use std::path::Path;
+const OUTPUT_DIRECTORY: &str = ".sloth";
 
 fn main() {
     if let Err(error) = run() {
@@ -15,46 +14,22 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    let root_directory = std::env::var("SLOTH_ROOT")?;
+    let package_configuration =
+        app::PackageConfiguration::from_json(&std::fs::read_to_string("package.json")?)?;
+    let object_file_storage = infra::FileStorage::new(OUTPUT_DIRECTORY, "bc");
 
-    run_command(
-        std::process::Command::new(Path::new(&root_directory).join("target/release/sloth-compile"))
-            .arg("-p")
-            .arg("package.json")
-            .arg("-o")
-            .arg("src/main.bc")
-            .arg("src/main.sl"),
-    )?;
-
-    run_command(
-        std::process::Command::new("clang")
-            .arg("-O3")
-            .arg("-flto")
-            .arg("-ldl")
-            .arg("-lpthread")
-            .arg("src/main.bc")
-            .arg(Path::new(&root_directory).join("target/release/libruntime.a")),
-    )?;
-
-    Ok(())
-}
-
-fn run_command(command: &mut std::process::Command) -> Result<(), std::io::Error> {
-    let output = command.output()?;
-
-    if output.status.success() {
-        return Ok(());
-    }
-
-    std::io::stderr().write_all(&output.stdout)?;
-    std::io::stderr().write_all(&output.stderr)?;
-
-    Err(std::io::Error::new(
-        std::io::ErrorKind::Other,
-        output
-            .status
-            .code()
-            .map(|code| format!("a command exited with status code {}", code))
-            .unwrap_or_else(|| "a command exited with no status code".into()),
-    ))
+    app::PackageBuilder::new(
+        &app::ModuleCompiler::new(
+            &app::ModulePathConverter::new(&package_configuration),
+            &infra::FileStorage::new("src", "sl"),
+            &object_file_storage,
+            &infra::FileStorage::new(OUTPUT_DIRECTORY, "json"),
+        ),
+        &infra::Linker::new(
+            &package_configuration,
+            std::env::var("SLOTH_ROOT")?,
+            &object_file_storage,
+        ),
+    )
+    .build()
 }
