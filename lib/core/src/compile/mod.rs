@@ -16,8 +16,8 @@ use type_compiler::TypeCompiler;
 pub fn compile(ast_module: &ast::Module) -> Result<Module, CompileError> {
     verify(&ast_module)?;
 
-    let module = llvm::Module::new("main");
-    ModuleCompiler::new(module, ast_module, &TypeCompiler::new()).compile()?;
+    let mut module = llvm::Module::new("main");
+    ModuleCompiler::new(&mut module, ast_module, &TypeCompiler::new()).compile()?;
 
     Ok(Module::new(module))
 }

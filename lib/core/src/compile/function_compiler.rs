@@ -6,14 +6,14 @@ use crate::ast;
 use std::collections::HashMap;
 
 pub struct FunctionCompiler<'a> {
-    module: llvm::Module,
+    module: &'a mut llvm::Module,
     type_compiler: &'a TypeCompiler,
     global_variables: &'a HashMap<String, llvm::Value>,
 }
 
 impl<'a> FunctionCompiler<'a> {
     pub fn new(
-        module: llvm::Module,
+        module: &'a mut llvm::Module,
         type_compiler: &'a TypeCompiler,
         global_variables: &'a HashMap<String, llvm::Value>,
     ) -> Self {
@@ -25,7 +25,7 @@ impl<'a> FunctionCompiler<'a> {
     }
 
     pub fn compile(
-        &self,
+        &mut self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<llvm::Value, CompileError> {
         let entry_function = self.module.add_function(
