@@ -68,7 +68,7 @@ impl<'a> FunctionCompiler<'a> {
         }
 
         builder.build_ret(
-            ExpressionCompiler::new(&builder, &self, self.type_compiler)
+            ExpressionCompiler::new(&builder, self, self.type_compiler)
                 .compile(&function_definition.body(), &variables)?,
         );
 

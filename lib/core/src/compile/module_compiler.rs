@@ -113,7 +113,7 @@ impl<'a> ModuleCompiler<'a> {
         builder.build_store(
             ExpressionCompiler::new(
                 &builder,
-                &FunctionCompiler::new(self.module, self.type_compiler, &self.global_variables),
+                &mut FunctionCompiler::new(self.module, self.type_compiler, &self.global_variables),
                 &self.type_compiler,
             )
             .compile(&value_definition.body(), &self.global_variables)?,

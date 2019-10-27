@@ -5,16 +5,16 @@ use super::type_compiler::TypeCompiler;
 use crate::ast;
 use std::collections::HashMap;
 
-pub struct ExpressionCompiler<'a> {
-    builder: &'a llvm::Builder,
-    function_compiler: &'a FunctionCompiler<'a>,
+pub struct ExpressionCompiler<'a, 'b> {
+    builder: &'b llvm::Builder,
+    function_compiler: &'b mut FunctionCompiler<'a>,
     type_compiler: &'a TypeCompiler,
 }
 
-impl<'a> ExpressionCompiler<'a> {
+impl<'a, 'b> ExpressionCompiler<'a, 'b> {
     pub fn new(
-        builder: &'a llvm::Builder,
-        function_compiler: &'a FunctionCompiler,
+        builder: &'b llvm::Builder,
+        function_compiler: &'b mut FunctionCompiler<'a>,
         type_compiler: &'a TypeCompiler,
     ) -> Self {
         Self {
@@ -25,7 +25,7 @@ impl<'a> ExpressionCompiler<'a> {
     }
 
     pub fn compile(
-        &self,
+        &mut self,
         expression: &ast::Expression,
         variables: &HashMap<String, llvm::Value>,
     ) -> Result<llvm::Value, CompileError> {
