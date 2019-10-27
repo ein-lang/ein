@@ -1,8 +1,3 @@
-extern crate core;
-extern crate indoc;
-extern crate nom;
-extern crate serde;
-
 pub mod ast;
 mod compile;
 pub mod debug;

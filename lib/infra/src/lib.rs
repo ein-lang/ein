@@ -1,5 +1,3 @@
-extern crate app;
-
 mod file_storage;
 mod linker;
 
