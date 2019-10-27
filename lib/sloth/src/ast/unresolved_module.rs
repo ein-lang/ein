@@ -1,6 +1,9 @@
 use super::definition::Definition;
 use super::export::Export;
 use super::import::Import;
+use super::module::Module;
+use super::module_interface::ModuleInterface;
+use crate::path::ModulePath;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct UnresolvedModule {
@@ -16,6 +19,10 @@ impl UnresolvedModule {
             export,
             imports,
         }
+    }
+
+    pub fn resolve(self, path: ModulePath, module_interfaces: Vec<ModuleInterface>) -> Module {
+        Module::new(path, self.export, module_interfaces, self.definitions)
     }
 
     #[cfg(test)]

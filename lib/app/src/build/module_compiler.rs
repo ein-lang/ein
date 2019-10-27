@@ -58,20 +58,20 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             return Ok(target_file_path);
         }
 
-        let (mut module_object, module_interface) = sloth::compile(&sloth::ast::Module::new(
-            self.module_path_converter
-                .convert_from_file_path(source_file_path),
-            module.export().clone(),
-            imported_target_file_paths
-                .iter()
-                .map(|file_path| {
-                    Ok(sloth::deserialize_module_interface(
-                        &self.interface_file_storage.read_to_vec(file_path)?,
-                    )?)
-                })
-                .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?,
-            module.definitions().to_vec(),
-        ))?;
+        let (mut module_object, module_interface) = sloth::compile(
+            &module.resolve(
+                self.module_path_converter
+                    .convert_from_file_path(source_file_path),
+                imported_target_file_paths
+                    .iter()
+                    .map(|file_path| {
+                        Ok(sloth::deserialize_module_interface(
+                            &self.interface_file_storage.read_to_vec(file_path)?,
+                        )?)
+                    })
+                    .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?,
+            ),
+        )?;
 
         for file_path in &imported_target_file_paths {
             module_object.link(sloth::ModuleObject::deserialize(
