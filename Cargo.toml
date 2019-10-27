@@ -2,6 +2,9 @@
 members = [
   "cmd/build",
   "cmd/compile",
+  "lib/app",
   "lib/core",
+  "lib/infra",
   "lib/runtime",
+  "lib/sloth",
 ]
