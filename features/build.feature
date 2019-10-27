@@ -16,8 +16,8 @@ Feature: Build
     main x = 1 * 3 - 4 / 2
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./a.out`
-    Then stdout from "sh -c ./a.out" should contain exactly "1"
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "1"
     And the exit status should be 0
 
   Scenario: Fail to build an executable

@@ -16,8 +16,8 @@ Feature: Functions
     main x = x
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./a.out`
-    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Apply a function to arguments
@@ -30,8 +30,8 @@ Feature: Functions
     main x = f x
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./a.out`
-    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use multiple arguments
@@ -44,8 +44,8 @@ Feature: Functions
     main x = f x 13
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./a.out`
-    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Define a function with an omitted argument
@@ -58,8 +58,8 @@ Feature: Functions
     main = f
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./a.out`
-    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Define a function with one of its arguments omitted
@@ -77,6 +77,6 @@ Feature: Functions
     main x = f x 13
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./a.out`
-    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0

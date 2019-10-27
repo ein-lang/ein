@@ -25,6 +25,6 @@ Feature: Expressions
     )
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./a.out`
-    Then stdout from "sh -c ./a.out" should contain exactly "42"
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
