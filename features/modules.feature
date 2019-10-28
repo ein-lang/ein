@@ -9,20 +9,20 @@ Feature: Modules
     }
     """
 
-  Scenario: Build a package with multiple modules
+  Scenario: Import a module
     Given a file named "src/main.sl" with:
     """
     import package.foo
 
     main : Number -> Number
-    main x = f x
+    main x = x
     """
     And a file named "src/foo.sl" with:
     """
-    export { f }
+    export { a }
 
-    f : Number -> Number
-    f x = x
+    a : Number
+    a = 42
     """
     When I successfully run `sloth-build`
     And I run `sh -c ./package`
