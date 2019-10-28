@@ -10,6 +10,7 @@ mod type_compiler;
 mod type_inference;
 
 use crate::ast;
+use crate::path::ModulePath;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use module_compiler::ModuleCompiler;
@@ -24,9 +25,35 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
     let name_qualifier = NameQualifier::new(&module);
 
     Ok((
-        core::compile::compile(&name_qualifier.qualify_core_module(
-            &ModuleCompiler::new().compile(&module, module.imported_modules())?,
-        ))?,
+        core::compile::compile(
+            &name_qualifier.qualify_core_module(
+                &ModuleCompiler::new().compile(&module, module.imported_modules())?,
+            ),
+            &core::compile::InitializerConfiguration::new(
+                create_intializer_name(&module),
+                module
+                    .imported_modules()
+                    .iter()
+                    .map(|module_interface| {
+                        convert_path_to_initializer_name(module_interface.path())
+                    })
+                    .collect(),
+            ),
+        )?,
         name_qualifier.qualify_module_interface(&ModuleInterfaceCompiler::new().compile(&module)),
     ))
+}
+
+fn create_intializer_name(module: &ast::Module) -> String {
+    for definition in module.definitions() {
+        if definition.name() == "main" {
+            return "sloth_init".into();
+        }
+    }
+
+    convert_path_to_initializer_name(module.path())
+}
+
+fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
+    module_path.qualify_name("$init")
 }
