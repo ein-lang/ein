@@ -30,7 +30,15 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
                 &ModuleCompiler::new().compile(&module, module.imported_modules())?,
             ),
             &core::compile::InitializerConfiguration::new(
-                create_intializer_name(&module),
+                if module
+                    .definitions()
+                    .iter()
+                    .any(|definition| definition.name() == "main")
+                {
+                    "sloth_init".into()
+                } else {
+                    convert_path_to_initializer_name(module.path())
+                },
                 module
                     .imported_modules()
                     .iter()
@@ -42,16 +50,6 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
         )?,
         name_qualifier.qualify_module_interface(&ModuleInterfaceCompiler::new().compile(&module)),
     ))
-}
-
-fn create_intializer_name(module: &ast::Module) -> String {
-    for definition in module.definitions() {
-        if definition.name() == "main" {
-            return "sloth_init".into();
-        }
-    }
-
-    convert_path_to_initializer_name(module.path())
 }
 
 fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
