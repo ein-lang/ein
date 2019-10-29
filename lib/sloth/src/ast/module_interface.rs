@@ -18,7 +18,31 @@ impl ModuleInterface {
         &self.path
     }
 
-    pub fn types(&self) -> &HashMap<String, Type> {
-        &self.types
+    pub fn types<'a>(&'a self) -> impl 'a + Iterator<Item = (String, &'a Type)> {
+        self.types.iter().map(move |(name, type_)| {
+            (
+                [
+                    self.path.components().iter().last().unwrap().as_str(),
+                    &name,
+                ]
+                .join("."),
+                type_,
+            )
+        })
+    }
+
+    pub fn fully_qualified_types<'a>(&'a self) -> impl 'a + Iterator<Item = (String, &'a Type)> {
+        self.types.iter().map(move |(name, type_)| {
+            (
+                self.path
+                    .components()
+                    .iter()
+                    .map(|component| component.as_str())
+                    .chain(vec![name.as_str()])
+                    .collect::<Vec<_>>()
+                    .join("."),
+                type_,
+            )
+        })
     }
 }

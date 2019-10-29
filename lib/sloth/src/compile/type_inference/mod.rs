@@ -369,9 +369,9 @@ mod test {
             ModulePath::new(vec![]),
             Export::new(Default::default()),
             vec![ModuleInterface::new(
-                ModulePath::new(vec![]),
+                ModulePath::new(vec!["m".into()]),
                 vec![(
-                    "m.x".into(),
+                    "x".into(),
                     types::Number::new(SourceInformation::dummy()).into(),
                 )]
                 .into_iter()

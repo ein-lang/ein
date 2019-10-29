@@ -20,7 +20,7 @@ impl TypeInferer {
     }
 
     fn collect_equations(&mut self, module: &Module) -> Result<(), TypeInferenceError> {
-        let mut variables = HashMap::<&str, Type>::new();
+        let mut variables = HashMap::<String, Type>::new();
 
         for imported_module in module.imported_modules() {
             for (name, type_) in imported_module.types() {
@@ -32,12 +32,15 @@ impl TypeInferer {
             match definition {
                 Definition::FunctionDefinition(function_definition) => {
                     variables.insert(
-                        function_definition.name(),
+                        function_definition.name().into(),
                         function_definition.type_().clone(),
                     );
                 }
                 Definition::ValueDefinition(value_definition) => {
-                    variables.insert(value_definition.name(), value_definition.type_().clone());
+                    variables.insert(
+                        value_definition.name().into(),
+                        value_definition.type_().clone(),
+                    );
                 }
             }
         }
@@ -59,7 +62,7 @@ impl TypeInferer {
     fn infer_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
-        variables: &HashMap<&str, Type>,
+        variables: &HashMap<String, Type>,
     ) -> Result<(), TypeInferenceError> {
         let source_information = function_definition.source_information();
         let mut variables = variables.clone();
@@ -79,7 +82,7 @@ impl TypeInferer {
                 .into(),
             ));
 
-            variables.insert(argument_name, argument_type);
+            variables.insert(argument_name.into(), argument_type);
 
             type_ = result_type;
         }
@@ -93,7 +96,7 @@ impl TypeInferer {
     fn infer_value_definition(
         &mut self,
         value_definition: &ValueDefinition,
-        variables: &HashMap<&str, Type>,
+        variables: &HashMap<String, Type>,
     ) -> Result<(), TypeInferenceError> {
         let type_ = self.infer_expression(value_definition.body(), &variables)?;
 
@@ -106,7 +109,7 @@ impl TypeInferer {
     fn infer_expression(
         &mut self,
         expression: &Expression,
-        variables: &HashMap<&str, Type>,
+        variables: &HashMap<String, Type>,
     ) -> Result<Type, TypeInferenceError> {
         match expression {
             Expression::Application(application) => {
@@ -134,7 +137,7 @@ impl TypeInferer {
                     match definition {
                         Definition::FunctionDefinition(function_definition) => {
                             variables.insert(
-                                function_definition.name(),
+                                function_definition.name().into(),
                                 function_definition.type_().clone(),
                             );
                         }
@@ -150,8 +153,10 @@ impl TypeInferer {
                         Definition::ValueDefinition(value_definition) => {
                             self.infer_value_definition(value_definition, &variables)?;
 
-                            variables
-                                .insert(value_definition.name(), value_definition.type_().clone());
+                            variables.insert(
+                                value_definition.name().into(),
+                                value_definition.type_().clone(),
+                            );
                         }
                     }
                 }
