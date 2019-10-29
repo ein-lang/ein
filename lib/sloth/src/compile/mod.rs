@@ -48,7 +48,7 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
                     .collect(),
             ),
         )?,
-        name_qualifier.qualify_module_interface(&ModuleInterfaceCompiler::new().compile(&module)),
+        ModuleInterfaceCompiler::new().compile(&module),
     ))
 }
 

@@ -24,20 +24,6 @@ impl NameQualifier {
         Self { names }
     }
 
-    pub fn qualify_module_interface(
-        &self,
-        module_interface: &ast::ModuleInterface,
-    ) -> ast::ModuleInterface {
-        ast::ModuleInterface::new(
-            module_interface.path().clone(),
-            module_interface
-                .types()
-                .iter()
-                .map(|(name, type_)| (self.names[name].clone(), type_.clone()))
-                .collect(),
-        )
-    }
-
     pub fn qualify_core_module(&self, module: &core::ast::Module) -> core::ast::Module {
         core::ast::Module::new(
             module.declarations().to_vec(),
