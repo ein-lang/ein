@@ -15,6 +15,10 @@ impl ModulePath {
     }
 
     pub fn qualify_name(&self, name: &str) -> String {
+        [self.components.last().unwrap(), name].join(".")
+    }
+
+    pub fn fully_qualify_name(&self, name: &str) -> String {
         [&self.components.join("."), name].join(".")
     }
 }
@@ -32,8 +36,16 @@ mod test {
     #[test]
     fn qualify_name() {
         assert_eq!(
-            ModulePath::new(vec!["foo".into()]).qualify_name("bar"),
-            "foo.bar"
+            ModulePath::new(vec!["foo".into(), "bar".into()]).qualify_name("baz"),
+            "bar.baz"
+        );
+    }
+
+    #[test]
+    fn fully_qualify_name() {
+        assert_eq!(
+            ModulePath::new(vec!["foo".into(), "bar".into()]).fully_qualify_name("baz"),
+            "foo.bar.baz"
         );
     }
 }

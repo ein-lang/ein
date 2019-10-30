@@ -7,11 +7,19 @@ use std::collections::HashMap;
 pub struct ModuleInterface {
     path: ModulePath,
     types: HashMap<String, Type>,
+    name_map: HashMap<String, String>,
 }
 
 impl ModuleInterface {
     pub fn new(path: ModulePath, types: HashMap<String, Type>) -> Self {
-        Self { path, types }
+        Self {
+            name_map: types
+                .keys()
+                .map(|key| (path.qualify_name(key), path.fully_qualify_name(key)))
+                .collect(),
+            path,
+            types,
+        }
     }
 
     pub fn path(&self) -> &ModulePath {
@@ -19,30 +27,12 @@ impl ModuleInterface {
     }
 
     pub fn types<'a>(&'a self) -> impl 'a + Iterator<Item = (String, &'a Type)> {
-        self.types.iter().map(move |(name, type_)| {
-            (
-                [
-                    self.path.components().iter().last().unwrap().as_str(),
-                    &name,
-                ]
-                .join("."),
-                type_,
-            )
-        })
+        self.types
+            .iter()
+            .map(move |(name, type_)| (self.path.qualify_name(name), type_))
     }
 
-    pub fn fully_qualified_types<'a>(&'a self) -> impl 'a + Iterator<Item = (String, &'a Type)> {
-        self.types.iter().map(move |(name, type_)| {
-            (
-                self.path
-                    .components()
-                    .iter()
-                    .map(|component| component.as_str())
-                    .chain(vec![name.as_str()])
-                    .collect::<Vec<_>>()
-                    .join("."),
-                type_,
-            )
-        })
+    pub fn name_map(&self) -> &HashMap<String, String> {
+        &self.name_map
     }
 }

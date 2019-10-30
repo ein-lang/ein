@@ -53,5 +53,5 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
 }
 
 fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
-    module_path.qualify_name("$init")
+    module_path.fully_qualify_name("$init")
 }
