@@ -252,8 +252,8 @@ fn atomic_expression(input: Input) -> IResult<Input, Expression> {
             |(source_information, number)| Number::new(number, source_information).into(),
         ),
         map(
-            tuple((source_information, identifier)),
-            |(source_information, identifier)| Variable::new(identifier, source_information).into(),
+            tuple((source_information, name)),
+            |(source_information, name)| Variable::new(name, source_information).into(),
         ),
         parenthesesed(expression),
     ))(input)
@@ -324,12 +324,27 @@ fn number_literal(input: Input) -> IResult<Input, f64> {
     )(input)
 }
 
+fn name(input: Input) -> IResult<Input, String> {
+    map(
+        tuple((identifier, many0(preceded(tag("."), identifier)))),
+        |(identifier, identifiers)| {
+            vec![identifier]
+                .into_iter()
+                .chain(identifiers.into_iter())
+                .collect::<Vec<_>>()
+                .join(".")
+        },
+    )(input)
+}
+
 fn identifier(original_input: Input) -> IResult<Input, String> {
-    token(tuple((
-        convert_combinator(alpha1),
-        convert_combinator(alphanumeric0),
-    )))(original_input.clone())
-    .map(|(input, (head, tail))| (input, format!("{}{}", head, tail)))
+    map(
+        token(tuple((
+            convert_combinator(alpha1),
+            convert_combinator(alphanumeric0),
+        ))),
+        |(head, tail)| [head, tail].concat(),
+    )(original_input.clone())
     .and_then(|(input, identifier)| {
         if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
             Err(nom::Err::Error((original_input, ErrorKind::Verify)))
@@ -536,7 +551,7 @@ mod test {
     use super::super::Source;
     use super::{
         application, blank, export, expression, function_definition, identifier, import, keyword,
-        let_, line_break, module, number_literal, number_type, source_information, type_,
+        let_, line_break, module, name, number_literal, number_type, source_information, type_,
         value_definition, Input,
     };
     use crate::ast::*;
@@ -735,6 +750,16 @@ mod test {
                 input.set("in", 0, Location::default()),
                 ErrorKind::Verify
             )))
+        );
+    }
+
+    #[test]
+    fn parse_name() {
+        let input = Input::new(Source::new("", "foo.bar"));
+
+        assert_eq!(
+            name(input.clone()),
+            Ok((input.set("", 0, Location::new(1, 8)), "foo.bar".into()))
         );
     }
 
