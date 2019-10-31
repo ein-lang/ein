@@ -24,8 +24,11 @@ impl ModuleCompiler {
             imported_modules
                 .iter()
                 .flat_map(|module_interface| {
-                    module_interface.types().map(|(name, type_)| {
-                        core::ast::Declaration::new(name, self.type_compiler.compile(type_))
+                    module_interface.types().iter().map(move |(name, type_)| {
+                        core::ast::Declaration::new(
+                            module_interface.path().fully_qualify_name(name),
+                            self.type_compiler.compile(type_),
+                        )
                     })
                 })
                 .collect(),

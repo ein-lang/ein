@@ -24,7 +24,7 @@ impl TypeInferer {
 
         for imported_module in module.imported_modules() {
             for (name, type_) in imported_module.types() {
-                variables.insert(name, type_.clone());
+                variables.insert(imported_module.path().qualify_name(name), type_.clone());
             }
         }
 

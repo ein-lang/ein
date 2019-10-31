@@ -5,6 +5,7 @@ use super::function_compiler::FunctionCompiler;
 use super::initializer_configuration::InitializerConfiguration;
 use super::llvm;
 use super::type_compiler::TypeCompiler;
+use crate::types;
 use std::collections::HashMap;
 
 pub struct ModuleCompiler<'a> {
@@ -36,13 +37,24 @@ impl<'a> ModuleCompiler<'a> {
     pub fn compile(&mut self) -> Result<(), CompileError> {
         self.module.declare_intrinsics();
 
+        for declaration in self.ast_module.declarations() {
+            match declaration.type_() {
+                types::Type::Function(function_type) => {
+                    self.declare_function(declaration.name(), function_type)
+                }
+                types::Type::Value(value_type) => {
+                    self.declare_global_variable(declaration.name(), value_type)
+                }
+            }
+        }
+
         for definition in self.ast_module.definitions() {
             match definition {
                 ast::Definition::FunctionDefinition(function_definition) => {
-                    self.declare_function(function_definition)
+                    self.declare_function(function_definition.name(), function_definition.type_())
                 }
                 ast::Definition::ValueDefinition(value_definition) => {
-                    self.declare_global_variable(value_definition)
+                    self.declare_global_variable(value_definition.name(), value_definition.type_())
                 }
             }
         }
@@ -65,13 +77,11 @@ impl<'a> ModuleCompiler<'a> {
         Ok(())
     }
 
-    fn declare_function(&mut self, function_definition: &ast::FunctionDefinition) {
+    fn declare_function(&mut self, name: &str, type_: &types::Function) {
         self.global_variables.insert(
-            function_definition.name().into(),
-            self.module.add_global(
-                function_definition.name(),
-                self.type_compiler.compile_closure(function_definition),
-            ),
+            name.into(),
+            self.module
+                .add_global(name, self.type_compiler.compile_unsized_closure(type_)),
         );
     }
 
@@ -88,13 +98,11 @@ impl<'a> ModuleCompiler<'a> {
         Ok(())
     }
 
-    fn declare_global_variable(&mut self, value_definition: &ast::ValueDefinition) {
+    fn declare_global_variable(&mut self, name: &str, value_type: &types::Value) {
         self.global_variables.insert(
-            value_definition.name().into(),
-            self.module.add_global(
-                value_definition.name(),
-                self.type_compiler.compile_value(value_definition.type_()),
-            ),
+            name.into(),
+            self.module
+                .add_global(name, self.type_compiler.compile_value(value_type)),
         );
     }
 

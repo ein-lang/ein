@@ -26,10 +26,8 @@ impl ModuleInterface {
         &self.path
     }
 
-    pub fn types<'a>(&'a self) -> impl 'a + Iterator<Item = (String, &'a Type)> {
-        self.types
-            .iter()
-            .map(move |(name, type_)| (self.path.qualify_name(name), type_))
+    pub fn types(&self) -> &HashMap<String, Type> {
+        &self.types
     }
 
     pub fn name_map(&self) -> &HashMap<String, String> {
