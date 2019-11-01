@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
-pub struct RawPackageConfiguration {
+pub struct PackageConfiguration {
     name: String,
     version: String,
 }
 
-impl RawPackageConfiguration {
+impl PackageConfiguration {
     pub fn name(&self) -> &str {
         &self.name
     }

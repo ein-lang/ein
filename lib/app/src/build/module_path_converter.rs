@@ -1,20 +1,17 @@
-use super::package_configuration::PackageConfiguration;
 use crate::infra::FilePath;
 
 pub struct ModulePathConverter<'a> {
-    package_configuration: &'a PackageConfiguration,
+    package: &'a sloth::Package,
 }
 
 impl<'a> ModulePathConverter<'a> {
-    pub fn new(package_configuration: &'a PackageConfiguration) -> Self {
-        Self {
-            package_configuration,
-        }
+    pub fn new(package: &'a sloth::Package) -> Self {
+        Self { package }
     }
 
     pub fn convert_from_file_path(&self, file_path: &FilePath) -> sloth::ModulePath {
         sloth::ModulePath::new(
-            vec![self.package_configuration.name().into()]
+            vec![self.package.name().into()]
                 .into_iter()
                 .chain(file_path.components().iter().cloned())
                 .collect(),

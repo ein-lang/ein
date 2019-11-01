@@ -2,19 +2,19 @@ use super::file_storage::FileStorage;
 use std::io::Write;
 
 pub struct Linker<'a> {
-    package_configuration: &'a app::PackageConfiguration,
+    package: &'a sloth::Package,
     root_directory: Box<std::path::Path>,
     object_file_storage: &'a FileStorage,
 }
 
 impl<'a> Linker<'a> {
     pub fn new(
-        package_configuration: &'a app::PackageConfiguration,
+        package: &'a sloth::Package,
         root_directory: impl AsRef<std::path::Path>,
         object_file_storage: &'a FileStorage,
     ) -> Self {
         Self {
-            package_configuration,
+            package,
             root_directory: root_directory.as_ref().into(),
             object_file_storage,
         }
@@ -25,7 +25,7 @@ impl<'a> app::Linker for Linker<'a> {
     fn link(&self, file_path: &app::FilePath) -> Result<(), std::io::Error> {
         let output = std::process::Command::new("clang")
             .arg("-o")
-            .arg(self.package_configuration.name())
+            .arg(self.package.name())
             .arg("-O3")
             .arg("-flto")
             .arg("-ldl")

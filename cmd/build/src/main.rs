@@ -14,22 +14,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         );
     }
 
-    let package_configuration =
-        infra::parse_package_configuration(&std::fs::read_to_string("package.json")?)?;
+    let package = infra::parse_package_configuration(&std::fs::read_to_string("package.json")?)?;
     let object_file_storage = infra::FileStorage::new(OUTPUT_DIRECTORY, "bc");
 
     app::PackageBuilder::new(
         &app::ModuleCompiler::new(
-            &app::ModulePathConverter::new(&package_configuration),
+            &app::ModulePathConverter::new(&package),
             &infra::FileStorage::new("src", "sl"),
             &object_file_storage,
             &infra::FileStorage::new(OUTPUT_DIRECTORY, "json"),
         ),
-        &infra::Linker::new(
-            &package_configuration,
-            std::env::var("SLOTH_ROOT")?,
-            &object_file_storage,
-        ),
+        &infra::Linker::new(&package, std::env::var("SLOTH_ROOT")?, &object_file_storage),
     )
     .build()
 }

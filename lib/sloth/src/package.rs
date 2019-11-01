@@ -1,9 +1,10 @@
-pub struct PackageConfiguration {
+#[derive(Debug)]
+pub struct Package {
     name: String,
     version: semver::Version,
 }
 
-impl PackageConfiguration {
+impl Package {
     pub fn new(name: String, version: semver::Version) -> Self {
         Self { name, version }
     }

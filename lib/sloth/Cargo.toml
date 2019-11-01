@@ -8,5 +8,6 @@ edition = "2018"
 core = { path = "../core" }
 indoc = "0.3"
 nom = "5"
+semver = "0.9"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
