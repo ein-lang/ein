@@ -25,7 +25,7 @@ fn check_global_free_variables(module: &Module) -> Result<(), VerificationError>
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::super::ast::*;
     use super::super::types;
     use super::check_global_free_variables;

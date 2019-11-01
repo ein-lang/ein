@@ -20,7 +20,7 @@ impl NameGenerator {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::NameGenerator;
 
     #[test]

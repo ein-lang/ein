@@ -34,7 +34,7 @@ pub fn desugar_non_variable_applications(module: &Module) -> Module {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use crate::debug::*;
     use crate::types;

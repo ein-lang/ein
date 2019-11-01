@@ -119,7 +119,7 @@ fn append_arguments_to_expression_with_source_information(
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use crate::types;
 

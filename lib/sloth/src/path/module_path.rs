@@ -56,7 +56,7 @@ impl std::fmt::Display for ModulePath {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]

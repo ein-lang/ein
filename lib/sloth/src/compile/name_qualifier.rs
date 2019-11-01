@@ -68,7 +68,7 @@ impl NameQualifier {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use crate::ast;
     use crate::debug::SourceInformation;

@@ -195,7 +195,7 @@ impl<'a> ExpressionCompiler<'a> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::super::type_compiler::TypeCompiler;
     use super::ExpressionCompiler;
     use crate::ast::*;

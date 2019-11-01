@@ -10,7 +10,7 @@ pub fn check_types(module: &Module) -> Result<(), TypeCheckError> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::check_types;
     use super::error::*;
     use crate::ast::*;

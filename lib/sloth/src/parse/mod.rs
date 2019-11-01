@@ -32,7 +32,7 @@ fn map_error<T>(error: nom::Err<(Input, T)>, source: Source) -> ParseError {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     use crate::ast::*;
     use crate::debug::SourceInformation;

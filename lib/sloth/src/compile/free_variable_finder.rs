@@ -87,7 +87,7 @@ impl FreeVariableFinder {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::FreeVariableFinder;
     use crate::ast::*;
     use crate::debug::*;

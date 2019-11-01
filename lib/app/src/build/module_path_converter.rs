@@ -19,7 +19,7 @@ impl<'a> ModulePathConverter<'a> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]

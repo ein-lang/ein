@@ -11,7 +11,7 @@ pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::error::*;
     use super::infer_types;
     use crate::ast::*;

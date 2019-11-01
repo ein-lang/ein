@@ -540,7 +540,7 @@ fn convert_error<'a>(
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::super::Source;
     use super::{
         application, blank, export, expression, function_definition, identifier, import, keyword,

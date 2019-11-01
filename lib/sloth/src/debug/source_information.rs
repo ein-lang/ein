@@ -60,7 +60,7 @@ impl PartialEq for SourceInformation {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::{Location, SourceInformation};
 
     #[test]
