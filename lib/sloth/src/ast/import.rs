@@ -1,18 +1,18 @@
-use crate::path::ModulePath;
+use crate::path::UnresolvedModulePath;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Import {
-    module_path: ModulePath,
+    module_path: UnresolvedModulePath,
 }
 
 impl Import {
-    pub fn new(module_path: impl Into<ModulePath>) -> Self {
+    pub fn new(module_path: impl Into<UnresolvedModulePath>) -> Self {
         Self {
             module_path: module_path.into(),
         }
     }
 
-    pub fn module_path(&self) -> &ModulePath {
+    pub fn module_path(&self) -> &UnresolvedModulePath {
         &self.module_path
     }
 }

@@ -16,6 +16,7 @@ mod test {
     use super::infer_types;
     use crate::ast::*;
     use crate::debug::*;
+    use crate::package::Package;
     use crate::path::*;
     use crate::types;
 
@@ -366,10 +367,10 @@ mod test {
     #[test]
     fn infer_types_of_variables_with_imported_mdoules() {
         let module = Module::new(
-            ModulePath::new(vec![]),
+            ModulePath::new(Package::new("", (0, 0, 0)), vec![]),
             Export::new(Default::default()),
             vec![ModuleInterface::new(
-                ModulePath::new(vec!["m".into()]),
+                ModulePath::new(Package::new("m", (0, 0, 0)), vec![]),
                 vec![(
                     "x".into(),
                     types::Number::new(SourceInformation::dummy()).into(),

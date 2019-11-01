@@ -10,5 +10,5 @@ pub mod types;
 pub use compile::{compile, ModuleObject};
 pub use package::Package;
 pub use parse::{parse_module, parse_module_path, Source};
-pub use path::ModulePath;
+pub use path::*;
 pub use serialize::*;

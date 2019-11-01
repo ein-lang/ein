@@ -10,17 +10,33 @@ impl<'a> ModulePathConverter<'a> {
     }
 
     pub fn convert_from_file_path(&self, file_path: &FilePath) -> sloth::ModulePath {
-        sloth::ModulePath::new(
-            vec![self.package.name().into()]
-                .into_iter()
-                .chain(file_path.components().iter().cloned())
-                .collect(),
-        )
+        sloth::ModulePath::new(self.package.clone(), file_path.components().to_vec())
     }
 
-    pub fn convert_to_file_path(&self, module_path: &sloth::ModulePath) -> FilePath {
-        let mut iterator = module_path.components().iter();
-        iterator.next();
-        FilePath::new(iterator.cloned().collect())
+    pub fn convert_to_file_path(&self, module_path: &sloth::UnresolvedModulePath) -> FilePath {
+        FilePath::new(module_path.components().to_vec())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn convert_from_file_path() {
+        assert_eq!(
+            ModulePathConverter::new(&sloth::Package::new("M", (0, 0, 0)))
+                .convert_from_file_path(&FilePath::new(vec!["foo".into()])),
+            sloth::ModulePath::new(sloth::Package::new("M", (0, 0, 0)), vec!["foo".into()])
+        );
+    }
+
+    #[test]
+    fn convert_to_file_path() {
+        assert_eq!(
+            ModulePathConverter::new(&sloth::Package::new("M", (0, 0, 0)))
+                .convert_to_file_path(&sloth::UnresolvedModulePath::new("M", vec!["foo".into()])),
+            FilePath::new(vec!["foo".into()])
+        );
     }
 }

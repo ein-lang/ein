@@ -2,6 +2,8 @@ use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
 use super::module_interface::ModuleInterface;
+#[cfg(test)]
+use crate::package::Package;
 use crate::path::ModulePath;
 use crate::types::Type;
 use std::collections::HashMap;
@@ -32,7 +34,7 @@ impl Module {
     #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
         Self::new(
-            ModulePath::new(vec![]),
+            ModulePath::new(Package::new("", (0, 0, 0)), vec![]),
             Export::new(Default::default()),
             vec![],
             definitions,

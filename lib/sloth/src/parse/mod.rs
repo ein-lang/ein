@@ -5,7 +5,7 @@ mod source;
 mod utilities;
 
 use crate::ast;
-use crate::path::ModulePath;
+use crate::path::UnresolvedModulePath;
 use error::ParseError;
 use input::Input;
 use nom::Err;
@@ -17,7 +17,7 @@ pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, ParseError>
         .map_err(|error| map_error(error, source))
 }
 
-pub fn parse_module_path(source: Source) -> Result<ModulePath, ParseError> {
+pub fn parse_module_path(source: Source) -> Result<UnresolvedModulePath, ParseError> {
     combinators::module_path(Input::new(source))
         .map(|(_, module_path)| module_path)
         .map_err(|error| map_error(error, source))
@@ -154,7 +154,7 @@ mod test {
     fn parse_module_path_() {
         assert_eq!(
             parse_module_path(Source::new("", "foo")),
-            Ok(ModulePath::new(vec!["foo".into()]))
+            Ok(UnresolvedModulePath::new("foo", vec![]))
         );
     }
 
@@ -162,7 +162,7 @@ mod test {
     fn parse_module_path_with_subpath() {
         assert_eq!(
             parse_module_path(Source::new("", "foo.bar")),
-            Ok(ModulePath::new(vec!["foo".into(), "bar".into()]))
+            Ok(UnresolvedModulePath::new("foo", vec!["bar".into()]))
         );
     }
 }

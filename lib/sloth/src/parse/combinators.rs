@@ -2,7 +2,7 @@ use super::input::Input;
 use super::utilities::*;
 use crate::ast::*;
 use crate::debug::SourceInformation;
-use crate::path::*;
+use crate::path::UnresolvedModulePath;
 use crate::types::{self, Type};
 use nom::{
     branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
@@ -60,17 +60,10 @@ fn import(input: Input) -> IResult<Input, Import> {
     })(input)
 }
 
-pub fn module_path(input: Input) -> IResult<Input, ModulePath> {
+pub fn module_path(input: Input) -> IResult<Input, UnresolvedModulePath> {
     map(
         tuple((identifier, many0(preceded(tag("."), identifier)))),
-        |(identifier, identifiers)| {
-            ModulePath::new(
-                vec![identifier]
-                    .into_iter()
-                    .chain(identifiers.into_iter())
-                    .collect(),
-            )
-        },
+        |(identifier, identifiers)| UnresolvedModulePath::new(identifier, identifiers),
     )(input)
 }
 
@@ -1458,7 +1451,7 @@ mod test {
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 14)),
-                Import::new(ModulePath::new(vec!["module".into()]))
+                Import::new(UnresolvedModulePath::new("module", vec![]))
             ))
         );
 
@@ -1468,7 +1461,10 @@ mod test {
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 24)),
-                Import::new(ModulePath::new(vec!["module".into(), "submodule".into()]))
+                Import::new(UnresolvedModulePath::new(
+                    "module",
+                    vec!["submodule".into()]
+                ))
             ))
         );
     }

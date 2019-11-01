@@ -13,6 +13,7 @@ impl<'a, S: FileStorage, L: Linker> PackageBuilder<'a, S, L> {
             linker,
         }
     }
+
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         self.linker.link(
             &self

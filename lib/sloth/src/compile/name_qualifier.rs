@@ -72,6 +72,7 @@ mod test {
     use super::*;
     use crate::ast;
     use crate::debug::SourceInformation;
+    use crate::package::Package;
     use crate::path::ModulePath;
     use crate::types;
 
@@ -79,7 +80,7 @@ mod test {
     fn qualify_names_in_target_module() {
         assert_eq!(
             NameQualifier::new(&ast::Module::new(
-                ModulePath::new(vec!["M".into()]),
+                ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
                 ast::Export::new(Default::default()),
                 vec![],
                 vec![ast::ValueDefinition::new(
@@ -102,7 +103,7 @@ mod test {
             core::ast::Module::new(
                 vec![],
                 vec![core::ast::ValueDefinition::new(
-                    "M.x",
+                    "M(0.0.0).x",
                     core::ast::Expression::Number(42.0),
                     core::types::Value::Number
                 )
@@ -115,10 +116,10 @@ mod test {
     fn qualify_names_in_imported_modules() {
         assert_eq!(
             NameQualifier::new(&ast::Module::new(
-                ModulePath::new(vec!["M".into()]),
+                ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
                 ast::Export::new(Default::default()),
                 vec![ast::ModuleInterface::new(
-                    ModulePath::new(vec!["A".into(), "B".into()]),
+                    ModulePath::new(Package::new("A", (0, 0, 0)), vec!["B".into()]),
                     vec![(
                         "y".into(),
                         types::Number::new(SourceInformation::dummy()).into()
@@ -146,8 +147,8 @@ mod test {
             core::ast::Module::new(
                 vec![],
                 vec![core::ast::ValueDefinition::new(
-                    "M.x",
-                    core::ast::Variable::new("A.B.y"),
+                    "M(0.0.0).x",
+                    core::ast::Variable::new("A(0.0.0).B.y"),
                     core::types::Value::Number
                 )
                 .into()]

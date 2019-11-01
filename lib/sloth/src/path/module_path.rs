@@ -1,13 +1,22 @@
+use crate::package::Package;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct ModulePath {
+    package: Package,
     components: Vec<String>,
 }
 
 impl ModulePath {
-    pub fn new(components: Vec<String>) -> Self {
-        Self { components }
+    pub fn new(package: Package, components: Vec<String>) -> Self {
+        Self {
+            package,
+            components,
+        }
+    }
+
+    pub fn package(&self) -> &Package {
+        &self.package
     }
 
     pub fn components(&self) -> &[String] {
@@ -15,11 +24,28 @@ impl ModulePath {
     }
 
     pub fn qualify_name(&self, name: &str) -> String {
-        [self.components.last().unwrap(), name].join(".")
+        [
+            self.components
+                .last()
+                .map(|component| component.as_str())
+                .unwrap_or_else(|| self.package.name()),
+            name,
+        ]
+        .join(".")
     }
 
     pub fn fully_qualify_name(&self, name: &str) -> String {
-        [&self.components.join("."), name].join(".")
+        vec![&format!(
+            "{}({})",
+            self.package.name(),
+            self.package.version()
+        )]
+        .into_iter()
+        .chain(self.components.iter())
+        .map(|component| component.as_str())
+        .chain(vec![name].into_iter())
+        .collect::<Vec<_>>()
+        .join(".")
     }
 }
 
@@ -36,16 +62,24 @@ mod test {
     #[test]
     fn qualify_name() {
         assert_eq!(
-            ModulePath::new(vec!["foo".into(), "bar".into()]).qualify_name("baz"),
-            "bar.baz"
+            ModulePath::new(
+                Package::new("foo", (0, 0, 0)),
+                vec!["bar".into(), "baz".into()]
+            )
+            .qualify_name("blah"),
+            "baz.blah"
         );
     }
 
     #[test]
     fn fully_qualify_name() {
         assert_eq!(
-            ModulePath::new(vec!["foo".into(), "bar".into()]).fully_qualify_name("baz"),
-            "foo.bar.baz"
+            ModulePath::new(
+                Package::new("foo", (0, 0, 0)),
+                vec!["bar".into(), "baz".into()]
+            )
+            .fully_qualify_name("blah"),
+            "foo(0.0.0).bar.baz.blah"
         );
     }
 }

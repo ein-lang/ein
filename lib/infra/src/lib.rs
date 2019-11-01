@@ -12,7 +12,7 @@ pub fn parse_package_configuration(
     let configuration = serde_json::from_str::<PackageConfiguration>(source)?;
 
     Ok(sloth::Package::new(
-        configuration.name().into(),
+        configuration.name(),
         semver::Version::parse(configuration.version())?,
     ))
 }
