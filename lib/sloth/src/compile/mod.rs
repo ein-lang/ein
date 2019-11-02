@@ -26,9 +26,7 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
 
     Ok((
         core::compile::compile(
-            &name_qualifier.qualify_core_module(
-                &ModuleCompiler::new().compile(&module, module.imported_modules())?,
-            ),
+            &name_qualifier.qualify_core_module(&ModuleCompiler::new().compile(&module)?),
             &core::compile::InitializerConfiguration::new(
                 if module
                     .definitions()

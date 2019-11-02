@@ -15,13 +15,10 @@ impl ModuleCompiler {
         }
     }
 
-    pub fn compile(
-        &self,
-        module: &ast::Module,
-        imported_modules: &[ast::ModuleInterface],
-    ) -> Result<core::ast::Module, CompileError> {
+    pub fn compile(&self, module: &ast::Module) -> Result<core::ast::Module, CompileError> {
         Ok(core::ast::Module::new(
-            imported_modules
+            module
+                .imported_modules()
                 .iter()
                 .flat_map(|module_interface| {
                     module_interface.types().iter().map(move |(name, type_)| {
