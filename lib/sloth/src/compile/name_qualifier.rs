@@ -13,8 +13,11 @@ impl NameQualifier {
         let mut names = HashMap::new();
 
         for imported_module in module.imported_modules() {
-            for (qualified_name, fully_qualified_name) in imported_module.name_map() {
-                names.insert(qualified_name.into(), fully_qualified_name.into());
+            for name in imported_module.types().keys() {
+                names.insert(
+                    imported_module.path().qualify_name(name),
+                    imported_module.path().fully_qualify_name(name),
+                );
             }
         }
 
