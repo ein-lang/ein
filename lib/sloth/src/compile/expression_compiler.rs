@@ -17,7 +17,7 @@ impl<'a> ExpressionCompiler<'a> {
     pub fn compile(
         &self,
         expression: &ast::Expression,
-        variables: &HashMap<String, Type>,
+        local_variables: &HashMap<String, Type>,
     ) -> Result<core::ast::Expression, CompileError> {
         match expression {
             ast::Expression::Application(application) => {
@@ -30,31 +30,31 @@ impl<'a> ExpressionCompiler<'a> {
                 }
 
                 Ok(core::ast::Application::new(
-                    self.compile(function, variables)?
+                    self.compile(function, local_variables)?
                         .to_variable()
                         .expect("variable")
                         .clone(),
                     arguments
                         .iter()
                         .rev()
-                        .map(|argument| self.compile(argument, variables))
+                        .map(|argument| self.compile(argument, local_variables))
                         .collect::<Result<_, _>>()?,
                 )
                 .into())
             }
             ast::Expression::Let(let_) => match let_.definitions()[0] {
                 ast::Definition::FunctionDefinition(_) => {
-                    Ok(self.compile_let_functions(let_, variables)?.into())
+                    Ok(self.compile_let_functions(let_, local_variables)?.into())
                 }
                 ast::Definition::ValueDefinition(_) => {
-                    Ok(self.compile_let_values(let_, variables)?.into())
+                    Ok(self.compile_let_values(let_, local_variables)?.into())
                 }
             },
             ast::Expression::Number(number) => Ok(core::ast::Expression::Number(number.value())),
             ast::Expression::Operation(operation) => Ok(core::ast::Operation::new(
                 operation.operator().into(),
-                self.compile(operation.lhs(), variables)?,
-                self.compile(operation.rhs(), variables)?,
+                self.compile(operation.lhs(), local_variables)?,
+                self.compile(operation.rhs(), local_variables)?,
             )
             .into()),
             ast::Expression::Variable(variable) => Ok(core::ast::Expression::Variable(
@@ -66,7 +66,7 @@ impl<'a> ExpressionCompiler<'a> {
     fn compile_let_functions(
         &self,
         let_: &ast::Let,
-        variables: &HashMap<String, Type>,
+        local_variables: &HashMap<String, Type>,
     ) -> Result<core::ast::LetFunctions, CompileError> {
         let function_definitions = let_
             .definitions()
@@ -81,7 +81,7 @@ impl<'a> ExpressionCompiler<'a> {
             })
             .collect::<Result<Vec<&ast::FunctionDefinition>, _>>()?;
 
-        let variables = &variables
+        let variables = &local_variables
             .iter()
             .map(|(name, type_)| (name.clone(), type_.clone()))
             .chain(function_definitions.iter().map(|function_definition| {
@@ -152,7 +152,7 @@ impl<'a> ExpressionCompiler<'a> {
     fn compile_let_values(
         &self,
         let_: &ast::Let,
-        variables: &HashMap<String, Type>,
+        local_variables: &HashMap<String, Type>,
     ) -> Result<core::ast::LetValues, CompileError> {
         let value_definitions = let_
             .definitions()
@@ -167,7 +167,7 @@ impl<'a> ExpressionCompiler<'a> {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let variables = &variables
+        let variables = &local_variables
             .iter()
             .map(|(name, type_)| (name.clone(), type_.clone()))
             .chain(value_definitions.iter().map(|value_definition| {
