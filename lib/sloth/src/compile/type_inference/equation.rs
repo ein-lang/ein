@@ -7,8 +7,11 @@ pub struct Equation {
 }
 
 impl Equation {
-    pub fn new(lhs: Type, rhs: Type) -> Self {
-        Self { lhs, rhs }
+    pub fn new(lhs: impl Into<Type>, rhs: impl Into<Type>) -> Self {
+        Self {
+            lhs: lhs.into(),
+            rhs: rhs.into(),
+        }
     }
 
     pub fn lhs(&self) -> &Type {
