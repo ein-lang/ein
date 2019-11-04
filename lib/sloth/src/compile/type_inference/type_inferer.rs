@@ -155,11 +155,6 @@ impl TypeInferer {
                         }
                         Definition::ValueDefinition(value_definition) => {
                             self.infer_value_definition(value_definition, &variables)?;
-
-                            variables.insert(
-                                value_definition.name().into(),
-                                value_definition.type_().clone(),
-                            );
                         }
                     }
                 }
