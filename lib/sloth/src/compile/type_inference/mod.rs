@@ -391,7 +391,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_with_recursive_functions() {
+    fn infer_types_of_let_values_with_recursive_functions_and_the_latter_typed() {
         assert_eq!(
             infer_types(&Module::from_definitions(vec![ValueDefinition::new(
                 "x",
@@ -412,6 +412,82 @@ mod tests {
                                 types::Number::new(SourceInformation::dummy()),
                                 SourceInformation::dummy(),
                             ),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    ],
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()])),
+            Ok(Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Let::new(
+                    vec![
+                        ValueDefinition::new(
+                            "f",
+                            Variable::new("g", SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        ValueDefinition::new(
+                            "g",
+                            Variable::new("f", SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    ],
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]))
+        );
+    }
+
+    #[test]
+    fn infer_types_of_let_values_with_recursive_functions_and_the_former_typed() {
+        assert_eq!(
+            infer_types(&Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Let::new(
+                    vec![
+                        ValueDefinition::new(
+                            "f",
+                            Variable::new("g", SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        ValueDefinition::new(
+                            "g",
+                            Variable::new("f", SourceInformation::dummy()),
+                            types::Variable::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into()

@@ -131,6 +131,24 @@ impl TypeInferrer {
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
+                // Because the language does not have let-rec
+                // expression like OCaml, we need to guess if the
+                // let expression is recursive or not to generate
+                // proper type equations.
+                let functions_included =
+                    let_.definitions()
+                        .iter()
+                        .any(|definition| match definition {
+                            Definition::FunctionDefinition(_) => true,
+                            Definition::ValueDefinition(value_definition) => {
+                                if let Type::Function(_) = value_definition.type_() {
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                        });
+
                 for definition in let_.definitions() {
                     match definition {
                         Definition::FunctionDefinition(function_definition) => {
@@ -140,15 +158,7 @@ impl TypeInferrer {
                             );
                         }
                         Definition::ValueDefinition(value_definition) => {
-                            // Because the language does not have let-rec
-                            // expression like OCaml, we need to guess if the
-                            // let expression is recursive or not to generate
-                            // proper type equations.
-                            //
-                            // Therefore, we declare variables defined by value
-                            // definitions typed as functions here ahead of
-                            // their recursive use.
-                            if let Type::Function(_) = value_definition.type_() {
+                            if functions_included {
                                 variables.insert(
                                     value_definition.name().into(),
                                     value_definition.type_().clone(),
