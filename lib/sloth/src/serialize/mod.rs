@@ -9,5 +9,5 @@ pub fn serialize_module_interface(
 pub fn deserialize_module_interface(
     data: &[u8],
 ) -> Result<ast::ModuleInterface, serde_json::Error> {
-    Ok(serde_json::from_slice::<ast::ModuleInterface>(data)?.into())
+    serde_json::from_slice::<ast::ModuleInterface>(data)
 }
