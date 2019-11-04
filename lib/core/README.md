@@ -8,7 +8,8 @@ This is a library of the core language. It consists of the following components.
 
 ## Design
 
-- Correct AST's are always compiled without errors.
+- Correct AST's always succeed to be compiled.
+- Wrong AST's always fail to be compiled.
 - Everything is typed already.
-- The language is agnostic to modules and packages in the higher-level language.
 - Top-level definitions are unordered.
+- The language is agnostic to module systems in the higher-level languages.
