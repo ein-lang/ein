@@ -70,7 +70,7 @@ impl<'a> ModuleCompiler<'a> {
             }
         }
 
-        self.compile_global_initializer();
+        self.compile_module_initializer();
 
         llvm::verify_module(self.module);
 
@@ -137,7 +137,7 @@ impl<'a> ModuleCompiler<'a> {
         Ok(())
     }
 
-    fn compile_global_initializer(&mut self) {
+    fn compile_module_initializer(&mut self) {
         let flag = self.module.add_global(
             &[self.initializer_configuration.name(), "$initialized"].concat(),
             llvm::Type::i1(),
