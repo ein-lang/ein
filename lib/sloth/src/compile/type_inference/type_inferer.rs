@@ -193,7 +193,7 @@ impl TypeInferer {
                 (Type::Variable(variable), rhs) => {
                     if let Type::Variable(another_variable) = rhs {
                         if variable.id() == another_variable.id() {
-                            break;
+                            continue;
                         }
                     }
 
