@@ -28,6 +28,7 @@ impl Expression {
             Self::Application(application) => application.rename_variables(names).into(),
             Self::LetFunctions(let_functions) => let_functions.rename_variables(names).into(),
             Self::LetValues(let_values) => let_values.rename_variables(names).into(),
+            Self::Operation(operation) => operation.rename_variables(names).into(),
             Self::Variable(variable) => variable.rename_variables(names).into(),
             _ => self.clone(),
         }

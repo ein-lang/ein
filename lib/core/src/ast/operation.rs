@@ -1,5 +1,6 @@
 use super::expression::Expression;
 use super::operator::Operator;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Operation {
@@ -27,5 +28,13 @@ impl Operation {
 
     pub fn rhs(&self) -> &Expression {
         &self.rhs
+    }
+
+    pub fn rename_variables(&self, names: &HashMap<String, String>) -> Self {
+        Self::new(
+            self.operator,
+            self.lhs.rename_variables(names),
+            self.rhs.rename_variables(names),
+        )
     }
 }

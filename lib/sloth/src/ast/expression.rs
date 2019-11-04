@@ -35,6 +35,7 @@ impl Expression {
         match self {
             Self::Application(application) => application.convert_definitions(convert).into(),
             Self::Let(let_) => let_.convert_definitions(convert).into(),
+            Self::Operation(operation) => operation.convert_definitions(convert).into(),
             _ => self.clone(),
         }
     }
@@ -43,6 +44,7 @@ impl Expression {
         let expression = match self {
             Self::Application(application) => application.convert_expressions(convert).into(),
             Self::Let(let_) => let_.convert_expressions(convert).into(),
+            Self::Operation(operation) => operation.convert_expressions(convert).into(),
             _ => self.clone(),
         };
 

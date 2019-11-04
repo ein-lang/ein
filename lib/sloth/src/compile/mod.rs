@@ -53,3 +53,37 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
 fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
     module_path.fully_qualify_name("$init")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::*;
+    use crate::debug::*;
+    use crate::types;
+
+    #[test]
+    fn compile_constant_initialized_with_operation() {
+        assert!(compile(&Module::from_definitions(vec![
+            ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into(),
+            ValueDefinition::new(
+                "y",
+                Operation::new(
+                    Operator::Add,
+                    Variable::new("x", SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()
+        ]))
+        .is_ok());
+    }
+}
