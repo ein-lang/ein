@@ -407,7 +407,11 @@ mod tests {
                         ValueDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             SourceInformation::dummy()
                         )
                         .into()
@@ -480,7 +484,11 @@ mod tests {
                         ValueDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             SourceInformation::dummy()
                         )
                         .into()
@@ -541,6 +549,43 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]))
+        );
+    }
+
+    #[test]
+    fn fail_to_infer_types_of_recursive_value_definitions() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Let::new(
+                vec![
+                    ValueDefinition::new(
+                        "a",
+                        Variable::new("b", SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "b",
+                        Variable::new("a", SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+                Variable::new("a", SourceInformation::dummy()),
+            ),
+            types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+
+        assert_eq!(
+            infer_types(&module),
+            Err(TypeInferenceError::VariableNotFound(
+                "b".into(),
+                SourceInformation::dummy().into(),
+            ))
         );
     }
 }

@@ -140,10 +140,20 @@ impl TypeInferer {
                             );
                         }
                         Definition::ValueDefinition(value_definition) => {
-                            variables.insert(
-                                value_definition.name().into(),
-                                value_definition.type_().clone(),
-                            );
+                            // Because the language does not have let-rec
+                            // expression like OCaml, we need to guess if the
+                            // let expression is recursive or not to generate
+                            // proper type equations.
+                            //
+                            // Therefore, we declare variables defined by value
+                            // definitions typed as functions here ahead of
+                            // their recursive use.
+                            if let Type::Function(_) = value_definition.type_() {
+                                variables.insert(
+                                    value_definition.name().into(),
+                                    value_definition.type_().clone(),
+                                );
+                            }
                         }
                     }
                 }
@@ -155,6 +165,11 @@ impl TypeInferer {
                         }
                         Definition::ValueDefinition(value_definition) => {
                             self.infer_value_definition(value_definition, &variables)?;
+
+                            variables.insert(
+                                value_definition.name().into(),
+                                value_definition.type_().clone(),
+                            );
                         }
                     }
                 }
