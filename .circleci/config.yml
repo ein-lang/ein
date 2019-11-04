@@ -6,10 +6,12 @@ jobs:
     steps:
       - checkout
       - run: |
-          pacman -Syu --noconfirm base-devel clang llvm ruby-bundler rustup
+          pacman -Syu --noconfirm base-devel clang llvm npm ruby-bundler rustup
           rustup default stable
           rustup component add clippy rustfmt
           bundler install
+          npm install -g cspell
+      - run: cspell '**/*.{feature,md,rs}'
       - run: cargo build
       - run: cargo clippy
       - run: cargo fmt -- --check

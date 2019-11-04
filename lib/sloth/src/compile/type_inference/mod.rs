@@ -1,13 +1,13 @@
 mod equation;
 mod error;
-mod type_inferer;
+mod type_inferrer;
 
 use crate::ast::*;
 pub use error::*;
-use type_inferer::*;
+use type_inferrer::*;
 
 pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {
-    TypeInferer::new().infer(module)
+    TypeInferrer::new().infer(module)
 }
 
 #[cfg(test)]
@@ -366,7 +366,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_variables_with_imported_mdoules() {
+    fn infer_types_of_variables_with_imported_modules() {
         let module = Module::new(
             ModulePath::new(Package::new("", (0, 0, 0)), vec![]),
             Export::new(Default::default()),

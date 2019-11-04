@@ -5,11 +5,11 @@ use crate::types::{self, Type};
 use std::collections::*;
 
 #[derive(Clone, Debug)]
-pub struct TypeInferer {
+pub struct TypeInferrer {
     equations: Vec<Equation>,
 }
 
-impl TypeInferer {
+impl TypeInferrer {
     pub fn new() -> Self {
         Self { equations: vec![] }
     }

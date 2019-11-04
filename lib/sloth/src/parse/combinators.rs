@@ -610,12 +610,12 @@ mod tests {
             ))
         );
 
-        let input = Input::new(Source::new("", "Numbe"));
+        let input = Input::new(Source::new("", "Num"));
 
         assert_eq!(
             number_type(input.clone()),
             Err(nom::Err::Error((
-                input.set("Numbe", 0, Location::default()),
+                input.set("Num", 0, Location::default()),
                 ErrorKind::Tag
             )))
         );
