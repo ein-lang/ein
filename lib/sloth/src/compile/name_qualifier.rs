@@ -9,7 +9,7 @@ pub struct NameQualifier {
 // NameQualifier is not meant to qualify names in the original modules but
 // names in their outputs on compilation.
 impl NameQualifier {
-    pub fn new(module: &ast::Module) -> Self {
+    pub fn new(module: &ast::Module, special_names: HashMap<String, String>) -> Self {
         let mut names = HashMap::new();
 
         for imported_module in module.imported_modules() {
@@ -28,7 +28,7 @@ impl NameQualifier {
             );
         }
 
-        names.insert("main".into(), "sloth_main".into());
+        names.extend(special_names);
 
         Self { names }
     }
@@ -82,18 +82,21 @@ mod tests {
     #[test]
     fn qualify_names_in_target_module() {
         assert_eq!(
-            NameQualifier::new(&ast::Module::new(
-                ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
-                ast::Export::new(Default::default()),
-                vec![],
-                vec![ast::ValueDefinition::new(
-                    "x",
-                    ast::Number::new(42.0, SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()]
-            ))
+            NameQualifier::new(
+                &ast::Module::new(
+                    ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
+                    ast::Export::new(Default::default()),
+                    vec![],
+                    vec![ast::ValueDefinition::new(
+                        "x",
+                        ast::Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()]
+                ),
+                HashMap::new()
+            )
             .qualify_core_module(&core::ast::Module::new(
                 vec![],
                 vec![core::ast::ValueDefinition::new(
@@ -118,26 +121,29 @@ mod tests {
     #[test]
     fn qualify_names_in_imported_modules() {
         assert_eq!(
-            NameQualifier::new(&ast::Module::new(
-                ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
-                ast::Export::new(Default::default()),
-                vec![ast::ModuleInterface::new(
-                    ModulePath::new(Package::new("A", (0, 0, 0)), vec!["B".into()]),
-                    vec![(
-                        "y".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )]
-                    .into_iter()
-                    .collect()
-                )],
-                vec![ast::ValueDefinition::new(
-                    "x",
-                    ast::Variable::new("B.y", SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()]
-            ))
+            NameQualifier::new(
+                &ast::Module::new(
+                    ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
+                    ast::Export::new(Default::default()),
+                    vec![ast::ModuleInterface::new(
+                        ModulePath::new(Package::new("A", (0, 0, 0)), vec!["B".into()]),
+                        vec![(
+                            "y".into(),
+                            types::Number::new(SourceInformation::dummy()).into()
+                        )]
+                        .into_iter()
+                        .collect()
+                    )],
+                    vec![ast::ValueDefinition::new(
+                        "x",
+                        ast::Variable::new("B.y", SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()]
+                ),
+                HashMap::new()
+            )
             .qualify_core_module(&core::ast::Module::new(
                 vec![],
                 vec![core::ast::ValueDefinition::new(

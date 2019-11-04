@@ -18,11 +18,23 @@ use module_interface_compiler::ModuleInterfaceCompiler;
 use name_qualifier::NameQualifier;
 use type_inference::infer_types;
 
+const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
+const OBJECT_MAIN_FUNCTION_NAME: &str = "sloth_main";
+const OBJECT_INIT_FUNCTION_NAME: &str = "sloth_init";
+
 pub type ModuleObject = core::compile::Module;
 
 pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterface), CompileError> {
     let module = desugar_with_types(&infer_types(&desugar_without_types(module))?);
-    let name_qualifier = NameQualifier::new(&module);
+    let name_qualifier = NameQualifier::new(
+        &module,
+        vec![(
+            SOURCE_MAIN_FUNCTION_NAME.into(),
+            OBJECT_MAIN_FUNCTION_NAME.into(),
+        )]
+        .into_iter()
+        .collect(),
+    );
 
     Ok((
         core::compile::compile(
@@ -31,9 +43,9 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
                 if module
                     .definitions()
                     .iter()
-                    .any(|definition| definition.name() == "main")
+                    .any(|definition| definition.name() == SOURCE_MAIN_FUNCTION_NAME)
                 {
-                    "sloth_init".into()
+                    OBJECT_INIT_FUNCTION_NAME.into()
                 } else {
                     convert_path_to_initializer_name(module.path())
                 },
