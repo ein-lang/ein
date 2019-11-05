@@ -1,4 +1,4 @@
-use super::error::{CompileError, InternalCompileError};
+use super::error::CompileError;
 use super::free_variable_finder::FreeVariableFinder;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
@@ -73,11 +73,11 @@ impl<'a> ExpressionCompiler<'a> {
             .iter()
             .map(|definition| match definition {
                 ast::Definition::FunctionDefinition(function_definition) => Ok(function_definition),
-                ast::Definition::ValueDefinition(value_definition) => Err(CompileError::Internal(
-                    InternalCompileError::MixedDefinitionsInLet(
+                ast::Definition::ValueDefinition(value_definition) => {
+                    Err(CompileError::MixedDefinitionsInLet(
                         value_definition.source_information().clone(),
-                    ),
-                )),
+                    ))
+                }
             })
             .collect::<Result<Vec<&ast::FunctionDefinition>, _>>()?;
 
@@ -158,11 +158,11 @@ impl<'a> ExpressionCompiler<'a> {
             .definitions()
             .iter()
             .map(|definition| match definition {
-                ast::Definition::FunctionDefinition(function_definition) => Err(
-                    CompileError::Internal(InternalCompileError::MixedDefinitionsInLet(
+                ast::Definition::FunctionDefinition(function_definition) => {
+                    Err(CompileError::MixedDefinitionsInLet(
                         function_definition.source_information().clone(),
-                    )),
-                ),
+                    ))
+                }
                 ast::Definition::ValueDefinition(value_definition) => Ok(value_definition),
             })
             .collect::<Result<Vec<_>, _>>()?;
