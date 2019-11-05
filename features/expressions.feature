@@ -24,7 +24,7 @@ Feature: Expressions
       x
     )
     """
-    And I successfully run `sloth-build`
+    And I successfully run `sloth build`
     When I run `sh -c ./Package`
     Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0

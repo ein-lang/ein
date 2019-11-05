@@ -1,10 +1,15 @@
 [package]
-name = "sloth-build"
+name = "command"
 version = "0.1.0"
 authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
+[[bin]]
+name = "sloth"
+path = "src/main.rs"
+
 [dependencies]
 app = { path = "../../lib/app" }
+clap = "2"
 infra = { path = "../../lib/infra" }
 sloth = { path = "../../lib/sloth" }

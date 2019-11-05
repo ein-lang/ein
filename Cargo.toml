@@ -1,6 +1,6 @@
 [workspace]
 members = [
-  "cmd/build",
+  "cmd/sloth",
   "lib/app",
   "lib/core",
   "lib/infra",

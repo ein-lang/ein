@@ -8,12 +8,18 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
-    if std::env::args().count() > 1 {
-        return Err(
-            std::io::Error::new(std::io::ErrorKind::InvalidInput, "too many arguments").into(),
-        );
+    match clap::App::new("sloth")
+        .setting(clap::AppSettings::SubcommandRequired)
+        .subcommand(clap::SubCommand::with_name("build"))
+        .get_matches_safe()?
+        .subcommand()
+    {
+        ("build", _) => build(),
+        _ => unreachable!(),
     }
+}
 
+fn build() -> Result<(), Box<dyn std::error::Error>> {
     let package = infra::parse_package_configuration(&std::fs::read_to_string("package.json")?)?;
     let object_file_storage = infra::FileStorage::new(OUTPUT_DIRECTORY, "bc");
 

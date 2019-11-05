@@ -24,7 +24,7 @@ Feature: Modules
     a : Number
     a = 42
     """
-    When I successfully run `sloth-build`
+    When I successfully run `sloth build`
     And I run `sh -c ./Package`
     Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
@@ -44,7 +44,7 @@ Feature: Modules
     a : Number
     a = 42
     """
-    When I successfully run `sloth-build`
+    When I successfully run `sloth build`
     And I run `sh -c ./Package`
     Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
