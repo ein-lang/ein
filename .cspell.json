@@ -32,6 +32,7 @@
     "parenthesesed",
     "petgraph",
     "semver",
+    "subcommand",
     "submodule",
     "subpath",
     "toposort",
