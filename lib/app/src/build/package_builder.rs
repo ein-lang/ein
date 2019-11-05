@@ -18,7 +18,7 @@ impl<'a, S: FileStorage, L: Linker> PackageBuilder<'a, S, L> {
         self.linker.link(
             &self
                 .module_compiler
-                .compile(&FilePath::new(vec!["main".into()]))?,
+                .compile(&FilePath::new(vec!["Main".into()]))?,
         )?;
 
         Ok(())

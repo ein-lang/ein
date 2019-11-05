@@ -4,12 +4,12 @@ Feature: Variables
     And a file named "package.json" with:
     """
     {
-      "name": "package",
+      "name": "Package",
       "version": "1.0.0"
     }
     """
   Scenario: Define a global variable
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     y : Number
     y = 42
@@ -18,12 +18,12 @@ Feature: Variables
     main x = y
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use let-values expression
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     main : Number -> Number
     main x = (
@@ -35,12 +35,12 @@ Feature: Variables
     )
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use untyped let-values expression
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     main : Number -> Number
     main x = (
@@ -51,12 +51,12 @@ Feature: Variables
     )
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use nested let-values expression
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     main : Number -> Number
     main x = (
@@ -72,12 +72,12 @@ Feature: Variables
     )
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use let-functions expression
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     main : Number -> Number
     main x = (
@@ -89,12 +89,12 @@ Feature: Variables
     )
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use untyped let-functions expression
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     main : Number -> Number
     main x = (
@@ -105,12 +105,12 @@ Feature: Variables
     )
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Define multiple functions in a let-functions expression
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     main : Number -> Number
     main x = (
@@ -122,6 +122,6 @@ Feature: Variables
     )
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0

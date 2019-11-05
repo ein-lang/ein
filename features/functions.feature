@@ -4,24 +4,24 @@ Feature: Functions
     And a file named "package.json" with:
     """
     {
-      "name": "package",
+      "name": "Package",
       "version": "1.0.0"
     }
     """
 
   Scenario: Use an argument
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     main : Number -> Number
     main x = x
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Apply a function to arguments
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     f : Number -> Number
     f x = x
@@ -30,12 +30,12 @@ Feature: Functions
     main x = f x
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use multiple arguments
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     f : Number -> Number -> Number
     f x y = x
@@ -44,12 +44,12 @@ Feature: Functions
     main x = f x 13
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Define a function with an omitted argument
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     f : Number -> Number
     f x = x
@@ -58,12 +58,12 @@ Feature: Functions
     main = f
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Define a function with one of its arguments omitted
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.sl" with:
     """
     f : Number -> Number -> Number
     f x = (
@@ -77,6 +77,6 @@ Feature: Functions
     main x = f x 13
     """
     And I successfully run `sloth-build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./Package`
+    Then stdout from "sh -c ./Package" should contain exactly "42"
     And the exit status should be 0
