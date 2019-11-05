@@ -1,5 +1,6 @@
 {
   "words": [
+    "algo",
     "alloca",
     "ast's",
     "bitcode",
@@ -29,9 +30,11 @@
     "malloc",
     "multispace",
     "parenthesesed",
+    "petgraph",
     "semver",
     "submodule",
     "subpath",
+    "toposort",
     "uint"
   ]
 }
