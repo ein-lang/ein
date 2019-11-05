@@ -1,6 +1,6 @@
 use super::expression::Expression;
 use crate::types;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ValueDefinition {
@@ -36,5 +36,9 @@ impl ValueDefinition {
             self.body.rename_variables(names),
             self.type_.clone(),
         )
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        self.body.find_global_variables(&local_variables)
     }
 }

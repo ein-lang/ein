@@ -3,7 +3,7 @@ use super::let_functions::LetFunctions;
 use super::let_values::LetValues;
 use super::operation::Operation;
 use super::variable::Variable;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
@@ -31,6 +31,19 @@ impl Expression {
             Self::Operation(operation) => operation.rename_variables(names).into(),
             Self::Variable(variable) => variable.rename_variables(names).into(),
             _ => self.clone(),
+        }
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        match self {
+            Self::Application(application) => application.find_global_variables(local_variables),
+            Self::LetFunctions(let_functions) => {
+                let_functions.find_global_variables(local_variables)
+            }
+            Self::LetValues(let_values) => let_values.find_global_variables(local_variables),
+            Self::Operation(operation) => operation.find_global_variables(local_variables),
+            Self::Variable(variable) => variable.find_global_variables(local_variables),
+            _ => HashSet::new(),
         }
     }
 }

@@ -1,6 +1,6 @@
 use super::expression::Expression;
 use super::variable::Variable;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Application {
@@ -31,6 +31,16 @@ impl Application {
                 .iter()
                 .map(|argument| argument.rename_variables(names))
                 .collect(),
+        )
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        self.arguments.iter().fold(
+            self.function.find_global_variables(local_variables),
+            |mut global_variables, argument| {
+                global_variables.extend(argument.find_global_variables(local_variables));
+                global_variables
+            },
         )
     }
 }

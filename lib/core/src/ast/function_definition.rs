@@ -1,7 +1,7 @@
 use super::expression::Expression;
 use super::Argument;
 use crate::types;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionDefinition {
@@ -83,5 +83,27 @@ impl FunctionDefinition {
             self.body.rename_variables(&names),
             self.result_type.clone(),
         )
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        let mut local_variables = local_variables.clone();
+
+        local_variables.insert(self.name.clone());
+
+        local_variables.extend(
+            self.environment
+                .iter()
+                .map(|argument| argument.name().into())
+                .collect::<HashSet<_>>(),
+        );
+
+        local_variables.extend(
+            self.arguments
+                .iter()
+                .map(|argument| argument.name().into())
+                .collect::<HashSet<_>>(),
+        );
+
+        self.body.find_global_variables(&local_variables)
     }
 }

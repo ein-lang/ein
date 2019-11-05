@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 llvm-sys = "80"
+petgraph = "0.4"

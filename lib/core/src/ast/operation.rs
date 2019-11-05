@@ -1,6 +1,6 @@
 use super::expression::Expression;
 use super::operator::Operator;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Operation {
@@ -36,5 +36,11 @@ impl Operation {
             self.lhs.rename_variables(names),
             self.rhs.rename_variables(names),
         )
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        let mut global_variables = self.lhs.find_global_variables(local_variables);
+        global_variables.extend(self.rhs.find_global_variables(local_variables));
+        global_variables
     }
 }

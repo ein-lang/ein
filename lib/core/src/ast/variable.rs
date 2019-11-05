@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Variable {
@@ -18,6 +18,14 @@ impl Variable {
         match names.get(self.name.as_str()) {
             Some(name) => Self::new(name),
             None => self.clone(),
+        }
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        if local_variables.contains(&self.name) {
+            HashSet::new()
+        } else {
+            vec![self.name.clone()].into_iter().collect()
         }
     }
 }

@@ -1,6 +1,6 @@
 use super::expression::Expression;
 use super::function_definition::FunctionDefinition;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct LetFunctions {
@@ -38,5 +38,24 @@ impl LetFunctions {
         }
 
         Self::new(definitions, self.expression.rename_variables(&names))
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        let mut local_variables = local_variables.clone();
+
+        local_variables.extend(
+            self.definitions
+                .iter()
+                .map(|definition| definition.name().into())
+                .collect::<HashSet<_>>(),
+        );
+
+        self.definitions.iter().fold(
+            self.expression.find_global_variables(&local_variables),
+            |mut global_variables, argument| {
+                global_variables.extend(argument.find_global_variables(&local_variables));
+                global_variables
+            },
+        )
     }
 }

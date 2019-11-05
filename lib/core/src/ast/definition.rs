@@ -1,6 +1,6 @@
 use super::function_definition::*;
 use super::value_definition::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
@@ -23,6 +23,17 @@ impl Definition {
             }
             Self::ValueDefinition(value_definition) => {
                 value_definition.rename_variables(names).into()
+            }
+        }
+    }
+
+    pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
+        match self {
+            Self::FunctionDefinition(function_definition) => {
+                function_definition.find_global_variables(local_variables)
+            }
+            Self::ValueDefinition(value_definition) => {
+                value_definition.find_global_variables(local_variables)
             }
         }
     }

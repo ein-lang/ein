@@ -3,6 +3,7 @@ use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::function_compiler::FunctionCompiler;
 use super::initializer_configuration::InitializerConfiguration;
+use super::initializer_sorter::InitializerSorter;
 use super::llvm;
 use super::type_compiler::TypeCompiler;
 use crate::types;
@@ -13,7 +14,7 @@ pub struct ModuleCompiler<'a> {
     ast_module: &'a ast::Module,
     type_compiler: &'a TypeCompiler,
     global_variables: HashMap<String, llvm::Value>,
-    initializers: Vec<llvm::Value>,
+    initializers: HashMap<String, llvm::Value>,
     initializer_configuration: &'a InitializerConfiguration,
 }
 
@@ -29,7 +30,7 @@ impl<'a> ModuleCompiler<'a> {
             ast_module,
             type_compiler,
             global_variables: HashMap::new(),
-            initializers: vec![],
+            initializers: HashMap::new(),
             initializer_configuration,
         }
     }
@@ -70,7 +71,7 @@ impl<'a> ModuleCompiler<'a> {
             }
         }
 
-        self.compile_module_initializer();
+        self.compile_module_initializer()?;
 
         llvm::verify_module(self.module);
 
@@ -114,7 +115,7 @@ impl<'a> ModuleCompiler<'a> {
         global_variable.set_initializer(llvm::get_undef(global_variable.type_().element()));
 
         let initializer = self.module.add_function(
-            &Self::generate_initializer_name(value_definition.name()),
+            &Self::get_initializer_name(value_definition.name()),
             llvm::Type::function(llvm::Type::void(), &[]),
         );
 
@@ -132,12 +133,13 @@ impl<'a> ModuleCompiler<'a> {
         builder.build_ret_void();
 
         llvm::verify_function(initializer);
-        self.initializers.push(initializer);
+        self.initializers
+            .insert(value_definition.name().into(), initializer);
 
         Ok(())
     }
 
-    fn compile_module_initializer(&mut self) {
+    fn compile_module_initializer(&mut self) -> Result<(), CompileError> {
         let flag = self.module.add_global(
             &[self.initializer_configuration.name(), "$initialized"].concat(),
             llvm::Type::i1(),
@@ -166,9 +168,8 @@ impl<'a> ModuleCompiler<'a> {
             builder.build_call_with_name(dependent_initializer_name, &[]);
         }
 
-        // TODO: Sort variable initializers topologically.
-        for initializer in &self.initializers {
-            builder.build_call(*initializer, &[]);
+        for name in InitializerSorter::sort(&self.ast_module)? {
+            builder.build_call(self.initializers[name], &[]);
         }
 
         builder.build_store(llvm::const_int(llvm::Type::i1(), 1), flag);
@@ -177,9 +178,11 @@ impl<'a> ModuleCompiler<'a> {
         builder.position_at_end(end_block);
 
         builder.build_ret_void();
+
+        Ok(())
     }
 
-    fn generate_initializer_name(name: &str) -> String {
+    fn get_initializer_name(name: &str) -> String {
         [name, ".$init"].concat()
     }
 }
