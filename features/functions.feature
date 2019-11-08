@@ -1,7 +1,7 @@
 Feature: Functions
   Background:
     Given a directory named "src"
-    And a file named "package.json" with:
+    And a file named "ein.json" with:
     """
     {
       "name": "package",
