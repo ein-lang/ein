@@ -28,7 +28,7 @@ impl Type {
         assert_eq!(self.kind(), TypeKind::Struct);
 
         let mut elements = (0..(unsafe { LLVMCountStructElementTypes(self.into()) } as usize))
-            .map(|_| unsafe { std::mem::uninitialized() })
+            .map(|_| unsafe { std::mem::MaybeUninit::uninit().assume_init() })
             .collect::<Vec<LLVMTypeRef>>();
 
         unsafe { LLVMGetStructElementTypes(self.into(), elements.as_mut_ptr()) };

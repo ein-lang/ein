@@ -17,7 +17,7 @@ impl InitializerSorter {
             })
             .filter(|option| option.is_some())
             .collect::<Option<HashSet<&str>>>()
-            .unwrap_or_else(|| HashSet::new());
+            .unwrap_or(HashSet::new());
 
         let mut graph = Graph::<&str, ()>::new();
         let mut name_indices = HashMap::<&str, _>::new();

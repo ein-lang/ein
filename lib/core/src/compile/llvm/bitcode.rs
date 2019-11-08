@@ -2,13 +2,13 @@ use super::memory_buffer::MemoryBuffer;
 use super::module::Module;
 use llvm_sys::bit_reader::*;
 use llvm_sys::bit_writer::*;
-use llvm_sys::prelude::LLVMModuleRef;
 
 pub fn get_bitcode_module(buffer: MemoryBuffer) -> Module {
+    let mut module = std::mem::MaybeUninit::uninit();
+
     unsafe {
-        let mut module: LLVMModuleRef = std::mem::uninitialized();
-        LLVMGetBitcodeModule2(buffer.internal(), &mut module);
-        module.into()
+        LLVMGetBitcodeModule2(buffer.internal(), module.as_mut_ptr());
+        module.assume_init().into()
     }
 }
 
