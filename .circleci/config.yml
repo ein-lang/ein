@@ -13,7 +13,7 @@ jobs:
           npm install -g cspell
       - run: cspell '**/*.{feature,md,rs}'
       - run: cargo build
-      - run: cargo clippy
+      - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
       - run: cargo test
       - run: |
