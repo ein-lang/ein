@@ -12,6 +12,7 @@ pub fn const_real(real_type: Type, value: f64) -> Value {
     unsafe { LLVMConstReal(real_type.into(), value) }.into()
 }
 
+#[allow(dead_code)]
 pub fn const_null(pointer_type: Type) -> Value {
     unsafe { LLVMConstNull(pointer_type.into()) }.into()
 }

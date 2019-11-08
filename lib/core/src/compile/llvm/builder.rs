@@ -21,6 +21,7 @@ impl Builder {
         }
     }
 
+    #[allow(dead_code)]
     pub fn build_alloca(&self, type_: Type) -> Value {
         unsafe { LLVMBuildAlloca(self.builder, type_.into(), c_string("").as_ptr()) }.into()
     }
@@ -41,6 +42,7 @@ impl Builder {
         unsafe { LLVMBuildCondBr(self.builder, condition.into(), then.into(), els.into()) };
     }
 
+    #[allow(dead_code)]
     pub fn build_phi(
         &self,
         type_: Type,
@@ -152,6 +154,7 @@ impl Builder {
         unsafe { LLVMPositionBuilderAtEnd(self.builder, block.into()) };
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_id(&self, promise: Value) -> Value {
         self.build_call_with_name(
             "llvm.coro.id",
@@ -164,30 +167,37 @@ impl Builder {
         )
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_size_i32(&self) -> Value {
         self.build_call_with_name("llvm.coro.size.i32", &[])
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_begin(&self, id: Value, frame: Value) -> Value {
         self.build_call_with_name("llvm.coro.begin", &[id, frame])
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_end(&self, handle: Value) {
         self.build_call_with_name("llvm.coro.end", &[handle, const_int(Type::i1(), 0)]);
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_free(&self, id: Value, handle: Value) -> Value {
         self.build_call_with_name("llvm.coro.free", &[id, handle])
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_resume(&self, handle: Value) {
         self.build_call_with_name("llvm.coro.resume", &[handle]);
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_done(&self, handle: Value) -> Value {
         self.build_call_with_name("llvm.coro.done", &[handle])
     }
 
+    #[allow(dead_code)]
     pub fn build_coro_promise(&self, handle: Value) -> Value {
         self.build_call_with_name(
             "llvm.coro.promise",
@@ -197,9 +207,5 @@ impl Builder {
 
     pub fn build_malloc(&self, size: Value) -> Value {
         self.build_call_with_name("malloc", &[size])
-    }
-
-    pub fn build_free(&self, pointer: Value) {
-        self.build_call_with_name("free", &[pointer]);
     }
 }
