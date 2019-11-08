@@ -25,18 +25,21 @@ mod tests {
     #[test]
     fn convert_from_file_path() {
         assert_eq!(
-            ModulePathConverter::new(&sloth::Package::new("M", (0, 0, 0)))
-                .convert_from_file_path(&FilePath::new(vec!["foo".into()])),
-            sloth::ModulePath::new(sloth::Package::new("M", (0, 0, 0)), vec!["foo".into()])
+            ModulePathConverter::new(&sloth::Package::new("package", (0, 0, 0)))
+                .convert_from_file_path(&FilePath::new(vec!["Foo".into()])),
+            sloth::ModulePath::new(
+                sloth::Package::new("package", (0, 0, 0)),
+                vec!["Foo".into()]
+            )
         );
     }
 
     #[test]
     fn convert_to_file_path() {
         assert_eq!(
-            ModulePathConverter::new(&sloth::Package::new("M", (0, 0, 0)))
-                .convert_to_file_path(&sloth::UnresolvedModulePath::new("M", vec!["foo".into()])),
-            FilePath::new(vec!["foo".into()])
+            ModulePathConverter::new(&sloth::Package::new("package", (0, 0, 0)))
+                .convert_to_file_path(&sloth::UnresolvedModulePath::new(vec!["Foo".into()])),
+            FilePath::new(vec!["Foo".into()])
         );
     }
 }

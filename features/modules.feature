@@ -4,7 +4,7 @@ Feature: Modules
     And a file named "package.json" with:
     """
     {
-      "name": "Package",
+      "name": "package",
       "version": "1.0.0"
     }
     """
@@ -12,7 +12,7 @@ Feature: Modules
   Scenario: Import a module
     Given a file named "src/Main.sl" with:
     """
-    import Package.Foo
+    import Foo
 
     main : Number -> Number
     main x = x
@@ -25,14 +25,14 @@ Feature: Modules
     a = 42
     """
     When I successfully run `sloth build`
-    And I run `sh -c ./Package`
-    Then stdout from "sh -c ./Package" should contain exactly "42"
+    And I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Import a name in a module
     Given a file named "src/Main.sl" with:
     """
-    import Package.Foo
+    import Foo
 
     main : Number -> Number
     main x = Foo.a
@@ -45,6 +45,6 @@ Feature: Modules
     a = 42
     """
     When I successfully run `sloth build`
-    And I run `sh -c ./Package`
-    Then stdout from "sh -c ./Package" should contain exactly "42"
+    And I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0

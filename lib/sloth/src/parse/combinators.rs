@@ -63,7 +63,14 @@ fn import(input: Input) -> IResult<Input, Import> {
 pub fn module_path(input: Input) -> IResult<Input, UnresolvedModulePath> {
     map(
         tuple((identifier, many0(preceded(tag("."), identifier)))),
-        |(identifier, identifiers)| UnresolvedModulePath::new(identifier, identifiers),
+        |(identifier, mut identifiers)| {
+            UnresolvedModulePath::new(
+                vec![identifier]
+                    .drain(..)
+                    .chain(identifiers.drain(..))
+                    .collect(),
+            )
+        },
     )(input)
 }
 
@@ -1451,7 +1458,7 @@ mod tests {
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 14)),
-                Import::new(UnresolvedModulePath::new("module", vec![]))
+                Import::new(UnresolvedModulePath::new(vec!["module".into()]))
             ))
         );
 
@@ -1461,10 +1468,10 @@ mod tests {
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 24)),
-                Import::new(UnresolvedModulePath::new(
-                    "module",
-                    vec!["submodule".into()]
-                ))
+                Import::new(UnresolvedModulePath::new(vec![
+                    "module".into(),
+                    "submodule".into()
+                ]))
             ))
         );
     }

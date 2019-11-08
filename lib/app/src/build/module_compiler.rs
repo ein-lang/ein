@@ -92,14 +92,14 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
     fn calculate_target_file_path(
         source_file_path: &FilePath,
         source: &str,
-        imported_target_file_path: &[FilePath],
+        imported_target_file_paths: &[FilePath],
     ) -> FilePath {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
 
         source_file_path.hash(&mut hasher);
         source.hash(&mut hasher);
 
-        for file_path in imported_target_file_path {
+        for file_path in imported_target_file_paths {
             file_path.hash(&mut hasher);
         }
 
