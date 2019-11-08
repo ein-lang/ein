@@ -2,14 +2,14 @@ use super::file_storage::FileStorage;
 use std::io::Write;
 
 pub struct Linker<'a> {
-    package: &'a sloth::Package,
+    package: &'a ein::Package,
     root_directory: Box<std::path::Path>,
     object_file_storage: &'a FileStorage,
 }
 
 impl<'a> Linker<'a> {
     pub fn new(
-        package: &'a sloth::Package,
+        package: &'a ein::Package,
         root_directory: impl AsRef<std::path::Path>,
         object_file_storage: &'a FileStorage,
     ) -> Self {

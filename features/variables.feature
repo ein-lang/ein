@@ -17,7 +17,7 @@ Feature: Variables
     main : Number -> Number
     main x = y
     """
-    And I successfully run `sloth build`
+    And I successfully run `ein build`
     When I run `sh -c ./package`
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
@@ -34,7 +34,7 @@ Feature: Variables
         y
     )
     """
-    And I successfully run `sloth build`
+    And I successfully run `ein build`
     When I run `sh -c ./package`
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
@@ -50,7 +50,7 @@ Feature: Variables
         y
     )
     """
-    And I successfully run `sloth build`
+    And I successfully run `ein build`
     When I run `sh -c ./package`
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
@@ -71,7 +71,7 @@ Feature: Variables
         y
     )
     """
-    And I successfully run `sloth build`
+    And I successfully run `ein build`
     When I run `sh -c ./package`
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
@@ -88,7 +88,7 @@ Feature: Variables
         f x
     )
     """
-    And I successfully run `sloth build`
+    And I successfully run `ein build`
     When I run `sh -c ./package`
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
@@ -104,7 +104,7 @@ Feature: Variables
         f x
     )
     """
-    And I successfully run `sloth build`
+    And I successfully run `ein build`
     When I run `sh -c ./package`
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
@@ -121,7 +121,7 @@ Feature: Variables
         g x
     )
     """
-    And I successfully run `sloth build`
+    And I successfully run `ein build`
     When I run `sh -c ./package`
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0

@@ -5,11 +5,11 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [[bin]]
-name = "sloth"
+name = "ein"
 path = "src/main.rs"
 
 [dependencies]
 app = { path = "../../lib/app" }
 clap = "2"
 infra = { path = "../../lib/infra" }
-sloth = { path = "../../lib/sloth" }
+ein = { path = "../../lib/ein" }

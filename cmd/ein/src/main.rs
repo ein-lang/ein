@@ -1,4 +1,4 @@
-const OUTPUT_DIRECTORY: &str = ".sloth";
+const OUTPUT_DIRECTORY: &str = ".ein";
 
 fn main() {
     if let Err(error) = run() {
@@ -8,7 +8,7 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
-    match clap::App::new("sloth")
+    match clap::App::new("ein")
         .setting(clap::AppSettings::SubcommandRequired)
         .subcommand(clap::SubCommand::with_name("build"))
         .get_matches_safe()?

@@ -19,8 +19,8 @@ use name_qualifier::NameQualifier;
 use type_inference::infer_types;
 
 const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
-const OBJECT_MAIN_FUNCTION_NAME: &str = "sloth_main";
-const OBJECT_INIT_FUNCTION_NAME: &str = "sloth_init";
+const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
+const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
 pub type ModuleObject = core::compile::Module;
 

@@ -29,10 +29,8 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         source_file_path: &FilePath,
     ) -> Result<FilePath, Box<dyn std::error::Error>> {
         let source = self.source_file_storage.read_to_string(source_file_path)?;
-        let module = sloth::parse_module(sloth::Source::new(
-            &format!("{}", source_file_path),
-            &source,
-        ))?;
+        let module =
+            ein::parse_module(ein::Source::new(&format!("{}", source_file_path), &source))?;
 
         let imported_target_file_paths = module
             .imports()
@@ -58,14 +56,14 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             return Ok(target_file_path);
         }
 
-        let (mut module_object, module_interface) = sloth::compile(
+        let (mut module_object, module_interface) = ein::compile(
             &module.resolve(
                 self.module_path_converter
                     .convert_from_file_path(source_file_path),
                 imported_target_file_paths
                     .iter()
                     .map(|file_path| {
-                        Ok(sloth::deserialize_module_interface(
+                        Ok(ein::deserialize_module_interface(
                             &self.interface_file_storage.read_to_vec(file_path)?,
                         )?)
                     })
@@ -74,7 +72,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         )?;
 
         for file_path in &imported_target_file_paths {
-            module_object.link(sloth::ModuleObject::deserialize(
+            module_object.link(ein::ModuleObject::deserialize(
                 &self.object_file_storage.read_to_vec(file_path)?,
             ));
         }
@@ -83,7 +81,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             .write(&target_file_path, &module_object.serialize())?;
         self.interface_file_storage.write(
             &target_file_path,
-            &sloth::serialize_module_interface(&module_interface)?,
+            &ein::serialize_module_interface(&module_interface)?,
         )?;
 
         Ok(target_file_path)
