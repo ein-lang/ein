@@ -24,6 +24,23 @@ Feature: Variables
     Then stdout from "sh -c ./package" should contain exactly "42"
     And the exit status should be 0
 
+  Scenario: Define global variables
+    Given a file named "src/main.sl" with:
+    """
+    y : Number
+    y = z
+
+    z : Number
+    z = 42
+
+    main : Number -> Number
+    main x = y
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./package`
+    Then stdout from "sh -c ./package" should contain exactly "42"
+    And the exit status should be 0
+
   Scenario: Use let-values expression
     Given a file named "src/Main.sl" with:
     """
