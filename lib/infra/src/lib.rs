@@ -9,11 +9,6 @@ use package_configuration::*;
 
 pub fn parse_package_configuration(
     source: &str,
-) -> Result<ein::Package, Box<dyn std::error::Error>> {
-    let configuration = serde_json::from_str::<PackageConfiguration>(source)?;
-
-    Ok(ein::Package::new(
-        configuration.name(),
-        configuration.version().clone(),
-    ))
+) -> Result<PackageConfiguration, serde_json::Error> {
+    serde_json::from_str::<PackageConfiguration>(source)
 }

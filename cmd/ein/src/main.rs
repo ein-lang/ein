@@ -20,7 +20,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn build() -> Result<(), Box<dyn std::error::Error>> {
-    let package = infra::parse_package_configuration(&std::fs::read_to_string("ein.json")?)?;
+    let package_configuration =
+        infra::parse_package_configuration(&std::fs::read_to_string("ein.json")?)?;
+    let package = ein::Package::new(
+        package_configuration.name(),
+        package_configuration.version().clone(),
+    );
     let object_file_storage = infra::FileStorage::new(OUTPUT_DIRECTORY, "bc");
 
     app::PackageBuilder::new(
