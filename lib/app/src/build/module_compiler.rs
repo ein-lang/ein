@@ -36,11 +36,16 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
             .imports()
             .iter()
             .map(|import| {
-                self.compile(
-                    &self
-                        .module_path_converter
-                        .convert_to_file_path(import.module_path()),
-                )
+                let file_path = self
+                    .module_path_converter
+                    .convert_to_file_path(import.module_path());
+
+                if self.source_file_storage.exists(&file_path) {
+                    self.compile(&file_path)
+                } else {
+                    // TODO: Find external modules.
+                    unreachable!()
+                }
             })
             .collect::<Result<Vec<_>, _>>()?;
 
