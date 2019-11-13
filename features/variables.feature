@@ -11,7 +11,7 @@ Feature: Variables
     }
     """
   Scenario: Define a global variable
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     y : Number
     y = 42
@@ -25,7 +25,7 @@ Feature: Variables
     And the exit status should be 0
 
   Scenario: Define global variables
-    Given a file named "src/main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     y : Number
     y = z
@@ -42,7 +42,7 @@ Feature: Variables
     And the exit status should be 0
 
   Scenario: Use let-values expression
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = (
@@ -59,7 +59,7 @@ Feature: Variables
     And the exit status should be 0
 
   Scenario: Use untyped let-values expression
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = (
@@ -75,7 +75,7 @@ Feature: Variables
     And the exit status should be 0
 
   Scenario: Use nested let-values expression
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = (
@@ -96,7 +96,7 @@ Feature: Variables
     And the exit status should be 0
 
   Scenario: Use let-functions expression
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = (
@@ -113,7 +113,7 @@ Feature: Variables
     And the exit status should be 0
 
   Scenario: Use untyped let-functions expression
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = (
@@ -129,7 +129,7 @@ Feature: Variables
     And the exit status should be 0
 
   Scenario: Define multiple functions in a let-functions expression
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = (

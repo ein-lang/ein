@@ -31,11 +31,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     app::PackageBuilder::new(
         &app::ModuleCompiler::new(
             &app::ModulePathConverter::new(&package),
-            &infra::FileStorage::new("src", "sl"),
+            &infra::FileStorage::new("src", "ein"),
             &object_file_storage,
             &infra::FileStorage::new(OUTPUT_DIRECTORY, "json"),
         ),
-        &infra::Linker::new(&package, std::env::var("SLOTH_ROOT")?, &object_file_storage),
+        &infra::Linker::new(&package, std::env::var("EIN_ROOT")?, &object_file_storage),
     )
     .build()
 }

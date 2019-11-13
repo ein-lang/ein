@@ -12,7 +12,7 @@ Feature: Build
     """
 
   Scenario: Build an executable
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = 1 * 3 - 4 / 2
@@ -23,7 +23,7 @@ Feature: Build
     And the exit status should be 0
 
   Scenario: Fail to build an executable
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     f : Number
     f = 42

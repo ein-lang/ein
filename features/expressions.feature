@@ -12,7 +12,7 @@ Feature: Expressions
     """
 
   Scenario: Apply a function of a let expression to arguments
-    Given a file named "src/Main.sl" with:
+    Given a file named "src/Main.ein" with:
     """
     main : Number -> Number
     main x = (
