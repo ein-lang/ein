@@ -5,7 +5,9 @@ Feature: Variables
     """
     {
       "name": "package",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "exposedModules": [],
+      "dependencies": []
     }
     """
   Scenario: Define a global variable

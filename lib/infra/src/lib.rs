@@ -1,3 +1,4 @@
+mod dependency_package;
 mod file_storage;
 mod linker;
 mod package_configuration;
@@ -13,6 +14,6 @@ pub fn parse_package_configuration(
 
     Ok(ein::Package::new(
         configuration.name(),
-        semver::Version::parse(configuration.version())?,
+        configuration.version().clone(),
     ))
 }
