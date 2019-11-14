@@ -6,7 +6,7 @@ Feature: Build
     {
       "name": "package",
       "version": "1.0.0",
-      "target": { "type": "Binary" },
+      "target": { "type": "Command" },
       "dependencies": []
     }
     """

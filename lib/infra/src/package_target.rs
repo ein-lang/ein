@@ -21,7 +21,7 @@ impl PackageTarget {
     }
 
     pub fn verify(&self) -> Result<(), InfrastructureError> {
-        if self.type_ == PackageTargetType::Binary && self.exposed_modules.is_some() {
+        if self.type_ == PackageTargetType::Command && self.exposed_modules.is_some() {
             Err(InfrastructureError::ConfigurationVerification(
                 "no exposed modules allowed for binary target".into(),
             ))
@@ -43,7 +43,7 @@ mod tests {
 
     #[test]
     fn parse_package_configuration_of_binary_target() {
-        serde_json::from_str::<PackageTarget>(r#"{ "type": "Binary" }"#)
+        serde_json::from_str::<PackageTarget>(r#"{ "type": "Command" }"#)
             .unwrap()
             .verify()
             .unwrap();
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn verify_no_exposed_modules_field_for_binary_target() {
         let package_configuration =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Binary", "exposedModules": [] }"#)
+            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "exposedModules": [] }"#)
                 .unwrap();
 
         assert!(package_configuration.verify().is_err());
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn verify_no_exposed_modules_for_binary_target() {
         let package_configuration = serde_json::from_str::<PackageTarget>(
-            r#"{ "type": "Binary", "exposedModules": ["Main"] }"#,
+            r#"{ "type": "Command", "exposedModules": ["Main"] }"#,
         )
         .unwrap();
 
