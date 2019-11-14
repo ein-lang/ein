@@ -2,6 +2,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
 pub struct DependencyPackage {
-    name: String,
+    url: String,
     version: String,
 }
