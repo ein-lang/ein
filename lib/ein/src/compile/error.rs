@@ -15,16 +15,16 @@ pub enum CompileError {
 impl Display for CompileError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
-            CompileError::CircularInitialization => {
+            Self::CircularInitialization => {
                 write!(formatter, "CompileError: Circular initialization detected",)
             }
-            CompileError::CoreCompile(error) => write!(formatter, "CoreCompileError: {}", error),
-            CompileError::MixedDefinitionsInLet(source_information) => write!(
+            Self::CoreCompile(error) => write!(formatter, "CoreCompileError: {}", error),
+            Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
                 "CompileError: Cannot mix function and value definitions in a let expression\n{}",
                 source_information
             ),
-            CompileError::TypeInference(error) => write!(formatter, "{}", error),
+            Self::TypeInference(error) => write!(formatter, "{}", error),
         }
     }
 }
@@ -34,16 +34,14 @@ impl Error for CompileError {}
 impl From<core::compile::CompileError> for CompileError {
     fn from(error: core::compile::CompileError) -> Self {
         match error {
-            core::compile::CompileError::CircularInitialization => {
-                CompileError::CircularInitialization
-            }
-            _ => CompileError::CoreCompile(error),
+            core::compile::CompileError::CircularInitialization => Self::CircularInitialization,
+            _ => Self::CoreCompile(error),
         }
     }
 }
 
 impl From<TypeInferenceError> for CompileError {
     fn from(error: TypeInferenceError) -> Self {
-        CompileError::TypeInference(error)
+        Self::TypeInference(error)
     }
 }

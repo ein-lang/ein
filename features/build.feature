@@ -6,7 +6,7 @@ Feature: Build
     {
       "name": "package",
       "version": "1.0.0",
-      "exposedModules": [],
+      "target": { "type": "Binary" },
       "dependencies": []
     }
     """
