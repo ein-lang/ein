@@ -1,17 +1,16 @@
 use super::error::InfrastructureError;
-use super::package_target_type::PackageTargetType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
 pub struct PackageTarget {
     #[serde(rename(deserialize = "type"))]
-    type_: PackageTargetType,
+    type_: app::TargetType,
     #[serde(rename(deserialize = "exposedModules"))]
     exposed_modules: Option<Vec<String>>,
 }
 
 impl PackageTarget {
-    pub fn type_(&self) -> PackageTargetType {
+    pub fn type_(&self) -> app::TargetType {
         self.type_
     }
 
@@ -21,11 +20,11 @@ impl PackageTarget {
     }
 
     pub fn verify(&self) -> Result<(), InfrastructureError> {
-        if self.type_ == PackageTargetType::Command && self.exposed_modules.is_some() {
+        if self.type_ == app::TargetType::Command && self.exposed_modules.is_some() {
             Err(InfrastructureError::ConfigurationVerification(
                 "no exposed modules allowed for binary target".into(),
             ))
-        } else if self.type_ == PackageTargetType::Library
+        } else if self.type_ == app::TargetType::Library
             && (self.exposed_modules == None || self.exposed_modules == Some(vec![]))
         {
             Err(InfrastructureError::ConfigurationVerification(

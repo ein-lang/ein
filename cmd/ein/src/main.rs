@@ -37,5 +37,5 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         ),
         &infra::Linker::new(&package, std::env::var("EIN_ROOT")?, &object_file_storage),
     )
-    .build()
+    .build(package_configuration.target().type_())
 }

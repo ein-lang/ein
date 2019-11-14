@@ -5,5 +5,6 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-semver = "0.9"
 ein = { path = "../ein" }
+semver = "0.9"
+serde = { version = "1", features = ["derive"] }

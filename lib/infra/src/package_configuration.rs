@@ -20,7 +20,6 @@ impl PackageConfiguration {
         &self.version
     }
 
-    #[allow(dead_code)]
     pub fn target(&self) -> &PackageTarget {
         &self.target
     }

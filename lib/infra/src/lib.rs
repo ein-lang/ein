@@ -4,7 +4,6 @@ mod file_storage;
 mod linker;
 mod package_configuration;
 mod package_target;
-mod package_target_type;
 
 use error::InfrastructureError;
 pub use file_storage::*;
