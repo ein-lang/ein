@@ -35,7 +35,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             &object_file_storage,
             &infra::FileStorage::new(OUTPUT_DIRECTORY, "json"),
         ),
-        &infra::Linker::new(&package, std::env::var("EIN_ROOT")?, &object_file_storage),
+        &infra::Linker::new(std::env::var("EIN_ROOT")?, &object_file_storage),
     )
     .build(package_configuration.target().type_())
 }

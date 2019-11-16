@@ -21,7 +21,8 @@ impl<'a, S: FileStorage, L: Linker> PackageBuilder<'a, S, L> {
             .compile(&FilePath::new(vec!["Main".into()]))?;
 
         if target_type == TargetType::Command {
-            self.linker.link(&object_file_path)?;
+            // TODO Get a command name from a package target.
+            self.linker.link(&object_file_path, "package")?;
         }
 
         Ok(())
