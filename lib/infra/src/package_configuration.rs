@@ -2,13 +2,14 @@ use super::dependency_package::DependencyPackage;
 use super::error::InfrastructureError;
 use super::package_target::PackageTarget;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize)]
 pub struct PackageConfiguration {
     name: String,
     version: semver::Version,
     target: PackageTarget,
-    dependencies: Vec<DependencyPackage>,
+    dependencies: HashMap<String, DependencyPackage>,
 }
 
 impl PackageConfiguration {
@@ -25,7 +26,7 @@ impl PackageConfiguration {
     }
 
     #[allow(dead_code)]
-    pub fn dependencies(&self) -> &[DependencyPackage] {
+    pub fn dependencies(&self) -> &HashMap<String, DependencyPackage> {
         &self.dependencies
     }
 

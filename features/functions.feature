@@ -7,7 +7,7 @@ Feature: Functions
       "name": "package",
       "version": "1.0.0",
       "target": { "type": "Command" },
-      "dependencies": []
+      "dependencies": {}
     }
     """
 
