@@ -5,8 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct PackageTarget {
     #[serde(rename(deserialize = "type"))]
     type_: app::TargetType,
-    #[serde(rename(deserialize = "exposedModules"))]
-    exposed_modules: Option<Vec<String>>,
+    name: Option<String>,
 }
 
 impl PackageTarget {
@@ -14,19 +13,14 @@ impl PackageTarget {
         self.type_
     }
 
-    #[allow(dead_code)]
-    pub fn exposed_modules(&self) -> &Option<Vec<String>> {
-        &self.exposed_modules
-    }
-
     pub fn verify(&self) -> Result<(), InfrastructureError> {
-        if self.type_ == app::TargetType::Command && self.exposed_modules.is_some() {
-            Err(InfrastructureError::ConfigurationVerification(
-                "no exposed modules allowed for binary target".into(),
-            ))
-        } else if self.type_ == app::TargetType::Library
-            && (self.exposed_modules == None || self.exposed_modules == Some(vec![]))
+        if self.type_ == app::TargetType::Command
+            && (self.name.is_none() || self.name == Some("".into()))
         {
+            Err(InfrastructureError::ConfigurationVerification(
+                "command name required for command target".into(),
+            ))
+        } else if self.type_ == app::TargetType::Library && self.name.is_some() {
             Err(InfrastructureError::ConfigurationVerification(
                 "exposed modules needed for library target".into(),
             ))
@@ -42,7 +36,7 @@ mod tests {
 
     #[test]
     fn parse_package_configuration_of_binary_target() {
-        serde_json::from_str::<PackageTarget>(r#"{ "type": "Command" }"#)
+        serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "foo" }"#)
             .unwrap()
             .verify()
             .unwrap();
@@ -50,45 +44,32 @@ mod tests {
 
     #[test]
     fn parse_package_configuration_of_library_target() {
-        serde_json::from_str::<PackageTarget>(
-            r#"{ "type": "Library", "exposedModules": ["Main"] }"#,
-        )
-        .unwrap()
-        .verify()
-        .unwrap();
+        serde_json::from_str::<PackageTarget>(r#"{ "type": "Library" }"#)
+            .unwrap()
+            .verify()
+            .unwrap();
     }
 
     #[test]
-    fn verify_no_exposed_modules_field_for_binary_target() {
+    fn verify_no_name_field_for_binary_target() {
         let package_configuration =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "exposedModules": [] }"#)
-                .unwrap();
+            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command" }"#).unwrap();
 
         assert!(package_configuration.verify().is_err());
     }
 
     #[test]
-    fn verify_no_exposed_modules_for_binary_target() {
-        let package_configuration = serde_json::from_str::<PackageTarget>(
-            r#"{ "type": "Command", "exposedModules": ["Main"] }"#,
-        )
-        .unwrap();
+    fn verify_empty_name_field_for_binary_target() {
+        let package_configuration =
+            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "" }"#).unwrap();
 
         assert!(package_configuration.verify().is_err());
     }
 
     #[test]
-    fn verify_exposed_modules_field_for_library_target() {
+    fn verify_no_name_field_for_library_target() {
         let package_configuration =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Library" }"#).unwrap();
-
-        assert!(package_configuration.verify().is_err());
-    }
-
-    #[test]
-    fn verify_exposed_modules_for_library_target() {
-        let package_configuration =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Library", "exposedModules": [] }"#)
+            serde_json::from_str::<PackageTarget>(r#"{ "type": "Library", "name": "foo" }"#)
                 .unwrap();
 
         assert!(package_configuration.verify().is_err());

@@ -6,7 +6,10 @@ Feature: Variables
     {
       "name": "package",
       "version": "1.0.0",
-      "target": { "type": "Command" },
+      "target": {
+        "type": "Command",
+        "name": "command"
+      },
       "dependencies": {}
     }
     """
