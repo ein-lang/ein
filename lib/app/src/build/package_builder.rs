@@ -1,5 +1,5 @@
 use super::module_compiler::ModuleCompiler;
-use super::target_type::TargetType;
+use super::target::Target;
 use crate::infra::{FilePath, FileStorage, Linker};
 
 pub struct PackageBuilder<'a, S: FileStorage, L: Linker> {
@@ -15,14 +15,13 @@ impl<'a, S: FileStorage, L: Linker> PackageBuilder<'a, S, L> {
         }
     }
 
-    pub fn build(&self, target_type: TargetType) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn build(&self, target: &Target) -> Result<(), Box<dyn std::error::Error>> {
         let object_file_path = self
             .module_compiler
             .compile(&FilePath::new(vec!["Main".into()]))?;
 
-        if target_type == TargetType::Command {
-            // TODO Get a command name from a package target.
-            self.linker.link(&object_file_path, "package")?;
+        if let Target::Command(command_target) = target {
+            self.linker.link(&object_file_path, command_target.name())?;
         }
 
         Ok(())

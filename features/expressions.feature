@@ -30,6 +30,6 @@ Feature: Expressions
     )
     """
     And I successfully run `ein build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "42"
+    When I run `sh -c ./command`
+    Then stdout from "sh -c ./command" should contain exactly "42"
     And the exit status should be 0

@@ -4,6 +4,7 @@ mod file_storage;
 mod linker;
 mod package_configuration;
 mod package_target;
+mod target_type;
 
 use error::InfrastructureError;
 pub use file_storage::*;
@@ -13,7 +14,5 @@ use package_configuration::*;
 pub fn parse_package_configuration(
     source: &str,
 ) -> Result<PackageConfiguration, InfrastructureError> {
-    let configuration = serde_json::from_str::<PackageConfiguration>(source)?;
-    configuration.verify()?;
-    Ok(configuration)
+    Ok(serde_json::from_str::<PackageConfiguration>(source)?)
 }

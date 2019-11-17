@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 const OUTPUT_DIRECTORY: &str = ".ein";
 
 fn main() {
@@ -37,5 +39,5 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         ),
         &infra::Linker::new(std::env::var("EIN_ROOT")?, &object_file_storage),
     )
-    .build(package_configuration.target().type_())
+    .build(&package_configuration.target().try_into()?)
 }

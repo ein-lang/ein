@@ -1,32 +1,55 @@
 use super::error::InfrastructureError;
+use super::target_type::TargetType;
 use serde::{Deserialize, Serialize};
+use std::convert::TryInto;
 
 #[derive(Deserialize, Serialize)]
 pub struct PackageTarget {
     #[serde(rename(deserialize = "type"))]
-    type_: app::TargetType,
+    type_: TargetType,
     name: Option<String>,
 }
 
 impl PackageTarget {
-    pub fn type_(&self) -> app::TargetType {
+    pub fn type_(&self) -> TargetType {
         self.type_
     }
+}
 
-    pub fn verify(&self) -> Result<(), InfrastructureError> {
-        if self.type_ == app::TargetType::Command
-            && (self.name.is_none() || self.name == Some("".into()))
-        {
-            Err(InfrastructureError::ConfigurationVerification(
-                "command name required for command target".into(),
-            ))
-        } else if self.type_ == app::TargetType::Library && self.name.is_some() {
-            Err(InfrastructureError::ConfigurationVerification(
-                "exposed modules needed for library target".into(),
-            ))
-        } else {
-            Ok(())
+impl TryInto<app::Target> for &PackageTarget {
+    type Error = InfrastructureError;
+
+    fn try_into(self) -> Result<app::Target, InfrastructureError> {
+        match self.type_ {
+            TargetType::Command => match &self.name {
+                Some(name) => {
+                    if name == "" {
+                        Err(InfrastructureError::ConfigurationVerification(
+                            "empty command name not allowed".into(),
+                        ))
+                    } else {
+                        Ok(app::Target::Command(app::CommandTarget::new(name)))
+                    }
+                }
+                None => Err(InfrastructureError::ConfigurationVerification(
+                    "command name required for command target".into(),
+                )),
+            },
+            TargetType::Library => match self.name {
+                Some(_) => Err(InfrastructureError::ConfigurationVerification(
+                    "exposed modules needed for library target".into(),
+                )),
+                None => Ok(app::Target::Library),
+            },
         }
+    }
+}
+
+impl TryInto<app::Target> for PackageTarget {
+    type Error = InfrastructureError;
+
+    fn try_into(self) -> Result<app::Target, InfrastructureError> {
+        (&self).try_into()
     }
 }
 
@@ -36,42 +59,48 @@ mod tests {
 
     #[test]
     fn parse_package_configuration_of_binary_target() {
-        serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "foo" }"#)
-            .unwrap()
-            .verify()
-            .unwrap();
+        let _: app::Target =
+            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "foo" }"#)
+                .unwrap()
+                .try_into()
+                .unwrap();
     }
 
     #[test]
     fn parse_package_configuration_of_library_target() {
-        serde_json::from_str::<PackageTarget>(r#"{ "type": "Library" }"#)
+        let _: app::Target = serde_json::from_str::<PackageTarget>(r#"{ "type": "Library" }"#)
             .unwrap()
-            .verify()
+            .try_into()
             .unwrap();
     }
 
     #[test]
     fn verify_no_name_field_for_binary_target() {
-        let package_configuration =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command" }"#).unwrap();
+        let target: Result<app::Target, _> =
+            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command" }"#)
+                .unwrap()
+                .try_into();
 
-        assert!(package_configuration.verify().is_err());
+        assert!(target.is_err());
     }
 
     #[test]
     fn verify_empty_name_field_for_binary_target() {
-        let package_configuration =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "" }"#).unwrap();
+        let target: Result<app::Target, _> =
+            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "" }"#)
+                .unwrap()
+                .try_into();
 
-        assert!(package_configuration.verify().is_err());
+        assert!(target.is_err());
     }
 
     #[test]
     fn verify_no_name_field_for_library_target() {
-        let package_configuration =
+        let target: Result<app::Target, _> =
             serde_json::from_str::<PackageTarget>(r#"{ "type": "Library", "name": "foo" }"#)
-                .unwrap();
+                .unwrap()
+                .try_into();
 
-        assert!(package_configuration.verify().is_err());
+        assert!(target.is_err());
     }
 }

@@ -1,5 +1,4 @@
 use super::dependency_package::DependencyPackage;
-use super::error::InfrastructureError;
 use super::package_target::PackageTarget;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -28,9 +27,5 @@ impl PackageConfiguration {
     #[allow(dead_code)]
     pub fn dependencies(&self) -> &HashMap<String, DependencyPackage> {
         &self.dependencies
-    }
-
-    pub fn verify(&self) -> Result<(), InfrastructureError> {
-        self.target.verify()
     }
 }

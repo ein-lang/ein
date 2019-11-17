@@ -21,8 +21,8 @@ Feature: Build
     main x = 1 * 3 - 4 / 2
     """
     And I successfully run `ein build`
-    When I run `sh -c ./package`
-    Then stdout from "sh -c ./package" should contain exactly "1"
+    When I run `sh -c ./command`
+    Then stdout from "sh -c ./command" should contain exactly "1"
     And the exit status should be 0
 
   Scenario: Fail to build an executable
