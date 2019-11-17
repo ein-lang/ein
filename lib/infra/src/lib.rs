@@ -3,7 +3,7 @@ mod error;
 mod file_storage;
 mod linker;
 mod package_configuration;
-mod package_target;
+mod target;
 mod target_type;
 
 use error::InfrastructureError;

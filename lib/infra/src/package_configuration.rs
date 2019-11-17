@@ -1,5 +1,5 @@
 use super::dependency_package::DependencyPackage;
-use super::package_target::PackageTarget;
+use super::target::Target;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -7,7 +7,7 @@ use std::collections::HashMap;
 pub struct PackageConfiguration {
     name: String,
     version: semver::Version,
-    target: PackageTarget,
+    target: Target,
     dependencies: HashMap<String, DependencyPackage>,
 }
 
@@ -20,7 +20,7 @@ impl PackageConfiguration {
         &self.version
     }
 
-    pub fn target(&self) -> &PackageTarget {
+    pub fn target(&self) -> &Target {
         &self.target
     }
 

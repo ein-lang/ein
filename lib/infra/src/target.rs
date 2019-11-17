@@ -4,19 +4,19 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 
 #[derive(Deserialize, Serialize)]
-pub struct PackageTarget {
+pub struct Target {
     #[serde(rename(deserialize = "type"))]
     type_: TargetType,
     name: Option<String>,
 }
 
-impl PackageTarget {
+impl Target {
     pub fn type_(&self) -> TargetType {
         self.type_
     }
 }
 
-impl TryInto<app::Target> for &PackageTarget {
+impl TryInto<app::Target> for &Target {
     type Error = InfrastructureError;
 
     fn try_into(self) -> Result<app::Target, InfrastructureError> {
@@ -45,7 +45,7 @@ impl TryInto<app::Target> for &PackageTarget {
     }
 }
 
-impl TryInto<app::Target> for PackageTarget {
+impl TryInto<app::Target> for Target {
     type Error = InfrastructureError;
 
     fn try_into(self) -> Result<app::Target, InfrastructureError> {
@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn parse_package_configuration_of_binary_target() {
         let _: app::Target =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "foo" }"#)
+            serde_json::from_str::<Target>(r#"{ "type": "Command", "name": "foo" }"#)
                 .unwrap()
                 .try_into()
                 .unwrap();
@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn parse_package_configuration_of_library_target() {
-        let _: app::Target = serde_json::from_str::<PackageTarget>(r#"{ "type": "Library" }"#)
+        let _: app::Target = serde_json::from_str::<Target>(r#"{ "type": "Library" }"#)
             .unwrap()
             .try_into()
             .unwrap();
@@ -77,7 +77,7 @@ mod tests {
     #[test]
     fn verify_no_name_field_for_binary_target() {
         let target: Result<app::Target, _> =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command" }"#)
+            serde_json::from_str::<Target>(r#"{ "type": "Command" }"#)
                 .unwrap()
                 .try_into();
 
@@ -87,7 +87,7 @@ mod tests {
     #[test]
     fn verify_empty_name_field_for_binary_target() {
         let target: Result<app::Target, _> =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Command", "name": "" }"#)
+            serde_json::from_str::<Target>(r#"{ "type": "Command", "name": "" }"#)
                 .unwrap()
                 .try_into();
 
@@ -97,7 +97,7 @@ mod tests {
     #[test]
     fn verify_no_name_field_for_library_target() {
         let target: Result<app::Target, _> =
-            serde_json::from_str::<PackageTarget>(r#"{ "type": "Library", "name": "foo" }"#)
+            serde_json::from_str::<Target>(r#"{ "type": "Library", "name": "foo" }"#)
                 .unwrap()
                 .try_into();
 
