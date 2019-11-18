@@ -84,7 +84,7 @@ mod tests {
         assert_eq!(
             NameQualifier::new(
                 &ast::Module::new(
-                    ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
+                    ModulePath::new(Package::new("M", ""), vec![]),
                     ast::Export::new(Default::default()),
                     vec![],
                     vec![ast::ValueDefinition::new(
@@ -109,7 +109,7 @@ mod tests {
             core::ast::Module::new(
                 vec![],
                 vec![core::ast::ValueDefinition::new(
-                    "M(0.0.0).x",
+                    "M().x",
                     core::ast::Expression::Number(42.0),
                     core::types::Value::Number
                 )
@@ -123,10 +123,10 @@ mod tests {
         assert_eq!(
             NameQualifier::new(
                 &ast::Module::new(
-                    ModulePath::new(Package::new("M", (0, 0, 0)), vec![]),
+                    ModulePath::new(Package::new("M", ""), vec![]),
                     ast::Export::new(Default::default()),
                     vec![ast::ModuleInterface::new(
-                        ModulePath::new(Package::new("A", (0, 0, 0)), vec!["B".into()]),
+                        ModulePath::new(Package::new("A", ""), vec!["B".into()]),
                         vec![(
                             "y".into(),
                             types::Number::new(SourceInformation::dummy()).into()
@@ -156,8 +156,8 @@ mod tests {
             core::ast::Module::new(
                 vec![],
                 vec![core::ast::ValueDefinition::new(
-                    "M(0.0.0).x",
-                    core::ast::Variable::new("A(0.0.0).B.y"),
+                    "M().x",
+                    core::ast::Variable::new("A().B.y"),
                     core::types::Value::Number
                 )
                 .into()]

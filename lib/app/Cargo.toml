@@ -6,5 +6,4 @@ edition = "2018"
 
 [dependencies]
 ein = { path = "../ein" }
-semver = "0.9"
 serde = { version = "1", features = ["derive"] }

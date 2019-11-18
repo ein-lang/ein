@@ -34,7 +34,7 @@ impl Module {
     #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
         Self::new(
-            ModulePath::new(Package::new("", (0, 0, 0)), vec![]),
+            ModulePath::new(Package::new("", ""), vec![]),
             Export::new(Default::default()),
             vec![],
             definitions,

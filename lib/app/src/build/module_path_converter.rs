@@ -25,16 +25,16 @@ mod tests {
     #[test]
     fn convert_from_file_path() {
         assert_eq!(
-            ModulePathConverter::new(&ein::Package::new("package", (0, 0, 0)))
+            ModulePathConverter::new(&ein::Package::new("package", ""))
                 .convert_from_file_path(&FilePath::new(vec!["Foo".into()])),
-            ein::ModulePath::new(ein::Package::new("package", (0, 0, 0)), vec!["Foo".into()])
+            ein::ModulePath::new(ein::Package::new("package", ""), vec!["Foo".into()])
         );
     }
 
     #[test]
     fn convert_to_file_path() {
         assert_eq!(
-            ModulePathConverter::new(&ein::Package::new("package", (0, 0, 0)))
+            ModulePathConverter::new(&ein::Package::new("package", ""))
                 .convert_to_file_path(&ein::UnresolvedModulePath::new(vec!["Foo".into()])),
             FilePath::new(vec!["Foo".into()])
         );

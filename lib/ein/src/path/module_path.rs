@@ -62,11 +62,8 @@ mod tests {
     #[test]
     fn qualify_name() {
         assert_eq!(
-            ModulePath::new(
-                Package::new("foo", (0, 0, 0)),
-                vec!["bar".into(), "baz".into()]
-            )
-            .qualify_name("blah"),
+            ModulePath::new(Package::new("foo", ""), vec!["bar".into(), "baz".into()])
+                .qualify_name("blah"),
             "baz.blah"
         );
     }
@@ -74,12 +71,9 @@ mod tests {
     #[test]
     fn fully_qualify_name() {
         assert_eq!(
-            ModulePath::new(
-                Package::new("foo", (0, 0, 0)),
-                vec!["bar".into(), "baz".into()]
-            )
-            .fully_qualify_name("blah"),
-            "foo(0.0.0).bar.baz.blah"
+            ModulePath::new(Package::new("foo", ""), vec!["bar".into(), "baz".into()])
+                .fully_qualify_name("blah"),
+            "foo().bar.baz.blah"
         );
     }
 }

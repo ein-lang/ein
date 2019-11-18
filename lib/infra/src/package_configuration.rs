@@ -6,7 +6,7 @@ use std::collections::HashMap;
 #[derive(Deserialize, Serialize)]
 pub struct PackageConfiguration {
     name: String,
-    version: semver::Version,
+    version: String,
     target: Target,
     dependencies: HashMap<String, DependencyPackage>,
 }
@@ -16,7 +16,7 @@ impl PackageConfiguration {
         &self.name
     }
 
-    pub fn version(&self) -> &semver::Version {
+    pub fn version(&self) -> &str {
         &self.version
     }
 

@@ -26,7 +26,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         infra::parse_package_configuration(&std::fs::read_to_string("ein.json")?)?;
     let package = ein::Package::new(
         package_configuration.name(),
-        package_configuration.version().clone(),
+        package_configuration.version(),
     );
     let object_file_storage = infra::FileStorage::new(OUTPUT_DIRECTORY, "bc");
 
