@@ -5,21 +5,11 @@ use std::collections::HashMap;
 
 #[derive(Deserialize, Serialize)]
 pub struct PackageConfiguration {
-    name: String,
-    version: String,
     target: Target,
     dependencies: HashMap<String, DependencyPackage>,
 }
 
 impl PackageConfiguration {
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn version(&self) -> &str {
-        &self.version
-    }
-
     pub fn target(&self) -> &Target {
         &self.target
     }

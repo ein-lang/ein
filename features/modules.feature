@@ -4,8 +4,6 @@ Feature: Modules
     And a file named "ein.json" with:
     """
     {
-      "name": "package",
-      "version": "1.0.0",
       "target": {
         "type": "Command",
         "name": "command"

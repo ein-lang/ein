@@ -17,11 +17,11 @@ pub fn parse_package_configuration(
     Ok(serde_json::from_str::<PackageConfiguration>(source)?)
 }
 
-pub fn find_package() -> Result<ein::Package, InfrastructureError> {
-    Ok(find_package_from_git().unwrap_or_else(|_| ein::Package::new("main", "current")))
+pub fn get_package() -> Result<ein::Package, InfrastructureError> {
+    Ok(get_package_from_git().unwrap_or_else(|_| ein::Package::new("main", "current")))
 }
 
-fn find_package_from_git() -> Result<ein::Package, InfrastructureError> {
+fn get_package_from_git() -> Result<ein::Package, InfrastructureError> {
     let repository = git2::Repository::discover(".")?;
     let url = url::Url::parse(
         repository
