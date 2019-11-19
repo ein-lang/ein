@@ -6,6 +6,8 @@ edition = "2018"
 
 [dependencies]
 app = { path = "../app" }
+ein = { path = "../ein" }
+git2 = "0.10"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
-ein = { path = "../ein" }
+url = "2"
