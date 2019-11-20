@@ -28,6 +28,38 @@ impl app::FileStorage for FileStorage {
         self.resolve_file_path(file_path).exists()
     }
 
+    fn get_file_paths(&self) -> Result<Vec<app::FilePath>, std::io::Error> {
+        let directory = self.directory.canonicalize()?;
+
+        glob::glob(
+            &[
+                &format!("{}", directory.display()),
+                "/**/*",
+                &self.extension,
+            ]
+            .concat(),
+        )
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?
+        .map(|path| {
+            Ok(app::FilePath::new(
+                path.map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?
+                    .strip_prefix(&directory)
+                    .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?
+                    .with_extension("")
+                    .components()
+                    .map(|component| match component {
+                        std::path::Component::Normal(component) => {
+                            Some(component.to_string_lossy().into())
+                        }
+                        _ => None,
+                    })
+                    .collect::<Option<Vec<String>>>()
+                    .unwrap(),
+            ))
+        })
+        .collect::<Result<Vec<_>, _>>()
+    }
+
     fn read_to_vec(&self, file_path: &app::FilePath) -> Result<Vec<u8>, std::io::Error> {
         std::fs::read(self.resolve_file_path(file_path))
     }
@@ -44,5 +76,20 @@ impl app::FileStorage for FileStorage {
         }
 
         std::fs::write(path, data)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use app::FileStorage;
+
+    #[test]
+    fn get_file_paths() {
+        assert!(super::FileStorage::new(".", "rs")
+            .get_file_paths()
+            .unwrap()
+            .iter()
+            .any(|file_path| file_path
+                == &app::FilePath::new(vec!["src".into(), "file_storage".into()])));
     }
 }

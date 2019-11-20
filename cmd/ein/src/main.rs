@@ -28,17 +28,20 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let object_file_storage =
         infra::FileStorage::new(std::path::Path::new(OUTPUT_DIRECTORY).join("objects"), "bc");
 
-    app::PackageBuilder::new(
-        &app::ModuleCompiler::new(
-            &app::RelativeModulePathConverter::new(&package),
-            &infra::FileStorage::new(".", "ein"),
-            &object_file_storage,
-            &infra::FileStorage::new(
-                std::path::Path::new(OUTPUT_DIRECTORY).join("interfaces"),
-                "json",
+    match package_configuration.target().try_into()? {
+        app::Target::Command(command_target) => app::CommandPackageBuilder::new(
+            &app::ModuleCompiler::new(
+                &app::RelativeModulePathConverter::new(&package),
+                &infra::FileStorage::new(".", "ein"),
+                &object_file_storage,
+                &infra::FileStorage::new(
+                    std::path::Path::new(OUTPUT_DIRECTORY).join("interfaces"),
+                    "json",
+                ),
             ),
-        ),
-        &infra::Linker::new(std::env::var("EIN_ROOT")?, &object_file_storage),
-    )
-    .build(&package_configuration.target().try_into()?)
+            &infra::Linker::new(std::env::var("EIN_ROOT")?, &object_file_storage),
+        )
+        .build(command_target.name()),
+        app::Target::Library => unimplemented!(),
+    }
 }
