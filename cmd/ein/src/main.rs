@@ -25,14 +25,18 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let package_configuration =
         infra::parse_package_configuration(&std::fs::read_to_string("ein.json")?)?;
     let package = infra::get_package()?;
-    let object_file_storage = infra::FileStorage::new(OUTPUT_DIRECTORY, "bc");
+    let object_file_storage =
+        infra::FileStorage::new(std::path::Path::new(OUTPUT_DIRECTORY).join("objects"), "bc");
 
     app::PackageBuilder::new(
         &app::ModuleCompiler::new(
             &app::RelativeModulePathConverter::new(&package),
             &infra::FileStorage::new(".", "ein"),
             &object_file_storage,
-            &infra::FileStorage::new(OUTPUT_DIRECTORY, "json"),
+            &infra::FileStorage::new(
+                std::path::Path::new(OUTPUT_DIRECTORY).join("interfaces"),
+                "json",
+            ),
         ),
         &infra::Linker::new(std::env::var("EIN_ROOT")?, &object_file_storage),
     )
