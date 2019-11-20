@@ -1,9 +1,9 @@
-use super::module_path_converter::ModulePathConverter;
+use super::relative_module_path_converter::RelativeModulePathConverter;
 use crate::infra::{FilePath, FileStorage};
 use std::hash::{Hash, Hasher};
 
 pub struct ModuleCompiler<'a, S: FileStorage> {
-    module_path_converter: &'a ModulePathConverter<'a>,
+    relative_module_path_converter: &'a RelativeModulePathConverter<'a>,
     source_file_storage: &'a S,
     object_file_storage: &'a S,
     interface_file_storage: &'a S,
@@ -11,13 +11,13 @@ pub struct ModuleCompiler<'a, S: FileStorage> {
 
 impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
     pub fn new(
-        module_path_converter: &'a ModulePathConverter,
+        relative_module_path_converter: &'a RelativeModulePathConverter,
         source_file_storage: &'a S,
         object_file_storage: &'a S,
         interface_file_storage: &'a S,
     ) -> Self {
         Self {
-            module_path_converter,
+            relative_module_path_converter,
             source_file_storage,
             object_file_storage,
             interface_file_storage,
@@ -35,17 +35,13 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         let imported_target_file_paths = module
             .imports()
             .iter()
-            .map(|import| {
-                let file_path = self
-                    .module_path_converter
-                    .convert_to_file_path(import.module_path());
-
-                if self.source_file_storage.exists(&file_path) {
-                    self.compile(&file_path)
-                } else {
-                    // TODO: Find external modules.
-                    unreachable!()
-                }
+            .map(|import| match import.module_path() {
+                ein::UnresolvedModulePath::Absolute(_) => unimplemented!(),
+                ein::UnresolvedModulePath::Relative(relative_module_path) => self.compile(
+                    &self
+                        .relative_module_path_converter
+                        .convert_to_file_path(relative_module_path),
+                ),
             })
             .collect::<Result<Vec<_>, _>>()?;
 
@@ -63,7 +59,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
 
         let (mut module_object, module_interface) = ein::compile(
             &module.resolve(
-                self.module_path_converter
+                self.relative_module_path_converter
                     .convert_from_file_path(source_file_path),
                 imported_target_file_paths
                     .iter()

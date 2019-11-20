@@ -1,22 +1,21 @@
-use super::module_path::ModulePath;
-use crate::package::Package;
+use super::absolute_unresolved_module_path::AbsoluteUnresolvedModulePath;
+use super::relative_unresolved_module_path::RelativeUnresolvedModulePath;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct UnresolvedModulePath {
-    components: Vec<String>,
+pub enum UnresolvedModulePath {
+    Absolute(AbsoluteUnresolvedModulePath),
+    Relative(RelativeUnresolvedModulePath),
 }
 
-impl UnresolvedModulePath {
-    pub fn new(components: Vec<String>) -> Self {
-        Self { components }
+impl From<AbsoluteUnresolvedModulePath> for UnresolvedModulePath {
+    fn from(path: AbsoluteUnresolvedModulePath) -> Self {
+        Self::Absolute(path)
     }
+}
 
-    pub fn components(&self) -> &[String] {
-        &self.components
-    }
-
-    pub fn resolve(self, package: Package) -> ModulePath {
-        ModulePath::new(package, self.components)
+impl From<RelativeUnresolvedModulePath> for UnresolvedModulePath {
+    fn from(path: RelativeUnresolvedModulePath) -> Self {
+        Self::Relative(path)
     }
 }

@@ -1,7 +1,6 @@
 Feature: Build
   Background:
-    Given a directory named "src"
-    And a file named "ein.json" with:
+    Given a file named "ein.json" with:
     """
     {
       "target": {
@@ -13,7 +12,7 @@ Feature: Build
     """
 
   Scenario: Build an executable
-    Given a file named "src/Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = 1 * 3 - 4 / 2
@@ -24,7 +23,7 @@ Feature: Build
     And the exit status should be 0
 
   Scenario: Fail to build an executable
-    Given a file named "src/Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     f : Number
     f = 42

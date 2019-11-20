@@ -1,7 +1,6 @@
 Feature: Modules
   Background:
-    Given a directory named "src"
-    And a file named "ein.json" with:
+    Given a file named "ein.json" with:
     """
     {
       "target": {
@@ -13,14 +12,14 @@ Feature: Modules
     """
 
   Scenario: Import a module
-    Given a file named "src/Main.ein" with:
+    Given a file named "Main.ein" with:
     """
-    import Foo
+    import "./Foo"
 
     main : Number -> Number
     main x = x
     """
-    And a file named "src/Foo.ein" with:
+    And a file named "Foo.ein" with:
     """
     export { a }
 
@@ -33,14 +32,14 @@ Feature: Modules
     And the exit status should be 0
 
   Scenario: Import a name in a module
-    Given a file named "src/Main.ein" with:
+    Given a file named "Main.ein" with:
     """
-    import Foo
+    import "./Foo"
 
     main : Number -> Number
     main x = Foo.a
     """
-    And a file named "src/Foo.ein" with:
+    And a file named "Foo.ein" with:
     """
     export { a }
 

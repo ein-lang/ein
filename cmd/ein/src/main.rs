@@ -29,8 +29,8 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     app::PackageBuilder::new(
         &app::ModuleCompiler::new(
-            &app::ModulePathConverter::new(&package),
-            &infra::FileStorage::new("src", "ein"),
+            &app::RelativeModulePathConverter::new(&package),
+            &infra::FileStorage::new(".", "ein"),
             &object_file_storage,
             &infra::FileStorage::new(OUTPUT_DIRECTORY, "json"),
         ),

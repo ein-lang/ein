@@ -1,7 +1,6 @@
 Feature: Expressions
   Background:
-    Given a directory named "src"
-    And a file named "ein.json" with:
+    Given a file named "ein.json" with:
     """
     {
       "target": {
@@ -13,7 +12,7 @@ Feature: Expressions
     """
 
   Scenario: Apply a function of a let expression to arguments
-    Given a file named "src/Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = (

@@ -2,7 +2,9 @@ use super::input::Input;
 use super::utilities::*;
 use crate::ast::*;
 use crate::debug::SourceInformation;
-use crate::path::UnresolvedModulePath;
+use crate::path::{
+    AbsoluteUnresolvedModulePath, RelativeUnresolvedModulePath, UnresolvedModulePath,
+};
 use crate::types::{self, Type};
 use nom::{
     branch::*, character::complete::*, combinator::*, error::*, multi::*, sequence::*, Err, IResult,
@@ -55,21 +57,57 @@ fn export(input: Input) -> IResult<Input, Export> {
 }
 
 fn import(input: Input) -> IResult<Input, Import> {
-    map(preceded(keyword("import"), module_path), |module_path| {
-        Import::new(module_path)
-    })(input)
+    map(preceded(keyword("import"), module_path), Import::new)(input)
 }
 
 pub fn module_path(input: Input) -> IResult<Input, UnresolvedModulePath> {
+    token(alt((
+        map(absolute_module_path, UnresolvedModulePath::from),
+        map(relative_module_path, UnresolvedModulePath::from),
+    )))(input)
+}
+
+pub fn absolute_module_path(input: Input) -> IResult<Input, AbsoluteUnresolvedModulePath> {
     map(
-        tuple((identifier, many0(preceded(tag("."), identifier)))),
-        |(identifier, mut identifiers)| {
-            UnresolvedModulePath::new(
-                vec![identifier]
-                    .drain(..)
-                    .chain(identifiers.drain(..))
-                    .collect(),
-            )
+        delimited(tag("\""), path_components, tag("\"")),
+        AbsoluteUnresolvedModulePath::new,
+    )(input)
+}
+
+pub fn relative_module_path(input: Input) -> IResult<Input, RelativeUnresolvedModulePath> {
+    map(
+        delimited(tag("\"./"), path_components, tag("\"")),
+        RelativeUnresolvedModulePath::new,
+    )(input)
+}
+
+fn path_components(input: Input) -> IResult<Input, Vec<String>> {
+    map(
+        token(tuple((
+            path_component,
+            many0(preceded(tag("/"), path_component)),
+        ))),
+        |(component, mut components)| {
+            vec![component]
+                .drain(..)
+                .chain(components.drain(..))
+                .collect()
+        },
+    )(input)
+}
+
+fn path_component(input: Input) -> IResult<Input, String> {
+    map(
+        tuple((
+            convert_combinator(alphanumeric1),
+            many0(alt((convert_combinator(alphanumeric1), tag(".")))),
+        )),
+        |(prefix, mut strings)| {
+            vec![prefix]
+                .drain(..)
+                .chain(strings.drain(..))
+                .collect::<Vec<&str>>()
+                .concat()
         },
     )(input)
 }
@@ -1451,26 +1489,31 @@ mod tests {
     }
 
     #[test]
-    fn parse_import() {
-        let input = Input::new(Source::new("", "import module"));
+    fn parse_import_with_relative_module_path() {
+        let input = Input::new(Source::new("", r#"import "./Module""#));
 
         assert_eq!(
             import(input.clone()),
             Ok((
-                input.set("", 0, Location::new(1, 14)),
-                Import::new(UnresolvedModulePath::new(vec!["module".into()]))
+                input.set("", 0, Location::new(1, 18)),
+                Import::new(RelativeUnresolvedModulePath::new(vec!["Module".into()]))
             ))
         );
+    }
 
-        let input = Input::new(Source::new("", "import module.submodule"));
+    #[test]
+    fn parse_import_with_absolute_module_path() {
+        let input = Input::new(Source::new("", r#"import "github.com/foo/bar/Module""#));
 
         assert_eq!(
             import(input.clone()),
             Ok((
-                input.set("", 0, Location::new(1, 24)),
-                Import::new(UnresolvedModulePath::new(vec![
-                    "module".into(),
-                    "submodule".into()
+                input.set("", 0, Location::new(1, 35)),
+                Import::new(AbsoluteUnresolvedModulePath::new(vec![
+                    "github.com".into(),
+                    "foo".into(),
+                    "bar".into(),
+                    "Module".into(),
                 ]))
             ))
         );
