@@ -15,24 +15,23 @@ use std::str::FromStr;
 const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
 
 pub fn module(input: Input) -> IResult<Input, UnresolvedModule> {
-    terminated(
-        tuple((
-            opt(terminated(export, line_break)),
-            many0(terminated(import, line_break)),
-            many0(terminated(typed_definition, line_break)),
-        )),
-        tuple((convert_combinator(multispace0), eof)),
-    )(input)
-    .map(|(input, (export, imports, definitions))| {
-        (
-            input,
+    map(
+        terminated(
+            tuple((
+                opt(terminated(export, line_break)),
+                many0(terminated(import, line_break)),
+                many0(terminated(typed_definition, line_break)),
+            )),
+            tuple((convert_combinator(multispace0), eof)),
+        ),
+        |(export, imports, definitions)| {
             UnresolvedModule::new(
                 export.unwrap_or_else(|| Export::new(Default::default())),
                 imports,
                 definitions,
-            ),
-        )
-    })
+            )
+        },
+    )(input)
 }
 
 fn export(input: Input) -> IResult<Input, Export> {
@@ -306,22 +305,20 @@ fn term(input: Input) -> IResult<Input, Expression> {
 }
 
 fn operation(input: Input) -> IResult<Input, Operation> {
-    tuple((term, many1(tuple((source_information, operator, term)))))(input).map(
-        |(input, (lhs, pairs))| {
-            (
-                input,
-                reduce_operations(
-                    lhs,
-                    pairs
-                        .into_iter()
-                        .map(|(source_information, operator, term)| {
-                            (operator, term, source_information)
-                        })
-                        .collect(),
-                ),
+    map(
+        tuple((term, many1(tuple((source_information, operator, term))))),
+        |(lhs, pairs)| {
+            reduce_operations(
+                lhs,
+                pairs
+                    .into_iter()
+                    .map(|(source_information, operator, term)| {
+                        (operator, term, source_information)
+                    })
+                    .collect(),
             )
         },
-    )
+    )(input)
 }
 
 fn operator(input: Input) -> IResult<Input, Operator> {
@@ -337,7 +334,7 @@ fn create_operator<'a>(
     literal: &'static str,
     operator: Operator,
 ) -> impl Fn(Input<'a>) -> IResult<Input<'a>, Operator> {
-    move |input| keyword(literal)(input).map(|(input, _)| (input, operator))
+    map(keyword(literal), move |_| operator)
 }
 
 fn number_literal(input: Input) -> IResult<Input, f64> {
@@ -397,14 +394,12 @@ fn type_(input: Input) -> IResult<Input, Type> {
 }
 
 fn function_type(input: Input) -> IResult<Input, Type> {
-    tuple((source_information, atomic_type, keyword("->"), type_))(input).map(
-        |(input, (source_information, argument, _, result))| {
-            (
-                input,
-                types::Function::new(argument, result, source_information).into(),
-            )
+    map(
+        tuple((source_information, atomic_type, keyword("->"), type_)),
+        |(source_information, argument, _, result)| {
+            types::Function::new(argument, result, source_information).into()
         },
-    )
+    )(input)
 }
 
 fn atomic_type(input: Input) -> IResult<Input, Type> {
@@ -455,7 +450,7 @@ fn keyword<'a>(keyword: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'a>
 fn nullify<'a, T>(
     combinator: impl Fn(Input<'a>) -> IResult<Input<'a>, T>,
 ) -> impl Fn(Input<'a>) -> IResult<Input<'a>, ()> {
-    move |input| combinator(input).map(|(input, _)| (input, ()))
+    map(combinator, |_| ())
 }
 
 fn token<'a, T>(
