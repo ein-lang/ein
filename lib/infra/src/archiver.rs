@@ -25,14 +25,22 @@ impl<'a> app::Archiver for Archiver<'a> {
         interface_file_paths: &[app::FilePath],
     ) -> Result<(), std::io::Error> {
         CommandRunner::run(
-            std::process::Command::new("ar")
-                .arg("-rs")
-                .arg("library.a")
+            std::process::Command::new("clang")
+                .arg("-c")
+                .arg("-o")
+                .arg("library.o")
                 .args(
                     object_file_paths
                         .iter()
                         .map(|file_path| self.object_file_storage.resolve_file_path(file_path)),
                 ),
+        )?;
+
+        CommandRunner::run(
+            std::process::Command::new("ar")
+                .arg("-r")
+                .arg("library.a")
+                .arg("library.o"),
         )?;
 
         let mut builder = tar::Builder::new(std::fs::File::create("library.tar")?);
