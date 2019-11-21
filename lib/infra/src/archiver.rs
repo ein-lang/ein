@@ -36,6 +36,7 @@ impl<'a> app::Archiver for Archiver<'a> {
 
         let mut builder = tar::Builder::new(std::fs::File::create("library.tar")?);
         builder.append_path("library.bc")?;
+        std::fs::remove_file("library.bc")?;
 
         for file_path in interface_file_paths {
             builder.append_file(
