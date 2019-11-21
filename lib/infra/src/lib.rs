@@ -1,3 +1,5 @@
+mod archiver;
+mod command_runner;
 mod dependency_package;
 mod error;
 mod file_storage;
@@ -6,10 +8,11 @@ mod package_configuration;
 mod target;
 mod target_type;
 
-use error::InfrastructureError;
+pub use archiver::*;
+pub use error::InfrastructureError;
 pub use file_storage::*;
 pub use linker::*;
-use package_configuration::*;
+pub use package_configuration::*;
 
 pub fn parse_package_configuration(
     source: &str,

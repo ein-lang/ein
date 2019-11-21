@@ -5,6 +5,5 @@ pub trait Archiver {
         &self,
         object_file_paths: &[FilePath],
         interface_file_paths: &[FilePath],
-        library_name: &str,
     ) -> Result<(), std::io::Error>;
 }

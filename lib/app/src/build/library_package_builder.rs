@@ -16,8 +16,10 @@ impl<'a, S: FileStorage, A: Archiver> LibraryPackageBuilder<'a, S, A> {
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.module_builder.build()?;
+        let file_paths = self.module_builder.build()?;
 
-        unimplemented!()
+        self.archiver.archive(&file_paths, &file_paths)?;
+
+        Ok(())
     }
 }

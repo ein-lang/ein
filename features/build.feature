@@ -11,7 +11,7 @@ Feature: Build
     }
     """
 
-  Scenario: Build an executable
+  Scenario: Build a command
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
@@ -22,7 +22,7 @@ Feature: Build
     Then stdout from "sh -c ./command" should contain exactly "1"
     And the exit status should be 0
 
-  Scenario: Fail to build an executable
+  Scenario: Fail to build a command
     Given a file named "Main.ein" with:
     """
     f : Number

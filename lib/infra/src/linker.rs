@@ -1,5 +1,5 @@
+use super::command_runner::CommandRunner;
 use super::file_storage::FileStorage;
-use std::io::Write;
 
 pub struct Linker<'a> {
     root_directory: Box<std::path::Path>,
@@ -20,35 +20,20 @@ impl<'a> Linker<'a> {
 
 impl<'a> app::Linker for Linker<'a> {
     fn link(&self, file_paths: &[app::FilePath], command_name: &str) -> Result<(), std::io::Error> {
-        let output = std::process::Command::new("clang")
-            .arg("-o")
-            .arg(command_name)
-            .arg("-O3")
-            .arg("-flto")
-            .arg("-ldl")
-            .arg("-lpthread")
-            .args(
-                file_paths
-                    .iter()
-                    .map(|file_path| self.object_file_storage.resolve_file_path(file_path)),
-            )
-            .arg(self.root_directory.join("target/release/libruntime.a"))
-            .output()?;
-
-        if output.status.success() {
-            return Ok(());
-        }
-
-        std::io::stderr().write_all(&output.stdout)?;
-        std::io::stderr().write_all(&output.stderr)?;
-
-        Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            output
-                .status
-                .code()
-                .map(|code| format!("a command exited with status code {}", code))
-                .unwrap_or_else(|| "a command exited with no status code".into()),
-        ))
+        CommandRunner::run(
+            std::process::Command::new("clang")
+                .arg("-o")
+                .arg(command_name)
+                .arg("-O3")
+                .arg("-flto")
+                .arg("-ldl")
+                .arg("-lpthread")
+                .args(
+                    file_paths
+                        .iter()
+                        .map(|file_path| self.object_file_storage.resolve_file_path(file_path)),
+                )
+                .arg(self.root_directory.join("target/release/libruntime.a")),
+        )
     }
 }
