@@ -22,7 +22,6 @@ version = "0.1.0"
 dependencies = [
  "ein 0.1.0",
  "petgraph 0.4.13 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -86,7 +85,6 @@ version = "0.1.0"
 dependencies = [
  "app 0.1.0",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "ein 0.1.0",
  "infra 0.1.0",
 ]
 

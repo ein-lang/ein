@@ -12,4 +12,3 @@ path = "src/main.rs"
 app = { path = "../../lib/app" }
 clap = "2"
 infra = { path = "../../lib/infra" }
-ein = { path = "../../lib/ein" }
