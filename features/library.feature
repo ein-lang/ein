@@ -16,5 +16,5 @@ Feature: Build
     foo : Number -> Number
     foo x = x
     """
-    When I run run `ein build`
+    When I run `ein build`
     Then the exit status should be 0
