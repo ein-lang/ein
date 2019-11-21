@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum BuildError {
-    CircularDepdendency,
+    CircularDependency,
 }
 
 impl std::error::Error for BuildError {}

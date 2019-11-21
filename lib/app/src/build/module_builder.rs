@@ -77,7 +77,7 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
         }
 
         Ok(toposort(&graph, None)
-            .map_err(|_| BuildError::CircularDepdendency)?
+            .map_err(|_| BuildError::CircularDependency)?
             .into_iter()
             .map(|index| graph[index])
             .collect())
