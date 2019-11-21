@@ -6,4 +6,5 @@ edition = "2018"
 
 [dependencies]
 ein = { path = "../ein" }
+petgraph = "0.4"
 serde = { version = "1", features = ["derive"] }

@@ -30,14 +30,17 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     match package_configuration.target().try_into()? {
         app::Target::Command(command_target) => app::CommandPackageBuilder::new(
-            &app::ModuleCompiler::new(
+            &app::ModuleBuilder::new(
+                &app::ModuleCompiler::new(
+                    &app::RelativeModulePathConverter::new(&package),
+                    &object_file_storage,
+                    &infra::FileStorage::new(
+                        std::path::Path::new(OUTPUT_DIRECTORY).join("interfaces"),
+                        "json",
+                    ),
+                ),
                 &app::RelativeModulePathConverter::new(&package),
                 &infra::FileStorage::new(".", "ein"),
-                &object_file_storage,
-                &infra::FileStorage::new(
-                    std::path::Path::new(OUTPUT_DIRECTORY).join("interfaces"),
-                    "json",
-                ),
             ),
             &infra::Linker::new(std::env::var("EIN_ROOT")?, &object_file_storage),
         )

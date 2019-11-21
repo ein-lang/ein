@@ -1,25 +1,22 @@
-use super::module_compiler::ModuleCompiler;
-use crate::infra::{FilePath, FileStorage, Linker};
+use super::module_builder::ModuleBuilder;
+use crate::infra::{FileStorage, Linker};
 
 pub struct CommandPackageBuilder<'a, S: FileStorage, L: Linker> {
-    module_compiler: &'a ModuleCompiler<'a, S>,
+    module_builder: &'a ModuleBuilder<'a, S>,
     linker: &'a L,
 }
 
 impl<'a, S: FileStorage, L: Linker> CommandPackageBuilder<'a, S, L> {
-    pub fn new(module_compiler: &'a ModuleCompiler<'a, S>, linker: &'a L) -> Self {
+    pub fn new(module_builder: &'a ModuleBuilder<'a, S>, linker: &'a L) -> Self {
         Self {
-            module_compiler,
+            module_builder,
             linker,
         }
     }
 
     pub fn build(&self, command_name: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let object_file_path = self
-            .module_compiler
-            .compile(&FilePath::new(vec!["Main".into()]))?;
-
-        self.linker.link(&object_file_path, command_name)?;
+        self.linker
+            .link(&self.module_builder.build()?, command_name)?;
 
         Ok(())
     }

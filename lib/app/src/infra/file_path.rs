@@ -1,4 +1,4 @@
-#[derive(Debug, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct FilePath {
     components: Vec<String>,
 }

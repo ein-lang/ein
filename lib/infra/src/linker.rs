@@ -19,7 +19,7 @@ impl<'a> Linker<'a> {
 }
 
 impl<'a> app::Linker for Linker<'a> {
-    fn link(&self, file_path: &app::FilePath, command_name: &str) -> Result<(), std::io::Error> {
+    fn link(&self, file_paths: &[app::FilePath], command_name: &str) -> Result<(), std::io::Error> {
         let output = std::process::Command::new("clang")
             .arg("-o")
             .arg(command_name)
@@ -27,7 +27,11 @@ impl<'a> app::Linker for Linker<'a> {
             .arg("-flto")
             .arg("-ldl")
             .arg("-lpthread")
-            .arg(self.object_file_storage.resolve_file_path(file_path))
+            .args(
+                file_paths
+                    .iter()
+                    .map(|file_path| self.object_file_storage.resolve_file_path(file_path)),
+            )
             .arg(self.root_directory.join("target/release/libruntime.a"))
             .output()?;
 

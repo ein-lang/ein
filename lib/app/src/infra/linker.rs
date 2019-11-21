@@ -1,5 +1,9 @@
 use super::file_path::FilePath;
 
 pub trait Linker {
-    fn link(&self, object_file_path: &FilePath, command_name: &str) -> Result<(), std::io::Error>;
+    fn link(
+        &self,
+        object_file_paths: &[FilePath],
+        command_name: &str,
+    ) -> Result<(), std::io::Error>;
 }

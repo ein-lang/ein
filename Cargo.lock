@@ -21,6 +21,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "ein 0.1.0",
+ "petgraph 0.4.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.102 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
