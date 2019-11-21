@@ -1,4 +1,4 @@
-Feature: Build
+Feature: Error
   Background:
     Given a file named "ein.json" with:
     """
@@ -10,17 +10,6 @@ Feature: Build
       "dependencies": {}
     }
     """
-
-  Scenario: Build a command
-    Given a file named "Main.ein" with:
-    """
-    main : Number -> Number
-    main x = 1 * 3 - 4 / 2
-    """
-    And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "1"
-    And the exit status should be 0
 
   Scenario: Fail to build a command
     Given a file named "Main.ein" with:

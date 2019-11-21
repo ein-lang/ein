@@ -1,4 +1,4 @@
-Feature: Build
+Feature: Library
   Background:
     Given a file named "ein.json" with:
     """

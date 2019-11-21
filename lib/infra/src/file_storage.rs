@@ -31,7 +31,7 @@ impl app::FileStorage for FileStorage {
     fn get_file_paths(&self) -> Result<Vec<app::FilePath>, std::io::Error> {
         let directory = self.directory.canonicalize()?;
 
-        glob::glob(
+        Ok(glob::glob(
             &[
                 &format!("{}", directory.display()),
                 "/**/*",
@@ -57,7 +57,15 @@ impl app::FileStorage for FileStorage {
                     .unwrap(),
             ))
         })
-        .collect::<Result<Vec<_>, _>>()
+        .collect::<Result<Vec<app::FilePath>, std::io::Error>>()?
+        .into_iter()
+        .filter(|file_path| {
+            file_path
+                .components()
+                .iter()
+                .all(|component| !component.starts_with('.'))
+        })
+        .collect())
     }
 
     fn read_to_vec(&self, file_path: &app::FilePath) -> Result<Vec<u8>, std::io::Error> {
