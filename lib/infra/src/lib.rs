@@ -39,7 +39,7 @@ fn get_package_from_git() -> Result<ein::Package, InfrastructureError> {
             url.host_str().ok_or(InfrastructureError::HostNotFound)?,
             url.path(),
         ]
-        .join("/"),
+        .concat(),
         format!("{}", object.id()),
     ))
 }
