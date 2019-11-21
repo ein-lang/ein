@@ -1,3 +1,4 @@
+use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::relative_module_path_converter::RelativeModulePathConverter;
 use crate::infra::{FilePath, FileStorage};
@@ -76,7 +77,7 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
         }
 
         Ok(toposort(&graph, None)
-            .map_err(|_| -> Box<dyn std::error::Error> { unimplemented!() })?
+            .map_err(|_| BuildError::CircularDepdendency)?
             .into_iter()
             .map(|index| graph[index])
             .collect())
