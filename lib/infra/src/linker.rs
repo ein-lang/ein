@@ -28,11 +28,10 @@ impl<'a> app::Linker for Linker<'a> {
                 .arg("-flto")
                 .arg("-ldl")
                 .arg("-lpthread")
-                .args(
-                    file_paths
-                        .iter()
-                        .map(|file_path| self.object_file_storage.resolve_file_path(file_path)),
-                )
+                .args(file_paths.iter().map(|file_path| {
+                    self.object_file_storage
+                        .resolve_absolute_file_path(file_path)
+                }))
                 .arg(self.root_directory.join("target/release/libruntime.a")),
         )
     }

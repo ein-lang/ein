@@ -28,20 +28,27 @@ impl<'a> app::Archiver for Archiver<'a> {
             std::process::Command::new("llvm-link")
                 .arg("-o")
                 .arg("library.bc")
-                .args(
-                    object_file_paths
-                        .iter()
-                        .map(|file_path| self.object_file_storage.resolve_file_path(file_path)),
-                ),
+                .args(object_file_paths.iter().map(|file_path| {
+                    self.object_file_storage
+                        .resolve_absolute_file_path(file_path)
+                })),
         )?;
 
         let mut builder = tar::Builder::new(std::fs::File::create("library.tar")?);
         builder.append_path("library.bc")?;
 
         for file_path in interface_file_paths {
-            let path = self.interface_file_storage.resolve_file_path(file_path);
-
-            builder.append_file(&path, &mut std::fs::File::open(&path)?)?;
+            builder.append_file(
+                &std::path::Path::new("interfaces").join(
+                    self.interface_file_storage
+                        .resolve_relative_file_path(file_path),
+                ),
+                &mut std::fs::File::open(
+                    &self
+                        .interface_file_storage
+                        .resolve_absolute_file_path(file_path),
+                )?,
+            )?;
         }
 
         Ok(())
