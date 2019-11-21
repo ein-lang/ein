@@ -25,10 +25,9 @@ impl<'a> app::Archiver for Archiver<'a> {
         interface_file_paths: &[app::FilePath],
     ) -> Result<(), std::io::Error> {
         CommandRunner::run(
-            std::process::Command::new("clang")
-                .arg("-c")
+            std::process::Command::new("llvm-link")
                 .arg("-o")
-                .arg("library.o")
+                .arg("library.bc")
                 .args(
                     object_file_paths
                         .iter()
@@ -36,15 +35,8 @@ impl<'a> app::Archiver for Archiver<'a> {
                 ),
         )?;
 
-        CommandRunner::run(
-            std::process::Command::new("ar")
-                .arg("-r")
-                .arg("library.a")
-                .arg("library.o"),
-        )?;
-
         let mut builder = tar::Builder::new(std::fs::File::create("library.tar")?);
-        builder.append_path("library.a")?;
+        builder.append_path("library.bc")?;
 
         for file_path in interface_file_paths {
             let path = self.interface_file_storage.resolve_file_path(file_path);
