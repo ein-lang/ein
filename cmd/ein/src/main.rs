@@ -35,32 +35,26 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     );
     let relative_module_path_converter = app::RelativeModulePathConverter::new(&package);
 
-    match package_configuration.target().try_into()? {
-        app::Target::Command(command_target) => app::CommandPackageBuilder::new(
-            &app::ModuleBuilder::new(
-                &app::ModuleCompiler::new(
-                    &relative_module_path_converter,
-                    &object_file_storage,
-                    &interface_file_storage,
-                ),
-                &relative_module_path_converter,
-                &source_file_storage,
-            ),
+    let module_compiler = app::ModuleCompiler::new(
+        &relative_module_path_converter,
+        &object_file_storage,
+        &interface_file_storage,
+    );
+    let module_builder = app::ModuleBuilder::new(
+        &module_compiler,
+        &relative_module_path_converter,
+        &source_file_storage,
+    );
+
+    app::PackageBuilder::new(
+        &app::CommandPackageBuilder::new(
+            &module_builder,
             &infra::Linker::new(std::env::var("EIN_ROOT")?, &object_file_storage),
-        )
-        .build(command_target.name()),
-        app::Target::Library => app::LibraryPackageBuilder::new(
-            &app::ModuleBuilder::new(
-                &app::ModuleCompiler::new(
-                    &relative_module_path_converter,
-                    &object_file_storage,
-                    &interface_file_storage,
-                ),
-                &relative_module_path_converter,
-                &source_file_storage,
-            ),
+        ),
+        &app::LibraryPackageBuilder::new(
+            &module_builder,
             &infra::Archiver::new(&object_file_storage, &interface_file_storage),
-        )
-        .build(),
-    }
+        ),
+    )
+    .build(&package_configuration.target().try_into()?)
 }
