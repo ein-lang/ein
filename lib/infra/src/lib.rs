@@ -1,6 +1,6 @@
 mod archiver;
 mod command_runner;
-mod dependency_package;
+mod external_package;
 mod error;
 mod file_storage;
 mod linker;

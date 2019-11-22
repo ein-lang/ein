@@ -1,4 +1,4 @@
-use super::dependency_package::DependencyPackage;
+use super::external_package::ExternalPackage;
 use super::target::Target;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -6,7 +6,7 @@ use std::collections::HashMap;
 #[derive(Deserialize, Serialize)]
 pub struct PackageConfiguration {
     target: Target,
-    dependencies: HashMap<String, DependencyPackage>,
+    dependencies: HashMap<String, ExternalPackage>,
 }
 
 impl PackageConfiguration {
@@ -15,7 +15,7 @@ impl PackageConfiguration {
     }
 
     #[allow(dead_code)]
-    pub fn dependencies(&self) -> &HashMap<String, DependencyPackage> {
+    pub fn dependencies(&self) -> &HashMap<String, ExternalPackage> {
         &self.dependencies
     }
 }
