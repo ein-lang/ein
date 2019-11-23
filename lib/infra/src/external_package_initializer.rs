@@ -1,3 +1,4 @@
+use super::command_runner::CommandRunner;
 use super::package_configuration::PackageConfiguration;
 
 pub struct ExternalPackageInitializer<'a> {
@@ -29,13 +30,19 @@ impl<'a> app::ExternalPackageInitializer for ExternalPackageInitializer<'a> {
             }
 
             let url = url::Url::parse(&["https://", name].concat())?;
-            let repository = git2::Repository::clone(url.as_str(), directory)?;
+            let repository = git2::Repository::clone(url.as_str(), &directory)?;
 
             repository.checkout_tree(
                 &repository
                     .resolve_reference_from_short_name(external_package.version())?
                     .peel(git2::ObjectType::Any)?,
                 None,
+            )?;
+
+            CommandRunner::run(
+                std::process::Command::new("ein")
+                    .arg("build")
+                    .current_dir(&directory),
             )?;
         }
 
