@@ -1,7 +1,8 @@
 mod archiver;
 mod command_runner;
-mod external_package;
 mod error;
+mod external_package;
+mod external_package_initializer;
 mod file_storage;
 mod linker;
 mod package_configuration;
@@ -9,7 +10,8 @@ mod target;
 mod target_type;
 
 pub use archiver::*;
-pub use error::InfrastructureError;
+pub use error::*;
+pub use external_package_initializer::*;
 pub use file_storage::*;
 pub use linker::*;
 pub use package_configuration::*;
