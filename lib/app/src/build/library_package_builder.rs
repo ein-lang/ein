@@ -3,7 +3,6 @@ use crate::infra::{Archiver, FileStorage};
 
 pub struct LibraryPackageBuilder<'a, S: FileStorage, A: Archiver> {
     module_builder: &'a ModuleBuilder<'a, S>,
-    #[allow(dead_code)]
     archiver: &'a A,
 }
 

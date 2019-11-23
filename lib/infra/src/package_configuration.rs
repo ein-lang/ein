@@ -14,7 +14,6 @@ impl PackageConfiguration {
         &self.target
     }
 
-    #[allow(dead_code)]
     pub fn dependencies(&self) -> &HashMap<String, ExternalPackage> {
         &self.dependencies
     }
