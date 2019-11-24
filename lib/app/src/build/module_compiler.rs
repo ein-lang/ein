@@ -23,6 +23,8 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
     pub fn compile(
         &self,
         file_path: &FilePath,
+        // Callers pass unresolved modules to omit extra reading and parsing of
+        // source files.
         module: &ein::ast::UnresolvedModule,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let (module_object, module_interface) = ein::compile(
