@@ -33,6 +33,7 @@
     "multispace",
     "parenthesesed",
     "petgraph",
+    "ppcfp",
     "semver",
     "subcommand",
     "submodule",
