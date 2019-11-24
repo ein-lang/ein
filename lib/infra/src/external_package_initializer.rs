@@ -44,6 +44,9 @@ impl<'a> app::ExternalPackageInitializer for ExternalPackageInitializer<'a> {
                     .arg("build")
                     .current_dir(&directory),
             )?;
+
+            tar::Archive::new(std::fs::File::open(directory.join("library.tar"))?)
+                .unpack(&directory)?;
         }
 
         Ok(())
