@@ -29,6 +29,7 @@ mod tests {
     use super::*;
     use crate::ast::*;
     use crate::debug::SourceInformation;
+    use crate::path::*;
     use crate::types;
     use indoc::indoc;
 
@@ -140,6 +141,42 @@ mod tests {
                 )
                 .into()
             ]))
+        );
+    }
+
+    #[test]
+    fn parse_module_with_import_statement() {
+        assert_eq!(
+            parse_module(Source::new(
+                "",
+                indoc!(
+                    "
+                        import \"package/Module\"
+
+                        main : Number -> Number
+                        main x = x
+                    "
+                )
+            ),),
+            Ok(UnresolvedModule::new(
+                Export::new(Default::default()),
+                vec![Import::new(AbsoluteUnresolvedModulePath::new(vec![
+                    "package".into(),
+                    "Module".into()
+                ]))],
+                vec![FunctionDefinition::new(
+                    "main",
+                    vec!["x".into()],
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()]
+            ))
         );
     }
 }

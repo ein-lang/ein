@@ -1,3 +1,4 @@
+use super::absolute_module_path_converter::AbsoluteModulePathConverter;
 use super::relative_module_path_converter::RelativeModulePathConverter;
 use crate::infra::{FilePath, FileStorage};
 
@@ -5,6 +6,7 @@ pub struct ModuleCompiler<'a, S: FileStorage> {
     relative_module_path_converter: &'a RelativeModulePathConverter<'a>,
     object_file_storage: &'a S,
     interface_file_storage: &'a S,
+    external_interface_file_storage: &'a S,
 }
 
 impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
@@ -12,11 +14,13 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         relative_module_path_converter: &'a RelativeModulePathConverter,
         object_file_storage: &'a S,
         interface_file_storage: &'a S,
+        external_interface_file_storage: &'a S,
     ) -> Self {
         Self {
             relative_module_path_converter,
             object_file_storage,
             interface_file_storage,
+            external_interface_file_storage,
         }
     }
 
@@ -35,7 +39,15 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
                     .imports()
                     .iter()
                     .map(|import| match import.module_path() {
-                        ein::UnresolvedModulePath::Absolute(_) => unimplemented!(),
+                        ein::UnresolvedModulePath::Absolute(absolute_module_path) => {
+                            Ok(ein::deserialize_module_interface(
+                                &self.external_interface_file_storage.read_to_vec(
+                                    &AbsoluteModulePathConverter::convert_to_file_path(
+                                        absolute_module_path,
+                                    ),
+                                )?,
+                            )?)
+                        }
                         ein::UnresolvedModulePath::Relative(relative_module_path) => {
                             Ok(ein::deserialize_module_interface(
                                 &self.interface_file_storage.read_to_vec(

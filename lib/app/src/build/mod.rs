@@ -1,3 +1,4 @@
+mod absolute_module_path_converter;
 mod command_package_builder;
 mod command_target;
 mod error;
