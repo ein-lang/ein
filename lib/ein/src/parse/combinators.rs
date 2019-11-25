@@ -99,7 +99,7 @@ fn path_component(input: Input) -> IResult<Input, String> {
     map(
         tuple((
             convert_combinator(alphanumeric1),
-            many0(alt((convert_combinator(alphanumeric1), tag(".")))),
+            many0(alt((convert_combinator(alphanumeric1), tag("."), tag("-")))),
         )),
         |(prefix, mut strings)| {
             vec![prefix]
@@ -1508,6 +1508,24 @@ mod tests {
                     "github.com".into(),
                     "foo".into(),
                     "bar".into(),
+                    "Module".into(),
+                ]))
+            ))
+        );
+    }
+
+    #[test]
+    fn parse_import_with_absolute_module_path_containing_hyphens() {
+        let input = Input::new(Source::new("", r#"import "github.com/foo-bar/baz/Module""#));
+
+        assert_eq!(
+            import(input.clone()),
+            Ok((
+                input.set("", 0, Location::new(1, 39)),
+                Import::new(AbsoluteUnresolvedModulePath::new(vec![
+                    "github.com".into(),
+                    "foo-bar".into(),
+                    "baz".into(),
                     "Module".into(),
                 ]))
             ))
