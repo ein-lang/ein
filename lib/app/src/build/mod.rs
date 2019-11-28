@@ -1,20 +1,22 @@
-mod absolute_module_path_converter;
 mod command_package_builder;
 mod command_target;
 mod error;
+mod external_package_initializer;
 mod library_package_builder;
 mod module_builder;
 mod module_compiler;
 mod package_builder;
-mod relative_module_path_converter;
+mod package_configuration;
+mod path;
 mod target;
 
 pub use command_package_builder::*;
 pub use command_target::*;
 pub use error::*;
+pub use external_package_initializer::*;
 pub use library_package_builder::*;
 pub use module_builder::*;
 pub use module_compiler::*;
 pub use package_builder::*;
-pub use relative_module_path_converter::*;
+pub use path::*;
 pub use target::*;

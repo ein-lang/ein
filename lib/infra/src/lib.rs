@@ -1,47 +1,17 @@
 mod archiver;
 mod command_runner;
 mod error;
-mod external_package;
-mod external_package_initializer;
+mod external_package_builder;
+mod external_package_downloader;
 mod file_storage;
 mod linker;
-mod package_configuration;
-mod target;
-mod target_type;
+mod repository;
+mod utilities;
 
 pub use archiver::*;
 pub use error::*;
-pub use external_package_initializer::*;
+pub use external_package_builder::*;
+pub use external_package_downloader::*;
 pub use file_storage::*;
 pub use linker::*;
-pub use package_configuration::*;
-
-pub fn parse_package_configuration(
-    source: &str,
-) -> Result<PackageConfiguration, InfrastructureError> {
-    Ok(serde_json::from_str::<PackageConfiguration>(source)?)
-}
-
-pub fn get_package() -> Result<ein::Package, InfrastructureError> {
-    Ok(get_package_from_git().unwrap_or_else(|_| ein::Package::new("main", "current")))
-}
-
-fn get_package_from_git() -> Result<ein::Package, InfrastructureError> {
-    let repository = git2::Repository::discover(".")?;
-    let url = url::Url::parse(
-        repository
-            .find_remote("origin")?
-            .url()
-            .ok_or(InfrastructureError::OriginUrlNotFound)?,
-    )?;
-    let object = repository.head()?.peel(git2::ObjectType::Any)?;
-
-    Ok(ein::Package::new(
-        [
-            url.host_str().ok_or(InfrastructureError::HostNotFound)?,
-            url.path(),
-        ]
-        .concat(),
-        format!("{}", object.id()),
-    ))
-}
+pub use repository::*;

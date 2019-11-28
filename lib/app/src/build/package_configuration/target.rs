@@ -1,5 +1,6 @@
-use super::error::InfrastructureError;
+use super::error::PackageConfigurationError;
 use super::target_type::TargetType;
+use crate::build;
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 
@@ -10,45 +11,36 @@ pub struct Target {
     name: Option<String>,
 }
 
-impl Target {
-    pub fn type_(&self) -> TargetType {
-        self.type_
-    }
-}
+impl TryInto<build::Target> for &Target {
+    type Error = PackageConfigurationError;
 
-impl TryInto<app::Target> for &Target {
-    type Error = InfrastructureError;
-
-    fn try_into(self) -> Result<app::Target, InfrastructureError> {
+    fn try_into(self) -> Result<build::Target, PackageConfigurationError> {
         match self.type_ {
             TargetType::Command => match &self.name {
                 Some(name) => {
                     if name == "" {
-                        Err(InfrastructureError::ConfigurationVerification(
-                            "empty command name not allowed".into(),
-                        ))
+                        Err(PackageConfigurationError::MissingCommandName)
                     } else {
-                        Ok(app::Target::Command(app::CommandTarget::new(name)))
+                        Ok(build::Target::Command(build::CommandTarget::new(name)))
                     }
                 }
-                None => Err(InfrastructureError::ConfigurationVerification(
-                    "command name required for command target".into(),
-                )),
+                None => Err(PackageConfigurationError::MissingCommandName),
             },
-            TargetType::Library => match self.name {
-                Some(_) => Err(InfrastructureError::ConfigurationVerification(
-                    "exposed modules needed for library target".into(),
-                )),
-                None => Ok(app::Target::Library),
-            },
+            TargetType::Library => {
+                if self.name.is_some() {
+                    Err(PackageConfigurationError::CommandNameForLibrary)
+                } else {
+                    Ok(build::Target::Library)
+                }
+            }
         }
     }
 }
 
-impl TryInto<app::Target> for Target {
-    type Error = InfrastructureError;
+impl TryInto<build::Target> for Target {
+    type Error = PackageConfigurationError;
 
-    fn try_into(self) -> Result<app::Target, InfrastructureError> {
+    fn try_into(self) -> Result<build::Target, PackageConfigurationError> {
         (&self).try_into()
     }
 }
@@ -59,7 +51,7 @@ mod tests {
 
     #[test]
     fn parse_package_configuration_of_binary_target() {
-        let _: app::Target =
+        let _: build::Target =
             serde_json::from_str::<Target>(r#"{ "type": "Command", "name": "foo" }"#)
                 .unwrap()
                 .try_into()
@@ -68,7 +60,7 @@ mod tests {
 
     #[test]
     fn parse_package_configuration_of_library_target() {
-        let _: app::Target = serde_json::from_str::<Target>(r#"{ "type": "Library" }"#)
+        let _: build::Target = serde_json::from_str::<Target>(r#"{ "type": "Library" }"#)
             .unwrap()
             .try_into()
             .unwrap();
@@ -76,7 +68,7 @@ mod tests {
 
     #[test]
     fn verify_no_name_field_for_binary_target() {
-        let target: Result<app::Target, _> =
+        let target: Result<build::Target, _> =
             serde_json::from_str::<Target>(r#"{ "type": "Command" }"#)
                 .unwrap()
                 .try_into();
@@ -86,7 +78,7 @@ mod tests {
 
     #[test]
     fn verify_empty_name_field_for_binary_target() {
-        let target: Result<app::Target, _> =
+        let target: Result<build::Target, _> =
             serde_json::from_str::<Target>(r#"{ "type": "Command", "name": "" }"#)
                 .unwrap()
                 .try_into();
@@ -96,7 +88,7 @@ mod tests {
 
     #[test]
     fn verify_no_name_field_for_library_target() {
-        let target: Result<app::Target, _> =
+        let target: Result<build::Target, _> =
             serde_json::from_str::<Target>(r#"{ "type": "Library", "name": "foo" }"#)
                 .unwrap()
                 .try_into();

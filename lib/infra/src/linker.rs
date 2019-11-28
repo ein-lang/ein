@@ -1,25 +1,24 @@
 use super::command_runner::CommandRunner;
-use super::file_storage::FileStorage;
+use super::utilities;
 
-pub struct Linker<'a> {
+pub struct Linker {
     root_directory: Box<std::path::Path>,
-    object_file_storage: &'a FileStorage,
 }
 
-impl<'a> Linker<'a> {
-    pub fn new(
-        root_directory: impl AsRef<std::path::Path>,
-        object_file_storage: &'a FileStorage,
-    ) -> Self {
+impl Linker {
+    pub fn new(root_directory: impl AsRef<std::path::Path>) -> Self {
         Self {
             root_directory: root_directory.as_ref().into(),
-            object_file_storage,
         }
     }
 }
 
-impl<'a> app::Linker for Linker<'a> {
-    fn link(&self, file_paths: &[app::FilePath], command_name: &str) -> Result<(), std::io::Error> {
+impl app::Linker for Linker {
+    fn link(
+        &self,
+        object_file_paths: &[app::FilePath],
+        command_name: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         CommandRunner::run(
             std::process::Command::new("clang")
                 .arg("-o")
@@ -28,10 +27,11 @@ impl<'a> app::Linker for Linker<'a> {
                 .arg("-flto")
                 .arg("-ldl")
                 .arg("-lpthread")
-                .args(file_paths.iter().map(|file_path| {
-                    self.object_file_storage
-                        .resolve_absolute_file_path(file_path)
-                }))
+                .args(
+                    object_file_paths
+                        .iter()
+                        .map(|file_path| utilities::convert_to_os_path(file_path)),
+                )
                 .arg(self.root_directory.join("target/release/libruntime.a")),
         )
     }

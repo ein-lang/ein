@@ -3,7 +3,7 @@ use std::io::Write;
 pub struct CommandRunner;
 
 impl CommandRunner {
-    pub fn run(command: &mut std::process::Command) -> Result<(), std::io::Error> {
+    pub fn run(command: &mut std::process::Command) -> Result<(), Box<dyn std::error::Error>> {
         let output = command.output()?;
 
         if output.status.success() {
@@ -20,6 +20,7 @@ impl CommandRunner {
                 .code()
                 .map(|code| format!("a command exited with status code {}", code))
                 .unwrap_or_else(|| "a command exited with no status code".into()),
-        ))
+        )
+        .into())
     }
 }

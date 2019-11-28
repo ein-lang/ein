@@ -7,3 +7,6 @@ edition = "2018"
 [dependencies]
 ein = { path = "../ein" }
 petgraph = "0.4"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

@@ -5,5 +5,5 @@ pub trait Linker {
         &self,
         object_file_paths: &[FilePath],
         command_name: &str,
-    ) -> Result<(), std::io::Error>;
+    ) -> Result<(), Box<dyn std::error::Error>>;
 }

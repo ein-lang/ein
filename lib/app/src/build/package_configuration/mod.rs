@@ -1,7 +1,12 @@
-use super::external_package::ExternalPackage;
-use super::target::Target;
+mod error;
+mod external_package;
+mod target;
+mod target_type;
+
+use external_package::ExternalPackage;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use target::Target;
 
 #[derive(Deserialize, Serialize)]
 pub struct PackageConfiguration {
