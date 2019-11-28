@@ -3,13 +3,13 @@ use crate::infra::FilePath;
 
 const EXTERNAL_PACKAGE_DIRECTORY: &str = "packages";
 
-pub struct ExternalModulePathConverter<'a> {
+pub struct ExternalModulePathManager<'a> {
     file_path_configuration: &'a FilePathConfiguration,
 }
 
-impl<'a> ExternalModulePathConverter<'a> {
+impl<'a> ExternalModulePathManager<'a> {
     pub fn new(file_path_configuration: &'a FilePathConfiguration) -> Self {
-        ExternalModulePathConverter {
+        ExternalModulePathManager {
             file_path_configuration,
         }
     }
@@ -51,7 +51,7 @@ mod tests {
     #[test]
     fn convert_from_file_path() {
         assert_eq!(
-            ExternalModulePathConverter::new(&FilePathConfiguration::new("target", "", "", "json"))
+            ExternalModulePathManager::new(&FilePathConfiguration::new("target", "", "", "json"))
                 .resolve_to_interface_file_path(&ein::AbsoluteUnresolvedModulePath::new(vec![
                     "package".into(),
                     "Foo".into()

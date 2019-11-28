@@ -22,9 +22,9 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let file_storage = infra::FileStorage::new();
     let internal_module_path_converter =
-        app::InternalModulePathConverter::new(&file_path_configuration);
+        app::InternalModulePathManager::new(&file_path_configuration);
     let external_module_path_converter =
-        app::ExternalModulePathConverter::new(&file_path_configuration);
+        app::ExternalModulePathManager::new(&file_path_configuration);
 
     let module_compiler = app::ModuleCompiler::new(
         &internal_module_path_converter,

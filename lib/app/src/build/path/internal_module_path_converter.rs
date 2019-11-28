@@ -4,12 +4,12 @@ use crate::infra::FilePath;
 const OBJECT_DIRECTORY: &str = "objects";
 const INTERFACE_DIRECTORY: &str = "interfaces";
 
-pub struct InternalModulePathConverter<'a> {
+pub struct InternalModulePathManager<'a> {
     file_path_configuration: &'a FilePathConfiguration,
     source_file_glob_pattern: String,
 }
 
-impl<'a> InternalModulePathConverter<'a> {
+impl<'a> InternalModulePathManager<'a> {
     pub fn new(file_path_configuration: &'a FilePathConfiguration) -> Self {
         Self {
             file_path_configuration,
@@ -104,7 +104,7 @@ mod tests {
     #[test]
     fn resolve_to_interface_file_path() {
         assert_eq!(
-            InternalModulePathConverter::new(&FilePathConfiguration::new(
+            InternalModulePathManager::new(&FilePathConfiguration::new(
                 "target",
                 "",
                 "",
@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn convert_to_relative_interface_file_path() {
         assert_eq!(
-            InternalModulePathConverter::new(&FilePathConfiguration::new("target", "", "", ""))
+            InternalModulePathManager::new(&FilePathConfiguration::new("target", "", "", ""))
                 .convert_to_relative_interface_file_path(&FilePath::new(vec![
                     "target".into(),
                     "interfaces".into(),

@@ -1,18 +1,18 @@
 use super::module_builder::ModuleBuilder;
-use super::path::InternalModulePathConverter;
+use super::path::InternalModulePathManager;
 use crate::infra::{Archiver, FileStorage};
 
 pub struct LibraryPackageBuilder<'a, S: FileStorage, A: Archiver> {
     module_builder: &'a ModuleBuilder<'a, S>,
     archiver: &'a A,
-    internal_module_path_converter: &'a InternalModulePathConverter<'a>,
+    internal_module_path_converter: &'a InternalModulePathManager<'a>,
 }
 
 impl<'a, S: FileStorage, A: Archiver> LibraryPackageBuilder<'a, S, A> {
     pub fn new(
         module_builder: &'a ModuleBuilder<'a, S>,
         archiver: &'a A,
-        internal_module_path_converter: &'a InternalModulePathConverter<'a>,
+        internal_module_path_converter: &'a InternalModulePathManager<'a>,
     ) -> Self {
         Self {
             module_builder,

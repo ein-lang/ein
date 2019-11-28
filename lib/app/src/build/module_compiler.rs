@@ -1,17 +1,17 @@
-use super::path::ExternalModulePathConverter;
-use super::path::InternalModulePathConverter;
+use super::path::ExternalModulePathManager;
+use super::path::InternalModulePathManager;
 use crate::infra::{FilePath, FileStorage};
 
 pub struct ModuleCompiler<'a, S: FileStorage> {
-    internal_module_path_converter: &'a InternalModulePathConverter<'a>,
-    external_module_path_converter: &'a ExternalModulePathConverter<'a>,
+    internal_module_path_converter: &'a InternalModulePathManager<'a>,
+    external_module_path_converter: &'a ExternalModulePathManager<'a>,
     file_storage: &'a S,
 }
 
 impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
     pub fn new(
-        internal_module_path_converter: &'a InternalModulePathConverter<'a>,
-        external_module_path_converter: &'a ExternalModulePathConverter<'a>,
+        internal_module_path_converter: &'a InternalModulePathManager<'a>,
+        external_module_path_converter: &'a ExternalModulePathManager<'a>,
         file_storage: &'a S,
     ) -> Self {
         Self {

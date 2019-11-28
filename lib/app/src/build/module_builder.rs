@@ -1,6 +1,6 @@
 use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
-use super::path::InternalModulePathConverter;
+use super::path::InternalModulePathManager;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
@@ -9,14 +9,14 @@ use std::collections::HashMap;
 pub struct ModuleBuilder<'a, D: FileStorage> {
     module_compiler: &'a ModuleCompiler<'a, D>,
     file_storage: &'a D,
-    internal_module_path_converter: &'a InternalModulePathConverter<'a>,
+    internal_module_path_converter: &'a InternalModulePathManager<'a>,
 }
 
 impl<'a, D: FileStorage> ModuleBuilder<'a, D> {
     pub fn new(
         module_compiler: &'a ModuleCompiler<'a, D>,
         file_storage: &'a D,
-        internal_module_path_converter: &'a InternalModulePathConverter<'a>,
+        internal_module_path_converter: &'a InternalModulePathManager<'a>,
     ) -> Self {
         Self {
             module_compiler,
