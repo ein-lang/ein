@@ -1,21 +1,21 @@
-use super::absolute_unresolved_module_path::AbsoluteUnresolvedModulePath;
-use super::relative_unresolved_module_path::RelativeUnresolvedModulePath;
+use super::external_unresolved_module_path::ExternalUnresolvedModulePath;
+use super::internal_unresolved_module_path::InternalUnresolvedModulePath;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub enum UnresolvedModulePath {
-    Absolute(AbsoluteUnresolvedModulePath),
-    Relative(RelativeUnresolvedModulePath),
+    External(ExternalUnresolvedModulePath),
+    Internal(InternalUnresolvedModulePath),
 }
 
-impl From<AbsoluteUnresolvedModulePath> for UnresolvedModulePath {
-    fn from(path: AbsoluteUnresolvedModulePath) -> Self {
-        Self::Absolute(path)
+impl From<ExternalUnresolvedModulePath> for UnresolvedModulePath {
+    fn from(path: ExternalUnresolvedModulePath) -> Self {
+        Self::External(path)
     }
 }
 
-impl From<RelativeUnresolvedModulePath> for UnresolvedModulePath {
-    fn from(path: RelativeUnresolvedModulePath) -> Self {
-        Self::Relative(path)
+impl From<InternalUnresolvedModulePath> for UnresolvedModulePath {
+    fn from(path: InternalUnresolvedModulePath) -> Self {
+        Self::Internal(path)
     }
 }

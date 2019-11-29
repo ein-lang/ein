@@ -160,7 +160,7 @@ mod tests {
             ),),
             Ok(UnresolvedModule::new(
                 Export::new(Default::default()),
-                vec![Import::new(AbsoluteUnresolvedModulePath::new(vec![
+                vec![Import::new(ExternalUnresolvedModulePath::new(vec![
                     "package".into(),
                     "Module".into()
                 ]))],

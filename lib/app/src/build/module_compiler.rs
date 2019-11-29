@@ -43,21 +43,21 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
                     .imports()
                     .iter()
                     .map(|import| match import.module_path() {
-                        ein::UnresolvedModulePath::Absolute(absolute_module_path) => {
+                        ein::UnresolvedModulePath::External(external_module_path) => {
                             Ok(ein::deserialize_module_interface(
                                 &self.file_storage.read_to_vec(
                                     &self
                                         .external_module_path_converter
-                                        .resolve_to_interface_file_path(absolute_module_path),
+                                        .resolve_to_interface_file_path(external_module_path),
                                 )?,
                             )?)
                         }
-                        ein::UnresolvedModulePath::Relative(relative_module_path) => {
+                        ein::UnresolvedModulePath::Internal(internal_module_path) => {
                             Ok(ein::deserialize_module_interface(
                                 &self.file_storage.read_to_vec(
                                     &self
                                         .internal_module_path_converter
-                                        .resolve_to_interface_file_path(relative_module_path),
+                                        .resolve_to_interface_file_path(internal_module_path),
                                 )?,
                             )?)
                         }

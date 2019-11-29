@@ -16,7 +16,7 @@ impl<'a> ExternalModulePathManager<'a> {
 
     pub fn resolve_to_interface_file_path(
         &self,
-        absolute_module_path: &ein::AbsoluteUnresolvedModulePath,
+        external_module_path: &ein::ExternalUnresolvedModulePath,
     ) -> FilePath {
         FilePath::new(
             vec![
@@ -24,7 +24,7 @@ impl<'a> ExternalModulePathManager<'a> {
                 EXTERNAL_PACKAGE_DIRECTORY.into(),
             ]
             .drain(..)
-            .chain(absolute_module_path.components().iter().cloned())
+            .chain(external_module_path.components().iter().cloned())
             .collect(),
         )
         .with_extension(self.file_path_configuration.interface_file_extension())
@@ -52,7 +52,7 @@ mod tests {
     fn convert_from_file_path() {
         assert_eq!(
             ExternalModulePathManager::new(&FilePathConfiguration::new("target", "", "", "json"))
-                .resolve_to_interface_file_path(&ein::AbsoluteUnresolvedModulePath::new(vec![
+                .resolve_to_interface_file_path(&ein::ExternalUnresolvedModulePath::new(vec![
                     "package".into(),
                     "Foo".into()
                 ])),

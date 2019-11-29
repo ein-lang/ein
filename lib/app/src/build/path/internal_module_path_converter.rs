@@ -22,15 +22,15 @@ impl<'a> InternalModulePathManager<'a> {
 
     pub fn resolve_to_source_file_path(
         &self,
-        relative_module_path: &ein::RelativeUnresolvedModulePath,
+        internal_module_path: &ein::InternalUnresolvedModulePath,
     ) -> FilePath {
-        FilePath::new(relative_module_path.components().to_vec())
+        FilePath::new(internal_module_path.components().to_vec())
             .with_extension(self.file_path_configuration.source_file_extension())
     }
 
     pub fn resolve_to_interface_file_path(
         &self,
-        relative_module_path: &ein::RelativeUnresolvedModulePath,
+        internal_module_path: &ein::InternalUnresolvedModulePath,
     ) -> FilePath {
         FilePath::new(
             vec![
@@ -38,7 +38,7 @@ impl<'a> InternalModulePathManager<'a> {
                 INTERFACE_DIRECTORY.into(),
             ]
             .drain(..)
-            .chain(relative_module_path.components().iter().cloned())
+            .chain(internal_module_path.components().iter().cloned())
             .collect(),
         )
         .with_extension(self.file_path_configuration.interface_file_extension())
@@ -110,7 +110,7 @@ mod tests {
                 "",
                 "interface"
             ))
-            .resolve_to_interface_file_path(&ein::RelativeUnresolvedModulePath::new(
+            .resolve_to_interface_file_path(&ein::InternalUnresolvedModulePath::new(
                 vec!["package".into(), "Foo".into()]
             )),
             FilePath::new(vec![

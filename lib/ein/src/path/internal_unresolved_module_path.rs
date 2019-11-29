@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct AbsoluteUnresolvedModulePath {
+pub struct InternalUnresolvedModulePath {
     components: Vec<String>,
 }
 
-impl AbsoluteUnresolvedModulePath {
+impl InternalUnresolvedModulePath {
     pub fn new(components: Vec<String>) -> Self {
         Self { components }
     }

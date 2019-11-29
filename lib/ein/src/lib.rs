@@ -11,6 +11,6 @@ pub use compile::{compile, ModuleObject};
 pub use package::Package;
 pub use parse::{parse_module, Source};
 pub use path::{
-    AbsoluteUnresolvedModulePath, ModulePath, RelativeUnresolvedModulePath, UnresolvedModulePath,
+    ExternalUnresolvedModulePath, InternalUnresolvedModulePath, ModulePath, UnresolvedModulePath,
 };
 pub use serialize::{deserialize_module_interface, serialize_module_interface};

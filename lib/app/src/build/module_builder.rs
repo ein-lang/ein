@@ -73,13 +73,13 @@ impl<'a, D: FileStorage> ModuleBuilder<'a, D> {
             ))?;
 
             for import in module.imports() {
-                if let ein::UnresolvedModulePath::Relative(relative_module_path) =
+                if let ein::UnresolvedModulePath::Internal(internal_module_path) =
                     import.module_path()
                 {
                     graph.add_edge(
                         indices[&self
                             .internal_module_path_converter
-                            .resolve_to_source_file_path(relative_module_path)],
+                            .resolve_to_source_file_path(internal_module_path)],
                         indices[&source_file_path],
                         (),
                     );

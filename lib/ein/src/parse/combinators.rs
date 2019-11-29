@@ -3,7 +3,7 @@ use super::utilities::*;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::path::{
-    AbsoluteUnresolvedModulePath, RelativeUnresolvedModulePath, UnresolvedModulePath,
+    ExternalUnresolvedModulePath, InternalUnresolvedModulePath, UnresolvedModulePath,
 };
 use crate::types::{self, Type};
 use nom::{
@@ -61,22 +61,22 @@ fn import(input: Input) -> IResult<Input, Import> {
 
 pub fn module_path(input: Input) -> IResult<Input, UnresolvedModulePath> {
     token(alt((
-        map(absolute_module_path, UnresolvedModulePath::from),
-        map(relative_module_path, UnresolvedModulePath::from),
+        map(external_module_path, UnresolvedModulePath::from),
+        map(internal_module_path, UnresolvedModulePath::from),
     )))(input)
 }
 
-pub fn absolute_module_path(input: Input) -> IResult<Input, AbsoluteUnresolvedModulePath> {
+pub fn external_module_path(input: Input) -> IResult<Input, ExternalUnresolvedModulePath> {
     map(
         delimited(tag("\""), path_components, tag("\"")),
-        AbsoluteUnresolvedModulePath::new,
+        ExternalUnresolvedModulePath::new,
     )(input)
 }
 
-pub fn relative_module_path(input: Input) -> IResult<Input, RelativeUnresolvedModulePath> {
+pub fn internal_module_path(input: Input) -> IResult<Input, InternalUnresolvedModulePath> {
     map(
         delimited(tag("\"./"), path_components, tag("\"")),
-        RelativeUnresolvedModulePath::new,
+        InternalUnresolvedModulePath::new,
     )(input)
 }
 
@@ -1484,27 +1484,27 @@ mod tests {
     }
 
     #[test]
-    fn parse_import_with_relative_module_path() {
+    fn parse_import_with_internal_module_path() {
         let input = Input::new(Source::new("", r#"import "./Module""#));
 
         assert_eq!(
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 18)),
-                Import::new(RelativeUnresolvedModulePath::new(vec!["Module".into()]))
+                Import::new(InternalUnresolvedModulePath::new(vec!["Module".into()]))
             ))
         );
     }
 
     #[test]
-    fn parse_import_with_absolute_module_path() {
+    fn parse_import_with_external_module_path() {
         let input = Input::new(Source::new("", r#"import "github.com/foo/bar/Module""#));
 
         assert_eq!(
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 35)),
-                Import::new(AbsoluteUnresolvedModulePath::new(vec![
+                Import::new(ExternalUnresolvedModulePath::new(vec![
                     "github.com".into(),
                     "foo".into(),
                     "bar".into(),
@@ -1515,14 +1515,14 @@ mod tests {
     }
 
     #[test]
-    fn parse_import_with_absolute_module_path_containing_hyphens() {
+    fn parse_import_with_external_module_path_containing_hyphens() {
         let input = Input::new(Source::new("", r#"import "github.com/foo-bar/baz/Module""#));
 
         assert_eq!(
             import(input.clone()),
             Ok((
                 input.set("", 0, Location::new(1, 39)),
-                Import::new(AbsoluteUnresolvedModulePath::new(vec![
+                Import::new(ExternalUnresolvedModulePath::new(vec![
                     "github.com".into(),
                     "foo-bar".into(),
                     "baz".into(),
