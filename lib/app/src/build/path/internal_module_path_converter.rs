@@ -24,7 +24,7 @@ impl<'a> InternalModulePathManager<'a> {
         &self,
         internal_module_path: &ein::InternalUnresolvedModulePath,
     ) -> FilePath {
-        FilePath::new(internal_module_path.components().to_vec())
+        FilePath::new(internal_module_path.components())
             .with_extension(self.file_path_configuration.source_file_extension())
     }
 
@@ -34,12 +34,11 @@ impl<'a> InternalModulePathManager<'a> {
     ) -> FilePath {
         FilePath::new(
             vec![
-                self.file_path_configuration.output_directory().into(),
-                INTERFACE_DIRECTORY.into(),
+                self.file_path_configuration.output_directory(),
+                INTERFACE_DIRECTORY,
             ]
-            .drain(..)
-            .chain(internal_module_path.components().iter().cloned())
-            .collect(),
+            .into_iter()
+            .chain(internal_module_path.components()),
         )
         .with_extension(self.file_path_configuration.interface_file_extension())
     }
@@ -47,12 +46,11 @@ impl<'a> InternalModulePathManager<'a> {
     pub fn convert_to_object_file_path(&self, module_path: &ein::ModulePath) -> FilePath {
         FilePath::new(
             vec![
-                self.file_path_configuration.output_directory().into(),
-                OBJECT_DIRECTORY.into(),
+                self.file_path_configuration.output_directory(),
+                OBJECT_DIRECTORY,
             ]
-            .drain(..)
-            .chain(module_path.components().iter().cloned())
-            .collect(),
+            .into_iter()
+            .chain(module_path.components()),
         )
         .with_extension(self.file_path_configuration.object_file_extension())
     }
@@ -60,12 +58,11 @@ impl<'a> InternalModulePathManager<'a> {
     pub fn convert_to_interface_file_path(&self, module_path: &ein::ModulePath) -> FilePath {
         FilePath::new(
             vec![
-                self.file_path_configuration.output_directory().into(),
-                INTERFACE_DIRECTORY.into(),
+                self.file_path_configuration.output_directory(),
+                INTERFACE_DIRECTORY,
             ]
             .drain(..)
-            .chain(module_path.components().iter().cloned())
-            .collect(),
+            .chain(module_path.components()),
         )
         .with_extension(self.file_path_configuration.interface_file_extension())
     }
@@ -77,19 +74,16 @@ impl<'a> InternalModulePathManager<'a> {
     ) -> ein::ModulePath {
         ein::ModulePath::new(
             package.clone(),
-            source_file_path.with_extension("").components().to_vec(),
+            source_file_path
+                .with_extension("")
+                .components()
+                .map(String::from)
+                .collect(),
         )
     }
 
     pub fn convert_to_relative_interface_file_path(&self, source_file_path: &FilePath) -> FilePath {
-        FilePath::new(
-            source_file_path
-                .components()
-                .iter()
-                .skip(2)
-                .cloned()
-                .collect(),
-        )
+        FilePath::new(source_file_path.components().skip(2))
     }
 
     pub fn source_file_glob_pattern(&self) -> &str {
@@ -113,12 +107,7 @@ mod tests {
             .resolve_to_interface_file_path(&ein::InternalUnresolvedModulePath::new(
                 vec!["package".into(), "Foo".into()]
             )),
-            FilePath::new(vec![
-                "target".into(),
-                "interfaces".into(),
-                "package".into(),
-                "Foo.interface".into()
-            ])
+            FilePath::new(&["target", "interfaces", "package", "Foo.interface"])
         );
     }
 
@@ -126,13 +115,13 @@ mod tests {
     fn convert_to_relative_interface_file_path() {
         assert_eq!(
             InternalModulePathManager::new(&FilePathConfiguration::new("target", "", "", ""))
-                .convert_to_relative_interface_file_path(&FilePath::new(vec![
-                    "target".into(),
-                    "interfaces".into(),
-                    "package".into(),
-                    "Foo.interface".into()
+                .convert_to_relative_interface_file_path(&FilePath::new(&[
+                    "target",
+                    "interfaces",
+                    "package",
+                    "Foo.interface"
                 ])),
-            FilePath::new(vec!["package".into(), "Foo.interface".into()])
+            FilePath::new(&["package", "Foo.interface"])
         );
     }
 }

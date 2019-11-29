@@ -14,10 +14,7 @@ impl app::ExternalPackageDownloader for ExternalPackageDownloader {
         version: &str,
         directory_path: &app::FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let directory_path = directory_path
-            .components()
-            .iter()
-            .collect::<std::path::PathBuf>();
+        let directory_path = directory_path.components().collect::<std::path::PathBuf>();
 
         let url = url::Url::parse(&["https://", name].concat())?;
         let repository = git2::Repository::clone(url.as_str(), &directory_path)?;

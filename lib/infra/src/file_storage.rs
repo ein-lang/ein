@@ -35,7 +35,6 @@ impl app::FileStorage for FileStorage {
             .filter(|file_path| {
                 file_path
                     .components()
-                    .iter()
                     .all(|component| !component.starts_with('.'))
             })
             .collect())
@@ -85,7 +84,6 @@ mod tests {
             .glob("**/*.rs")
             .unwrap()
             .iter()
-            .any(|file_path| file_path
-                == &app::FilePath::new(vec!["src".into(), "file_storage.rs".into()])));
+            .any(|file_path| file_path == &app::FilePath::new(&["src", "file_storage.rs"])));
     }
 }

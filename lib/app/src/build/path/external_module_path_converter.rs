@@ -20,12 +20,11 @@ impl<'a> ExternalModulePathManager<'a> {
     ) -> FilePath {
         FilePath::new(
             vec![
-                self.file_path_configuration.output_directory().into(),
-                EXTERNAL_PACKAGE_DIRECTORY.into(),
+                self.file_path_configuration.output_directory(),
+                EXTERNAL_PACKAGE_DIRECTORY,
             ]
             .drain(..)
-            .chain(external_module_path.components().iter().cloned())
-            .collect(),
+            .chain(external_module_path.components()),
         )
         .with_extension(self.file_path_configuration.interface_file_extension())
     }
@@ -37,9 +36,7 @@ impl<'a> ExternalModulePathManager<'a> {
                 EXTERNAL_PACKAGE_DIRECTORY,
             ]
             .drain(..)
-            .chain(package_name.split('/'))
-            .map(String::from)
-            .collect(),
+            .chain(package_name.split('/')),
         )
     }
 }
@@ -56,12 +53,7 @@ mod tests {
                     "package".into(),
                     "Foo".into()
                 ])),
-            FilePath::new(vec![
-                "target".into(),
-                "packages".into(),
-                "package".into(),
-                "Foo.json".into()
-            ])
+            FilePath::new(&["target", "packages", "package", "Foo.json"])
         );
     }
 }

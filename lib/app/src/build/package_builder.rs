@@ -56,7 +56,7 @@ impl<
         let package_configuration: PackageConfiguration = serde_json::from_str(
             &self
                 .file_storage
-                .read_to_string(&FilePath::new(vec!["ein.json".into()]))?,
+                .read_to_string(&FilePath::new(&["ein.json"]))?,
         )?;
 
         self.external_package_initializer

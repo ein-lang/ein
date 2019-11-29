@@ -1,5 +1,6 @@
 use crate::package::Package;
 use serde::{Deserialize, Serialize};
+use std::ops::Deref;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct ModulePath {
@@ -19,8 +20,8 @@ impl ModulePath {
         &self.package
     }
 
-    pub fn components(&self) -> &[String] {
-        &self.components
+    pub fn components(&self) -> impl Iterator<Item = &str> {
+        self.components.iter().map(Deref::deref)
     }
 
     pub fn qualify_name(&self, name: &str) -> String {

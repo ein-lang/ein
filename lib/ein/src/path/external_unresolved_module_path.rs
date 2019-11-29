@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::ops::Deref;
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct ExternalUnresolvedModulePath {
@@ -10,7 +11,7 @@ impl ExternalUnresolvedModulePath {
         Self { components }
     }
 
-    pub fn components(&self) -> &[String] {
-        &self.components
+    pub fn components(&self) -> impl Iterator<Item = &str> {
+        self.components.iter().map(Deref::deref)
     }
 }
