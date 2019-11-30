@@ -1,19 +1,15 @@
 version: 2
-workflows:
-  version: 2
-  test:
-    jobs:
-      - test
 jobs:
-  test:
+  build:
     docker:
       - image: einlang/ci
     steps:
       - checkout
-      - run: cspell '**/*.{feature,md,rs}'
+      - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo build
-      - run: cargo clippy -- -D warnings
       - run: cargo fmt -- --check
+      - run: cargo clippy -- -D warnings
+      - run: cargo audit
       - run: cargo test
       - run: cargo build --release
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH bundler exec cucumber
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
