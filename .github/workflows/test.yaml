@@ -21,6 +21,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+      - run: npx cspell '**/*.{feature,md,rs}'
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
