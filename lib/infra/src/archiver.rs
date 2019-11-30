@@ -24,7 +24,7 @@ impl app::Archiver for Archiver {
                     .or_else(|_| which::which("llvm-link-10"))
                     .or_else(|_| which::which("llvm-link-9"))
                     .or_else(|_| which::which("llvm-link-8"))
-                    .or_else(|_| Err(InfrastructureError::LLVMLinkNotFound))?,
+                    .or_else(|_| Err(InfrastructureError::LlvmLinkNotFound))?,
             )
             .arg("-o")
             .arg("library.bc")

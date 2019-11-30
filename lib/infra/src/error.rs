@@ -4,7 +4,7 @@ use std::fmt::Display;
 #[derive(Debug, PartialEq)]
 pub enum InfrastructureError {
     HostNotFound,
-    LLVMLinkNotFound,
+    LlvmLinkNotFound,
     OriginUrlNotFound,
 }
 
@@ -14,7 +14,7 @@ impl Display for InfrastructureError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
             Self::HostNotFound => write!(formatter, "host name for package name not defined"),
-            Self::LLVMLinkNotFound => write!(formatter, "llvm-link not found"),
+            Self::LlvmLinkNotFound => write!(formatter, "llvm-link not found"),
             Self::OriginUrlNotFound => write!(formatter, "repository origin URL not defined"),
         }
     }
