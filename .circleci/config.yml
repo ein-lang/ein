@@ -4,7 +4,6 @@ workflows:
   test:
     jobs:
       - test
-      - coverage
 jobs:
   test:
     docker:
@@ -25,8 +24,3 @@ jobs:
       - run: |
           cargo build --release
           EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH bundler exec cucumber
-  coverage:
-    machine: true
-    steps:
-      - checkout
-      - run: docker run --security-opt seccomp=unconfined -v $PWD:/volume xd009642/tarpaulin /bin/sh -c 'apt -y update --fix-missing && apt -y install cmake libssl-dev lsb-release pkg-config software-properties-common zlib1g-dev && wget -O - https://apt.llvm.org/llvm.sh | bash /dev/stdin 8 && cargo tarpaulin'
