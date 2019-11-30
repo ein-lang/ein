@@ -1,0 +1,34 @@
+name: test
+on:
+  - push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          sudo apt -y update --fix-missing
+          sudo apt -y install cucumber ruby-aruba
+      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: -- -D warnings
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
