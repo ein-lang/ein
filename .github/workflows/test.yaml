@@ -2,13 +2,10 @@ name: test
 on:
   - push
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - run: |
-          sudo apt -y update --fix-missing
-          sudo apt -y install cucumber ruby-aruba
       - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
       - uses: actions-rs/toolchain@v1
         with:
@@ -16,6 +13,14 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -24,9 +29,28 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
+  unit_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
       - uses: actions-rs/cargo@v1
         with:
           command: test
+  integration_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - run: |
+          sudo apt -y update --fix-missing
+          sudo apt -y install cucumber ruby-aruba
       - uses: actions-rs/cargo@v1
         with:
           command: build

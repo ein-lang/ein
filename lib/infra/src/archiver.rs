@@ -1,4 +1,5 @@
 use super::command_runner::CommandRunner;
+use super::error::InfrastructureError;
 use super::utilities;
 use std::collections::HashMap;
 
@@ -18,10 +19,16 @@ impl app::Archiver for Archiver {
         interface_file_paths: &HashMap<app::FilePath, app::FilePath>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         CommandRunner::run(
-            std::process::Command::new("llvm-link")
-                .arg("-o")
-                .arg("library.bc")
-                .args(object_file_paths.iter().map(utilities::convert_to_os_path)),
+            std::process::Command::new(
+                which::which("llvm-link")
+                    .or_else(|_| which::which("llvm-link-10"))
+                    .or_else(|_| which::which("llvm-link-9"))
+                    .or_else(|_| which::which("llvm-link-8"))
+                    .or_else(|_| Err(InfrastructureError::LLVMLinkNotFound))?,
+            )
+            .arg("-o")
+            .arg("library.bc")
+            .args(object_file_paths.iter().map(utilities::convert_to_os_path)),
         )?;
 
         let mut builder = tar::Builder::new(std::fs::File::create("library.tar")?);
