@@ -2,61 +2,22 @@ name: test
 on:
   - push
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+    container:
+      image: archlinux/base
     steps:
       - uses: actions/checkout@v1
-      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - run: npx cspell '**/*.{feature,md,rs}'
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- -D warnings
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-  unit_test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-  integration_test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
       - run: |
-          sudo apt -y update --fix-missing
-          sudo apt -y install cucumber ruby-aruba
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
+          pacman -Syu --noconfirm base-devel clang llvm npm ruby-bundler rustup
+          rustup default stable
+          rustup component add clippy rustfmt
+          bundler install
+          npm install -g cspell
+      - run: cargo build
+      - run: npx cspell '**/*.{feature,md,rs}'
+      - run: cargo fmt -- --check
+      - run: cargo clippy -- -D warnings
+      - run: cargo test
+      - run: cargo build --release
       - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
