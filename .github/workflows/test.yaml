@@ -5,15 +5,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: archlinux/base
+      image: einlang/ci
+    env:
+      HOME: /root
     steps:
       - uses: actions/checkout@v1
-      - run: |
-          pacman -Syu --noconfirm base-devel clang llvm npm ruby-bundler rustup
-          rustup default stable
-          rustup component add clippy rustfmt
-          bundler install
-          npm install -g cspell
       - run: cargo build
       - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo fmt -- --check
