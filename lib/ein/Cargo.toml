@@ -6,8 +6,10 @@ edition = "2018"
 
 [dependencies]
 core = { path = "../core" }
-indoc = "0.3"
 nom = "5"
-pretty_assertions = "0.6"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
+
+[dev-dependencies]
+indoc = "0.3"
+pretty_assertions = "0.6"

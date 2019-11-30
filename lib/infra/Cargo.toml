@@ -9,7 +9,5 @@ app = { path = "../app" }
 ein = { path = "../ein" }
 git2 = "0.10"
 glob = "0.3"
-serde = { version = "1", features = ["derive", "rc"] }
-serde_json = "1"
 tar = "0.4"
 url = "2"
