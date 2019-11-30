@@ -1,5 +1,7 @@
+use crate::infra::FilePath;
+
 pub struct FilePathConfiguration {
-    output_directory: String,
+    output_directory: FilePath,
     source_file_extension: String,
     object_file_extension: String,
     interface_file_extension: String,
@@ -7,20 +9,20 @@ pub struct FilePathConfiguration {
 
 impl FilePathConfiguration {
     pub fn new(
-        output_directory: impl Into<String>,
+        output_directory: FilePath,
         source_file_extension: impl Into<String>,
         object_file_extension: impl Into<String>,
         interface_file_extension: impl Into<String>,
     ) -> Self {
         Self {
-            output_directory: output_directory.into(),
+            output_directory,
             source_file_extension: source_file_extension.into(),
             object_file_extension: object_file_extension.into(),
             interface_file_extension: interface_file_extension.into(),
         }
     }
 
-    pub fn output_directory(&self) -> &str {
+    pub fn output_directory(&self) -> &FilePath {
         &self.output_directory
     }
 

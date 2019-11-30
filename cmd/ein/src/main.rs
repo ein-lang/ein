@@ -18,7 +18,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn build() -> Result<(), Box<dyn std::error::Error>> {
-    let file_path_configuration = app::FilePathConfiguration::new(".ein", "ein", "bc", "json");
+    let file_path_configuration =
+        app::FilePathConfiguration::new(app::FilePath::new(&[".ein"]), "ein", "bc", "json");
 
     let file_storage = infra::FileStorage::new();
     let internal_module_path_converter =

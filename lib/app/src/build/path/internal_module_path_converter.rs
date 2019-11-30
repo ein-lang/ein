@@ -6,6 +6,8 @@ const INTERFACE_DIRECTORY: &str = "interfaces";
 
 pub struct InternalModulePathManager<'a> {
     file_path_configuration: &'a FilePathConfiguration,
+    object_directory: FilePath,
+    interface_directory: FilePath,
     source_file_glob_pattern: String,
 }
 
@@ -13,6 +15,12 @@ impl<'a> InternalModulePathManager<'a> {
     pub fn new(file_path_configuration: &'a FilePathConfiguration) -> Self {
         Self {
             file_path_configuration,
+            object_directory: file_path_configuration
+                .output_directory()
+                .join(FilePath::new(&[OBJECT_DIRECTORY])),
+            interface_directory: file_path_configuration
+                .output_directory()
+                .join(FilePath::new(&[INTERFACE_DIRECTORY])),
             source_file_glob_pattern: format!(
                 "**/*.{}",
                 file_path_configuration.source_file_extension()
@@ -32,39 +40,21 @@ impl<'a> InternalModulePathManager<'a> {
         &self,
         internal_module_path: &ein::InternalUnresolvedModulePath,
     ) -> FilePath {
-        FilePath::new(
-            vec![
-                self.file_path_configuration.output_directory(),
-                INTERFACE_DIRECTORY,
-            ]
-            .into_iter()
-            .chain(internal_module_path.components()),
-        )
-        .with_extension(self.file_path_configuration.interface_file_extension())
+        self.interface_directory
+            .join(FilePath::new(internal_module_path.components()))
+            .with_extension(self.file_path_configuration.interface_file_extension())
     }
 
     pub fn convert_to_object_file_path(&self, module_path: &ein::ModulePath) -> FilePath {
-        FilePath::new(
-            vec![
-                self.file_path_configuration.output_directory(),
-                OBJECT_DIRECTORY,
-            ]
-            .into_iter()
-            .chain(module_path.components()),
-        )
-        .with_extension(self.file_path_configuration.object_file_extension())
+        self.object_directory
+            .join(FilePath::new(module_path.components()))
+            .with_extension(self.file_path_configuration.object_file_extension())
     }
 
     pub fn convert_to_interface_file_path(&self, module_path: &ein::ModulePath) -> FilePath {
-        FilePath::new(
-            vec![
-                self.file_path_configuration.output_directory(),
-                INTERFACE_DIRECTORY,
-            ]
-            .drain(..)
-            .chain(module_path.components()),
-        )
-        .with_extension(self.file_path_configuration.interface_file_extension())
+        self.interface_directory
+            .join(FilePath::new(module_path.components()))
+            .with_extension(self.file_path_configuration.interface_file_extension())
     }
 
     pub fn convert_to_module_path(
@@ -99,7 +89,7 @@ mod tests {
     fn resolve_to_interface_file_path() {
         assert_eq!(
             InternalModulePathManager::new(&FilePathConfiguration::new(
-                "target",
+                FilePath::new(&["target"]),
                 "",
                 "",
                 "interface"
@@ -114,13 +104,18 @@ mod tests {
     #[test]
     fn convert_to_relative_interface_file_path() {
         assert_eq!(
-            InternalModulePathManager::new(&FilePathConfiguration::new("target", "", "", ""))
-                .convert_to_relative_interface_file_path(&FilePath::new(&[
-                    "target",
-                    "interfaces",
-                    "package",
-                    "Foo.interface"
-                ])),
+            InternalModulePathManager::new(&FilePathConfiguration::new(
+                FilePath::new(&["target"]),
+                "",
+                "",
+                ""
+            ))
+            .convert_to_relative_interface_file_path(&FilePath::new(&[
+                "target",
+                "interfaces",
+                "package",
+                "Foo.interface"
+            ])),
             FilePath::new(&["package", "Foo.interface"])
         );
     }

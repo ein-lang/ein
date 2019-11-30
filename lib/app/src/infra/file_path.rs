@@ -39,6 +39,10 @@ impl FilePath {
             ),
         )
     }
+
+    pub fn join(&self, file_path: Self) -> Self {
+        FilePath::new(self.components().chain(file_path.components()))
+    }
 }
 
 impl std::fmt::Display for FilePath {
@@ -51,7 +55,7 @@ impl std::fmt::Display for FilePath {
     }
 }
 
-#[cfg(tests)]
+#[cfg(test)]
 mod tests {
     use super::*;
 
@@ -78,6 +82,18 @@ mod tests {
         assert_eq!(
             FilePath::new(&["foo.c"]).with_extension("h"),
             FilePath::new(&["foo.h"])
+        );
+    }
+
+    #[test]
+    fn join() {
+        assert_eq!(
+            FilePath::new(&["foo"]).join(FilePath::new(&["bar"])),
+            FilePath::new(&["foo", "bar"])
+        );
+        assert_eq!(
+            FilePath::new(&["foo", "bar"]).join(FilePath::new(&["baz"])),
+            FilePath::new(&["foo", "bar", "baz"])
         );
     }
 }
