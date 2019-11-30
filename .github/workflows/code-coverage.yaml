@@ -1,8 +1,8 @@
-name: code coverage
+name: code-coverage
 on:
   - push
 jobs:
-  coverage:
+  code-coverage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
