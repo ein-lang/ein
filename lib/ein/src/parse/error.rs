@@ -31,8 +31,4 @@ impl Display for ParseError {
     }
 }
 
-impl Error for ParseError {
-    fn description(&self) -> &str {
-        "ParseError"
-    }
-}
+impl Error for ParseError {}
