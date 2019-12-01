@@ -18,8 +18,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn build() -> Result<(), Box<dyn std::error::Error>> {
-    let file_path_configuration =
-        app::FilePathConfiguration::new(app::FilePath::new(&[".ein"]), "ein", "bc", "json");
+    move_to_package_directory()?;
+
+    let file_path_configuration = app::FilePathConfiguration::new(
+        "ein.json",
+        "ein",
+        "bc",
+        "json",
+        app::FilePath::new(&[".ein"]),
+    );
 
     let file_storage = infra::FileStorage::new();
     let internal_module_path_converter =
@@ -56,6 +63,24 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         ),
         &infra::Repository::new(),
         &file_storage,
+        &file_path_configuration,
     )
     .build()
+}
+
+fn move_to_package_directory() -> Result<(), Box<dyn std::error::Error>> {
+    let mut directory: &std::path::Path = &std::env::current_dir()?;
+
+    while !directory.join("ein.json").exists() {
+        directory = directory.parent().ok_or_else(|| {
+            std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "ein.json file not found in any parent directory",
+            )
+        })?
+    }
+
+    std::env::set_current_dir(directory)?;
+
+    Ok(())
 }

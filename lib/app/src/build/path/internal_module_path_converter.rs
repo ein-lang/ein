@@ -89,10 +89,11 @@ mod tests {
     fn resolve_to_interface_file_path() {
         assert_eq!(
             InternalModulePathManager::new(&FilePathConfiguration::new(
-                FilePath::new(&["target"]),
                 "",
                 "",
-                "interface"
+                "",
+                "interface",
+                FilePath::new(&["target"])
             ))
             .resolve_to_interface_file_path(&ein::InternalUnresolvedModulePath::new(
                 vec!["package".into(), "Foo".into()]
@@ -105,10 +106,11 @@ mod tests {
     fn convert_to_relative_interface_file_path() {
         assert_eq!(
             InternalModulePathManager::new(&FilePathConfiguration::new(
-                FilePath::new(&["target"]),
                 "",
                 "",
-                ""
+                "",
+                "",
+                FilePath::new(&["target"])
             ))
             .convert_to_relative_interface_file_path(&FilePath::new(&[
                 "target",

@@ -2,6 +2,7 @@ use super::command_package_builder::CommandPackageBuilder;
 use super::external_package_initializer::ExternalPackageInitializer;
 use super::library_package_builder::LibraryPackageBuilder;
 use super::package_configuration::PackageConfiguration;
+use super::path::FilePathConfiguration;
 use super::target::Target;
 use crate::infra::{
     Archiver, ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage, Linker,
@@ -23,6 +24,7 @@ pub struct PackageBuilder<
     external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
     repository: &'a R,
     file_storage: &'a S,
+    file_path_configuration: &'a FilePathConfiguration,
 }
 
 impl<
@@ -41,6 +43,7 @@ impl<
         external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
         repository: &'a R,
         file_storage: &'a S,
+        file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {
             command_package_builder,
@@ -48,15 +51,16 @@ impl<
             external_package_initializer,
             repository,
             file_storage,
+            file_path_configuration,
         }
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         let package = self.repository.get_package()?;
         let package_configuration: PackageConfiguration = serde_json::from_str(
-            &self
-                .file_storage
-                .read_to_string(&FilePath::new(&["ein.json"]))?,
+            &self.file_storage.read_to_string(&FilePath::new(&[self
+                .file_path_configuration
+                .package_configuration_filename()]))?,
         )?;
 
         self.external_package_initializer

@@ -41,15 +41,16 @@ mod tests {
     fn convert_from_file_path() {
         assert_eq!(
             ExternalModulePathManager::new(&FilePathConfiguration::new(
-                FilePath::new(&["target"]),
                 "",
                 "",
-                "json"
+                "",
+                "interface",
+                FilePath::new(&["target"])
             ))
             .resolve_to_interface_file_path(&ein::ExternalUnresolvedModulePath::new(
                 vec!["package".into(), "Foo".into()]
             )),
-            FilePath::new(&["target", "packages", "package", "Foo.json"])
+            FilePath::new(&["target", "packages", "package", "Foo.interface"])
         );
     }
 }
