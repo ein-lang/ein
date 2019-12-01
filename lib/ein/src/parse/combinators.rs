@@ -341,16 +341,20 @@ fn number_literal(input: Input) -> IResult<Input, f64> {
     map(
         token(tuple((
             opt(tag("-")),
-            many1(one_of("123456789")),
-            opt(tuple((tag("."), many1(convert_combinator(digit1))))),
+            alt((
+                tuple((one_of("0"), tag(""))),
+                tuple((one_of("123456789"), convert_combinator(digit0))),
+            )),
+            opt(tuple((tag("."), convert_combinator(digit1)))),
         ))),
-        |(sign, head, tail)| {
+        |(sign, (head, middle), tail)| {
             (if sign.is_some() { -1.0 } else { 1.0 })
                 * f64::from_str(
                     &[
-                        head.iter().collect(),
-                        tail.map(|(_, digits)| [".", &digits.concat()].concat())
-                            .unwrap_or_else(|| "".into()),
+                        &head.to_string(),
+                        middle,
+                        ".",
+                        &tail.map(|(_, digits)| digits).unwrap_or(""),
                     ]
                     .concat(),
                 )
@@ -798,6 +802,13 @@ mod tests {
 
     #[test]
     fn parse_number_literal() {
+        let input = Input::new(Source::new("", "0"));
+
+        assert_eq!(
+            number_literal(input.clone()),
+            Ok((input.set("", 0, Location::new(1, 2)), 0.0))
+        );
+
         let input = Input::new(Source::new("", "1"));
 
         assert_eq!(
@@ -805,14 +816,18 @@ mod tests {
             Ok((input.set("", 0, Location::new(1, 2)), 1.0))
         );
 
+        let input = Input::new(Source::new("", "10"));
+
+        assert_eq!(
+            number_literal(input.clone()),
+            Ok((input.set("", 0, Location::new(1, 3)), 10.0))
+        );
+
         let input = Input::new(Source::new("", "01"));
 
         assert_eq!(
             number_literal(input.clone()),
-            Err(nom::Err::Error((
-                input.set("01", 0, Location::default()),
-                ErrorKind::OneOf
-            )))
+            Ok((input.set("1", 0, Location::new(1, 2)), 0.0))
         );
 
         let input = Input::new(Source::new("", "-1"));

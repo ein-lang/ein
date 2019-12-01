@@ -13,11 +13,11 @@ Feature: Command
     And a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = 1 * 3 - 4 / 2
+    main x = x
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "1"
+    Then stdout from "sh -c ./command" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Build a command twice
@@ -34,7 +34,7 @@ Feature: Command
     And a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = 1 * 3 - 4 / 2
+    main x = x
     """
     And I successfully run `ein build`
     When I run `ein build`
