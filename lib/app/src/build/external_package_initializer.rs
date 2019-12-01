@@ -10,7 +10,7 @@ pub struct ExternalPackageInitializer<
 > {
     external_package_downloader: &'a D,
     external_package_builder: &'a B,
-    external_module_path_converter: &'a ExternalModulePathManager<'a>,
+    external_module_path_manager: &'a ExternalModulePathManager<'a>,
     file_storage: &'a S,
 }
 
@@ -20,13 +20,13 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
     pub fn new(
         external_package_downloader: &'a D,
         external_package_builder: &'a B,
-        external_module_path_converter: &'a ExternalModulePathManager<'a>,
+        external_module_path_manager: &'a ExternalModulePathManager<'a>,
         file_storage: &'a S,
     ) -> Self {
         Self {
             external_package_downloader,
             external_package_builder,
-            external_module_path_converter,
+            external_module_path_manager,
             file_storage,
         }
     }
@@ -37,7 +37,7 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
     ) -> Result<(), Box<dyn std::error::Error>> {
         for (name, external_package) in package_configuration.dependencies() {
             let directory_path = self
-                .external_module_path_converter
+                .external_module_path_manager
                 .convert_to_directory_path(name);
 
             if self.file_storage.exists(&directory_path) {

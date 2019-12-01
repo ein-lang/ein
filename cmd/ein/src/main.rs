@@ -29,20 +29,20 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let file_storage = infra::FileStorage::new();
-    let internal_module_path_converter =
+    let internal_module_path_manager =
         app::InternalModulePathManager::new(&file_path_configuration);
-    let external_module_path_converter =
+    let external_module_path_manager =
         app::ExternalModulePathManager::new(&file_path_configuration);
 
     let module_compiler = app::ModuleCompiler::new(
-        &internal_module_path_converter,
-        &external_module_path_converter,
+        &internal_module_path_manager,
+        &external_module_path_manager,
         &file_storage,
     );
     let module_builder = app::ModuleBuilder::new(
         &module_compiler,
         &file_storage,
-        &internal_module_path_converter,
+        &internal_module_path_manager,
     );
 
     app::PackageBuilder::new(
@@ -53,12 +53,12 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &app::LibraryPackageBuilder::new(
             &module_builder,
             &infra::Archiver::new(),
-            &internal_module_path_converter,
+            &internal_module_path_manager,
         ),
         &app::ExternalPackageInitializer::new(
             &infra::ExternalPackageDownloader::new(),
             &infra::ExternalPackageBuilder::new(),
-            &external_module_path_converter,
+            &external_module_path_manager,
             &file_storage,
         ),
         &infra::Repository::new(),

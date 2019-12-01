@@ -9,19 +9,19 @@ use std::collections::HashMap;
 pub struct ModuleBuilder<'a, D: FileStorage> {
     module_compiler: &'a ModuleCompiler<'a, D>,
     file_storage: &'a D,
-    internal_module_path_converter: &'a InternalModulePathManager<'a>,
+    internal_module_path_manager: &'a InternalModulePathManager<'a>,
 }
 
 impl<'a, D: FileStorage> ModuleBuilder<'a, D> {
     pub fn new(
         module_compiler: &'a ModuleCompiler<'a, D>,
         file_storage: &'a D,
-        internal_module_path_converter: &'a InternalModulePathManager<'a>,
+        internal_module_path_manager: &'a InternalModulePathManager<'a>,
     ) -> Self {
         Self {
             module_compiler,
             file_storage,
-            internal_module_path_converter,
+            internal_module_path_manager,
         }
     }
 
@@ -33,13 +33,13 @@ impl<'a, D: FileStorage> ModuleBuilder<'a, D> {
 
         for source_file_path in self.sort_source_file_paths(&self.file_storage.glob("**/*.ein")?)? {
             let module_path = self
-                .internal_module_path_converter
+                .internal_module_path_manager
                 .convert_to_module_path(source_file_path, package);
             let object_file_path = self
-                .internal_module_path_converter
+                .internal_module_path_manager
                 .convert_to_object_file_path(&module_path);
             let interface_file_path = self
-                .internal_module_path_converter
+                .internal_module_path_manager
                 .convert_to_interface_file_path(&module_path);
 
             self.module_compiler.compile(
@@ -78,7 +78,7 @@ impl<'a, D: FileStorage> ModuleBuilder<'a, D> {
                 {
                     graph.add_edge(
                         indices[&self
-                            .internal_module_path_converter
+                            .internal_module_path_manager
                             .resolve_to_source_file_path(internal_module_path)],
                         indices[&source_file_path],
                         (),

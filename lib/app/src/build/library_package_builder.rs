@@ -5,19 +5,19 @@ use crate::infra::{Archiver, FileStorage};
 pub struct LibraryPackageBuilder<'a, S: FileStorage, A: Archiver> {
     module_builder: &'a ModuleBuilder<'a, S>,
     archiver: &'a A,
-    internal_module_path_converter: &'a InternalModulePathManager<'a>,
+    internal_module_path_manager: &'a InternalModulePathManager<'a>,
 }
 
 impl<'a, S: FileStorage, A: Archiver> LibraryPackageBuilder<'a, S, A> {
     pub fn new(
         module_builder: &'a ModuleBuilder<'a, S>,
         archiver: &'a A,
-        internal_module_path_converter: &'a InternalModulePathManager<'a>,
+        internal_module_path_manager: &'a InternalModulePathManager<'a>,
     ) -> Self {
         Self {
             module_builder,
             archiver,
-            internal_module_path_converter,
+            internal_module_path_manager,
         }
     }
 
@@ -34,7 +34,7 @@ impl<'a, S: FileStorage, A: Archiver> LibraryPackageBuilder<'a, S, A> {
                 .drain(..)
                 .map(|(_, interface_file_path)| {
                     (
-                        self.internal_module_path_converter
+                        self.internal_module_path_manager
                             .convert_to_relative_interface_file_path(&interface_file_path),
                         interface_file_path,
                     )
