@@ -11,6 +11,5 @@ jobs:
         with:
           name: einlang/ci
           dockerfile: etc/ci/Dockerfile
-          context: .
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
