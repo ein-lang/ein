@@ -16,5 +16,5 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo audit
       - run: cargo test
-      - run: cargo build --release
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
+      - run: cargo build --release --package runtime
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
