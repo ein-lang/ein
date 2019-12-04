@@ -1,14 +1,12 @@
 use super::command_package_builder::CommandPackageBuilder;
 use super::external_package_initializer::ExternalPackageInitializer;
 use super::library_package_builder::LibraryPackageBuilder;
-use super::package_configuration::PackageConfiguration;
+use super::package_configuration::{PackageConfiguration, Target};
 use super::path::FilePathConfiguration;
-use super::target::Target;
 use crate::infra::{
     Archiver, ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage, Linker,
     Repository,
 };
-use std::convert::TryInto;
 
 pub struct PackageBuilder<
     'a,
@@ -66,7 +64,7 @@ impl<
         self.external_package_initializer
             .initialize(&package_configuration)?;
 
-        match package_configuration.target().try_into()? {
+        match package_configuration.target() {
             Target::Command(command_target) => self
                 .command_package_builder
                 .build(&package, command_target.name()),

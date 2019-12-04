@@ -1,12 +1,14 @@
+mod command_target;
 mod error;
 mod external_package;
 mod target;
 mod target_type;
 
+pub use command_target::CommandTarget;
 use external_package::ExternalPackage;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use target::Target;
+pub use target::Target;
 
 #[derive(Deserialize, Serialize)]
 pub struct PackageConfiguration {
