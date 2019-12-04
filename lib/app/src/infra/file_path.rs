@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FilePath {
     components: Vec<String>,
 }
@@ -40,7 +40,7 @@ impl FilePath {
         )
     }
 
-    pub fn join(&self, file_path: Self) -> Self {
+    pub fn join(&self, file_path: &Self) -> Self {
         FilePath::new(self.components().chain(file_path.components()))
     }
 }
@@ -50,7 +50,7 @@ impl std::fmt::Display for FilePath {
         write!(
             formatter,
             "{}",
-            self.components().collect::<Vec<_>>().join("/")
+            self.components().collect::<Vec<_>>().join(&"/")
         )
     }
 }
@@ -88,11 +88,11 @@ mod tests {
     #[test]
     fn join() {
         assert_eq!(
-            FilePath::new(&["foo"]).join(FilePath::new(&["bar"])),
+            FilePath::new(&["foo"]).join(&FilePath::new(&["bar"])),
             FilePath::new(&["foo", "bar"])
         );
         assert_eq!(
-            FilePath::new(&["foo", "bar"]).join(FilePath::new(&["baz"])),
+            FilePath::new(&["foo", "bar"]).join(&FilePath::new(&["baz"])),
             FilePath::new(&["foo", "bar", "baz"])
         );
     }

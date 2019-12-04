@@ -14,7 +14,7 @@ impl<'a> ExternalModulePathManager<'a> {
             file_path_configuration,
             external_package_directory: file_path_configuration
                 .output_directory()
-                .join(FilePath::new(&[EXTERNAL_PACKAGE_DIRECTORY])),
+                .join(&FilePath::new(&[EXTERNAL_PACKAGE_DIRECTORY])),
         }
     }
 
@@ -23,13 +23,13 @@ impl<'a> ExternalModulePathManager<'a> {
         external_module_path: &ein::ExternalUnresolvedModulePath,
     ) -> FilePath {
         self.external_package_directory
-            .join(FilePath::new(external_module_path.components()))
+            .join(&FilePath::new(external_module_path.components()))
             .with_extension(self.file_path_configuration.interface_file_extension())
     }
 
     pub fn convert_to_directory_path(&self, package_name: &str) -> FilePath {
         self.external_package_directory
-            .join(FilePath::new(package_name.split('/')))
+            .join(&FilePath::new(package_name.split('/')))
     }
 }
 

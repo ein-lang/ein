@@ -6,6 +6,13 @@ pub struct ExternalPackage {
 }
 
 impl ExternalPackage {
+    #[cfg(test)]
+    pub fn new(version: impl Into<String>) -> Self {
+        Self {
+            version: version.into(),
+        }
+    }
+
     pub fn version(&self) -> &str {
         &self.version
     }

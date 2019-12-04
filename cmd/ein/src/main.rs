@@ -60,6 +60,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             &infra::ExternalPackageBuilder::new(),
             &external_module_path_manager,
             &file_storage,
+            &file_path_configuration,
         ),
         &infra::Repository::new(),
         &file_storage,

@@ -6,16 +6,16 @@ use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
 
-pub struct ModuleBuilder<'a, D: FileStorage> {
-    module_compiler: &'a ModuleCompiler<'a, D>,
-    file_storage: &'a D,
+pub struct ModuleBuilder<'a, S: FileStorage> {
+    module_compiler: &'a ModuleCompiler<'a, S>,
+    file_storage: &'a S,
     internal_module_path_manager: &'a InternalModulePathManager<'a>,
 }
 
-impl<'a, D: FileStorage> ModuleBuilder<'a, D> {
+impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
     pub fn new(
-        module_compiler: &'a ModuleCompiler<'a, D>,
-        file_storage: &'a D,
+        module_compiler: &'a ModuleCompiler<'a, S>,
+        file_storage: &'a S,
         internal_module_path_manager: &'a InternalModulePathManager<'a>,
     ) -> Self {
         Self {

@@ -17,10 +17,10 @@ impl<'a> InternalModulePathManager<'a> {
             file_path_configuration,
             object_directory: file_path_configuration
                 .output_directory()
-                .join(FilePath::new(&[OBJECT_DIRECTORY])),
+                .join(&FilePath::new(&[OBJECT_DIRECTORY])),
             interface_directory: file_path_configuration
                 .output_directory()
-                .join(FilePath::new(&[INTERFACE_DIRECTORY])),
+                .join(&FilePath::new(&[INTERFACE_DIRECTORY])),
             source_file_glob_pattern: format!(
                 "**/*.{}",
                 file_path_configuration.source_file_extension()
@@ -41,19 +41,19 @@ impl<'a> InternalModulePathManager<'a> {
         internal_module_path: &ein::InternalUnresolvedModulePath,
     ) -> FilePath {
         self.interface_directory
-            .join(FilePath::new(internal_module_path.components()))
+            .join(&FilePath::new(internal_module_path.components()))
             .with_extension(self.file_path_configuration.interface_file_extension())
     }
 
     pub fn convert_to_object_file_path(&self, module_path: &ein::ModulePath) -> FilePath {
         self.object_directory
-            .join(FilePath::new(module_path.components()))
+            .join(&FilePath::new(module_path.components()))
             .with_extension(self.file_path_configuration.object_file_extension())
     }
 
     pub fn convert_to_interface_file_path(&self, module_path: &ein::ModulePath) -> FilePath {
         self.interface_directory
-            .join(FilePath::new(module_path.components()))
+            .join(&FilePath::new(module_path.components()))
             .with_extension(self.file_path_configuration.interface_file_extension())
     }
 
