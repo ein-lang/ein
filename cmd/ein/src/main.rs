@@ -34,6 +34,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let external_module_path_manager =
         app::ExternalModulePathManager::new(&file_path_configuration);
 
+    let object_linker = infra::ObjectLinker::new();
     let module_compiler = app::ModuleCompiler::new(
         &internal_module_path_manager,
         &external_module_path_manager,
@@ -43,6 +44,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &module_compiler,
         &file_storage,
         &internal_module_path_manager,
+        &object_linker,
     );
 
     app::PackageBuilder::new(

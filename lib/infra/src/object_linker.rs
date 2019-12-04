@@ -1,22 +1,21 @@
 use super::command_runner::CommandRunner;
 use super::error::InfrastructureError;
 use super::utilities;
-use std::collections::HashMap;
 
 #[derive(Default)]
-pub struct LibraryArchiver;
+pub struct ObjectLinker;
 
-impl LibraryArchiver {
+impl ObjectLinker {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl app::LibraryArchiver for LibraryArchiver {
-    fn archive(
+impl app::ObjectLinker for ObjectLinker {
+    fn link(
         &self,
         object_file_paths: &[app::FilePath],
-        interface_file_paths: &HashMap<app::FilePath, app::FilePath>,
+        package_object_file_path: &app::FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
         CommandRunner::run(
             std::process::Command::new(
@@ -27,20 +26,9 @@ impl app::LibraryArchiver for LibraryArchiver {
                     .or_else(|_| Err(InfrastructureError::LlvmLinkNotFound))?,
             )
             .arg("-o")
-            .arg("library.bc")
+            .arg(utilities::convert_to_os_path(package_object_file_path))
             .args(object_file_paths.iter().map(utilities::convert_to_os_path)),
         )?;
-
-        let mut builder = tar::Builder::new(std::fs::File::create("library.tar")?);
-        builder.append_path("library.bc")?;
-        std::fs::remove_file("library.bc")?;
-
-        for (relative_interface_file_path, interface_file_path) in interface_file_paths {
-            builder.append_file(
-                &utilities::convert_to_os_path(relative_interface_file_path),
-                &mut std::fs::File::open(&utilities::convert_to_os_path(interface_file_path))?,
-            )?;
-        }
 
         Ok(())
     }

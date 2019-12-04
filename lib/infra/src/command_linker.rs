@@ -16,7 +16,7 @@ impl CommandLinker {
 impl app::CommandLinker for CommandLinker {
     fn link(
         &self,
-        object_file_paths: &[app::FilePath],
+        object_file_path: &app::FilePath,
         command_name: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         CommandRunner::run(
@@ -27,11 +27,7 @@ impl app::CommandLinker for CommandLinker {
                 .arg("-flto")
                 .arg("-ldl")
                 .arg("-lpthread")
-                .args(
-                    object_file_paths
-                        .iter()
-                        .map(|file_path| utilities::convert_to_os_path(file_path)),
-                )
+                .arg(utilities::convert_to_os_path(object_file_path))
                 .arg(self.root_directory.join("target/release/libruntime.a")),
         )
     }

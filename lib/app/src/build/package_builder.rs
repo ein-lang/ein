@@ -5,20 +5,21 @@ use super::package_configuration::{PackageConfiguration, Target};
 use super::path::FilePathConfiguration;
 use crate::infra::{
     CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage,
-    LibraryArchiver, Repository,
+    LibraryArchiver, ObjectLinker, Repository,
 };
 
 pub struct PackageBuilder<
     'a,
     R: Repository,
     S: FileStorage,
-    L: CommandLinker,
+    OL: ObjectLinker,
+    CL: CommandLinker,
     A: LibraryArchiver,
     D: ExternalPackageDownloader,
     B: ExternalPackageBuilder,
 > {
-    command_package_builder: &'a CommandPackageBuilder<'a, S, L>,
-    library_package_builder: &'a LibraryPackageBuilder<'a, S, A>,
+    command_package_builder: &'a CommandPackageBuilder<'a, S, OL, CL>,
+    library_package_builder: &'a LibraryPackageBuilder<'a, S, OL, A>,
     external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
     repository: &'a R,
     file_storage: &'a S,
@@ -29,15 +30,16 @@ impl<
         'a,
         R: Repository,
         S: FileStorage,
-        L: CommandLinker,
+        OL: ObjectLinker,
+        CL: CommandLinker,
         A: LibraryArchiver,
         D: ExternalPackageDownloader,
         B: ExternalPackageBuilder,
-    > PackageBuilder<'a, R, S, L, A, D, B>
+    > PackageBuilder<'a, R, S, OL, CL, A, D, B>
 {
     pub fn new(
-        command_package_builder: &'a CommandPackageBuilder<'a, S, L>,
-        library_package_builder: &'a LibraryPackageBuilder<'a, S, A>,
+        command_package_builder: &'a CommandPackageBuilder<'a, S, OL, CL>,
+        library_package_builder: &'a LibraryPackageBuilder<'a, S, OL, A>,
         external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
         repository: &'a R,
         file_storage: &'a S,

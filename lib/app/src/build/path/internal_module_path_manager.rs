@@ -9,6 +9,7 @@ pub struct InternalModulePathManager<'a> {
     object_directory: FilePath,
     interface_directory: FilePath,
     source_file_glob_pattern: String,
+    package_object_file_path: FilePath,
 }
 
 impl<'a> InternalModulePathManager<'a> {
@@ -25,6 +26,9 @@ impl<'a> InternalModulePathManager<'a> {
                 "**/*.{}",
                 file_path_configuration.source_file_extension()
             ),
+            package_object_file_path: file_path_configuration
+                .output_directory()
+                .join(&FilePath::new(&["package.bc"])),
         }
     }
 
@@ -78,6 +82,10 @@ impl<'a> InternalModulePathManager<'a> {
 
     pub fn source_file_glob_pattern(&self) -> &str {
         &self.source_file_glob_pattern
+    }
+
+    pub fn package_object_file_path(&self) -> &FilePath {
+        &self.package_object_file_path
     }
 }
 
