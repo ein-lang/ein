@@ -3,6 +3,7 @@ use crate::infra::FilePath;
 
 const OBJECT_DIRECTORY: &str = "objects";
 const INTERFACE_DIRECTORY: &str = "interfaces";
+const PACKAGE_OBJECT_FILENAME: &str = "package.bc";
 
 pub struct InternalModulePathManager<'a> {
     file_path_configuration: &'a FilePathConfiguration,
@@ -10,6 +11,7 @@ pub struct InternalModulePathManager<'a> {
     interface_directory: FilePath,
     source_file_glob_pattern: String,
     package_object_file_path: FilePath,
+    archive_package_object_file_path: FilePath,
 }
 
 impl<'a> InternalModulePathManager<'a> {
@@ -28,7 +30,8 @@ impl<'a> InternalModulePathManager<'a> {
             ),
             package_object_file_path: file_path_configuration
                 .output_directory()
-                .join(&FilePath::new(&["package.bc"])),
+                .join(&FilePath::new(&[PACKAGE_OBJECT_FILENAME])),
+            archive_package_object_file_path: FilePath::new(&[PACKAGE_OBJECT_FILENAME]),
         }
     }
 
@@ -86,6 +89,10 @@ impl<'a> InternalModulePathManager<'a> {
 
     pub fn package_object_file_path(&self) -> &FilePath {
         &self.package_object_file_path
+    }
+
+    pub fn archive_package_object_file_path(&self) -> &FilePath {
+        &self.archive_package_object_file_path
     }
 }
 

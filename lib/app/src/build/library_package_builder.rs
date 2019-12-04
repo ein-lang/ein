@@ -26,6 +26,8 @@ impl<'a, S: FileStorage, OL: ObjectLinker, A: LibraryArchiver> LibraryPackageBui
 
         self.archiver.archive(
             &object_file_path,
+            self.internal_module_path_manager
+                .archive_package_object_file_path(),
             &interface_file_paths
                 .into_iter()
                 .map(|interface_file_path| {
