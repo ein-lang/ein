@@ -4,16 +4,16 @@ use super::library_package_builder::LibraryPackageBuilder;
 use super::package_configuration::{PackageConfiguration, Target};
 use super::path::FilePathConfiguration;
 use crate::infra::{
-    Archiver, ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage, Linker,
-    Repository,
+    CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage,
+    LibraryArchiver, Repository,
 };
 
 pub struct PackageBuilder<
     'a,
     R: Repository,
     S: FileStorage,
-    L: Linker,
-    A: Archiver,
+    L: CommandLinker,
+    A: LibraryArchiver,
     D: ExternalPackageDownloader,
     B: ExternalPackageBuilder,
 > {
@@ -29,8 +29,8 @@ impl<
         'a,
         R: Repository,
         S: FileStorage,
-        L: Linker,
-        A: Archiver,
+        L: CommandLinker,
+        A: LibraryArchiver,
         D: ExternalPackageDownloader,
         B: ExternalPackageBuilder,
     > PackageBuilder<'a, R, S, L, A, D, B>

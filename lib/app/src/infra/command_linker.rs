@@ -1,10 +1,9 @@
 use super::file_path::FilePath;
-use std::collections::HashMap;
 
-pub trait Archiver {
-    fn archive(
+pub trait CommandLinker {
+    fn link(
         &self,
         object_file_paths: &[FilePath],
-        interface_file_paths: &HashMap<FilePath, FilePath>,
+        command_name: &str,
     ) -> Result<(), Box<dyn std::error::Error>>;
 }

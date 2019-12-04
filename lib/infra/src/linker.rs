@@ -1,11 +1,11 @@
 use super::command_runner::CommandRunner;
 use super::utilities;
 
-pub struct Linker {
+pub struct CommandLinker {
     root_directory: Box<std::path::Path>,
 }
 
-impl Linker {
+impl CommandLinker {
     pub fn new(root_directory: impl AsRef<std::path::Path>) -> Self {
         Self {
             root_directory: root_directory.as_ref().into(),
@@ -13,7 +13,7 @@ impl Linker {
     }
 }
 
-impl app::Linker for Linker {
+impl app::CommandLinker for CommandLinker {
     fn link(
         &self,
         object_file_paths: &[app::FilePath],

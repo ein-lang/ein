@@ -1,12 +1,12 @@
 use super::module_builder::ModuleBuilder;
-use crate::infra::{FileStorage, Linker};
+use crate::infra::{CommandLinker, FileStorage};
 
-pub struct CommandPackageBuilder<'a, S: FileStorage, L: Linker> {
+pub struct CommandPackageBuilder<'a, S: FileStorage, L: CommandLinker> {
     module_builder: &'a ModuleBuilder<'a, S>,
     linker: &'a L,
 }
 
-impl<'a, S: FileStorage, L: Linker> CommandPackageBuilder<'a, S, L> {
+impl<'a, S: FileStorage, L: CommandLinker> CommandPackageBuilder<'a, S, L> {
     pub fn new(module_builder: &'a ModuleBuilder<'a, S>, linker: &'a L) -> Self {
         Self {
             module_builder,

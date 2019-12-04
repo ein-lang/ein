@@ -48,11 +48,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     app::PackageBuilder::new(
         &app::CommandPackageBuilder::new(
             &module_builder,
-            &infra::Linker::new(std::env::var("EIN_ROOT")?),
+            &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
         ),
         &app::LibraryPackageBuilder::new(
             &module_builder,
-            &infra::Archiver::new(),
+            &infra::LibraryArchiver::new(),
             &internal_module_path_manager,
         ),
         &app::ExternalPackageInitializer::new(

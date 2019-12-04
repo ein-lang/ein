@@ -4,15 +4,15 @@ use super::utilities;
 use std::collections::HashMap;
 
 #[derive(Default)]
-pub struct Archiver;
+pub struct LibraryArchiver;
 
-impl Archiver {
+impl LibraryArchiver {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl app::Archiver for Archiver {
+impl app::LibraryArchiver for LibraryArchiver {
     fn archive(
         &self,
         object_file_paths: &[app::FilePath],
