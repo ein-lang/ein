@@ -33,7 +33,7 @@ impl<'a, S: FileStorage, OL: ObjectLinker, A: LibraryArchiver> LibraryPackageBui
                 .map(|interface_file_path| {
                     (
                         self.internal_module_path_manager
-                            .convert_to_relative_interface_file_path(&interface_file_path),
+                            .convert_to_archive_interface_file_path(&interface_file_path),
                         interface_file_path,
                     )
                 })

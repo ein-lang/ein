@@ -79,7 +79,7 @@ impl<'a> InternalModulePathManager<'a> {
         )
     }
 
-    pub fn convert_to_relative_interface_file_path(&self, source_file_path: &FilePath) -> FilePath {
+    pub fn convert_to_archive_interface_file_path(&self, source_file_path: &FilePath) -> FilePath {
         FilePath::new(source_file_path.components().skip(2))
     }
 
@@ -118,7 +118,7 @@ mod tests {
     }
 
     #[test]
-    fn convert_to_relative_interface_file_path() {
+    fn convert_to_archive_interface_file_path() {
         assert_eq!(
             InternalModulePathManager::new(&FilePathConfiguration::new(
                 "",
@@ -127,7 +127,7 @@ mod tests {
                 "",
                 FilePath::new(&["target"])
             ))
-            .convert_to_relative_interface_file_path(&FilePath::new(&[
+            .convert_to_archive_interface_file_path(&FilePath::new(&[
                 "target",
                 "interfaces",
                 "package",
