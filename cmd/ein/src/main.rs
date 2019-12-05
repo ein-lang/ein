@@ -44,19 +44,14 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &module_compiler,
         &file_storage,
         &internal_module_path_manager,
-        &object_linker,
     );
 
     app::PackageBuilder::new(
-        &app::CommandPackageBuilder::new(
-            &module_builder,
-            &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
-        ),
-        &app::LibraryPackageBuilder::new(
-            &module_builder,
-            &infra::LibraryArchiver::new(),
-            &internal_module_path_manager,
-        ),
+        &module_builder,
+        &object_linker,
+        &infra::LibraryArchiver::new(),
+        &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
+        &internal_module_path_manager,
         &app::ExternalPackageInitializer::new(
             &infra::ExternalPackageDownloader::new(),
             &infra::ExternalPackageBuilder::new(),

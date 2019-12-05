@@ -1,37 +1,34 @@
 use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::path::InternalModulePathManager;
-use crate::infra::{FilePath, FileStorage, ObjectLinker};
+use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
 
-pub struct ModuleBuilder<'a, S: FileStorage, L: ObjectLinker> {
+pub struct ModuleBuilder<'a, S: FileStorage> {
     module_compiler: &'a ModuleCompiler<'a, S>,
     file_storage: &'a S,
     internal_module_path_manager: &'a InternalModulePathManager<'a>,
-    object_linker: &'a L,
 }
 
-impl<'a, S: FileStorage, L: ObjectLinker> ModuleBuilder<'a, S, L> {
+impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
     pub fn new(
         module_compiler: &'a ModuleCompiler<'a, S>,
         file_storage: &'a S,
         internal_module_path_manager: &'a InternalModulePathManager<'a>,
-        object_linker: &'a L,
     ) -> Self {
         Self {
             module_compiler,
             file_storage,
             internal_module_path_manager,
-            object_linker,
         }
     }
 
     pub fn build(
         &self,
         package: &ein::Package,
-    ) -> Result<(FilePath, Vec<FilePath>), Box<dyn std::error::Error>> {
+    ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
 
@@ -57,12 +54,7 @@ impl<'a, S: FileStorage, L: ObjectLinker> ModuleBuilder<'a, S, L> {
             interface_file_paths.push(interface_file_path);
         }
 
-        let package_object_file_path = self.internal_module_path_manager.package_object_file_path();
-
-        self.object_linker
-            .link(&object_file_paths, &package_object_file_path)?;
-
-        Ok((package_object_file_path.clone(), interface_file_paths))
+        Ok((object_file_paths, interface_file_paths))
     }
 
     fn sort_source_file_paths<'b>(
