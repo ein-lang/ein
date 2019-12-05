@@ -1,11 +1,11 @@
 use super::external_package_initializer::ExternalPackageInitializer;
 use super::module_builder::ModuleBuilder;
-use super::package_configuration::{PackageConfiguration, Target};
-use super::path::FilePathConfiguration;
+use super::package_configuration::Target;
+use super::package_initializer::PackageInitializer;
 use super::path::InternalModulePathManager;
 use crate::infra::{
-    CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage,
-    LibraryArchiver, ObjectLinker, Repository,
+    CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FileStorage, LibraryArchiver,
+    ObjectLinker, Repository,
 };
 
 pub struct PackageBuilder<
@@ -23,10 +23,8 @@ pub struct PackageBuilder<
     archiver: &'a A,
     command_linker: &'a CL,
     internal_module_path_manager: &'a InternalModulePathManager<'a>,
+    package_initializer: &'a PackageInitializer<'a, R, S>,
     external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
-    repository: &'a R,
-    file_storage: &'a S,
-    file_path_configuration: &'a FilePathConfiguration,
 }
 
 impl<
@@ -46,10 +44,8 @@ impl<
         archiver: &'a A,
         command_linker: &'a CL,
         internal_module_path_manager: &'a InternalModulePathManager<'a>,
+        package_initializer: &'a PackageInitializer<'a, R, S>,
         external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
-        repository: &'a R,
-        file_storage: &'a S,
-        file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {
             module_builder,
@@ -57,20 +53,13 @@ impl<
             archiver,
             command_linker,
             internal_module_path_manager,
+            package_initializer,
             external_package_initializer,
-            repository,
-            file_storage,
-            file_path_configuration,
         }
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let package = self.repository.get_package()?;
-        let package_configuration: PackageConfiguration = serde_json::from_str(
-            &self.file_storage.read_to_string(&FilePath::new(&[self
-                .file_path_configuration
-                .package_configuration_filename()]))?,
-        )?;
+        let (package, package_configuration) = self.package_initializer.initialize()?;
 
         self.external_package_initializer
             .initialize(&package_configuration)?;
