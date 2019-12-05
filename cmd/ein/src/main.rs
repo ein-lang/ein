@@ -1,3 +1,5 @@
+const PACKAGE_CONFIGURATION_FILENAME: &str = "ein.json";
+
 fn main() {
     if let Err(error) = run() {
         eprintln!("{}", error);
@@ -21,7 +23,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     move_to_package_directory()?;
 
     let file_path_configuration = app::FilePathConfiguration::new(
-        "ein.json",
+        PACKAGE_CONFIGURATION_FILENAME,
         "package",
         "ein",
         "bc",
@@ -72,11 +74,14 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
 fn move_to_package_directory() -> Result<(), Box<dyn std::error::Error>> {
     let mut directory: &std::path::Path = &std::env::current_dir()?;
 
-    while !directory.join("ein.json").exists() {
+    while !directory.join(PACKAGE_CONFIGURATION_FILENAME).exists() {
         directory = directory.parent().ok_or_else(|| {
             std::io::Error::new(
                 std::io::ErrorKind::NotFound,
-                "ein.json file not found in any parent directory",
+                format!(
+                    "{} file not found in any parent directory",
+                    PACKAGE_CONFIGURATION_FILENAME
+                ),
             )
         })?
     }
