@@ -79,7 +79,7 @@ mod tests {
     use app::FileStorage as FileStorageTrait;
 
     #[test]
-    fn get_file_paths() {
+    fn glob() {
         assert!(FileStorage::new()
             .glob("**/*.rs")
             .unwrap()
