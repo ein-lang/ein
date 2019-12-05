@@ -33,6 +33,6 @@ impl app::Repository for Repository {
     fn get_package(&self) -> Result<ein::Package, Box<dyn std::error::Error>> {
         Ok(self
             .get_package_from_git()
-            .unwrap_or_else(|_| ein::Package::new("main", "current")))
+            .unwrap_or_else(|_| ein::Package::new("main", "master")))
     }
 }
