@@ -22,6 +22,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let file_path_configuration = app::FilePathConfiguration::new(
         "ein.json",
+        "package",
         "ein",
         "bc",
         "json",

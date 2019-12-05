@@ -38,7 +38,9 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
     pub fn initialize(
         &self,
         package_configuration: &PackageConfiguration,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<Vec<FilePath>, Box<dyn std::error::Error>> {
+        let mut object_file_paths = vec![];
+
         for (name, external_package) in package_configuration.dependencies() {
             let directory_path = self
                 .external_module_path_manager
@@ -66,9 +68,12 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
             }
 
             self.external_package_builder.build(&directory_path)?;
+            object_file_paths.push(directory_path.join(&FilePath::new(&[
+                self.file_path_configuration.package_object_filename(),
+            ])))
         }
 
-        Ok(())
+        Ok(object_file_paths)
     }
 }
 
@@ -84,7 +89,7 @@ mod tests {
     #[test]
     fn new() {
         let file_path_configuration =
-            FilePathConfiguration::new("", "", "", "", FilePath::new(&["target"]));
+            FilePathConfiguration::new("", "", "", "", "", FilePath::new(&["target"]));
         let file_storage = FileStorageFake::new(Default::default());
 
         ExternalPackageInitializer::new(
@@ -99,7 +104,7 @@ mod tests {
     #[test]
     fn initialize_external_package() {
         let file_path_configuration =
-            FilePathConfiguration::new("ein.json", "", "", "", FilePath::new(&["target"]));
+            FilePathConfiguration::new("ein.json", "", "", "", "", FilePath::new(&["target"]));
         let file_storage = FileStorageFake::new(Default::default());
 
         ExternalPackageInitializer::new(
@@ -134,7 +139,7 @@ mod tests {
     #[test]
     fn fail_to_initialize_external_package_without_package_configuration_file() {
         let file_path_configuration =
-            FilePathConfiguration::new("ein.json", "", "", "", FilePath::new(&["target"]));
+            FilePathConfiguration::new("ein.json", "", "", "", "", FilePath::new(&["target"]));
         let file_storage = FileStorageFake::new(Default::default());
 
         let result = ExternalPackageInitializer::new(

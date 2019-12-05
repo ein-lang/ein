@@ -61,11 +61,15 @@ impl<
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         let (package, package_configuration) = self.package_initializer.initialize()?;
 
-        self.external_package_initializer
+        let external_package_object_file_paths = self
+            .external_package_initializer
             .initialize(&package_configuration)?;
 
-        let (object_file_paths, interface_file_paths) = self.module_builder.build(&package)?;
+        let (mut object_file_paths, interface_file_paths) = self.module_builder.build(&package)?;
         let package_object_file_path = self.internal_module_path_manager.package_object_file_path();
+
+        object_file_paths.extend(external_package_object_file_paths);
+
         self.object_linker
             .link(&object_file_paths, &package_object_file_path)?;
 

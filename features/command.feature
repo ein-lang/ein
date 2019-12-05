@@ -60,3 +60,28 @@ Feature: Command
     And I cd to "Foo"
     When I run `ein build`
     Then the exit status should be 0
+
+  Scenario: Build a command with a dependency
+    Given a file named "ein.json" with:
+    """
+    {
+      "target": {
+        "type": "Command",
+        "name": "command"
+      },
+      "dependencies": {
+        "github.com/ein-lang/sample-package": { "version": "master" }
+      }
+    }
+    """
+    And a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/sample-package/Foo"
+
+    main : Number -> Number
+    main = Foo.foo
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./command`
+    Then stdout from "sh -c ./command" should contain exactly "42"
+    And the exit status should be 0

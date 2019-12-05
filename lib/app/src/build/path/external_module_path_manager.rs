@@ -44,6 +44,7 @@ mod tests {
                 "",
                 "",
                 "",
+                "",
                 "interface",
                 FilePath::new(&["target"])
             ))
