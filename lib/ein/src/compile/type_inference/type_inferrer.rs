@@ -23,7 +23,7 @@ impl TypeInferrer {
         let mut variables = HashMap::<String, Type>::new();
 
         for imported_module in module.imported_modules() {
-            for (name, type_) in imported_module.types() {
+            for (name, type_) in imported_module.variables() {
                 variables.insert(imported_module.path().qualify_name(name), type_.clone());
             }
         }
