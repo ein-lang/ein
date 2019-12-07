@@ -5,6 +5,9 @@ jobs:
       - image: einlang/ci
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-{{ arch }}-{{ checksum "Cargo.lock" }}
       - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo build
       - run: cargo fmt -- --check
@@ -13,3 +16,7 @@ jobs:
       - run: cargo test --lib
       - run: cargo build --release --package runtime
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
+      - save_cache:
+          key: v1-{{ arch }}-{{ checksum "Cargo.lock" }}
+          paths:
+            - target
