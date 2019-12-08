@@ -32,31 +32,22 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let file_storage = infra::FileStorage::new();
-    let internal_module_path_manager =
-        app::InternalModulePathManager::new(&file_path_configuration);
-    let external_module_path_manager =
-        app::ExternalModulePathManager::new(&file_path_configuration);
+    let file_path_manager = app::FilePathManager::new(&file_path_configuration);
 
     let object_linker = infra::ObjectLinker::new();
-    let module_compiler = app::ModuleCompiler::new(&internal_module_path_manager, &file_storage);
-    let module_builder = app::ModuleBuilder::new(
-        &module_compiler,
-        &file_storage,
-        &internal_module_path_manager,
-    );
+    let module_compiler = app::ModuleCompiler::new(&file_path_manager, &file_storage);
+    let module_builder =
+        app::ModuleBuilder::new(&module_compiler, &file_storage, &file_path_manager);
     let interface_linker = app::InterfaceLinker::new(&file_storage);
-    let package_linker = app::PackageLinker::new(
-        &object_linker,
-        &interface_linker,
-        &internal_module_path_manager,
-    );
+    let package_linker =
+        app::PackageLinker::new(&object_linker, &interface_linker, &file_path_manager);
 
     app::PackageBuilder::new(
         &module_builder,
         &package_linker,
         &infra::LibraryArchiver::new(),
         &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
-        &internal_module_path_manager,
+        &file_path_manager,
         &app::PackageInitializer::new(
             &infra::Repository::new(),
             &file_storage,
@@ -65,7 +56,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &app::ExternalPackageInitializer::new(
             &infra::ExternalPackageDownloader::new(),
             &infra::ExternalPackageBuilder::new(),
-            &external_module_path_manager,
+            &file_path_manager,
             &file_storage,
             &file_path_configuration,
         ),

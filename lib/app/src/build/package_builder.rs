@@ -3,7 +3,7 @@ use super::module_builder::ModuleBuilder;
 use super::package_configuration::Target;
 use super::package_initializer::PackageInitializer;
 use super::package_linker::PackageLinker;
-use super::path::InternalModulePathManager;
+use super::path::FilePathManager;
 use crate::infra::{
     CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FileStorage, LibraryArchiver,
     ObjectLinker, Repository,
@@ -23,7 +23,7 @@ pub struct PackageBuilder<
     package_linker: &'a PackageLinker<'a, S, OL>,
     archiver: &'a A,
     command_linker: &'a CL,
-    internal_module_path_manager: &'a InternalModulePathManager<'a>,
+    file_path_manager: &'a FilePathManager<'a>,
     package_initializer: &'a PackageInitializer<'a, R, S>,
     external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
 }
@@ -44,7 +44,7 @@ impl<
         package_linker: &'a PackageLinker<'a, S, OL>,
         archiver: &'a A,
         command_linker: &'a CL,
-        internal_module_path_manager: &'a InternalModulePathManager<'a>,
+        file_path_manager: &'a FilePathManager<'a>,
         package_initializer: &'a PackageInitializer<'a, R, S>,
         external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
     ) -> Self {
@@ -53,7 +53,7 @@ impl<
             package_linker,
             archiver,
             command_linker,
-            internal_module_path_manager,
+            file_path_manager,
             package_initializer,
             external_package_initializer,
         }
@@ -84,11 +84,9 @@ impl<
             Target::Library => {
                 self.archiver.archive(
                     &package_object_file_path,
-                    self.internal_module_path_manager
-                        .archive_package_object_file_path(),
+                    self.file_path_manager.archive_package_object_file_path(),
                     &package_interface_file_path,
-                    self.internal_module_path_manager
-                        .archive_package_interface_file_path(),
+                    self.file_path_manager.archive_package_interface_file_path(),
                 )?;
             }
         }

@@ -3,8 +3,9 @@ use crate::infra::FilePath;
 
 const OBJECT_DIRECTORY: &str = "objects";
 const INTERFACE_DIRECTORY: &str = "interfaces";
+const EXTERNAL_PACKAGE_DIRECTORY: &str = "packages";
 
-pub struct InternalModulePathManager<'a> {
+pub struct FilePathManager<'a> {
     file_path_configuration: &'a FilePathConfiguration,
     object_directory: FilePath,
     interface_directory: FilePath,
@@ -13,9 +14,10 @@ pub struct InternalModulePathManager<'a> {
     archive_package_object_file_path: FilePath,
     package_interface_file_path: FilePath,
     archive_package_interface_file_path: FilePath,
+    external_package_directory: FilePath,
 }
 
-impl<'a> InternalModulePathManager<'a> {
+impl<'a> FilePathManager<'a> {
     pub fn new(file_path_configuration: &'a FilePathConfiguration) -> Self {
         Self {
             file_path_configuration,
@@ -41,6 +43,9 @@ impl<'a> InternalModulePathManager<'a> {
             archive_package_interface_file_path: FilePath::new(&[
                 file_path_configuration.package_interface_filename()
             ]),
+            external_package_directory: file_path_configuration
+                .output_directory()
+                .join(&FilePath::new(&[EXTERNAL_PACKAGE_DIRECTORY])),
         }
     }
 
@@ -111,6 +116,11 @@ impl<'a> InternalModulePathManager<'a> {
     pub fn archive_package_interface_file_path(&self) -> &FilePath {
         &self.archive_package_interface_file_path
     }
+
+    pub fn convert_to_directory_path(&self, package_name: &str) -> FilePath {
+        self.external_package_directory
+            .join(&FilePath::new(package_name.split('/')))
+    }
 }
 
 #[cfg(test)]
@@ -120,7 +130,7 @@ mod tests {
     #[test]
     fn resolve_to_interface_file_path() {
         assert_eq!(
-            InternalModulePathManager::new(&FilePathConfiguration::new(
+            FilePathManager::new(&FilePathConfiguration::new(
                 "",
                 "",
                 "",
@@ -138,7 +148,7 @@ mod tests {
     #[test]
     fn convert_to_archive_interface_file_path() {
         assert_eq!(
-            InternalModulePathManager::new(&FilePathConfiguration::new(
+            FilePathManager::new(&FilePathConfiguration::new(
                 "",
                 "",
                 "",

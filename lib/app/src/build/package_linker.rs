@@ -1,23 +1,23 @@
 use super::interface_linker::InterfaceLinker;
-use super::path::InternalModulePathManager;
+use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage, ObjectLinker};
 
 pub struct PackageLinker<'a, S: FileStorage, OL: ObjectLinker> {
     object_linker: &'a OL,
     interface_linker: &'a InterfaceLinker<'a, S>,
-    internal_module_path_manager: &'a InternalModulePathManager<'a>,
+    file_path_manager: &'a FilePathManager<'a>,
 }
 
 impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
     pub fn new(
         object_linker: &'a OL,
         interface_linker: &'a InterfaceLinker<'a, S>,
-        internal_module_path_manager: &'a InternalModulePathManager<'a>,
+        file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
             object_linker,
             interface_linker,
-            internal_module_path_manager,
+            file_path_manager,
         }
     }
 
@@ -27,7 +27,7 @@ impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
         external_package_object_file_paths: &[FilePath],
         interface_file_paths: &[FilePath],
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
-        let package_object_file_path = self.internal_module_path_manager.package_object_file_path();
+        let package_object_file_path = self.file_path_manager.package_object_file_path();
 
         self.object_linker.link(
             object_file_paths
@@ -36,9 +36,7 @@ impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
             &package_object_file_path,
         )?;
 
-        let package_interface_file_path = self
-            .internal_module_path_manager
-            .package_interface_file_path();
+        let package_interface_file_path = self.file_path_manager.package_interface_file_path();
 
         self.interface_linker
             .link(interface_file_paths, &package_interface_file_path)?;

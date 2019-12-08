@@ -1,6 +1,6 @@
 use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
-use super::path::InternalModulePathManager;
+use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
@@ -9,19 +9,19 @@ use std::collections::HashMap;
 pub struct ModuleBuilder<'a, S: FileStorage> {
     module_compiler: &'a ModuleCompiler<'a, S>,
     file_storage: &'a S,
-    internal_module_path_manager: &'a InternalModulePathManager<'a>,
+    file_path_manager: &'a FilePathManager<'a>,
 }
 
 impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
     pub fn new(
         module_compiler: &'a ModuleCompiler<'a, S>,
         file_storage: &'a S,
-        internal_module_path_manager: &'a InternalModulePathManager<'a>,
+        file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
             module_compiler,
             file_storage,
-            internal_module_path_manager,
+            file_path_manager,
         }
     }
 
@@ -38,13 +38,13 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
 
         for source_file_path in self.sort_source_file_paths(&self.file_storage.glob("**/*.ein")?)? {
             let module_path = self
-                .internal_module_path_manager
+                .file_path_manager
                 .convert_to_module_path(source_file_path, package);
             let object_file_path = self
-                .internal_module_path_manager
+                .file_path_manager
                 .convert_to_object_file_path(&module_path);
             let interface_file_path = self
-                .internal_module_path_manager
+                .file_path_manager
                 .convert_to_interface_file_path(&module_path);
 
             self.module_compiler.compile(
@@ -85,7 +85,7 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
                 {
                     graph.add_edge(
                         indices[&self
-                            .internal_module_path_manager
+                            .file_path_manager
                             .resolve_to_source_file_path(internal_module_path)],
                         indices[&source_file_path],
                         (),

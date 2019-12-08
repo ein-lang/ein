@@ -1,20 +1,17 @@
 use super::error::BuildError;
-use super::path::InternalModulePathManager;
+use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
 use std::collections::HashMap;
 
 pub struct ModuleCompiler<'a, S: FileStorage> {
-    internal_module_path_manager: &'a InternalModulePathManager<'a>,
+    file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a S,
 }
 
 impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
-    pub fn new(
-        internal_module_path_manager: &'a InternalModulePathManager<'a>,
-        file_storage: &'a S,
-    ) -> Self {
+    pub fn new(file_path_manager: &'a FilePathManager<'a>, file_storage: &'a S) -> Self {
         Self {
-            internal_module_path_manager,
+            file_path_manager,
             file_storage,
         }
     }
@@ -31,7 +28,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         interface_file_path: &FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let module_path = self
-            .internal_module_path_manager
+            .file_path_manager
             .convert_to_module_path(source_file_path, package);
         let module = ein::parse_module(ein::Source::new(
             &format!("{}", source_file_path),
@@ -57,7 +54,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
                             Ok(ein::deserialize_module_interface(
                                 &self.file_storage.read_to_vec(
                                     &self
-                                        .internal_module_path_manager
+                                        .file_path_manager
                                         .resolve_to_interface_file_path(internal_module_path),
                                 )?,
                             )?)

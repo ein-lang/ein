@@ -1,7 +1,7 @@
 use super::error::BuildError;
 use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use super::path::{ExternalModulePathManager, FilePathConfiguration};
+use super::path::{FilePathConfiguration, FilePathManager};
 use crate::infra::{ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage};
 use std::collections::HashMap;
 
@@ -16,7 +16,7 @@ pub struct ExternalPackageInitializer<
 > {
     external_package_downloader: &'a D,
     external_package_builder: &'a B,
-    external_module_path_manager: &'a ExternalModulePathManager,
+    file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a S,
     file_path_configuration: &'a FilePathConfiguration,
 }
@@ -27,14 +27,14 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
     pub fn new(
         external_package_downloader: &'a D,
         external_package_builder: &'a B,
-        external_module_path_manager: &'a ExternalModulePathManager,
+        file_path_manager: &'a FilePathManager,
         file_storage: &'a S,
         file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {
             external_package_downloader,
             external_package_builder,
-            external_module_path_manager,
+            file_path_manager,
             file_storage,
             file_path_configuration,
         }
@@ -48,9 +48,7 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
         let mut module_interfaces = HashMap::new();
 
         for (name, external_package) in package_configuration.dependencies() {
-            let directory_path = self
-                .external_module_path_manager
-                .convert_to_directory_path(name);
+            let directory_path = self.file_path_manager.convert_to_directory_path(name);
 
             if self.file_storage.exists(&directory_path) {
                 continue;
@@ -118,7 +116,7 @@ mod tests {
         ExternalPackageInitializer::new(
             &ExternalPackageDownloaderFake::new(Default::default(), &file_storage),
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
-            &ExternalModulePathManager::new(&file_path_configuration),
+            &FilePathManager::new(&file_path_configuration),
             &file_storage,
             &file_path_configuration,
         );
@@ -146,7 +144,7 @@ mod tests {
                 &file_storage,
             ),
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
-            &ExternalModulePathManager::new(&file_path_configuration),
+            &FilePathManager::new(&file_path_configuration),
             &file_storage,
             &file_path_configuration,
         )
@@ -173,7 +171,7 @@ mod tests {
                 &file_storage,
             ),
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
-            &ExternalModulePathManager::new(&file_path_configuration),
+            &FilePathManager::new(&file_path_configuration),
             &file_storage,
             &file_path_configuration,
         )
