@@ -41,7 +41,7 @@ impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
             .package_interface_file_path();
 
         self.interface_linker
-            .link(&interface_file_paths, &package_interface_file_path)?;
+            .link(interface_file_paths, &package_interface_file_path)?;
 
         Ok((
             package_object_file_path.clone(),

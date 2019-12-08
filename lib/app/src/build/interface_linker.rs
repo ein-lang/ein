@@ -10,25 +10,24 @@ impl<'a, S: FileStorage> InterfaceLinker<'a, S> {
         Self { file_storage }
     }
 
-    pub fn link(
+    pub fn link<'b>(
         &self,
-        interface_file_paths: &[FilePath],
+        interface_file_paths: impl IntoIterator<Item = &'b FilePath>,
         package_interface_file_path: &FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let package_interface = PackageInterface::new(
-            &interface_file_paths
-                .iter()
-                .map(|file_path| {
-                    Ok(ein::deserialize_module_interface(
-                        &self.file_storage.read_to_vec(&file_path)?,
-                    )?)
-                })
-                .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?,
-        );
-
         self.file_storage.write(
             package_interface_file_path,
-            serde_json::to_string(&package_interface)?.as_bytes(),
+            serde_json::to_string(&PackageInterface::new(
+                &interface_file_paths
+                    .into_iter()
+                    .map(|file_path| {
+                        Ok(ein::deserialize_module_interface(
+                            &self.file_storage.read_to_vec(&file_path)?,
+                        )?)
+                    })
+                    .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?,
+            ))?
+            .as_bytes(),
         )?;
 
         Ok(())
