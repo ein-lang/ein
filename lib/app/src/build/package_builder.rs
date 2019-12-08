@@ -1,8 +1,8 @@
 use super::external_package_initializer::ExternalPackageInitializer;
-use super::interface_linker::InterfaceLinker;
 use super::module_builder::ModuleBuilder;
 use super::package_configuration::Target;
 use super::package_initializer::PackageInitializer;
+use super::package_linker::PackageLinker;
 use super::path::InternalModulePathManager;
 use crate::infra::{
     CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FileStorage, LibraryArchiver,
@@ -20,8 +20,7 @@ pub struct PackageBuilder<
     B: ExternalPackageBuilder,
 > {
     module_builder: &'a ModuleBuilder<'a, S>,
-    object_linker: &'a OL,
-    interface_linker: &'a InterfaceLinker<'a, S>,
+    package_linker: &'a PackageLinker<'a, S, OL>,
     archiver: &'a A,
     command_linker: &'a CL,
     internal_module_path_manager: &'a InternalModulePathManager<'a>,
@@ -40,11 +39,9 @@ impl<
         B: ExternalPackageBuilder,
     > PackageBuilder<'a, R, S, OL, CL, A, D, B>
 {
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         module_builder: &'a ModuleBuilder<'a, S>,
-        object_linker: &'a OL,
-        interface_linker: &'a InterfaceLinker<'a, S>,
+        package_linker: &'a PackageLinker<'a, S, OL>,
         archiver: &'a A,
         command_linker: &'a CL,
         internal_module_path_manager: &'a InternalModulePathManager<'a>,
@@ -53,8 +50,7 @@ impl<
     ) -> Self {
         Self {
             module_builder,
-            object_linker,
-            interface_linker,
+            package_linker,
             archiver,
             command_linker,
             internal_module_path_manager,
@@ -70,20 +66,15 @@ impl<
             .external_package_initializer
             .initialize(&package_configuration)?;
 
-        let (mut object_file_paths, interface_file_paths) = self
+        let (object_file_paths, interface_file_paths) = self
             .module_builder
             .build(&package, &external_module_interfaces)?;
 
-        let package_object_file_path = self.internal_module_path_manager.package_object_file_path();
-        object_file_paths.extend(external_package_object_file_paths);
-        self.object_linker
-            .link(&object_file_paths, &package_object_file_path)?;
-
-        let package_interface_file_path = self
-            .internal_module_path_manager
-            .package_interface_file_path();
-        self.interface_linker
-            .link(&interface_file_paths, &package_interface_file_path)?;
+        let (package_object_file_path, package_interface_file_path) = self.package_linker.link(
+            &object_file_paths,
+            &external_package_object_file_paths,
+            &interface_file_paths,
+        )?;
 
         match package_configuration.target() {
             Target::Command(command_target) => {

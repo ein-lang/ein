@@ -7,6 +7,7 @@ mod package_builder;
 mod package_configuration;
 mod package_initializer;
 mod package_interface;
+mod package_linker;
 mod path;
 
 pub use error::*;
@@ -17,4 +18,5 @@ pub use module_compiler::*;
 pub use package_builder::*;
 pub use package_initializer::*;
 pub use package_interface::*;
+pub use package_linker::*;
 pub use path::*;

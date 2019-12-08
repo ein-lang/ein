@@ -44,11 +44,16 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_storage,
         &internal_module_path_manager,
     );
+    let interface_linker = app::InterfaceLinker::new(&file_storage);
+    let package_linker = app::PackageLinker::new(
+        &object_linker,
+        &interface_linker,
+        &internal_module_path_manager,
+    );
 
     app::PackageBuilder::new(
         &module_builder,
-        &object_linker,
-        &app::InterfaceLinker::new(&file_storage),
+        &package_linker,
         &infra::LibraryArchiver::new(),
         &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
         &internal_module_path_manager,
