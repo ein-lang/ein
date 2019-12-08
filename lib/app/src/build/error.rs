@@ -1,7 +1,12 @@
 #[derive(Debug, PartialEq)]
 pub enum BuildError {
     CircularDependency,
-    ExternalPackageConfigurationFileNotFound { package_name: String },
+    ExternalModuleNotFound {
+        module_path: ein::ExternalUnresolvedModulePath,
+    },
+    ExternalPackageConfigurationFileNotFound {
+        package_name: String,
+    },
 }
 
 impl std::error::Error for BuildError {}
@@ -10,6 +15,9 @@ impl std::fmt::Display for BuildError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::CircularDependency => write!(formatter, "circular module dependency detected"),
+            Self::ExternalModuleNotFound { module_path } => {
+                write!(formatter, "external module \"{}\" not found", module_path)
+            }
             Self::ExternalPackageConfigurationFileNotFound { package_name } => write!(
                 formatter,
                 "package configuration file not found in external package \"{}\"",

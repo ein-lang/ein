@@ -1,7 +1,12 @@
 use super::error::BuildError;
 use super::package_configuration::PackageConfiguration;
+use super::package_interface::PackageInterface;
 use super::path::{ExternalModulePathManager, FilePathConfiguration};
 use crate::infra::{ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage};
+use std::collections::HashMap;
+
+type ExternalModuleInterfaces =
+    HashMap<ein::ExternalUnresolvedModulePath, ein::ast::ModuleInterface>;
 
 pub struct ExternalPackageInitializer<
     'a,
@@ -11,7 +16,7 @@ pub struct ExternalPackageInitializer<
 > {
     external_package_downloader: &'a D,
     external_package_builder: &'a B,
-    external_module_path_manager: &'a ExternalModulePathManager<'a>,
+    external_module_path_manager: &'a ExternalModulePathManager,
     file_storage: &'a S,
     file_path_configuration: &'a FilePathConfiguration,
 }
@@ -22,7 +27,7 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
     pub fn new(
         external_package_downloader: &'a D,
         external_package_builder: &'a B,
-        external_module_path_manager: &'a ExternalModulePathManager<'a>,
+        external_module_path_manager: &'a ExternalModulePathManager,
         file_storage: &'a S,
         file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
@@ -38,8 +43,9 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
     pub fn initialize(
         &self,
         package_configuration: &PackageConfiguration,
-    ) -> Result<Vec<FilePath>, Box<dyn std::error::Error>> {
+    ) -> Result<(Vec<FilePath>, ExternalModuleInterfaces), Box<dyn std::error::Error>> {
         let mut object_file_paths = vec![];
+        let mut module_interfaces = HashMap::new();
 
         for (name, external_package) in package_configuration.dependencies() {
             let directory_path = self
@@ -68,12 +74,29 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
             }
 
             self.external_package_builder.build(&directory_path)?;
+
             object_file_paths.push(directory_path.join(&FilePath::new(&[
                 self.file_path_configuration.package_object_filename(),
-            ])))
+            ])));
+
+            module_interfaces.extend(
+                serde_json::from_str::<PackageInterface>(&self.file_storage.read_to_string(
+                    &directory_path.join(&FilePath::new(&[
+                        self.file_path_configuration.package_interface_filename(),
+                    ])),
+                )?)?
+                .modules()
+                .iter()
+                .map(|module_interface| {
+                    (
+                        module_interface.path().external_unresolved(),
+                        module_interface.clone(),
+                    )
+                }),
+            );
         }
 
-        Ok(object_file_paths)
+        Ok((object_file_paths, module_interfaces))
     }
 }
 
@@ -83,7 +106,7 @@ mod tests {
     use super::super::{ExternalPackageInitializer, FilePathConfiguration};
     use super::*;
     use crate::infra::{
-        ExternalPackageBuilderStub, ExternalPackageDownloaderFake, FilePath, FileStorageFake,
+        ExternalPackageBuilderFake, ExternalPackageDownloaderFake, FilePath, FileStorageFake,
     };
 
     #[test]
@@ -94,7 +117,7 @@ mod tests {
 
         ExternalPackageInitializer::new(
             &ExternalPackageDownloaderFake::new(Default::default(), &file_storage),
-            &ExternalPackageBuilderStub::new(),
+            &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
             &ExternalModulePathManager::new(&file_path_configuration),
             &file_storage,
             &file_path_configuration,
@@ -122,7 +145,7 @@ mod tests {
                 .collect(),
                 &file_storage,
             ),
-            &ExternalPackageBuilderStub::new(),
+            &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
             &ExternalModulePathManager::new(&file_path_configuration),
             &file_storage,
             &file_path_configuration,
@@ -149,7 +172,7 @@ mod tests {
                     .collect(),
                 &file_storage,
             ),
-            &ExternalPackageBuilderStub::new(),
+            &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
             &ExternalModulePathManager::new(&file_path_configuration),
             &file_storage,
             &file_path_configuration,

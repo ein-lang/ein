@@ -28,6 +28,10 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
     pub fn build(
         &self,
         package: &ein::Package,
+        external_module_interfaces: &HashMap<
+            ein::ExternalUnresolvedModulePath,
+            ein::ast::ModuleInterface,
+        >,
     ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
@@ -45,6 +49,7 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
 
             self.module_compiler.compile(
                 package,
+                external_module_interfaces,
                 &source_file_path,
                 &object_file_path,
                 &interface_file_path,

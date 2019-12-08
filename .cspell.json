@@ -6,6 +6,7 @@
     "ast's",
     "bitcode",
     "canonicalize",
+    "clippy",
     "codecov",
     "combinator",
     "combinators",

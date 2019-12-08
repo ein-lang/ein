@@ -5,18 +5,42 @@ pub trait ExternalPackageBuilder {
 }
 
 #[cfg(test)]
-pub struct ExternalPackageBuilderStub;
+pub struct ExternalPackageBuilderFake<'a, S: crate::infra::FileStorage> {
+    file_path_configuration: &'a crate::FilePathConfiguration,
+    file_storage: &'a S,
+}
 
 #[cfg(test)]
-impl ExternalPackageBuilderStub {
-    pub fn new() -> Self {
-        Self
+impl<'a, S: crate::infra::FileStorage> ExternalPackageBuilderFake<'a, S> {
+    pub fn new(
+        file_path_configuration: &'a crate::FilePathConfiguration,
+        file_storage: &'a S,
+    ) -> Self {
+        Self {
+            file_path_configuration,
+            file_storage,
+        }
     }
 }
 
 #[cfg(test)]
-impl ExternalPackageBuilder for ExternalPackageBuilderStub {
-    fn build(&self, _: &FilePath) -> Result<(), Box<dyn std::error::Error>> {
+impl<'a, S: crate::infra::FileStorage> ExternalPackageBuilder
+    for ExternalPackageBuilderFake<'a, S>
+{
+    fn build(&self, directory_path: &FilePath) -> Result<(), Box<dyn std::error::Error>> {
+        self.file_storage.write(
+            &directory_path.join(&FilePath::new(&[self
+                .file_path_configuration
+                .package_object_filename()])),
+            &[],
+        )?;
+        self.file_storage.write(
+            &directory_path.join(&FilePath::new(&[self
+                .file_path_configuration
+                .package_interface_filename()])),
+            serde_json::to_string(&crate::PackageInterface::new(&[]))?.as_bytes(),
+        )?;
+
         Ok(())
     }
 }

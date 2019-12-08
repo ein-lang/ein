@@ -11,6 +11,8 @@ pub struct InternalModulePathManager<'a> {
     source_file_glob_pattern: String,
     package_object_file_path: FilePath,
     archive_package_object_file_path: FilePath,
+    package_interface_file_path: FilePath,
+    archive_package_interface_file_path: FilePath,
 }
 
 impl<'a> InternalModulePathManager<'a> {
@@ -32,6 +34,12 @@ impl<'a> InternalModulePathManager<'a> {
             ),
             archive_package_object_file_path: FilePath::new(&[
                 file_path_configuration.package_object_filename()
+            ]),
+            package_interface_file_path: file_path_configuration.output_directory().join(
+                &FilePath::new(&[file_path_configuration.package_interface_filename()]),
+            ),
+            archive_package_interface_file_path: FilePath::new(&[
+                file_path_configuration.package_interface_filename()
             ]),
         }
     }
@@ -94,6 +102,14 @@ impl<'a> InternalModulePathManager<'a> {
 
     pub fn archive_package_object_file_path(&self) -> &FilePath {
         &self.archive_package_object_file_path
+    }
+
+    pub fn package_interface_file_path(&self) -> &FilePath {
+        &self.package_interface_file_path
+    }
+
+    pub fn archive_package_interface_file_path(&self) -> &FilePath {
+        &self.archive_package_interface_file_path
     }
 }
 

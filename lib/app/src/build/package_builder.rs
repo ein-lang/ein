@@ -1,4 +1,5 @@
 use super::external_package_initializer::ExternalPackageInitializer;
+use super::interface_linker::InterfaceLinker;
 use super::module_builder::ModuleBuilder;
 use super::package_configuration::Target;
 use super::package_initializer::PackageInitializer;
@@ -20,6 +21,7 @@ pub struct PackageBuilder<
 > {
     module_builder: &'a ModuleBuilder<'a, S>,
     object_linker: &'a OL,
+    interface_linker: &'a InterfaceLinker<'a, S>,
     archiver: &'a A,
     command_linker: &'a CL,
     internal_module_path_manager: &'a InternalModulePathManager<'a>,
@@ -38,9 +40,11 @@ impl<
         B: ExternalPackageBuilder,
     > PackageBuilder<'a, R, S, OL, CL, A, D, B>
 {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         module_builder: &'a ModuleBuilder<'a, S>,
         object_linker: &'a OL,
+        interface_linker: &'a InterfaceLinker<'a, S>,
         archiver: &'a A,
         command_linker: &'a CL,
         internal_module_path_manager: &'a InternalModulePathManager<'a>,
@@ -50,6 +54,7 @@ impl<
         Self {
             module_builder,
             object_linker,
+            interface_linker,
             archiver,
             command_linker,
             internal_module_path_manager,
@@ -61,17 +66,24 @@ impl<
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         let (package, package_configuration) = self.package_initializer.initialize()?;
 
-        let external_package_object_file_paths = self
+        let (external_package_object_file_paths, external_module_interfaces) = self
             .external_package_initializer
             .initialize(&package_configuration)?;
 
-        let (mut object_file_paths, interface_file_paths) = self.module_builder.build(&package)?;
+        let (mut object_file_paths, interface_file_paths) = self
+            .module_builder
+            .build(&package, &external_module_interfaces)?;
+
         let package_object_file_path = self.internal_module_path_manager.package_object_file_path();
-
         object_file_paths.extend(external_package_object_file_paths);
-
         self.object_linker
             .link(&object_file_paths, &package_object_file_path)?;
+
+        let package_interface_file_path = self
+            .internal_module_path_manager
+            .package_interface_file_path();
+        self.interface_linker
+            .link(&interface_file_paths, &package_interface_file_path)?;
 
         match package_configuration.target() {
             Target::Command(command_target) => {
@@ -83,16 +95,9 @@ impl<
                     &package_object_file_path,
                     self.internal_module_path_manager
                         .archive_package_object_file_path(),
-                    &interface_file_paths
-                        .into_iter()
-                        .map(|interface_file_path| {
-                            (
-                                self.internal_module_path_manager
-                                    .convert_to_archive_interface_file_path(&interface_file_path),
-                                interface_file_path,
-                            )
-                        })
-                        .collect(),
+                    &package_interface_file_path,
+                    self.internal_module_path_manager
+                        .archive_package_interface_file_path(),
                 )?;
             }
         }
