@@ -58,7 +58,7 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
                     .collect(),
             ),
         )?,
-        ModuleInterfaceCompiler::new().compile(&module),
+        ModuleInterfaceCompiler::new().compile(&module)?,
     ))
 }
 

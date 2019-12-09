@@ -8,6 +8,7 @@ use std::rc::Rc;
 pub enum CompileError {
     CircularInitialization,
     CoreCompile(core::compile::CompileError),
+    ExportedNameNotFound { name: String },
     MixedDefinitionsInLet(Rc<SourceInformation>),
     TypeInference(TypeInferenceError),
 }
@@ -16,12 +17,15 @@ impl Display for CompileError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
             Self::CircularInitialization => {
-                write!(formatter, "CompileError: Circular initialization detected",)
+                write!(formatter, "circular variable initialization detected",)
             }
-            Self::CoreCompile(error) => write!(formatter, "CoreCompileError: {}", error),
+            Self::CoreCompile(error) => write!(formatter, "{}", error),
+            Self::ExportedNameNotFound { name } => {
+                write!(formatter, "exported name \"{}\" not found", name)
+            }
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
-                "CompileError: Cannot mix function and value definitions in a let expression\n{}",
+                "cannot mix function and value definitions in a let expression\n{}",
                 source_information
             ),
             Self::TypeInference(error) => write!(formatter, "{}", error),
