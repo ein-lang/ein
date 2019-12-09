@@ -49,29 +49,9 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
         for (name, external_package) in package_configuration.dependencies() {
             let directory_path = self.generate_directory_path(name, external_package);
 
-            if self.file_storage.exists(&directory_path) {
-                continue;
+            if !self.file_storage.exists(&directory_path) {
+                self.initialize_external_package(name, external_package, &directory_path)?;
             }
-
-            self.external_package_downloader.download(
-                name,
-                external_package.version(),
-                &directory_path,
-            )?;
-
-            if !self.file_storage.exists(
-                &directory_path.join(&FilePath::new(&[self
-                    .file_path_manager
-                    .configuration()
-                    .package_configuration_filename()])),
-            ) {
-                return Err(BuildError::ExternalPackageConfigurationFileNotFound {
-                    package_name: name.into(),
-                }
-                .into());
-            }
-
-            self.external_package_builder.build(&directory_path)?;
 
             object_file_paths.push(
                 directory_path.join(&FilePath::new(&[self
@@ -101,6 +81,35 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
         }
 
         Ok((object_file_paths, module_interfaces))
+    }
+
+    fn initialize_external_package(
+        &self,
+        name: &str,
+        external_package: &ExternalPackage,
+        directory_path: &FilePath,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.external_package_downloader.download(
+            name,
+            external_package.version(),
+            &directory_path,
+        )?;
+
+        if !self.file_storage.exists(
+            &directory_path.join(&FilePath::new(&[self
+                .file_path_manager
+                .configuration()
+                .package_configuration_filename()])),
+        ) {
+            return Err(BuildError::ExternalPackageConfigurationFileNotFound {
+                package_name: name.into(),
+            }
+            .into());
+        }
+
+        self.external_package_builder.build(&directory_path)?;
+
+        Ok(())
     }
 
     fn generate_directory_path(&self, name: &str, external_package: &ExternalPackage) -> FilePath {
