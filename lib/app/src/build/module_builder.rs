@@ -33,6 +33,11 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
             ein::ast::ModuleInterface,
         >,
     ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
+        let mut module_interfaces = external_module_interfaces
+            .iter()
+            .map(|(path, module_interface)| (path.clone().into(), module_interface.clone()))
+            .collect::<HashMap<ein::UnresolvedModulePath, ein::ast::ModuleInterface>>();
+
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
 
@@ -43,23 +48,17 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
                     .source_file_glob_pattern(),
             )?,
         )? {
-            let module_path = self
-                .file_path_manager
-                .convert_to_module_path(source_file_path, package);
-            let object_file_path = self
-                .file_path_manager
-                .convert_to_object_file_path(&module_path);
-            let interface_file_path = self
-                .file_path_manager
-                .convert_to_interface_file_path(&module_path);
+            let (object_file_path, interface_file_path) =
+                self.module_compiler
+                    .compile(package, &module_interfaces, &source_file_path)?;
 
-            self.module_compiler.compile(
-                package,
-                external_module_interfaces,
-                &source_file_path,
-                &object_file_path,
-                &interface_file_path,
+            let module_interface = serde_json::from_str::<ein::ast::ModuleInterface>(
+                &self.file_storage.read_to_string(&interface_file_path)?,
             )?;
+            module_interfaces.insert(
+                module_interface.path().internal_unresolved().into(),
+                module_interface,
+            );
 
             object_file_paths.push(object_file_path);
             interface_file_paths.push(interface_file_path);

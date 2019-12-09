@@ -2,7 +2,7 @@ use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Hash, PartialEq, Serialize)]
 pub struct Number {
     source_information: Rc<SourceInformation>,
 }

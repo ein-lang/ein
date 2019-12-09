@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::rc::Rc;
 pub use variable::*;
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Hash, PartialEq, Serialize)]
 pub enum Type {
     Function(Function),
     Number(Number),

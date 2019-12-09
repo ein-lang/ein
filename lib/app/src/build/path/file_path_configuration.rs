@@ -1,5 +1,6 @@
 use crate::infra::FilePath;
 
+const OBJECT_DIRECTORY: &str = "objects";
 const EXTERNAL_PACKAGE_DIRECTORY: &str = "packages";
 
 pub struct FilePathConfiguration {
@@ -9,7 +10,7 @@ pub struct FilePathConfiguration {
     source_file_extension: String,
     object_file_extension: String,
     interface_file_extension: String,
-    output_directory: FilePath,
+    object_directory: FilePath,
     source_file_glob_pattern: String,
     package_object_file_path: FilePath,
     archive_package_object_file_path: FilePath,
@@ -44,9 +45,9 @@ impl FilePathConfiguration {
             archive_package_interface_file_path: FilePath::new(&[&package_interface_filename]),
             external_package_directory: output_directory
                 .join(&FilePath::new(&[EXTERNAL_PACKAGE_DIRECTORY])),
+            object_directory: output_directory.join(&FilePath::new(&[OBJECT_DIRECTORY])),
             source_file_extension: source_file_extension.into(),
             object_file_extension: object_file_extension.into(),
-            output_directory,
             package_object_filename,
             package_interface_filename,
         }
@@ -76,8 +77,8 @@ impl FilePathConfiguration {
         &self.interface_file_extension
     }
 
-    pub fn output_directory(&self) -> &FilePath {
-        &self.output_directory
+    pub fn object_directory(&self) -> &FilePath {
+        &self.object_directory
     }
 
     pub fn source_file_glob_pattern(&self) -> &str {

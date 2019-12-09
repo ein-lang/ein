@@ -1,6 +1,7 @@
 use super::location::Location;
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct SourceInformation {
@@ -57,6 +58,10 @@ impl PartialEq for SourceInformation {
     fn eq(&self, _: &Self) -> bool {
         true
     }
+}
+
+impl Hash for SourceInformation {
+    fn hash<H: Hasher>(&self, _: &mut H) {}
 }
 
 #[cfg(test)]

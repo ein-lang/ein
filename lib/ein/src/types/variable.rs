@@ -1,5 +1,6 @@
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -31,5 +32,11 @@ impl Variable {
 impl PartialEq for Variable {
     fn eq(&self, _: &Self) -> bool {
         true
+    }
+}
+
+impl Hash for Variable {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.id.hash(hasher)
     }
 }

@@ -1,4 +1,5 @@
 use super::external_unresolved_module_path::ExternalUnresolvedModulePath;
+use super::internal_unresolved_module_path::InternalUnresolvedModulePath;
 use crate::package::Package;
 use serde::{Deserialize, Serialize};
 use std::ops::Deref;
@@ -48,6 +49,10 @@ impl ModulePath {
         .chain(vec![name].into_iter())
         .collect::<Vec<_>>()
         .join(".")
+    }
+
+    pub fn internal_unresolved(&self) -> InternalUnresolvedModulePath {
+        InternalUnresolvedModulePath::new(self.components.to_vec())
     }
 
     pub fn external_unresolved(&self) -> ExternalUnresolvedModulePath {
