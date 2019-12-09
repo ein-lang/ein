@@ -70,12 +70,6 @@ impl<'a> FilePathManager<'a> {
                 .collect(),
         )
     }
-
-    pub fn convert_to_directory_path(&self, package_name: &str) -> FilePath {
-        self.file_path_configuration
-            .external_package_directory()
-            .join(&FilePath::new(package_name.split('/')))
-    }
 }
 
 #[cfg(test)]

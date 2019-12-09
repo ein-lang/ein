@@ -1,9 +1,11 @@
 use super::error::BuildError;
-use super::package_configuration::PackageConfiguration;
+use super::package_configuration::{ExternalPackage, PackageConfiguration};
 use super::package_interface::PackageInterface;
 use super::path::FilePathManager;
 use crate::infra::{ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage};
+use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 
 type ExternalModuleInterfaces =
     HashMap<ein::ExternalUnresolvedModulePath, ein::ast::ModuleInterface>;
@@ -45,7 +47,7 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
         let mut module_interfaces = HashMap::new();
 
         for (name, external_package) in package_configuration.dependencies() {
-            let directory_path = self.file_path_manager.convert_to_directory_path(name);
+            let directory_path = self.generate_directory_path(name, external_package);
 
             if self.file_storage.exists(&directory_path) {
                 continue;
@@ -99,6 +101,18 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
         }
 
         Ok((object_file_paths, module_interfaces))
+    }
+
+    fn generate_directory_path(&self, name: &str, external_package: &ExternalPackage) -> FilePath {
+        let mut hasher = DefaultHasher::new();
+
+        name.hash(&mut hasher);
+        external_package.hash(&mut hasher);
+
+        self.file_path_manager
+            .configuration()
+            .external_package_directory()
+            .join(&FilePath::new(&[&format!("{:x}", hasher.finish())]))
     }
 }
 
