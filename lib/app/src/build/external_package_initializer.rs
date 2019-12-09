@@ -1,7 +1,7 @@
 use super::error::BuildError;
 use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use super::path::{FilePathConfiguration, FilePathManager};
+use super::path::FilePathManager;
 use crate::infra::{ExternalPackageBuilder, ExternalPackageDownloader, FilePath, FileStorage};
 use std::collections::HashMap;
 
@@ -18,7 +18,6 @@ pub struct ExternalPackageInitializer<
     external_package_builder: &'a B,
     file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a S,
-    file_path_configuration: &'a FilePathConfiguration,
 }
 
 impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder>
@@ -29,14 +28,12 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
         external_package_builder: &'a B,
         file_path_manager: &'a FilePathManager,
         file_storage: &'a S,
-        file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {
             external_package_downloader,
             external_package_builder,
             file_path_manager,
             file_storage,
-            file_path_configuration,
         }
     }
 
@@ -62,7 +59,8 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
 
             if !self.file_storage.exists(
                 &directory_path.join(&FilePath::new(&[self
-                    .file_path_configuration
+                    .file_path_manager
+                    .configuration()
                     .package_configuration_filename()])),
             ) {
                 return Err(BuildError::ExternalPackageConfigurationFileNotFound {
@@ -73,16 +71,22 @@ impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder
 
             self.external_package_builder.build(&directory_path)?;
 
-            object_file_paths.push(directory_path.join(&FilePath::new(&[
-                self.file_path_configuration.package_object_filename(),
-            ])));
+            object_file_paths.push(
+                directory_path.join(&FilePath::new(&[self
+                    .file_path_manager
+                    .configuration()
+                    .package_object_filename()])),
+            );
 
             module_interfaces.extend(
-                serde_json::from_str::<PackageInterface>(&self.file_storage.read_to_string(
-                    &directory_path.join(&FilePath::new(&[
-                        self.file_path_configuration.package_interface_filename(),
-                    ])),
-                )?)?
+                serde_json::from_str::<PackageInterface>(
+                    &self.file_storage.read_to_string(
+                        &directory_path.join(&FilePath::new(&[self
+                            .file_path_manager
+                            .configuration()
+                            .package_interface_filename()])),
+                    )?,
+                )?
                 .modules()
                 .iter()
                 .map(|module_interface| {
@@ -118,7 +122,6 @@ mod tests {
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
             &FilePathManager::new(&file_path_configuration),
             &file_storage,
-            &file_path_configuration,
         );
     }
 
@@ -146,7 +149,6 @@ mod tests {
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
             &FilePathManager::new(&file_path_configuration),
             &file_storage,
-            &file_path_configuration,
         )
         .initialize(&PackageConfiguration::new(
             Target::Library,
@@ -173,7 +175,6 @@ mod tests {
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
             &FilePathManager::new(&file_path_configuration),
             &file_storage,
-            &file_path_configuration,
         )
         .initialize(&PackageConfiguration::new(
             Target::Library,
