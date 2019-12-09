@@ -84,9 +84,13 @@ impl<
             Target::Library => {
                 self.archiver.archive(
                     &package_object_file_path,
-                    self.file_path_manager.archive_package_object_file_path(),
+                    self.file_path_manager
+                        .configuration()
+                        .archive_package_object_file_path(),
                     &package_interface_file_path,
-                    self.file_path_manager.archive_package_interface_file_path(),
+                    self.file_path_manager
+                        .configuration()
+                        .archive_package_interface_file_path(),
                 )?;
             }
         }

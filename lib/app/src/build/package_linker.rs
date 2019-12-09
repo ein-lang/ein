@@ -27,7 +27,10 @@ impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
         external_package_object_file_paths: &[FilePath],
         interface_file_paths: &[FilePath],
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
-        let package_object_file_path = self.file_path_manager.package_object_file_path();
+        let package_object_file_path = self
+            .file_path_manager
+            .configuration()
+            .package_object_file_path();
 
         self.object_linker.link(
             object_file_paths
@@ -36,7 +39,10 @@ impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
             &package_object_file_path,
         )?;
 
-        let package_interface_file_path = self.file_path_manager.package_interface_file_path();
+        let package_interface_file_path = self
+            .file_path_manager
+            .configuration()
+            .package_interface_file_path();
 
         self.interface_linker
             .link(interface_file_paths, &package_interface_file_path)?;

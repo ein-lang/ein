@@ -3,18 +3,11 @@ use crate::infra::FilePath;
 
 const OBJECT_DIRECTORY: &str = "objects";
 const INTERFACE_DIRECTORY: &str = "interfaces";
-const EXTERNAL_PACKAGE_DIRECTORY: &str = "packages";
 
 pub struct FilePathManager<'a> {
     file_path_configuration: &'a FilePathConfiguration,
     object_directory: FilePath,
     interface_directory: FilePath,
-    source_file_glob_pattern: String,
-    package_object_file_path: FilePath,
-    archive_package_object_file_path: FilePath,
-    package_interface_file_path: FilePath,
-    archive_package_interface_file_path: FilePath,
-    external_package_directory: FilePath,
 }
 
 impl<'a> FilePathManager<'a> {
@@ -27,26 +20,11 @@ impl<'a> FilePathManager<'a> {
             interface_directory: file_path_configuration
                 .output_directory()
                 .join(&FilePath::new(&[INTERFACE_DIRECTORY])),
-            source_file_glob_pattern: format!(
-                "**/*.{}",
-                file_path_configuration.source_file_extension()
-            ),
-            package_object_file_path: file_path_configuration.output_directory().join(
-                &FilePath::new(&[file_path_configuration.package_object_filename()]),
-            ),
-            archive_package_object_file_path: FilePath::new(&[
-                file_path_configuration.package_object_filename()
-            ]),
-            package_interface_file_path: file_path_configuration.output_directory().join(
-                &FilePath::new(&[file_path_configuration.package_interface_filename()]),
-            ),
-            archive_package_interface_file_path: FilePath::new(&[
-                file_path_configuration.package_interface_filename()
-            ]),
-            external_package_directory: file_path_configuration
-                .output_directory()
-                .join(&FilePath::new(&[EXTERNAL_PACKAGE_DIRECTORY])),
         }
+    }
+
+    pub fn configuration(&self) -> &FilePathConfiguration {
+        &self.file_path_configuration
     }
 
     pub fn resolve_to_source_file_path(
@@ -93,28 +71,9 @@ impl<'a> FilePathManager<'a> {
         )
     }
 
-    pub fn source_file_glob_pattern(&self) -> &str {
-        &self.source_file_glob_pattern
-    }
-
-    pub fn package_object_file_path(&self) -> &FilePath {
-        &self.package_object_file_path
-    }
-
-    pub fn archive_package_object_file_path(&self) -> &FilePath {
-        &self.archive_package_object_file_path
-    }
-
-    pub fn package_interface_file_path(&self) -> &FilePath {
-        &self.package_interface_file_path
-    }
-
-    pub fn archive_package_interface_file_path(&self) -> &FilePath {
-        &self.archive_package_interface_file_path
-    }
-
     pub fn convert_to_directory_path(&self, package_name: &str) -> FilePath {
-        self.external_package_directory
+        self.file_path_configuration
+            .external_package_directory()
             .join(&FilePath::new(package_name.split('/')))
     }
 }
