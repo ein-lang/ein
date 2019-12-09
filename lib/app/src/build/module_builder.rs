@@ -36,7 +36,11 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
 
-        for source_file_path in self.sort_source_file_paths(&self.file_storage.glob("**/*.ein")?)? {
+        for source_file_path in self.sort_source_file_paths(
+            &self
+                .file_storage
+                .glob(self.file_path_manager.source_file_glob_pattern())?,
+        )? {
             let module_path = self
                 .file_path_manager
                 .convert_to_module_path(source_file_path, package);

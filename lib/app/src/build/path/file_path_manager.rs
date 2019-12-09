@@ -93,10 +93,6 @@ impl<'a> FilePathManager<'a> {
         )
     }
 
-    pub fn convert_to_archive_interface_file_path(&self, source_file_path: &FilePath) -> FilePath {
-        FilePath::new(source_file_path.components().skip(2))
-    }
-
     pub fn source_file_glob_pattern(&self) -> &str {
         &self.source_file_glob_pattern
     }
@@ -142,27 +138,6 @@ mod tests {
                 vec!["package".into(), "Foo".into()]
             )),
             FilePath::new(&["target", "interfaces", "package", "Foo.interface"])
-        );
-    }
-
-    #[test]
-    fn convert_to_archive_interface_file_path() {
-        assert_eq!(
-            FilePathManager::new(&FilePathConfiguration::new(
-                "",
-                "",
-                "",
-                "",
-                "",
-                FilePath::new(&["target"])
-            ))
-            .convert_to_archive_interface_file_path(&FilePath::new(&[
-                "target",
-                "interfaces",
-                "package",
-                "Foo.interface"
-            ])),
-            FilePath::new(&["package", "Foo.interface"])
         );
     }
 }
