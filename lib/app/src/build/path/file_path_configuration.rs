@@ -10,8 +10,8 @@ pub struct FilePathConfiguration {
     source_file_extension: String,
     object_file_extension: String,
     interface_file_extension: String,
+    output_directory: FilePath,
     object_directory: FilePath,
-    source_file_glob_pattern: String,
     package_object_file_path: FilePath,
     archive_package_object_file_path: FilePath,
     package_interface_file_path: FilePath,
@@ -36,7 +36,6 @@ impl FilePathConfiguration {
         Self {
             package_configuration_filename: package_configuration_filename.into(),
             interface_file_extension: interface_file_extension.into(),
-            source_file_glob_pattern: format!("**/*.{}", &source_file_extension),
             package_object_file_path: output_directory
                 .join(&FilePath::new(&[&package_object_filename])),
             archive_package_object_file_path: FilePath::new(&[&package_object_filename]),
@@ -50,6 +49,7 @@ impl FilePathConfiguration {
             object_file_extension: object_file_extension.into(),
             package_object_filename,
             package_interface_filename,
+            output_directory,
         }
     }
 
@@ -77,12 +77,12 @@ impl FilePathConfiguration {
         &self.interface_file_extension
     }
 
-    pub fn object_directory(&self) -> &FilePath {
-        &self.object_directory
+    pub fn output_directory(&self) -> &FilePath {
+        &self.output_directory
     }
 
-    pub fn source_file_glob_pattern(&self) -> &str {
-        &self.source_file_glob_pattern
+    pub fn object_directory(&self) -> &FilePath {
+        &self.object_directory
     }
 
     pub fn package_object_file_path(&self) -> &FilePath {

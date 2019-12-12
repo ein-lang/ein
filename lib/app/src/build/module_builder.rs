@@ -45,7 +45,8 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
             &self.file_storage.glob(
                 self.file_path_manager
                     .configuration()
-                    .source_file_glob_pattern(),
+                    .source_file_extension(),
+                &[self.file_path_manager.configuration().output_directory()],
             )?,
         )? {
             let (object_file_path, interface_file_path) =

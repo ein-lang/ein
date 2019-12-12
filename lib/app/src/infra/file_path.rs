@@ -43,6 +43,21 @@ impl FilePath {
     pub fn join(&self, file_path: &Self) -> Self {
         FilePath::new(self.components().chain(file_path.components()))
     }
+
+    pub fn has_prefix(&self, directory_path: &Self) -> bool {
+        &self.components[..directory_path.components.len()] == directory_path.components.as_slice()
+    }
+
+    pub fn has_extension(&self, file_extension: &str) -> bool {
+        let component = self.components.last().unwrap();
+        let element = component.split('.').last().unwrap();
+
+        if element == component {
+            file_extension == ""
+        } else {
+            element == file_extension
+        }
+    }
 }
 
 impl std::fmt::Display for FilePath {
@@ -95,5 +110,25 @@ mod tests {
             FilePath::new(&["foo", "bar"]).join(&FilePath::new(&["baz"])),
             FilePath::new(&["foo", "bar", "baz"])
         );
+    }
+
+    #[test]
+    fn has_prefix() {
+        assert!(FilePath::new(&["foo"]).has_prefix(&FilePath::new(&["foo"])));
+        assert!(FilePath::new(&["foo", "bar"]).has_prefix(&FilePath::new(&["foo"])));
+        assert!(!FilePath::new(&["bar", "baz"]).has_prefix(&FilePath::new(&["foo"])));
+    }
+
+    #[test]
+    fn has_extension() {
+        assert!(FilePath::new(&["foo"]).has_extension(""));
+        assert!(!FilePath::new(&["foo"]).has_extension("foo"));
+        assert!(FilePath::new(&["foo.bar"]).has_extension("bar"));
+        assert!(!FilePath::new(&["foo.bar"]).has_extension("baz"));
+
+        assert!(FilePath::new(&["foo", "bar"]).has_extension(""));
+        assert!(!FilePath::new(&["foo", "bar"]).has_extension("bar"));
+        assert!(FilePath::new(&["foo", "bar.baz"]).has_extension("baz"));
+        assert!(!FilePath::new(&["foo", "bar.baz"]).has_extension("blah"));
     }
 }

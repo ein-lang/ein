@@ -14,28 +14,20 @@ impl app::FileStorage for FileStorage {
         utilities::convert_to_os_path(file_path).exists()
     }
 
-    fn glob(&self, pattern: &str) -> Result<Vec<app::FilePath>, Box<dyn std::error::Error>> {
-        Ok(glob::glob(pattern)?
-            .map(|path| {
-                Ok(app::FilePath::new(
-                    path?
-                        .components()
-                        .map(|component| match component {
-                            std::path::Component::Normal(component) => {
-                                Some(component.to_string_lossy().into())
-                            }
-                            _ => None,
-                        })
-                        .collect::<Option<Vec<String>>>()
-                        .unwrap(),
-                ))
-            })
+    fn glob(
+        &self,
+        file_extension: &str,
+        excluded_directories: &[&app::FilePath],
+    ) -> Result<Vec<app::FilePath>, Box<dyn std::error::Error>> {
+        Ok(glob::glob(&format!("**/*.{}", file_extension))?
+            .map(|path| Ok(path?))
             .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?
-            .into_iter()
+            .drain(..)
+            .map(utilities::convert_to_file_path)
             .filter(|file_path| {
-                file_path
-                    .components()
-                    .all(|component| !component.starts_with('.'))
+                !excluded_directories
+                    .iter()
+                    .any(|directory| file_path.has_prefix(directory))
             })
             .collect())
     }
@@ -81,9 +73,15 @@ mod tests {
     #[test]
     fn glob() {
         assert!(FileStorage::new()
-            .glob("**/*.rs")
+            .glob("rs", &[&app::FilePath::new(&["target"])])
             .unwrap()
             .iter()
             .any(|file_path| file_path == &app::FilePath::new(&["src", "file_storage.rs"])));
+        assert_eq!(
+            FileStorage::new()
+                .glob("rs", &[&app::FilePath::new(&["src"])])
+                .unwrap(),
+            vec![]
+        );
     }
 }

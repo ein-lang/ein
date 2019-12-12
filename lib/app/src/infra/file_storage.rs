@@ -2,7 +2,11 @@ use super::file_path::FilePath;
 
 pub trait FileStorage {
     fn exists(&self, path: &FilePath) -> bool;
-    fn glob(&self, pattern: &str) -> Result<Vec<FilePath>, Box<dyn std::error::Error>>;
+    fn glob(
+        &self,
+        file_extension: &str,
+        excluded_directories: &[&FilePath],
+    ) -> Result<Vec<FilePath>, Box<dyn std::error::Error>>;
     fn read_to_string(&self, path: &FilePath) -> Result<String, Box<dyn std::error::Error>>;
     fn read_to_vec(&self, path: &FilePath) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
     fn write(&self, path: &FilePath, data: &[u8]) -> Result<(), Box<dyn std::error::Error>>;
@@ -28,19 +32,22 @@ impl FileStorage for FileStorageFake {
         self.files.lock().unwrap().contains_key(path)
     }
 
-    // TODO Interpret patterns more strictly.
-    fn glob(&self, pattern: &str) -> Result<Vec<FilePath>, Box<dyn std::error::Error>> {
-        let pattern = regex::Regex::new(&format!(
-            "^{}$",
-            regex::Regex::new(r"\*\*/\*")?.replace(pattern, ".*")
-        ))?;
-
+    fn glob(
+        &self,
+        file_extension: &str,
+        excluded_directories: &[&FilePath],
+    ) -> Result<Vec<FilePath>, Box<dyn std::error::Error>> {
         let mut paths = self
             .files
             .lock()
             .unwrap()
             .keys()
-            .filter(|path| pattern.is_match(&format!("{}", path)))
+            .filter(|path| {
+                path.has_extension(file_extension)
+                    && !excluded_directories
+                        .iter()
+                        .any(|directory| path.has_prefix(&directory))
+            })
             .cloned()
             .collect::<Vec<FilePath>>();
 
@@ -92,24 +99,30 @@ mod tests {
     #[test]
     fn glob() {
         assert_eq!(
-            FileStorageFake::new(Default::default()).glob("").unwrap(),
-            vec![]
-        );
-        assert_eq!(
-            FileStorageFake::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .glob("")
+            FileStorageFake::new(Default::default())
+                .glob("c", &[])
                 .unwrap(),
             vec![]
         );
         assert_eq!(
             FileStorageFake::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .glob("foo")
+                .glob("c", &[])
                 .unwrap(),
-            vec![FilePath::new(&["foo"])]
+            vec![]
+        );
+        assert_eq!(
+            FileStorageFake::new(
+                vec![(FilePath::new(&["foo.c"]), vec![])]
+                    .drain(..)
+                    .collect()
+            )
+            .glob("c", &[])
+            .unwrap(),
+            vec![FilePath::new(&["foo.c"])]
         );
         assert_eq!(
             FileStorageFake::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .glob("**/*")
+                .glob("", &[])
                 .unwrap(),
             vec![FilePath::new(&["foo"])]
         );
@@ -122,7 +135,7 @@ mod tests {
                 .drain(..)
                 .collect()
             )
-            .glob("**/*.bar")
+            .glob("bar", &[])
             .unwrap(),
             vec![FilePath::new(&["foo.bar"])]
         );
@@ -130,17 +143,27 @@ mod tests {
             FileStorageFake::new(
                 vec![
                     (FilePath::new(&["foo.bar"]), vec![]),
-                    (FilePath::new(&["baz/blah.bar"]), vec![])
+                    (FilePath::new(&["baz", "blah.bar"]), vec![])
                 ]
                 .drain(..)
                 .collect()
             )
-            .glob("**/*.bar")
+            .glob("bar", &[])
             .unwrap(),
             vec![
-                FilePath::new(&["baz/blah.bar"]),
+                FilePath::new(&["baz", "blah.bar"]),
                 FilePath::new(&["foo.bar"]),
             ]
+        );
+        assert_eq!(
+            FileStorageFake::new(
+                vec![(FilePath::new(&["foo", "bar.baz"]), vec![])]
+                    .drain(..)
+                    .collect()
+            )
+            .glob("baz", &[&FilePath::new(&["foo"])])
+            .unwrap(),
+            vec![]
         );
     }
 
