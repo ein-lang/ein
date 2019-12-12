@@ -493,9 +493,10 @@ fn one_of<'a>(characters: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'
 fn source_information(original_input: Input) -> IResult<Input, SourceInformation> {
     convert_combinator(nom::character::complete::space0)(original_input.clone()).map(
         |(input, _)| {
-            let source_information =
-                SourceInformation::new(input.source().name(), input.location(), input.line());
-            (original_input, source_information)
+            (
+                original_input,
+                SourceInformation::new(input.source().name(), input.location(), input.line()),
+            )
         },
     )
 }
