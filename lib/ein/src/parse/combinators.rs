@@ -291,8 +291,8 @@ fn atomic_expression(input: Input) -> IResult<Input, Expression> {
 
 fn term(input: Input) -> IResult<Input, Expression> {
     alt((
-        map(application, |application| application.into()),
-        map(let_, |let_| let_.into()),
+        map(application, Expression::from),
+        map(let_, Expression::from),
         atomic_expression,
     ))(input)
 }
@@ -358,13 +358,10 @@ fn number_literal(input: Input) -> IResult<Input, f64> {
 
 fn name(input: Input) -> IResult<Input, String> {
     map(
-        tuple((identifier, many0(preceded(tag("."), identifier)))),
-        |(identifier, identifiers)| {
-            vec![identifier]
-                .into_iter()
-                .chain(identifiers.into_iter())
-                .collect::<Vec<_>>()
-                .join(".")
+        tuple((opt(terminated(identifier, tag("."))), identifier)),
+        |(prefix, identifier)| match prefix {
+            Some(prefix) => [&prefix, ".", &identifier].concat(),
+            None => identifier,
         },
     )(input)
 }
@@ -431,8 +428,8 @@ fn comma(input: Input) -> IResult<Input, ()> {
 
 fn number_type(input: Input) -> IResult<Input, Type> {
     map(
-        tuple((source_information, keyword("Number"))),
-        |(source_information, _)| types::Number::new(source_information).into(),
+        terminated(source_information, keyword("Number")),
+        |source_information| types::Number::new(source_information).into(),
     )(input)
 }
 
@@ -782,11 +779,25 @@ mod tests {
 
     #[test]
     fn parse_name() {
+        let input = Input::new(Source::new("", "foo"));
+
+        assert_eq!(
+            name(input.clone()),
+            Ok((input.set("", 0, Location::new(1, 4)), "foo".into()))
+        );
+
         let input = Input::new(Source::new("", "foo.bar"));
 
         assert_eq!(
             name(input.clone()),
             Ok((input.set("", 0, Location::new(1, 8)), "foo.bar".into()))
+        );
+
+        let input = Input::new(Source::new("", "foo.bar.baz"));
+
+        assert_eq!(
+            name(input.clone()),
+            Ok((input.set(".baz", 0, Location::new(1, 8)), "foo.bar".into()))
         );
     }
 
