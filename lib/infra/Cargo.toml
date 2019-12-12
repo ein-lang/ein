@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 app = { path = "../app" }
 ein = { path = "../ein" }
-git2 = "0.10"
+git2 = "0.11"
 glob = "0.3"
 tar = "0.4"
 url = "2"
