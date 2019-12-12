@@ -11,6 +11,15 @@ use nom::Err;
 pub use source::Source;
 
 pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, ParseError> {
+    let content: String;
+
+    let source = if source.content().ends_with("\n") {
+        source
+    } else {
+        content = [source.content(), "\n"].concat();
+        Source::new(source.name(), &content)
+    };
+
     combinators::module(Input::new(source))
         .map(|(_, module)| module)
         .map_err(|error| map_error(error, source))
@@ -177,6 +186,36 @@ mod tests {
                 )
                 .into()]
             ))
+        );
+    }
+
+    #[test]
+    fn parse_module_with_comment() {
+        assert_eq!(
+            parse_module(Source::new(
+                "",
+                indoc!(
+                    "
+                        # foo is good
+                        foo : Number -> Number
+                        foo x = 42
+                    "
+                )
+            )),
+            Ok(UnresolvedModule::from_definitions(vec![
+                FunctionDefinition::new(
+                    "foo",
+                    vec!["x".into()],
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()
+            ]))
         );
     }
 }

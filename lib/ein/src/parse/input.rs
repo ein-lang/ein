@@ -49,3 +49,9 @@ impl<'a> Input<'a> {
         self.set(self.source.content(), braces, self.location)
     }
 }
+
+impl<'a> nom::InputLength for Input<'a> {
+    fn input_len(&self) -> usize {
+        self.source.content().input_len()
+    }
+}

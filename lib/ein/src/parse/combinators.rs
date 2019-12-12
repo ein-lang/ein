@@ -16,14 +16,15 @@ const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
 
 pub fn module(input: Input) -> IResult<Input, UnresolvedModule> {
     map(
-        terminated(
+        all_consuming(delimited(
+            many0(line_break),
             tuple((
                 opt(terminated(export, line_break)),
                 many0(terminated(import, line_break)),
                 many0(terminated(typed_definition, line_break)),
             )),
-            tuple((convert_combinator(multispace0), eof)),
-        ),
+            many0(line_break),
+        )),
         |(export, imports, definitions)| {
             UnresolvedModule::new(
                 export.unwrap_or_else(|| Export::new(Default::default())),
@@ -464,33 +465,33 @@ fn token<'a, T>(
 }
 
 fn blank(input: Input) -> IResult<Input, ()> {
-    nullify(many0(one_of(if input.braces() > 0 {
-        " \t\n"
+    if input.braces() > 0 {
+        nullify(many0(alt((line_break, white_space))))(input)
     } else {
-        " \t"
-    })))(input)
+        nullify(many0(white_space))(input)
+    }
 }
 
 fn line_break(input: Input) -> IResult<Input, ()> {
-    alt((
-        nullify(many1(preceded(
-            white_space,
-            convert_character_combinator(newline),
-        ))),
-        token(eof),
-    ))(input)
+    nullify(many1(preceded(many0(white_space), alt((newline, comment)))))(input)
 }
 
 fn white_space(input: Input) -> IResult<Input, ()> {
-    nullify(many0(one_of(" \t")))(input)
+    nullify(one_of(" \t"))(input)
 }
 
-fn eof(input: Input) -> IResult<Input, ()> {
-    if input.source().content() == "" {
-        Ok((input, ()))
-    } else {
-        Err(nom::Err::Error((input, ErrorKind::Eof)))
-    }
+fn comment(input: Input) -> IResult<Input, ()> {
+    nullify(delimited(
+        tag("#"),
+        many0(verify(convert_character_combinator(anychar), |character| {
+            *character != '\n'
+        })),
+        newline,
+    ))(input)
+}
+
+fn newline(input: Input) -> IResult<Input, ()> {
+    nullify(tag("\n"))(input)
 }
 
 fn tag<'a>(tag: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'a>, &str> {
@@ -587,9 +588,9 @@ fn convert_error<'a>(
 mod tests {
     use super::super::Source;
     use super::{
-        application, blank, export, expression, function_definition, identifier, import, keyword,
-        let_, line_break, module, name, number_literal, number_type, source_information, type_,
-        value_definition, Input,
+        application, blank, comment, export, expression, function_definition, identifier, import,
+        keyword, let_, line_break, module, name, number_literal, number_type, source_information,
+        type_, value_definition, Input,
     };
     use crate::ast::*;
     use crate::debug::*;
@@ -627,18 +628,18 @@ mod tests {
             Ok((input.set("", 0, Location::new(1, 3)), ()))
         );
 
-        let input = Input::new(Source::new("", ""));
-
-        assert_eq!(
-            blank(input.set("\n", 1, Location::default())),
-            Ok((input.set("", 1, Location::new(2, 1)), ()))
-        );
-
         let input = Input::new(Source::new("", "\n"));
 
         assert_eq!(
             blank(input.clone()),
             Ok((input.set("\n", 0, Location::default()), ()))
+        );
+
+        let input = Input::new(Source::new("", "\n"));
+
+        assert_eq!(
+            blank(input.set_braces(1)),
+            Ok((input.set("", 1, Location::new(2, 1)), ()))
         );
     }
 
@@ -984,22 +985,6 @@ mod tests {
             line_break(input.clone()),
             Ok((input.set("", 0, Location::new(3, 1)), ()))
         );
-
-        // EOF
-
-        let input = Input::new(Source::new("", ""));
-
-        assert_eq!(
-            line_break(input.clone()),
-            Ok((input.set("", 0, Location::new(1, 1)), ()))
-        );
-
-        let input = Input::new(Source::new("", " "));
-
-        assert_eq!(
-            line_break(input.clone()),
-            Ok((input.set("", 0, Location::new(1, 2)), ()))
-        );
     }
 
     #[test]
@@ -1018,10 +1003,7 @@ mod tests {
 
         assert_eq!(
             module(input.clone()),
-            Ok((
-                input.set("", 0, Location::new(1, 2)),
-                UnresolvedModule::from_definitions(vec![])
-            ))
+            Err(nom::Err::Error((input, ErrorKind::Eof)))
         );
 
         let input = Input::new(Source::new("", "\n"));
@@ -1544,6 +1526,37 @@ mod tests {
                     "Module".into(),
                 ]))
             ))
+        );
+    }
+
+    #[test]
+    fn parse_comment() {
+        let input = Input::new(Source::new("", "#\n"));
+
+        assert_eq!(
+            comment(input.clone()),
+            Ok((input.set("", 0, Location::new(2, 1)), ()))
+        );
+
+        let input = Input::new(Source::new("", "#\n\n"));
+
+        assert_eq!(
+            comment(input.clone()),
+            Ok((input.set("\n", 0, Location::new(2, 1)), ()))
+        );
+
+        let input = Input::new(Source::new("", "#a\n"));
+
+        assert_eq!(
+            comment(input.clone()),
+            Ok((input.set("", 0, Location::new(2, 1)), ()))
+        );
+
+        let input = Input::new(Source::new("", "#ab\n"));
+
+        assert_eq!(
+            comment(input.clone()),
+            Ok((input.set("", 0, Location::new(2, 1)), ()))
         );
     }
 }
