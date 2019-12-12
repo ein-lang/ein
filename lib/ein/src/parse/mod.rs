@@ -13,7 +13,7 @@ pub use source::Source;
 pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, ParseError> {
     let content: String;
 
-    let source = if source.content().ends_with("\n") {
+    let source = if source.content().ends_with('\n') {
         source
     } else {
         content = [source.content(), "\n"].concat();

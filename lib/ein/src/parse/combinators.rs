@@ -133,55 +133,47 @@ fn definition(input: Input) -> IResult<Input, Definition> {
     ))(input)
 }
 
-fn function_definition(original_input: Input) -> IResult<Input, FunctionDefinition> {
-    tuple((
-        source_information,
-        identifier,
-        keyword(":"),
-        type_,
-        line_break,
-        identifier,
-        many1(identifier),
-        keyword("="),
-        body,
-    ))(original_input.clone())
-    .and_then(
-        |(input, (source_information, name, _, type_, _, same_name, arguments, _, body))| {
-            if name == same_name {
-                Ok((
-                    input,
-                    FunctionDefinition::new(name, arguments, body, type_, source_information),
-                ))
-            } else {
-                Err(nom::Err::Error((original_input, ErrorKind::Verify)))
-            }
+fn function_definition(input: Input) -> IResult<Input, FunctionDefinition> {
+    map(
+        verify(
+            tuple((
+                source_information,
+                identifier,
+                keyword(":"),
+                type_,
+                line_break,
+                identifier,
+                many1(identifier),
+                keyword("="),
+                body,
+            )),
+            |(_, name, _, _, _, same_name, _, _, _)| name == same_name,
+        ),
+        |(source_information, name, _, type_, _, _, arguments, _, body)| {
+            FunctionDefinition::new(name, arguments, body, type_, source_information)
         },
-    )
+    )(input)
 }
 
-fn value_definition(original_input: Input) -> IResult<Input, ValueDefinition> {
-    tuple((
-        source_information,
-        identifier,
-        keyword(":"),
-        type_,
-        line_break,
-        identifier,
-        keyword("="),
-        body,
-    ))(original_input.clone())
-    .and_then(
-        |(input, (source_information, name, _, type_, _, same_name, _, body))| {
-            if name == same_name {
-                Ok((
-                    input,
-                    ValueDefinition::new(name, body, type_, source_information),
-                ))
-            } else {
-                Err(nom::Err::Error((original_input, ErrorKind::Verify)))
-            }
+fn value_definition(input: Input) -> IResult<Input, ValueDefinition> {
+    map(
+        verify(
+            tuple((
+                source_information,
+                identifier,
+                keyword(":"),
+                type_,
+                line_break,
+                identifier,
+                keyword("="),
+                body,
+            )),
+            |(_, name, _, _, _, same_name, _, _)| name == same_name,
+        ),
+        |(source_information, name, _, type_, _, _, _, body)| {
+            ValueDefinition::new(name, body, type_, source_information)
         },
-    )
+    )(input)
 }
 
 fn untyped_function_definition(input: Input) -> IResult<Input, FunctionDefinition> {
@@ -377,21 +369,17 @@ fn name(input: Input) -> IResult<Input, String> {
     )(input)
 }
 
-fn identifier(original_input: Input) -> IResult<Input, String> {
-    map(
-        token(tuple((
-            convert_combinator(alpha1),
-            convert_combinator(alphanumeric0),
-        ))),
-        |(head, tail)| [head, tail].concat(),
-    )(original_input.clone())
-    .and_then(|(input, identifier)| {
-        if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
-            Err(nom::Err::Error((original_input, ErrorKind::Verify)))
-        } else {
-            Ok((input, identifier))
-        }
-    })
+fn identifier(input: Input) -> IResult<Input, String> {
+    verify(
+        map(
+            token(tuple((
+                convert_combinator(alpha1),
+                convert_combinator(alphanumeric0),
+            ))),
+            |(head, tail)| [head, tail].concat(),
+        ),
+        |identifier: &str| KEYWORDS.iter().all(|keyword| &identifier != keyword),
+    )(input)
 }
 
 fn type_(input: Input) -> IResult<Input, Type> {
@@ -455,7 +443,7 @@ fn keyword<'a>(keyword: &'static str) -> impl Fn(Input<'a>) -> IResult<Input<'a>
 fn nullify<'a, T>(
     combinator: impl Fn(Input<'a>) -> IResult<Input<'a>, T>,
 ) -> impl Fn(Input<'a>) -> IResult<Input<'a>, ()> {
-    map(combinator, |_| ())
+    value((), combinator)
 }
 
 fn token<'a, T>(
