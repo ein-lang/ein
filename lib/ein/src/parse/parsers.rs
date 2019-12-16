@@ -3,9 +3,10 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::path::*;
 use crate::types::{self, Type};
+use combine::error::Info;
 use combine::parser::char::{alpha_num, letter, newline, spaces, string};
 use combine::parser::choice::optional;
-use combine::parser::combinator::{lazy, no_partial};
+use combine::parser::combinator::{lazy, look_ahead, no_partial, not_followed_by};
 use combine::parser::regex::find;
 use combine::parser::repeat::{many, many1};
 use combine::parser::sequence::between;
@@ -253,19 +254,27 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
     attempt((
         source_information(),
         atomic_expression(),
-        atomic_expression(),
-        many(atomic_expression()),
+        many1((
+            many(attempt(
+                atomic_expression().skip(not_followed_by(application_terminator())),
+            )),
+            atomic_expression().skip(look_ahead(application_terminator())),
+        )),
     ))
     .map(
-        |(source_information, function, first_argument, mut arguments): (
-            _,
-            _,
-            _,
-            Vec<Expression>,
-        )| {
+        |(source_information, function, mut argument_sets): (_, _, Vec<(Vec<Expression>, _)>)| {
             let source_information = Rc::new(source_information);
+            let mut all_arguments = vec![];
 
-            arguments.drain(..).fold(
+            for (mut arguments, argument) in argument_sets.drain(..) {
+                all_arguments.extend(arguments.drain(..));
+                all_arguments.push(argument);
+            }
+
+            let mut drain = all_arguments.drain(..);
+            let first_argument = drain.next().unwrap();
+
+            drain.fold(
                 Application::new(function, first_argument, source_information.clone()),
                 |application, argument| {
                     Application::new(application, argument, source_information.clone())
@@ -273,6 +282,11 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
             )
         },
     )
+}
+
+fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str> {
+    choice((newlines1(), keyword(")"), operator().with(value(()))))
+        .with(value("application terminator"))
 }
 
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
