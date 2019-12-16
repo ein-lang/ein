@@ -12,12 +12,10 @@ use combine::parser::sequence::between;
 use combine::stream::position::{self, SourcePosition};
 use combine::stream::state;
 use combine::{
-    attempt, choice, easy, eof, from_str, none_of, one_of, sep_by1, sep_end_by1, unexpected,
-    unexpected_any, value, Parser, Positioned,
+    attempt, choice, easy, eof, from_str, none_of, one_of, sep_by1, sep_end_by1, unexpected_any,
+    value, Parser, Positioned,
 };
-use std::collections::HashSet;
 use std::rc::Rc;
-use std::str::FromStr;
 
 const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
 
@@ -47,13 +45,10 @@ pub fn stream<'a>(source: &'a str, source_name: &'a str) -> Stream<'a> {
 }
 
 pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
-    (
-        optional(export()),
-        many(import()),
-        many(definition()),
-        blank(),
-    )
-        .map(|(export, imports, definitions, _)| {
+    (optional(export()), many(import()), many(definition()))
+        .skip(blank())
+        .skip(eof())
+        .map(|(export, imports, definitions)| {
             UnresolvedModule::new(
                 export.unwrap_or_else(|| Export::new(Default::default())),
                 imports,
@@ -115,10 +110,11 @@ fn function_definition<'a>() -> impl Parser<Stream<'a>, Output = FunctionDefinit
         type_annotation(),
         identifier(),
         many1(identifier()),
-        keyword("=").with(expression()),
+        keyword("="),
+        expression(),
     ))
     .then(
-        |(source_information, (typed_name, type_), name, arguments, expression)| {
+        |(source_information, (typed_name, type_), name, arguments, _, expression)| {
             if typed_name == name {
                 value(FunctionDefinition::new(
                     name,
@@ -228,8 +224,7 @@ fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
 }
 
 fn number_type<'a>() -> impl Parser<Stream<'a>, Output = types::Number> {
-    attempt((source_information(), keyword("Number")))
-        .map(|(source_information, _)| types::Number::new(source_information).into())
+    attempt(source_information().skip(keyword("Number"))).map(types::Number::new)
 }
 
 fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -423,6 +418,46 @@ mod tests {
                     "Bar".into()
                 ]))],
                 vec![]
+            )
+        );
+        assert_eq!(
+            module().parse(stream("x : Number\nx = 42", "")).unwrap().0,
+            UnresolvedModule::new(
+                Export::new(Default::default()),
+                vec![],
+                vec![ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()]
+            )
+        );
+        assert_eq!(
+            module()
+                .parse(stream("x : Number\nx = 42\ny : Number\ny = 42", ""))
+                .unwrap()
+                .0,
+            UnresolvedModule::new(
+                Export::new(Default::default()),
+                vec![],
+                vec![
+                    ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "y",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                ]
             )
         );
     }
