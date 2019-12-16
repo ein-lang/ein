@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
+      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 9
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
