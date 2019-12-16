@@ -1,6 +1,7 @@
 mod combinators;
 mod error;
 mod input;
+mod parsers;
 mod source;
 mod utilities;
 
