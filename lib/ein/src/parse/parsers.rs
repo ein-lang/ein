@@ -395,6 +395,7 @@ fn comment<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use indoc::indoc;
 
     #[test]
     fn parse_module() {
@@ -470,6 +471,28 @@ mod tests {
                     )
                     .into()
                 ]
+            )
+        );
+        assert_eq!(
+            module()
+                .parse(stream("main : Number -> Number\nmain x = 42", ""))
+                .unwrap()
+                .0,
+            UnresolvedModule::new(
+                Export::new(Default::default()),
+                vec![],
+                vec![FunctionDefinition::new(
+                    "main",
+                    vec!["x".into()],
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into(),]
             )
         );
     }
@@ -579,6 +602,41 @@ mod tests {
         assert_eq!(
             path_component().parse(stream("foo-rs", "")).unwrap().0,
             "foo-rs".to_string()
+        );
+    }
+
+    #[test]
+    fn parse_definition() {
+        assert_eq!(
+            definition()
+                .parse(stream("x : Number\nx = 0", ""))
+                .unwrap()
+                .0,
+            ValueDefinition::new(
+                "x",
+                Number::new(0.0, SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            definition()
+                .parse(stream("main : Number -> Number\nmain x = 42", ""))
+                .unwrap()
+                .0,
+            FunctionDefinition::new(
+                "main",
+                vec!["x".into()],
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+            .into()
         );
     }
 
@@ -731,6 +789,89 @@ mod tests {
                     SourceInformation::dummy()
                 )
                 .into()],
+                Variable::new("x", SourceInformation::dummy())
+            )
+        );
+        assert_eq!(
+            let_().parse(stream("let\nx = 42 in x", "")).unwrap().0,
+            Let::new(
+                vec![ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()],
+                Variable::new("x", SourceInformation::dummy())
+            )
+        );
+        assert_eq!(
+            let_().parse(stream("let\n x = 42 in x", "")).unwrap().0,
+            Let::new(
+                vec![ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()],
+                Variable::new("x", SourceInformation::dummy())
+            )
+        );
+        assert_eq!(
+            let_().parse(stream("let f x = x in f", "")).unwrap().0,
+            Let::new(
+                vec![FunctionDefinition::new(
+                    "f",
+                    vec!["x".into()],
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()],
+                Variable::new("f", SourceInformation::dummy())
+            )
+        );
+        assert_eq!(
+            let_()
+                .parse(stream(
+                    indoc!(
+                        "
+                        let
+                            f x = x
+                            y = (
+                                f x
+                            )
+                        in
+                            y
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Let::new(
+                vec![
+                    FunctionDefinition::new(
+                        "f",
+                        vec!["x".into()],
+                        Variable::new("x", SourceInformation::dummy()),
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "y",
+                        Application::new(
+                            Variable::new("f", SourceInformation::dummy()),
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        types::Variable::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                ],
                 Variable::new("x", SourceInformation::dummy())
             )
         );
