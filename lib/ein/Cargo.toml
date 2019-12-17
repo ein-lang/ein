@@ -8,7 +8,6 @@ edition = "2018"
 combine = { version = "4.0.0-beta.1", features = ["regex"] }
 core = { path = "../core" }
 lazy_static = "1"
-nom = "5"
 regex = "1"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"

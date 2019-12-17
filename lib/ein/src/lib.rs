@@ -12,7 +12,7 @@ pub mod types;
 
 pub use compile::{compile, ModuleObject};
 pub use package::Package;
-pub use parse::{parse_module, Source};
+pub use parse::parse_module;
 pub use path::{
     ExternalUnresolvedModulePath, InternalUnresolvedModulePath, ModulePath, UnresolvedModulePath,
 };

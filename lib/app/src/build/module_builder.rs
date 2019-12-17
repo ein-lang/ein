@@ -80,10 +80,10 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
         }
 
         for source_file_path in source_file_paths {
-            let module = ein::parse_module(ein::Source::new(
-                &format!("{}", source_file_path),
+            let module = ein::parse_module(
                 &self.file_storage.read_to_string(source_file_path)?,
-            ))?;
+                &format!("{}", source_file_path),
+            )?;
 
             for import in module.imports() {
                 if let ein::UnresolvedModulePath::Internal(internal_module_path) =

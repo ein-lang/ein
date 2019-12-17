@@ -25,8 +25,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         source_file_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
-        let module =
-            ein::parse_module(ein::Source::new(&format!("{}", source_file_path), &source))?;
+        let module = ein::parse_module(&source, &format!("{}", source_file_path))?;
 
         let imported_module_interfaces = module
             .imports()

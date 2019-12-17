@@ -1,37 +1,19 @@
-mod combinators;
 mod error;
-mod input;
 mod parsers;
-mod source;
 mod utilities;
 
 use crate::ast;
+use combine::Parser;
 use error::ParseError;
-use input::Input;
-use nom::Err;
-pub use source::Source;
+use parsers::{module, stream};
 
-pub fn parse_module(source: Source) -> Result<ast::UnresolvedModule, ParseError> {
-    let content: String;
-
-    let source = if source.content().ends_with('\n') {
-        source
-    } else {
-        content = [source.content(), "\n"].concat();
-        Source::new(source.name(), &content)
-    };
-
-    combinators::module(Input::new(source))
-        .map(|(_, module)| module)
-        .map_err(|error| map_error(error, source))
-}
-
-fn map_error<T>(error: nom::Err<(Input, T)>, source: Source) -> ParseError {
-    match error {
-        Err::Error((input, _)) => ParseError::new(&input),
-        Err::Failure((input, _)) => ParseError::new(&input),
-        Err::Incomplete(_) => ParseError::new(&Input::new(source)),
-    }
+pub fn parse_module(
+    source_content: &str,
+    source_name: &str,
+) -> Result<ast::UnresolvedModule, ParseError> {
+    Ok(module()
+        .parse(stream(source_content, source_name))
+        .map(|(module, _)| module)?)
 }
 
 #[cfg(test)]
@@ -46,10 +28,7 @@ mod tests {
     #[test]
     fn parse_module_() {
         assert_eq!(
-            parse_module(Source::new(
-                "",
-                "foo : Number -> Number -> Number\nfoo x y = 42"
-            ),),
+            parse_module("foo : Number -> Number -> Number\nfoo x y = 42", ""),
             Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "foo",
@@ -71,7 +50,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_module(Source::new("", "x : Number\nx = (let x = 42\nin x)")),
+            parse_module("x : Number\nx = (let x = 42\nin x)", ""),
             Ok(UnresolvedModule::from_definitions(vec![
                 ValueDefinition::new(
                     "x",
@@ -93,23 +72,23 @@ mod tests {
         );
 
         assert_eq!(
-            parse_module(Source::new(
-                "",
+            parse_module(
                 indoc!(
                     "
-                        main : Number -> Number
-                        main x = (
-                            let
-                                f x = x
-                                y = (
-                                    f x
-                                )
-                            in
-                                y
-                        )
+                    main : Number -> Number
+                    main x = (
+                        let
+                            f x = x
+                            y = (
+                                f x
+                            )
+                        in
+                            y
+                    )
                     "
-                )
-            )),
+                ),
+                ""
+            ),
             Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "main",
@@ -157,17 +136,17 @@ mod tests {
     #[test]
     fn parse_module_with_import_statement() {
         assert_eq!(
-            parse_module(Source::new(
-                "",
+            parse_module(
                 indoc!(
                     "
-                        import \"package/Module\"
+                    import \"package/Module\"
 
-                        main : Number -> Number
-                        main x = x
+                    main : Number -> Number
+                    main x = x
                     "
-                )
-            ),),
+                ),
+                ""
+            ),
             Ok(UnresolvedModule::new(
                 Export::new(Default::default()),
                 vec![Import::new(ExternalUnresolvedModulePath::new(vec![
@@ -193,16 +172,16 @@ mod tests {
     #[test]
     fn parse_module_with_comment() {
         assert_eq!(
-            parse_module(Source::new(
-                "",
+            parse_module(
                 indoc!(
                     "
-                        # foo is good
-                        foo : Number -> Number
-                        foo x = 42
+                    # foo is good
+                    foo : Number -> Number
+                    foo x = 42
                     "
-                )
-            )),
+                ),
+                ""
+            ),
             Ok(UnresolvedModule::from_definitions(vec![
                 FunctionDefinition::new(
                     "foo",
