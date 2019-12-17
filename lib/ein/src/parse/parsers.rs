@@ -3,7 +3,7 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::path::*;
 use crate::types::{self, Type};
-use combine::parser::char::{alpha_num, letter, newline, spaces, string};
+use combine::parser::char::{alpha_num, letter, newline, string};
 use combine::parser::choice::optional;
 use combine::parser::combinator::{lazy, look_ahead, no_partial, not_followed_by};
 use combine::parser::regex::find;
@@ -371,8 +371,7 @@ fn source_information<'a>() -> impl Parser<Stream<'a>, Output = SourceInformatio
 }
 
 fn blank<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    // TODO
-    spaces().silent()
+    optional(newlines1().or(spaces1())).with(value(())).silent()
 }
 
 fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
@@ -383,7 +382,7 @@ fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 fn newlines1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
     let spaces0 = || optional(spaces1());
     let newlines = || many1(spaces0().with(choice((newline().with(value(())), comment()))));
-    newlines().or(optional(newlines()).with(spaces0()).with(eof()))
+    attempt(newlines().or(optional(newlines()).with(spaces0()).with(eof())))
 }
 
 fn comment<'a>() -> impl Parser<Stream<'a>, Output = ()> {
