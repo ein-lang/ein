@@ -3,7 +3,6 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::path::*;
 use crate::types::{self, Type};
-use combine::error::Info;
 use combine::parser::char::{alpha_num, letter, newline, spaces, string};
 use combine::parser::choice::optional;
 use combine::parser::combinator::{lazy, look_ahead, no_partial, not_followed_by};
