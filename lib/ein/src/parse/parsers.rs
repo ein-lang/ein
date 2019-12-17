@@ -579,8 +579,8 @@ mod tests {
             "github.com".to_string()
         );
         assert_eq!(
-            path_component().parse(stream("sqlite3-go", "")).unwrap().0,
-            "sqlite3-go".to_string()
+            path_component().parse(stream("foo-rs", "")).unwrap().0,
+            "foo-rs".to_string()
         );
     }
 
