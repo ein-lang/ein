@@ -3,7 +3,7 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::path::*;
 use crate::types::{self, Type};
-use combine::parser::char::{alpha_num, letter, newline, string};
+use combine::parser::char::{alpha_num, letter, string};
 use combine::parser::choice::optional;
 use combine::parser::combinator::{lazy, look_ahead, no_partial, not_followed_by};
 use combine::parser::regex::find;
@@ -12,8 +12,8 @@ use combine::parser::sequence::between;
 use combine::stream::position::{self, SourcePosition};
 use combine::stream::state;
 use combine::{
-    attempt, choice, easy, eof, from_str, none_of, one_of, sep_by1, sep_end_by1, unexpected_any,
-    value, Parser, Positioned,
+    attempt, choice, easy, from_str, none_of, one_of, sep_by1, sep_end_by1, unexpected_any, value,
+    Parser, Positioned,
 };
 use std::rc::Rc;
 
@@ -102,6 +102,7 @@ fn definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
         function_definition().map(Definition::from),
         value_definition().map(Definition::from),
     ))
+    .expected("definition")
 }
 
 fn function_definition<'a>() -> impl Parser<Stream<'a>, Output = FunctionDefinition> {
@@ -241,9 +242,9 @@ fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
     attempt((
-        keyword("let"),
+        keyword("let").expected("let keyword"),
         many1(definition().or(untyped_definition())),
-        keyword("in"),
+        keyword("in").expected("in keyword"),
         expression(),
     ))
     .map(|(_, definitions, _, expression)| Let::new(definitions, expression))
@@ -284,8 +285,12 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
 }
 
 fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str> {
-    choice((newlines1(), keyword(")"), operator().with(value(()))))
-        .with(value("application terminator"))
+    choice((
+        newlines1(),
+        blank().with(keyword(")")),
+        blank().with(operator().with(value(()))),
+    ))
+    .with(value("application terminator"))
 }
 
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -371,7 +376,7 @@ fn source_information<'a>() -> impl Parser<Stream<'a>, Output = SourceInformatio
 }
 
 fn blank<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    optional(newlines1().or(spaces1())).with(value(())).silent()
+    many::<Vec<_>, _, _>(choice((spaces1(), newline()))).with(value(()))
 }
 
 fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
@@ -380,15 +385,27 @@ fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 }
 
 fn newlines1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    let spaces0 = || optional(spaces1());
-    let newlines = || many1(spaces0().with(choice((newline().with(value(())), comment()))));
-    attempt(newlines().or(optional(newlines()).with(spaces0()).with(eof())))
+    attempt(choice((
+        many1(newline()),
+        many::<Vec<_>, _, _>(newline()).with(eof()),
+    )))
+}
+
+fn newline<'a>() -> impl Parser<Stream<'a>, Output = ()> {
+    optional(spaces1()).with(choice((
+        combine::parser::char::newline().with(value(())),
+        comment(),
+    )))
+}
+
+fn eof<'a>() -> impl Parser<Stream<'a>, Output = ()> {
+    optional(spaces1()).with(combine::eof())
 }
 
 fn comment<'a>() -> impl Parser<Stream<'a>, Output = ()> {
     string("#")
         .with(many::<Vec<_>, _, _>(none_of("\n".chars())))
-        .with(newline())
+        .with(combine::parser::char::newline())
         .with(value(()))
 }
 
@@ -657,6 +674,71 @@ mod tests {
     }
 
     #[test]
+    fn parse_untyped_definition() {
+        assert_eq!(
+            untyped_definition().parse(stream("x = 0", "")).unwrap().0,
+            ValueDefinition::new(
+                "x",
+                Number::new(0.0, SourceInformation::dummy()),
+                types::Variable::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            untyped_definition()
+                .parse(stream("main x = 42", ""))
+                .unwrap()
+                .0,
+            FunctionDefinition::new(
+                "main",
+                vec!["x".into()],
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Variable::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            (untyped_definition(), untyped_definition())
+                .parse(stream(
+                    indoc!(
+                        "
+                        f x = x
+                         y = (
+                             f x
+                         )
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            (
+                FunctionDefinition::new(
+                    "f",
+                    vec!["x".into()],
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Variable::new("x", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    types::Variable::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            )
+        );
+    }
+
+    #[test]
     fn parse_type() {
         assert!(type_().parse(stream("?", "")).is_err());
         assert_eq!(
@@ -714,6 +796,10 @@ mod tests {
             Number::new(1.0, SourceInformation::dummy()).into()
         );
         assert_eq!(
+            expression().parse(stream("x", "")).unwrap().0,
+            Variable::new("x", SourceInformation::dummy()).into()
+        );
+        assert_eq!(
             expression().parse(stream("x + y z", "")).unwrap().0,
             Operation::new(
                 Operator::Add,
@@ -737,6 +823,26 @@ mod tests {
                     SourceInformation::dummy()
                 ),
                 Variable::new("z", SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            expression()
+                .parse(stream(
+                    indoc!(
+                        "
+                        (f x
+                         )
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Application::new(
+                Variable::new("f", SourceInformation::dummy()),
+                Variable::new("x", SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
             .into()
@@ -872,7 +978,7 @@ mod tests {
                     )
                     .into()
                 ],
-                Variable::new("x", SourceInformation::dummy())
+                Variable::new("y", SourceInformation::dummy())
             )
         );
     }
@@ -889,6 +995,14 @@ mod tests {
             )
         );
         assert_eq!(
+            application().parse(stream("f x", "")).unwrap().0,
+            Application::new(
+                Variable::new("f", SourceInformation::dummy()),
+                Variable::new("x", SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
             application().parse(stream("f 1 2", "")).unwrap().0,
             Application::new(
                 Application::new(
@@ -900,6 +1014,14 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+    }
+
+    #[test]
+    fn parse_application_terminator() {
+        assert!(application_terminator()
+            .with(combine::eof())
+            .parse(stream("\n )", ""))
+            .is_ok());
     }
 
     #[test]
@@ -1061,6 +1183,42 @@ mod tests {
         assert!(keyword("foo").parse(stream("bar", "")).is_err());
         assert!(keyword("foo").parse(stream("foo", "")).is_ok());
         assert!(keyword("foo").parse(stream(" foo", "")).is_ok());
+    }
+
+    #[test]
+    fn parse_source_information() {
+        assert!(source_information()
+            .with(eof())
+            .parse(stream(" \n \n \n", ""))
+            .is_ok());
+    }
+
+    #[test]
+    fn parse_blank() {
+        assert!(blank().with(combine::eof()).parse(stream("", "")).is_ok());
+        assert!(blank().with(combine::eof()).parse(stream(" ", "")).is_ok());
+        assert!(blank().with(combine::eof()).parse(stream("  ", "")).is_ok());
+        assert!(blank().with(combine::eof()).parse(stream("\n", "")).is_ok());
+        assert!(blank()
+            .with(combine::eof())
+            .parse(stream("\n\n", ""))
+            .is_ok());
+        assert!(blank()
+            .with(combine::eof())
+            .parse(stream(" \n", ""))
+            .is_ok());
+        assert!(blank()
+            .with(combine::eof())
+            .parse(stream("\n ", ""))
+            .is_ok());
+        assert!(blank()
+            .with(combine::eof())
+            .parse(stream(" \n \n \n", ""))
+            .is_ok());
+        assert!(blank()
+            .with(combine::eof())
+            .parse(stream("\n \n \n ", ""))
+            .is_ok());
     }
 
     #[test]

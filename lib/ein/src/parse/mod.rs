@@ -99,11 +99,7 @@ mod tests {
                                 "f",
                                 vec!["x".into(),],
                                 Variable::new("x", SourceInformation::dummy()),
-                                types::Function::new(
-                                    types::Variable::new(SourceInformation::dummy()),
-                                    types::Variable::new(SourceInformation::dummy()),
-                                    SourceInformation::dummy()
-                                ),
+                                types::Variable::new(SourceInformation::dummy()),
                                 SourceInformation::dummy()
                             )
                             .into(),
