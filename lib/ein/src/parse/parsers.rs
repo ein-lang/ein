@@ -1275,7 +1275,7 @@ mod tests {
     #[test]
     fn parse_keyword() {
         assert!(keyword("foo").parse(stream("bar", "")).is_err());
-        assert!(keyword("foo").parse(stream("fooo", "")).is_err());
+        assert!(keyword("foo").parse(stream("fool", "")).is_err());
         assert!(keyword("foo").parse(stream("foo", "")).is_ok());
         assert!(keyword("foo").parse(stream(" foo", "")).is_ok());
     }
