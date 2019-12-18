@@ -15,6 +15,7 @@ use combine::{
     attempt, choice, easy, from_str, none_of, one_of, sep_by1, sep_end_by1, unexpected_any, value,
     Parser, Positioned,
 };
+use lazy_static::lazy_static;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
