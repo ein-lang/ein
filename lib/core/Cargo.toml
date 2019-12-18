@@ -5,5 +5,5 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-llvm-sys = "80"
+llvm-sys = "90"
 petgraph = "0.4"
