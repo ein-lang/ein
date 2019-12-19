@@ -383,10 +383,10 @@ fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 }
 
 fn newlines1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    attempt(choice((
+    choice((
         many1(newline()),
         many::<Vec<_>, _, _>(newline()).with(eof()),
-    )))
+    ))
 }
 
 fn newline<'a>() -> impl Parser<Stream<'a>, Output = ()> {
