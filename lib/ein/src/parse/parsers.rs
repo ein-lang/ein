@@ -19,11 +19,11 @@ use lazy_static::lazy_static;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
+const SPACE_CHARACTERS: &str = " \t\r";
 
 lazy_static! {
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
-    static ref SPACES1_REGEX: regex::Regex = regex::Regex::new("^[ \t\r]+").unwrap();
 }
 
 pub struct State<'a> {
@@ -378,8 +378,7 @@ fn blank<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 }
 
 fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    let regex: &'static regex::Regex = &SPACES1_REGEX;
-    find(regex).with(value(()))
+    many1::<String, _, _>(one_of(SPACE_CHARACTERS.chars())).with(value(()))
 }
 
 fn newlines1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
