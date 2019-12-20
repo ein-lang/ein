@@ -379,6 +379,7 @@ mod tests {
                 .into_iter()
                 .collect(),
             )],
+            vec![],
             vec![ValueDefinition::new(
                 "y",
                 Variable::new("m.x", SourceInformation::dummy()),

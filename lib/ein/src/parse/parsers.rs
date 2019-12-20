@@ -47,13 +47,19 @@ pub fn stream<'a>(source: &'a str, source_name: &'a str) -> Stream<'a> {
 }
 
 pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
-    (optional(export()), many(import()), many(definition()))
+    (
+        optional(export()),
+        many(import()),
+        many(type_definition()),
+        many(definition()),
+    )
         .skip(blank())
         .skip(eof())
-        .map(|(export, imports, definitions)| {
+        .map(|(export, imports, type_definitions, definitions)| {
             UnresolvedModule::new(
                 export.unwrap_or_else(|| Export::new(Default::default())),
                 imports,
+                type_definitions,
                 definitions,
             )
         })
@@ -202,6 +208,11 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
             )
         },
     )
+}
+
+fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
+    attempt((keyword("type"), identifier(), sign("="), type_()))
+        .map(|(_, name, _, type_)| TypeDefinition::new(name, type_))
 }
 
 fn type_<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -450,6 +461,7 @@ mod tests {
             UnresolvedModule::new(
                 Export::new(vec!["foo".into()].drain(..).collect()),
                 vec![],
+                vec![],
                 vec![]
             )
         );
@@ -464,6 +476,7 @@ mod tests {
                     "Foo".into(),
                     "Bar".into()
                 ]))],
+                vec![],
                 vec![]
             )
         );
@@ -471,6 +484,7 @@ mod tests {
             module().parse(stream("x : Number\nx = 42", "")).unwrap().0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                vec![],
                 vec![],
                 vec![ValueDefinition::new(
                     "x",
@@ -488,6 +502,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                vec![],
                 vec![],
                 vec![
                     ValueDefinition::new(
@@ -514,6 +529,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                vec![],
                 vec![],
                 vec![FunctionDefinition::new(
                     "main",
@@ -746,6 +762,31 @@ mod tests {
                     SourceInformation::dummy()
                 )
                 .into()
+            )
+        );
+    }
+
+    #[test]
+    fn parse_type_definition() {
+        assert_eq!(
+            type_definition()
+                .parse(stream("type Foo = Number", ""))
+                .unwrap()
+                .0,
+            TypeDefinition::new("Foo", types::Number::new(SourceInformation::dummy()))
+        );
+        assert_eq!(
+            type_definition()
+                .parse(stream("type Foo = Number -> Number", ""))
+                .unwrap()
+                .0,
+            TypeDefinition::new(
+                "Foo",
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
             )
         );
     }

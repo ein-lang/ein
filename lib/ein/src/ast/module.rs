@@ -2,8 +2,7 @@ use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
 use super::module_interface::ModuleInterface;
-#[cfg(test)]
-use crate::package::Package;
+use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
 use crate::types::Type;
 use std::collections::HashMap;
@@ -11,6 +10,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
     path: ModulePath,
+    type_definitions: Vec<TypeDefinition>,
     definitions: Vec<Definition>,
     export: Export,
     imported_modules: Vec<ModuleInterface>,
@@ -21,10 +21,12 @@ impl Module {
         path: ModulePath,
         export: Export,
         imported_modules: Vec<ModuleInterface>,
+        type_definitions: Vec<TypeDefinition>,
         definitions: Vec<Definition>,
     ) -> Self {
         Self {
             path,
+            type_definitions,
             definitions,
             export,
             imported_modules,
@@ -34,8 +36,9 @@ impl Module {
     #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
         Self::new(
-            ModulePath::new(Package::new("", ""), vec![]),
+            ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             definitions,
         )
@@ -62,6 +65,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
+            self.type_definitions.clone(),
             self.definitions
                 .iter()
                 .map(|definition| definition.substitute_type_variables(substitutions))
@@ -74,6 +78,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
+            self.type_definitions.clone(),
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_definitions(convert))
@@ -86,6 +91,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
+            self.type_definitions.clone(),
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_expressions(convert))

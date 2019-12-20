@@ -64,6 +64,7 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
+                vec![],
                 vec![ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
@@ -90,6 +91,7 @@ mod tests {
             ModuleInterfaceCompiler::new().compile(&Module::new(
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(vec!["x".into()].into_iter().collect()),
+                vec![],
                 vec![],
                 vec![],
             )),
