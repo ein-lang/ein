@@ -10,7 +10,7 @@ pub fn reduce_operations(
 
     if pairs.is_empty() {
         Operation::new(operator, lhs, rhs, source_information)
-    } else if operator_priority(operator) > operator_priority(pairs[0].0) {
+    } else if operator_priority(operator) >= operator_priority(pairs[0].0) {
         reduce_operations(
             Expression::Operation(Operation::new(operator, lhs, rhs, source_information)),
             pairs,

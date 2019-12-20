@@ -109,12 +109,7 @@ fn append_arguments_to_expression_with_source_information(
     arguments
         .iter()
         .fold(expression.clone(), |application, argument| {
-            Application::new(
-                application.clone(),
-                argument.clone(),
-                source_information.clone(),
-            )
-            .into()
+            Application::new(application, argument.clone(), source_information.clone()).into()
         })
 }
 
