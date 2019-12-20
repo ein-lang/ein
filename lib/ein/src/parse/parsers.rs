@@ -339,8 +339,8 @@ fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
 fn variable<'a>() -> impl Parser<Stream<'a>, Output = Variable> {
     token((
         source_information(),
-        optional(attempt((identifier(), sign(".")))),
-        identifier(),
+        optional(attempt((raw_identifier(), string(".")))),
+        raw_identifier(),
     ))
     .map(|(source_information, prefix, identifier)| {
         Variable::new(
@@ -353,7 +353,11 @@ fn variable<'a>() -> impl Parser<Stream<'a>, Output = Variable> {
 }
 
 fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
-    token(
+    token(raw_identifier())
+}
+
+fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
+    attempt(
         (many1(letter()), many(alpha_num()))
             .map(|(head, tail): (String, String)| [head, tail].concat())
             .then(|identifier| {
@@ -1244,6 +1248,7 @@ mod tests {
 
     #[test]
     fn parse_variable() {
+        assert!(variable().parse(stream("Foo. x", "")).is_err());
         assert_eq!(
             variable().parse(stream("x", "")).unwrap().0,
             Variable::new("x", SourceInformation::dummy()),
@@ -1251,6 +1256,10 @@ mod tests {
         assert_eq!(
             variable().parse(stream("Foo.x", "")).unwrap().0,
             Variable::new("Foo.x", SourceInformation::dummy()),
+        );
+        assert_eq!(
+            variable().parse(stream("Foo .x", "")).unwrap().0,
+            Variable::new("Foo", SourceInformation::dummy()),
         );
     }
 
