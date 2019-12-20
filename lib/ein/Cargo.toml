@@ -5,7 +5,7 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-combine = { version = "4.0.0-beta.1", features = ["regex"] }
+combine = { version = "4.0.0-beta.2", features = ["regex"] }
 core = { path = "../core" }
 lazy_static = "1"
 regex = "1"
