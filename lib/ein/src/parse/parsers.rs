@@ -19,6 +19,7 @@ use lazy_static::lazy_static;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
+const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
 lazy_static! {
@@ -307,11 +308,26 @@ fn operation<'a>() -> impl Parser<Stream<'a>, Output = Operation> {
 
 fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
     choice((
-        sign("+").with(value(Operator::Add)),
-        sign("-").with(value(Operator::Subtract)),
-        sign("*").with(value(Operator::Multiply)),
-        sign("/").with(value(Operator::Divide)),
+        concrete_operator("+", Operator::Add),
+        concrete_operator("-", Operator::Subtract),
+        concrete_operator("*", Operator::Multiply),
+        concrete_operator("/", Operator::Divide),
     ))
+}
+
+fn concrete_operator<'a>(
+    literal: &'static str,
+    operator: Operator,
+) -> impl Parser<Stream<'a>, Output = Operator> {
+    token(
+        many1(one_of(OPERATOR_CHARACTERS.chars())).then(move |parsed_literal: String| {
+            if parsed_literal == literal {
+                value(operator).left()
+            } else {
+                unexpected_any("unknown operator").right()
+            }
+        }),
+    )
 }
 
 fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
@@ -342,9 +358,9 @@ fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
             .map(|(head, tail): (String, String)| [head, tail].concat())
             .then(|identifier| {
                 if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
-                    unexpected_any("keyword").right()
+                    unexpected_any("keyword").left()
                 } else {
-                    value(identifier).left()
+                    value(identifier).right()
                 }
             }),
     )
@@ -1217,6 +1233,13 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+    }
+
+    #[test]
+    fn parse_operator() {
+        assert!(operator().parse(stream("", "")).is_err());
+        assert!(operator().parse(stream("++", "")).is_err());
+        assert_eq!(operator().parse(stream("+", "")).unwrap().0, Operator::Add);
     }
 
     #[test]
