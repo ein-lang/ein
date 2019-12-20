@@ -15,7 +15,7 @@ Feature: Expressions
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = (
+    main x =
       (
         let
           f : Number -> Number
@@ -24,7 +24,6 @@ Feature: Expressions
           f
       )
       x
-    )
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`

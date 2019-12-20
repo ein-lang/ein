@@ -79,9 +79,8 @@ mod tests {
                     main x = (
                         let
                             f x = x
-                            y = (
-                                f x
-                            )
+                            y =
+                              f x
                         in
                             y
                     )

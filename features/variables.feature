@@ -45,13 +45,12 @@ Feature: Variables
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = (
+    main x =
       let
         y : Number
         y = x
       in
         y
-    )
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
@@ -62,12 +61,11 @@ Feature: Variables
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = (
+    main x =
       let
         y = x
       in
         y
-    )
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
@@ -78,17 +76,15 @@ Feature: Variables
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = (
+    main x =
       let
-        y = (
+        y =
           let
             z = x
           in
             z
-        )
       in
         y
-    )
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
@@ -99,13 +95,12 @@ Feature: Variables
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = (
+    main x =
       let
         f : Number -> Number
         f y = y
       in
         f x
-    )
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
@@ -116,12 +111,11 @@ Feature: Variables
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = (
+    main x =
       let
         f y = y
       in
         f x
-    )
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
@@ -132,13 +126,12 @@ Feature: Variables
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = (
+    main x =
       let
         f y = y
         g z = f z
       in
         g x
-    )
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`

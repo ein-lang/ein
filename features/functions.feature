@@ -68,12 +68,11 @@ Feature: Functions
     Given a file named "Main.ein" with:
     """
     f : Number -> Number -> Number
-    f x = (
+    f x =
       let
         g y = x
       in
         g
-    )
 
     main : Number -> Number
     main x = f x 13
