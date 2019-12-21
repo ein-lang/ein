@@ -9,3 +9,5 @@ The deterministic functional programming language
 ## License
 
 [MIT](LICENSE)
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fein-lang%2Fein.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fein-lang%2Fein?ref=badge_large)
