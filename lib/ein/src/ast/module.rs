@@ -48,6 +48,10 @@ impl Module {
         &self.path
     }
 
+    pub fn type_definitions(&self) -> &[TypeDefinition] {
+        &self.type_definitions
+    }
+
     pub fn definitions(&self) -> &[Definition] {
         &self.definitions
     }

@@ -372,6 +372,7 @@ mod tests {
             Export::new(Default::default()),
             vec![ModuleInterface::new(
                 ModulePath::new(Package::new("m", ""), vec![]),
+                Default::default(),
                 vec![(
                     "x".into(),
                     types::Number::new(SourceInformation::dummy()).into(),

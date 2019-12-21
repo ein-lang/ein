@@ -128,6 +128,7 @@ mod tests {
                     ast::Export::new(Default::default()),
                     vec![ast::ModuleInterface::new(
                         ModulePath::new(Package::new("A", ""), vec!["B".into()]),
+                        Default::default(),
                         vec![(
                             "y".into(),
                             types::Number::new(SourceInformation::dummy()).into()
