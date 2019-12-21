@@ -6,15 +6,26 @@ use std::collections::*;
 
 #[derive(Clone, Debug)]
 pub struct TypeInferrer {
+    environment: HashMap<String, Type>,
     equations: Vec<Equation>,
 }
 
 impl TypeInferrer {
     pub fn new() -> Self {
-        Self { equations: vec![] }
+        Self {
+            environment: HashMap::new(),
+            equations: vec![],
+        }
     }
 
     pub fn infer(&mut self, module: &Module) -> Result<Module, TypeInferenceError> {
+        for type_definition in module.type_definitions() {
+            self.environment.insert(
+                type_definition.name().into(),
+                type_definition.type_().clone(),
+            );
+        }
+
         self.collect_equations(module)?;
         Ok(module.substitute_type_variables(&self.reduce_equations()?))
     }
@@ -239,6 +250,17 @@ impl TypeInferrer {
                 (lhs, Type::Variable(variable)) => self
                     .equations
                     .push(Equation::new(variable.clone(), lhs.clone())),
+                (Type::Reference(reference), other) | (other, Type::Reference(reference)) => {
+                    self.equations.push(Equation::new(
+                        self.environment
+                            .get(reference.name())
+                            .ok_or_else(|| TypeInferenceError::TypeNotFound {
+                                reference: reference.clone(),
+                            })?
+                            .clone(),
+                        other.clone(),
+                    ))
+                }
                 (Type::Function(function1), Type::Function(function2)) => {
                     self.equations.push(Equation::new(
                         function1.argument().clone(),
