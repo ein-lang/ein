@@ -55,6 +55,7 @@ impl ModuleCompiler {
             .type_()
             .to_function()
             .expect("function type");
+        let core_type = self.type_compiler.compile_function(type_);
 
         Ok(core::ast::FunctionDefinition::new(
             function_definition.name(),
@@ -62,10 +63,8 @@ impl ModuleCompiler {
             function_definition
                 .arguments()
                 .iter()
-                .zip(type_.arguments())
-                .map(|(name, type_)| {
-                    core::ast::Argument::new(name.clone(), self.type_compiler.compile(type_))
-                })
+                .zip(core_type.arguments())
+                .map(|(name, type_)| core::ast::Argument::new(name.clone(), type_.clone()))
                 .collect::<Vec<_>>(),
             ExpressionCompiler::new(&self.type_compiler).compile(
                 function_definition.body(),
@@ -76,7 +75,7 @@ impl ModuleCompiler {
                     .map(|(name, type_)| (name.clone(), type_.clone()))
                     .collect(),
             )?,
-            self.type_compiler.compile_value(type_.last_result()),
+            core_type.result().clone(),
         ))
     }
 

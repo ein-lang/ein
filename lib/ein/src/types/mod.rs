@@ -1,10 +1,12 @@
 mod function;
 mod number;
+mod reference;
 mod variable;
 
 use crate::debug::SourceInformation;
 pub use function::*;
 pub use number::*;
+pub use reference::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -14,15 +16,17 @@ pub use variable::*;
 pub enum Type {
     Function(Function),
     Number(Number),
+    Reference(Reference),
     Variable(Variable),
 }
 
 impl Type {
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         match self {
-            Type::Function(function) => function.source_information(),
-            Type::Number(number) => number.source_information(),
-            Type::Variable(variable) => variable.source_information(),
+            Self::Function(function) => function.source_information(),
+            Self::Number(number) => number.source_information(),
+            Self::Reference(reference) => reference.source_information(),
+            Self::Variable(variable) => variable.source_information(),
         }
     }
 
@@ -32,9 +36,10 @@ impl Type {
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
-            Type::Function(function) => function.substitute_variables(substitutions).into(),
-            Type::Number(_) => self.clone(),
-            Type::Variable(variable) => match substitutions.get(&variable.id()) {
+            Self::Function(function) => function.substitute_variables(substitutions).into(),
+            Self::Number(_) => self.clone(),
+            Self::Reference(_) => self.clone(),
+            Self::Variable(variable) => match substitutions.get(&variable.id()) {
                 Some(type_) => type_.clone(),
                 None => self.clone(),
             },
@@ -42,7 +47,7 @@ impl Type {
     }
 
     pub fn to_function(&self) -> Option<&Function> {
-        if let Type::Function(function) = self {
+        if let Self::Function(function) = self {
             Some(&function)
         } else {
             None
@@ -52,18 +57,24 @@ impl Type {
 
 impl From<Function> for Type {
     fn from(function: Function) -> Self {
-        Type::Function(function)
+        Self::Function(function)
     }
 }
 
 impl From<Number> for Type {
     fn from(number: Number) -> Self {
-        Type::Number(number)
+        Self::Number(number)
+    }
+}
+
+impl From<Reference> for Type {
+    fn from(reference: Reference) -> Self {
+        Self::Reference(reference)
     }
 }
 
 impl From<Variable> for Type {
     fn from(variable: Variable) -> Self {
-        Type::Variable(variable)
+        Self::Variable(variable)
     }
 }

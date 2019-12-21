@@ -18,7 +18,7 @@ use combine::{
 use lazy_static::lazy_static;
 use std::rc::Rc;
 
-const KEYWORDS: &[&str] = &["export", "import", "in", "let"];
+const KEYWORDS: &[&str] = &["export", "import", "in", "let", "Number"];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
@@ -230,12 +230,19 @@ fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
 fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
     choice((
         number_type().map(Type::from),
+        reference_type().map(Type::from),
         between(sign("("), sign(")"), type_()),
     ))
 }
 
 fn number_type<'a>() -> impl Parser<Stream<'a>, Output = types::Number> {
     attempt(source_information().skip(keyword("Number"))).map(types::Number::new)
+}
+
+fn reference_type<'a>() -> impl Parser<Stream<'a>, Output = types::Reference> {
+    attempt((source_information(), identifier())).map(|(source_information, identifier)| {
+        types::Reference::new(identifier, source_information)
+    })
 }
 
 fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -838,6 +845,15 @@ mod tests {
                 SourceInformation::dummy()
             )
             .into()
+        );
+    }
+
+    #[test]
+    fn parse_reference_type() {
+        assert!(type_().parse(stream("", "")).is_err());
+        assert_eq!(
+            type_().parse(stream("foo", "")).unwrap().0,
+            types::Reference::new("foo", SourceInformation::dummy()).into()
         );
     }
 

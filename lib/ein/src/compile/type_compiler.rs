@@ -11,6 +11,7 @@ impl TypeCompiler {
         match type_ {
             Type::Function(function) => self.compile_function(function).into(),
             Type::Number(_) => core::types::Value::Number.into(),
+            Type::Reference(_) => unimplemented!(),
             Type::Variable(_) => unreachable!(),
         }
     }
@@ -30,6 +31,7 @@ impl TypeCompiler {
         match type_ {
             Type::Function(_) => unreachable!(),
             Type::Number(_) => core::types::Value::Number,
+            Type::Reference(_) => unimplemented!(),
             Type::Variable(_) => unreachable!(),
         }
     }
