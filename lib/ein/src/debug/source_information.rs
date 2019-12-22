@@ -31,24 +31,19 @@ impl SourceInformation {
 
 impl Display for SourceInformation {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        let line_information = format!(
+            "{}:{}:",
+            self.location.line_number(),
+            self.location.column_number()
+        );
+
         write!(
             formatter,
-            "{}:{}:{}:\t{}\n{}\t{}^",
+            "{}\n{}\t{}\n{}\t{}^",
             self.source_name,
-            self.location.line_number(),
-            self.location.column_number(),
+            &line_information,
             self.line,
-            str::repeat(
-                " ",
-                format!(
-                    "{}{}{}",
-                    self.source_name,
-                    self.location.line_number(),
-                    self.location.column_number()
-                )
-                .len()
-                    + 3
-            ),
+            str::repeat(" ", line_information.len()),
             str::repeat(" ", self.location.column_number() - 1),
         )
     }
