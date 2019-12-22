@@ -9,7 +9,6 @@ jobs:
       - restore_cache:
           keys:
             - v1-{{ arch }}-{{ checksum "/tmp/cargo-version" }}-{{ checksum "Cargo.lock" }}
-            - v1-{{ arch }}-{{ checksum "/tmp/cargo-version" }}-
       - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo build
       - run: cargo fmt -- --check
