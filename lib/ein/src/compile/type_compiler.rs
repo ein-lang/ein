@@ -21,7 +21,7 @@ impl TypeCompiler {
             function
                 .arguments()
                 .iter()
-                .map(|type_| self.compile(*type_))
+                .map(|type_| self.compile(type_))
                 .collect::<Vec<_>>(),
             self.compile_value(function.last_result()),
         )
