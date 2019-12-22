@@ -711,4 +711,31 @@ mod tests {
             })
         );
     }
+
+    #[test]
+    fn infer_types_with_imported_reference_types() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![ModuleInterface::new(
+                ModulePath::new(Package::new("Module", ""), vec![]),
+                vec![(
+                    "Foo".into(),
+                    types::Number::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                Default::default(),
+            )],
+            vec![],
+            vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Reference::new("Module.Foo", SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
+    }
 }

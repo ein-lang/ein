@@ -19,6 +19,14 @@ impl TypeInferrer {
     }
 
     pub fn infer(&mut self, module: &Module) -> Result<Module, TypeInferenceError> {
+        for imported_module in module.imported_modules() {
+            self.environment.extend(
+                imported_module.types().iter().map(|(name, type_)| {
+                    (imported_module.path().qualify_name(name), type_.clone())
+                }),
+            );
+        }
+
         for type_definition in module.type_definitions() {
             self.environment.insert(
                 type_definition.name().into(),
@@ -27,6 +35,7 @@ impl TypeInferrer {
         }
 
         self.collect_equations(module)?;
+
         Ok(module.substitute_type_variables(&self.reduce_equations()?))
     }
 
