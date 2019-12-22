@@ -21,5 +21,5 @@ Feature: Error
     main x = f x
     """
     And I run `ein build`
-    Then stderr from "ein build" should contain "TypeInferenceError"
+    Then stderr from "ein build" should contain "types not matched"
     And the exit status should not be 0
