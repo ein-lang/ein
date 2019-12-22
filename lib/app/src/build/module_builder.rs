@@ -1,24 +1,28 @@
 use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
+use super::module_parser::ModuleParser;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage};
+use crate::infra::{FilePath, FilePathDispalyer, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
 
-pub struct ModuleBuilder<'a, S: FileStorage> {
-    module_compiler: &'a ModuleCompiler<'a, S>,
+pub struct ModuleBuilder<'a, D: FilePathDispalyer, S: FileStorage> {
+    module_parser: &'a ModuleParser<'a, D>,
+    module_compiler: &'a ModuleCompiler<'a, D, S>,
     file_storage: &'a S,
     file_path_manager: &'a FilePathManager<'a>,
 }
 
-impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
+impl<'a, D: FilePathDispalyer, S: FileStorage> ModuleBuilder<'a, D, S> {
     pub fn new(
-        module_compiler: &'a ModuleCompiler<'a, S>,
+        module_parser: &'a ModuleParser<'a, D>,
+        module_compiler: &'a ModuleCompiler<'a, D, S>,
         file_storage: &'a S,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
+            module_parser,
             module_compiler,
             file_storage,
             file_path_manager,
@@ -80,9 +84,9 @@ impl<'a, S: FileStorage> ModuleBuilder<'a, S> {
         }
 
         for source_file_path in source_file_paths {
-            let module = ein::parse_module(
+            let module = self.module_parser.parse(
                 &self.file_storage.read_to_string(source_file_path)?,
-                &format!("{}", source_file_path),
+                source_file_path,
             )?;
 
             for import in module.imports() {

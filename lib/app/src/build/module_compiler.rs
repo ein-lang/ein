@@ -1,18 +1,25 @@
 use super::error::BuildError;
+use super::module_parser::ModuleParser;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage};
+use crate::infra::{FilePath, FilePathDispalyer, FileStorage};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-pub struct ModuleCompiler<'a, S: FileStorage> {
+pub struct ModuleCompiler<'a, D: FilePathDispalyer, S: FileStorage> {
+    module_parser: &'a ModuleParser<'a, D>,
     file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a S,
 }
 
-impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
-    pub fn new(file_path_manager: &'a FilePathManager<'a>, file_storage: &'a S) -> Self {
+impl<'a, D: FilePathDispalyer, S: FileStorage> ModuleCompiler<'a, D, S> {
+    pub fn new(
+        module_parser: &'a ModuleParser<'a, D>,
+        file_path_manager: &'a FilePathManager<'a>,
+        file_storage: &'a S,
+    ) -> Self {
         Self {
+            module_parser,
             file_path_manager,
             file_storage,
         }
@@ -25,7 +32,7 @@ impl<'a, S: FileStorage> ModuleCompiler<'a, S> {
         source_file_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
-        let module = ein::parse_module(&source, &format!("{}", source_file_path))?;
+        let module = self.module_parser.parse(&source, source_file_path)?;
 
         let imported_module_interfaces = module
             .imports()

@@ -4,7 +4,7 @@ mod utilities;
 
 use crate::ast;
 use combine::Parser;
-use error::ParseError;
+pub use error::ParseError;
 use parsers::{module, stream};
 
 pub fn parse_module(
