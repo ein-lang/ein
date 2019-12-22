@@ -16,6 +16,7 @@
     "coro",
     "deque",
     "desugarer",
+    "displayer",
     "fadd",
     "fdiv",
     "flto",

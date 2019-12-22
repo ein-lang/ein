@@ -1,10 +1,10 @@
-use crate::infra::{FilePath, FilePathDispalyer};
+use crate::infra::{FilePath, FilePathDisplayer};
 
-pub struct ModuleParser<'a, D: FilePathDispalyer> {
+pub struct ModuleParser<'a, D: FilePathDisplayer> {
     file_path_displayer: &'a D,
 }
 
-impl<'a, D: FilePathDispalyer> ModuleParser<'a, D> {
+impl<'a, D: FilePathDisplayer> ModuleParser<'a, D> {
     pub fn new(file_path_displayer: &'a D) -> Self {
         Self {
             file_path_displayer,

@@ -5,7 +5,7 @@ use super::package_initializer::PackageInitializer;
 use super::package_linker::PackageLinker;
 use super::path::FilePathManager;
 use crate::infra::{
-    CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FilePathDispalyer,
+    CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FilePathDisplayer,
     FileStorage, LibraryArchiver, ObjectLinker, Repository,
 };
 
@@ -13,7 +13,7 @@ pub struct PackageBuilder<
     'a,
     R: Repository,
     S: FileStorage,
-    FD: FilePathDispalyer,
+    FD: FilePathDisplayer,
     OL: ObjectLinker,
     CL: CommandLinker,
     A: LibraryArchiver,
@@ -33,7 +33,7 @@ impl<
         'a,
         R: Repository,
         S: FileStorage,
-        FD: FilePathDispalyer,
+        FD: FilePathDisplayer,
         OL: ObjectLinker,
         CL: CommandLinker,
         A: LibraryArchiver,

@@ -1,21 +1,21 @@
 use super::file_path::FilePath;
 
-pub trait FilePathDispalyer {
+pub trait FilePathDisplayer {
     fn display(&self, file_path: &FilePath) -> String;
 }
 
 #[cfg(test)]
-pub struct FilePathDispalyerFake {}
+pub struct FilePathDisplayerFake {}
 
 #[cfg(test)]
-impl FilePathDispalyerFake {
+impl FilePathDisplayerFake {
     pub fn new() -> Self {
         Self {}
     }
 }
 
 #[cfg(test)]
-impl FilePathDispalyer for FilePathDispalyerFake {
+impl FilePathDisplayer for FilePathDisplayerFake {
     fn display(&self, file_path: &FilePath) -> String {
         format!("{}", file_path)
     }

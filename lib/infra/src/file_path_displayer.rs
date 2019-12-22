@@ -9,7 +9,7 @@ impl FilePathDisplayer {
     }
 }
 
-impl app::FilePathDispalyer for FilePathDisplayer {
+impl app::FilePathDisplayer for FilePathDisplayer {
     fn display(&self, file_path: &app::FilePath) -> String {
         format!(
             "{}",
