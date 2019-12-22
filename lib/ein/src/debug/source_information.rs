@@ -70,7 +70,7 @@ mod tests {
                 "{}",
                 SourceInformation::new("file", Location::new(1, 1), "x")
             ),
-            "file:1:1:\tx\n         \t^"
+            "file\n1:1:\tx\n    \t^"
         );
 
         assert_eq!(
@@ -78,7 +78,7 @@ mod tests {
                 "{}",
                 SourceInformation::new("file", Location::new(1, 2), " x")
             ),
-            "file:1:2:\t x\n         \t ^"
+            "file\n1:2:\t x\n    \t ^"
         );
     }
 }
