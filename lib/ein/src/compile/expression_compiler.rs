@@ -196,6 +196,7 @@ impl<'a> ExpressionCompiler<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::type_compiler::TypeCompiler;
     use super::ExpressionCompiler;
     use crate::ast::*;
@@ -206,7 +207,10 @@ mod tests {
     #[test]
     fn compile_operation() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new()).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(ReferenceTypeResolver::new(
+                &Module::dummy()
+            )))
+            .compile(
                 &Operation::new(
                     Operator::Add,
                     Number::new(1.0, SourceInformation::dummy()),
@@ -223,7 +227,10 @@ mod tests {
     #[test]
     fn compile_let_values() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new()).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(ReferenceTypeResolver::new(
+                &Module::dummy()
+            )))
+            .compile(
                 &Let::new(
                     vec![ValueDefinition::new(
                         "x",
@@ -252,7 +259,10 @@ mod tests {
     #[test]
     fn compile_let_functions() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new()).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(ReferenceTypeResolver::new(
+                &Module::dummy()
+            )))
+            .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -288,7 +298,10 @@ mod tests {
     #[test]
     fn compile_let_functions_with_recursive_functions() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new()).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(ReferenceTypeResolver::new(
+                &Module::dummy()
+            )))
+            .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -337,7 +350,10 @@ mod tests {
     #[test]
     fn compile_nested_let_functions() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new()).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(ReferenceTypeResolver::new(
+                &Module::dummy()
+            )))
+            .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -396,7 +412,10 @@ mod tests {
     #[test]
     fn compile_let_values_with_free_variables() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new()).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(ReferenceTypeResolver::new(
+                &Module::dummy()
+            )))
+            .compile(
                 &Let::new(
                     vec![ValueDefinition::new(
                         "y",

@@ -1,23 +1,31 @@
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
+use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
 use std::collections::HashMap;
+use std::rc::Rc;
 
-pub struct ModuleCompiler {
+pub struct ModuleCompiler<'a> {
+    module: &'a ast::Module,
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
     type_compiler: TypeCompiler,
 }
 
-impl ModuleCompiler {
-    pub fn new() -> Self {
+impl<'a> ModuleCompiler<'a> {
+    pub fn new(module: &'a ast::Module) -> Self {
+        let reference_type_resolver = Rc::new(ReferenceTypeResolver::new(module));
+
         Self {
-            type_compiler: TypeCompiler::new(),
+            module,
+            reference_type_resolver: reference_type_resolver.clone(),
+            type_compiler: TypeCompiler::new(reference_type_resolver),
         }
     }
 
-    pub fn compile(&self, module: &ast::Module) -> Result<core::ast::Module, CompileError> {
+    pub fn compile(&self) -> Result<core::ast::Module, CompileError> {
         Ok(core::ast::Module::new(
-            module
+            self.module
                 .imported_modules()
                 .iter()
                 .flat_map(|module_interface| {
@@ -32,7 +40,7 @@ impl ModuleCompiler {
                         })
                 })
                 .collect(),
-            module
+            self.module
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
@@ -51,11 +59,13 @@ impl ModuleCompiler {
         &self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<core::ast::FunctionDefinition, CompileError> {
-        let type_ = function_definition
-            .type_()
-            .to_function()
-            .expect("function type");
-        let core_type = self.type_compiler.compile_function(type_);
+        let type_ = self
+            .reference_type_resolver
+            .resolve(function_definition.type_());
+        let type_ = type_.to_function().expect("function type");
+        let core_type = self
+            .type_compiler
+            .compile_function(function_definition.type_());
 
         Ok(core::ast::FunctionDefinition::new(
             function_definition.name(),

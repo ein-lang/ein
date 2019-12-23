@@ -34,6 +34,17 @@ impl Module {
     }
 
     #[cfg(test)]
+    pub fn dummy() -> Self {
+        Self::new(
+            ModulePath::new(crate::package::Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![],
+            vec![],
+        )
+    }
+
+    #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
