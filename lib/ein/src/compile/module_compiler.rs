@@ -59,10 +59,6 @@ impl<'a> ModuleCompiler<'a> {
         &self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<core::ast::FunctionDefinition, CompileError> {
-        let type_ = self
-            .reference_type_resolver
-            .resolve(function_definition.type_());
-        let type_ = type_.to_function().expect("function type");
         let core_type = self
             .type_compiler
             .compile_function(function_definition.type_());
@@ -81,7 +77,13 @@ impl<'a> ModuleCompiler<'a> {
                 &function_definition
                     .arguments()
                     .iter()
-                    .zip(type_.arguments())
+                    .zip(
+                        self.reference_type_resolver
+                            .resolve(function_definition.type_())
+                            .to_function()
+                            .expect("function type")
+                            .arguments(),
+                    )
                     .map(|(name, type_)| (name.clone(), type_.clone()))
                     .collect(),
             )?,
