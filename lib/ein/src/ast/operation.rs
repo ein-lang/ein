@@ -71,4 +71,13 @@ impl Operation {
             self.source_information.clone(),
         )
     }
+
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        Self::new(
+            self.operator,
+            self.lhs.resolve_reference_types(environment),
+            self.rhs.resolve_reference_types(environment),
+            self.source_information.clone(),
+        )
+    }
 }

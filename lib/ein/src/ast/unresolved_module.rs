@@ -3,18 +3,26 @@ use super::export::Export;
 use super::import::Import;
 use super::module::Module;
 use super::module_interface::ModuleInterface;
+use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct UnresolvedModule {
+    type_definitions: Vec<TypeDefinition>,
     definitions: Vec<Definition>,
     export: Export,
     imports: Vec<Import>,
 }
 
 impl UnresolvedModule {
-    pub fn new(export: Export, imports: Vec<Import>, definitions: Vec<Definition>) -> Self {
+    pub fn new(
+        export: Export,
+        imports: Vec<Import>,
+        type_definitions: Vec<TypeDefinition>,
+        definitions: Vec<Definition>,
+    ) -> Self {
         Self {
+            type_definitions,
             definitions,
             export,
             imports,
@@ -22,12 +30,18 @@ impl UnresolvedModule {
     }
 
     pub fn resolve(self, path: ModulePath, module_interfaces: Vec<ModuleInterface>) -> Module {
-        Module::new(path, self.export, module_interfaces, self.definitions)
+        Module::new(
+            path,
+            self.export,
+            module_interfaces,
+            self.type_definitions,
+            self.definitions,
+        )
     }
 
     #[cfg(test)]
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
-        Self::new(Export::new(Default::default()), vec![], definitions)
+        Self::new(Export::new(Default::default()), vec![], vec![], definitions)
     }
 
     pub fn definitions(&self) -> &[Definition] {

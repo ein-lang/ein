@@ -6,6 +6,7 @@ mod module_compiler;
 mod module_interface_compiler;
 mod name_generator;
 mod name_qualifier;
+mod reference_type_resolver;
 mod type_compiler;
 mod type_inference;
 
@@ -38,7 +39,7 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
 
     Ok((
         core::compile::compile(
-            &name_qualifier.qualify_core_module(&ModuleCompiler::new().compile(&module)?),
+            &name_qualifier.qualify_core_module(&ModuleCompiler::new(&module).compile()?),
             &core::compile::InitializerConfiguration::new(
                 if module
                     .definitions()

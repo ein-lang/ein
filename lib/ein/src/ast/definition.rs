@@ -59,6 +59,17 @@ impl Definition {
             }
         }
     }
+
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        match self {
+            Self::FunctionDefinition(function_definition) => function_definition
+                .resolve_reference_types(environment)
+                .into(),
+            Self::ValueDefinition(value_definition) => {
+                value_definition.resolve_reference_types(environment).into()
+            }
+        }
+    }
 }
 
 impl From<FunctionDefinition> for Definition {

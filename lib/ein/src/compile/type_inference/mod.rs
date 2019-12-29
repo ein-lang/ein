@@ -372,6 +372,7 @@ mod tests {
             Export::new(Default::default()),
             vec![ModuleInterface::new(
                 ModulePath::new(Package::new("m", ""), vec![]),
+                Default::default(),
                 vec![(
                     "x".into(),
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -379,6 +380,7 @@ mod tests {
                 .into_iter()
                 .collect(),
             )],
+            vec![],
             vec![ValueDefinition::new(
                 "y",
                 Variable::new("m.x", SourceInformation::dummy()),
@@ -663,5 +665,77 @@ mod tests {
                 SourceInformation::dummy().into(),
             ))
         );
+    }
+
+    #[test]
+    fn infer_types_with_reference_types() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![TypeDefinition::new(
+                "Foo",
+                types::Number::new(SourceInformation::dummy()),
+            )],
+            vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn fail_to_infer_types_with_reference_type_not_found() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![],
+            vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+
+        assert_eq!(
+            infer_types(&module),
+            Err(TypeInferenceError::TypeNotFound {
+                reference: types::Reference::new("Foo", SourceInformation::dummy())
+            })
+        );
+    }
+
+    #[test]
+    fn infer_types_with_imported_reference_types() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![ModuleInterface::new(
+                ModulePath::new(Package::new("Module", ""), vec![]),
+                vec![(
+                    "Foo".into(),
+                    types::Number::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                Default::default(),
+            )],
+            vec![],
+            vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Reference::new("Module.Foo", SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
     }
 }

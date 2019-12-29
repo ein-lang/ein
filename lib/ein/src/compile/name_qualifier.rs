@@ -87,6 +87,7 @@ mod tests {
                     ModulePath::new(Package::new("M", ""), vec![]),
                     ast::Export::new(Default::default()),
                     vec![],
+                    vec![],
                     vec![ast::ValueDefinition::new(
                         "x",
                         ast::Number::new(42.0, SourceInformation::dummy()),
@@ -127,6 +128,7 @@ mod tests {
                     ast::Export::new(Default::default()),
                     vec![ast::ModuleInterface::new(
                         ModulePath::new(Package::new("A", ""), vec!["B".into()]),
+                        Default::default(),
                         vec![(
                             "y".into(),
                             types::Number::new(SourceInformation::dummy()).into()
@@ -134,6 +136,7 @@ mod tests {
                         .into_iter()
                         .collect()
                     )],
+                    vec![],
                     vec![ast::ValueDefinition::new(
                         "x",
                         ast::Variable::new("B.y", SourceInformation::dummy()),

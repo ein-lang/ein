@@ -1,7 +1,6 @@
 use super::error::CompileError;
 use crate::ast::Module;
 use crate::ast::ModuleInterface;
-use crate::types::Type;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -13,26 +12,37 @@ impl ModuleInterfaceCompiler {
     }
 
     pub fn compile(&self, module: &Module) -> Result<ModuleInterface, CompileError> {
-        let definitions = module
-            .definitions()
-            .iter()
-            .map(|definition| (definition.name(), definition.type_()))
-            .collect::<HashMap<&str, &Type>>();
+        for name in module.export().names() {
+            if !module
+                .type_definitions()
+                .iter()
+                .any(|definition| definition.name() == name)
+                && !module
+                    .definitions()
+                    .iter()
+                    .any(|definition| definition.name() == name)
+            {
+                return Err(CompileError::ExportedNameNotFound { name: name.into() });
+            }
+        }
 
         Ok(ModuleInterface::new(
             module.path().clone(),
             module
-                .export()
-                .names()
+                .type_definitions()
                 .iter()
-                .map(|name| {
-                    let type_ = *definitions
-                        .get(name.as_str())
-                        .ok_or_else(|| CompileError::ExportedNameNotFound { name: name.into() })?;
-
-                    Ok((name.into(), type_.clone()))
+                .map(|type_definition| {
+                    (
+                        type_definition.name().into(),
+                        type_definition.type_().clone(),
+                    )
                 })
-                .collect::<Result<HashMap<_, _>, CompileError>>()?,
+                .collect::<HashMap<_, _>>(),
+            module
+                .definitions()
+                .iter()
+                .map(|definition| (definition.name().into(), definition.type_().clone()))
+                .collect::<HashMap<_, _>>(),
         ))
     }
 }
@@ -52,6 +62,7 @@ mod tests {
             ModuleInterfaceCompiler::new().compile(&Module::from_definitions(vec![])),
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("", ""), vec![]),
+                Default::default(),
                 Default::default()
             ))
         );
@@ -64,6 +75,7 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
+                vec![],
                 vec![ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
@@ -74,6 +86,7 @@ mod tests {
             )),
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("", ""), vec![]),
+                Default::default(),
                 vec![(
                     "x".into(),
                     types::Number::new(SourceInformation::dummy()).into()
@@ -90,6 +103,7 @@ mod tests {
             ModuleInterfaceCompiler::new().compile(&Module::new(
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(vec!["x".into()].into_iter().collect()),
+                vec![],
                 vec![],
                 vec![],
             )),
