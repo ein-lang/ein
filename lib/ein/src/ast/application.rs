@@ -60,4 +60,12 @@ impl Application {
             self.source_information.clone(),
         )
     }
+
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        Self::new(
+            self.function.resolve_reference_types(environment),
+            self.argument.resolve_reference_types(environment),
+            self.source_information.clone(),
+        )
+    }
 }

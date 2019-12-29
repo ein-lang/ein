@@ -55,4 +55,14 @@ impl Let {
             self.expression.convert_expressions(convert),
         )
     }
+
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        Self::new(
+            self.definitions
+                .iter()
+                .map(|definition| definition.resolve_reference_types(environment))
+                .collect(),
+            self.expression.resolve_reference_types(environment),
+        )
+    }
 }

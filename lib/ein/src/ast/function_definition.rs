@@ -80,4 +80,14 @@ impl FunctionDefinition {
             self.source_information.clone(),
         )
     }
+
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.arguments.clone(),
+            self.body.resolve_reference_types(environment),
+            self.type_.resolve_reference_types(environment),
+            self.source_information.clone(),
+        )
+    }
 }

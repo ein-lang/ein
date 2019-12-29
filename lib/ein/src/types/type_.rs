@@ -41,6 +41,15 @@ impl Type {
         }
     }
 
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        match self {
+            Self::Function(function) => function.resolve_reference_types(environment).into(),
+            Self::Number(_) => self.clone(),
+            Self::Reference(reference) => environment[reference.name()].clone(),
+            Self::Variable(_) => unreachable!(),
+        }
+    }
+
     pub fn to_function(&self) -> Option<&Function> {
         if let Self::Function(function) = self {
             Some(&function)

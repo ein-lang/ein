@@ -1,4 +1,5 @@
 use crate::types::Type;
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TypeDefinition {
@@ -20,5 +21,9 @@ impl TypeDefinition {
 
     pub fn type_(&self) -> &Type {
         &self.type_
+    }
+
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        Self::new(&self.name, self.type_.resolve_reference_types(environment))
     }
 }

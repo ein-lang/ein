@@ -19,15 +19,13 @@ pub enum Expression {
 impl Expression {
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
-            Expression::Application(application) => {
+            Self::Application(application) => {
                 application.substitute_type_variables(substitutions).into()
             }
-            Expression::Let(let_) => let_.substitute_type_variables(substitutions).into(),
-            Expression::Number(number) => Expression::Number(number.clone()),
-            Expression::Operation(operation) => {
-                operation.substitute_type_variables(substitutions).into()
-            }
-            Expression::Variable(variable) => Expression::Variable(variable.clone()),
+            Self::Let(let_) => let_.substitute_type_variables(substitutions).into(),
+            Self::Number(number) => Self::Number(number.clone()),
+            Self::Operation(operation) => operation.substitute_type_variables(substitutions).into(),
+            Self::Variable(variable) => Self::Variable(variable.clone()),
         }
     }
 
@@ -50,34 +48,45 @@ impl Expression {
 
         convert(&expression)
     }
+
+    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
+        match self {
+            Self::Application(application) => {
+                application.resolve_reference_types(environment).into()
+            }
+            Self::Let(let_) => let_.resolve_reference_types(environment).into(),
+            Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
+            _ => self.clone(),
+        }
+    }
 }
 
 impl From<Application> for Expression {
     fn from(application: Application) -> Expression {
-        Expression::Application(application)
+        Self::Application(application)
     }
 }
 
 impl From<Let> for Expression {
     fn from(let_: Let) -> Expression {
-        Expression::Let(let_)
+        Self::Let(let_)
     }
 }
 
 impl From<Number> for Expression {
     fn from(number: Number) -> Expression {
-        Expression::Number(number)
+        Self::Number(number)
     }
 }
 
 impl From<Operation> for Expression {
     fn from(operation: Operation) -> Expression {
-        Expression::Operation(operation)
+        Self::Operation(operation)
     }
 }
 
 impl From<Variable> for Expression {
     fn from(variable: Variable) -> Expression {
-        Expression::Variable(variable)
+        Self::Variable(variable)
     }
 }
