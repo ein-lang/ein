@@ -23,4 +23,45 @@ impl Function {
     pub fn result(&self) -> &Value {
         &self.result
     }
+
+    pub fn to_id(&self) -> String {
+        format!(
+            "({}->{})",
+            self.arguments
+                .iter()
+                .map(|argument| argument.to_id())
+                .collect::<Vec<_>>()
+                .join("->"),
+            self.result.to_id()
+        )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn function_id() {
+        assert_eq!(
+            &Function::new(vec![Value::Number.into()], Value::Number).to_id(),
+            "(Number->Number)"
+        );
+        assert_eq!(
+            &Function::new(
+                vec![Value::Number.into(), Value::Number.into()],
+                Value::Number
+            )
+            .to_id(),
+            "(Number->Number->Number)"
+        );
+        assert_eq!(
+            &Function::new(
+                vec![Function::new(vec![Value::Number.into()], Value::Number).into()],
+                Value::Number
+            )
+            .to_id(),
+            "((Number->Number)->Number)"
+        );
+    }
 }

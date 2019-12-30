@@ -1,4 +1,5 @@
 use super::type_kind::*;
+use super::utilities::*;
 use super::value::Value;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
@@ -119,7 +120,11 @@ impl Type {
         .into()
     }
 
-    pub fn struct_set_body(&self, elements: &[Self]) {
+    pub fn struct_create_named(name: &str) -> Type {
+        unsafe { LLVMStructCreateNamed(LLVMGetGlobalContext(), c_string(name).as_ptr()) }.into()
+    }
+
+    pub fn struct_set_body(self, elements: &[Self]) {
         assert_eq!(self.kind(), TypeKind::Struct);
 
         unsafe {
