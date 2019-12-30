@@ -31,7 +31,7 @@ impl<'a> FunctionCompiler<'a> {
         let entry_function = self.module.add_function(
             &Self::generate_closure_entry_name(function_definition.name()),
             self.type_compiler
-                .compile_function(&function_definition.type_()),
+                .compile_entry_function(&function_definition.type_()),
         );
 
         let builder = llvm::Builder::new(entry_function);

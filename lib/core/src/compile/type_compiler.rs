@@ -25,7 +25,7 @@ impl TypeCompiler {
         }
     }
 
-    pub fn compile_function(&self, function: &types::Function) -> llvm::Type {
+    pub fn compile_entry_function(&self, function: &types::Function) -> llvm::Type {
         let mut arguments = vec![llvm::Type::pointer(self.compile_unsized_environment())];
 
         arguments.extend_from_slice(
@@ -41,14 +41,14 @@ impl TypeCompiler {
 
     pub fn compile_closure(&self, function_definition: &ast::FunctionDefinition) -> llvm::Type {
         llvm::Type::struct_(&[
-            llvm::Type::pointer(self.compile_function(function_definition.type_())),
+            llvm::Type::pointer(self.compile_entry_function(function_definition.type_())),
             self.compile_environment(function_definition.environment()),
         ])
     }
 
     pub fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {
         llvm::Type::struct_(&[
-            llvm::Type::pointer(self.compile_function(function)),
+            llvm::Type::pointer(self.compile_entry_function(function)),
             self.compile_unsized_environment(),
         ])
     }
