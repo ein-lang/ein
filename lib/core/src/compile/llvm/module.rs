@@ -29,6 +29,15 @@ impl Module {
         unsafe { LLVMAddGlobal(self.internal, type_.into(), c_string(name).as_ptr()) }.into()
     }
 
+    pub fn struct_create_named(&mut self, name: &str, elements: &[Type]) -> Type {
+        unsafe {
+            let struct_type: Type =
+                LLVMStructCreateNamed(LLVMGetGlobalContext(), c_string(name).as_ptr()).into();
+            struct_type.struct_set_body(elements);
+            struct_type
+        }
+    }
+
     pub fn declare_function(&mut self, name: &str, return_type: Type, arguments: &[Type]) {
         self.add_function(name, Type::function(return_type, arguments));
     }

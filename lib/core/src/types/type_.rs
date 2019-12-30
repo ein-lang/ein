@@ -4,17 +4,18 @@ use super::value::Value;
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Type {
     Function(Function),
+    Index(usize),
     Value(Value),
 }
 
 impl From<Function> for Type {
     fn from(function: Function) -> Self {
-        Type::Function(function)
+        Self::Function(function)
     }
 }
 
 impl From<Value> for Type {
     fn from(value: Value) -> Self {
-        Type::Value(value)
+        Self::Value(value)
     }
 }

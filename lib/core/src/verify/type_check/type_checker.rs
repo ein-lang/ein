@@ -112,6 +112,7 @@ impl TypeChecker {
 
                         Ok(function_type.result().clone().into())
                     }
+                    Type::Index(_) => unreachable!(),
                     Type::Value(_) => Err(TypeCheckError),
                 }
             }

@@ -5,9 +5,10 @@ use std::fmt::Display;
 
 #[derive(Debug, PartialEq)]
 pub enum CompileError {
+    CircularInitialization,
+    InvalidTypeIndex,
     VariableNotFound,
     Verification,
-    CircularInitialization,
 }
 
 impl Display for CompileError {

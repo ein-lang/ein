@@ -2,16 +2,19 @@ use super::llvm;
 use crate::ast;
 use crate::types::{self, Type};
 
-pub struct TypeCompiler {}
+pub struct TypeCompiler {
+    functions: Vec<llvm::Type>,
+}
 
 impl TypeCompiler {
     pub fn new() -> Self {
-        Self {}
+        Self { functions: vec![] }
     }
 
     pub fn compile(&self, type_: &Type) -> llvm::Type {
         match type_ {
             Type::Function(function) => llvm::Type::pointer(self.compile_unsized_closure(function)),
+            Type::Index(index) => self.functions[*index],
             Type::Value(value) => self.compile_value(value),
         }
     }

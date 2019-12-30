@@ -118,6 +118,23 @@ impl Type {
         }
         .into()
     }
+
+    pub fn struct_set_body(&self, elements: &[Self]) {
+        assert_eq!(self.kind(), TypeKind::Struct);
+
+        unsafe {
+            LLVMStructSetBody(
+                self.internal,
+                elements
+                    .iter()
+                    .map(|type_| type_.into())
+                    .collect::<Vec<LLVMTypeRef>>()
+                    .as_mut_ptr(),
+                elements.len() as c_uint,
+                0,
+            )
+        }
+    }
 }
 
 impl From<LLVMTypeRef> for Type {
