@@ -1,3 +1,4 @@
+use super::context::Context;
 use super::type_::*;
 use super::utilities::*;
 use super::value::*;
@@ -10,37 +11,39 @@ pub struct Module {
 }
 
 impl Module {
-    pub fn new(name: &str) -> Self {
-        Self {
-            internal: unsafe { LLVMModuleCreateWithName(c_string(name).as_ptr()) },
-        }
-    }
-
     pub(super) fn internal(&self) -> LLVMModuleRef {
         self.internal
     }
 
-    pub fn add_function(&mut self, name: &str, function_type: Type) -> Value {
+    pub fn add_function(&self, name: &str, function_type: Type) -> Value {
         unsafe { LLVMAddFunction(self.internal, c_string(name).as_ptr(), function_type.into()) }
             .into()
     }
 
-    pub fn add_global(&mut self, name: &str, type_: Type) -> Value {
+    pub fn add_global(&self, name: &str, type_: Type) -> Value {
         unsafe { LLVMAddGlobal(self.internal, type_.into(), c_string(name).as_ptr()) }.into()
     }
 
-    pub fn declare_function(&mut self, name: &str, return_type: Type, arguments: &[Type]) {
-        self.add_function(name, Type::function(return_type, arguments));
+    pub fn declare_function(&self, name: &str, return_type: Type, arguments: &[Type]) {
+        self.add_function(name, self.context().function_type(return_type, arguments));
     }
 
-    pub fn declare_intrinsics(&mut self) {
-        self.declare_function("malloc", Type::generic_pointer(), &[Type::i64()]);
+    pub fn declare_intrinsics(&self) {
+        self.declare_function(
+            "malloc",
+            self.context().generic_pointer_type(),
+            &[self.context().i64_type()],
+        );
     }
 
-    pub fn link(&mut self, other: Self) {
+    pub fn link(&self, other: Self) {
         unsafe {
             LLVMLinkModules2(self.internal(), other.internal());
         }
+    }
+
+    fn context(&self) -> Context {
+        unsafe { LLVMGetModuleContext(self.internal) }.into()
     }
 
     #[allow(dead_code)]

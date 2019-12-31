@@ -2,7 +2,6 @@ use super::type_kind::*;
 use super::value::Value;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
-use std::os::raw::c_uint;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Type {
@@ -10,10 +9,6 @@ pub struct Type {
 }
 
 impl Type {
-    pub(super) fn new(internal: LLVMTypeRef) -> Self {
-        Self { internal }
-    }
-
     pub fn kind(self) -> TypeKind {
         unsafe { LLVMGetTypeKind(self.into()) }.into()
     }
@@ -47,78 +42,11 @@ impl Type {
     pub fn dump(self) {
         unsafe { LLVMDumpType(self.into()) }
     }
-
-    pub fn generic_pointer() -> Self {
-        Self::pointer(Self::i8())
-    }
-
-    pub fn i64() -> Self {
-        Self::int(64)
-    }
-
-    pub fn i32() -> Self {
-        Self::int(32)
-    }
-
-    pub fn i8() -> Self {
-        Self::int(8)
-    }
-
-    pub fn i1() -> Self {
-        Self::int(1)
-    }
-
-    pub fn int(bits: c_uint) -> Self {
-        unsafe { LLVMIntType(bits) }.into()
-    }
-
-    pub fn double() -> Self {
-        unsafe { LLVMDoubleType() }.into()
-    }
-
-    pub fn pointer(content: Self) -> Self {
-        unsafe { LLVMPointerType(content.into(), 0) }.into()
-    }
-
-    pub fn function(result: Self, arguments: &[Self]) -> Self {
-        unsafe {
-            LLVMFunctionType(
-                result.into(),
-                arguments
-                    .iter()
-                    .map(|type_| type_.into())
-                    .collect::<Vec<LLVMTypeRef>>()
-                    .as_mut_ptr(),
-                arguments.len() as c_uint,
-                0,
-            )
-        }
-        .into()
-    }
-
-    pub fn void() -> Type {
-        unsafe { LLVMVoidType() }.into()
-    }
-
-    pub fn struct_(elements: &[Self]) -> Type {
-        unsafe {
-            LLVMStructType(
-                elements
-                    .iter()
-                    .map(|type_| type_.into())
-                    .collect::<Vec<LLVMTypeRef>>()
-                    .as_mut_ptr(),
-                elements.len() as c_uint,
-                0,
-            )
-        }
-        .into()
-    }
 }
 
 impl From<LLVMTypeRef> for Type {
-    fn from(type_ref: LLVMTypeRef) -> Self {
-        Self::new(type_ref)
+    fn from(internal: LLVMTypeRef) -> Self {
+        Self { internal }
     }
 }
 

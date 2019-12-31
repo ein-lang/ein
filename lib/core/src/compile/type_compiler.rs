@@ -2,28 +2,34 @@ use super::llvm;
 use crate::ast;
 use crate::types::{self, Type};
 
-pub struct TypeCompiler {}
+pub struct TypeCompiler<'a> {
+    context: &'a llvm::Context,
+}
 
-impl TypeCompiler {
-    pub fn new() -> Self {
-        Self {}
+impl<'a> TypeCompiler<'a> {
+    pub fn new(context: &'a llvm::Context) -> Self {
+        Self { context }
     }
 
     pub fn compile(&self, type_: &Type) -> llvm::Type {
         match type_ {
-            Type::Function(function) => llvm::Type::pointer(self.compile_unsized_closure(function)),
+            Type::Function(function) => self
+                .context
+                .pointer_type(self.compile_unsized_closure(function)),
             Type::Value(value) => self.compile_value(value),
         }
     }
 
     pub fn compile_value(&self, value: &types::Value) -> llvm::Type {
         match value {
-            types::Value::Number => llvm::Type::double(),
+            types::Value::Number => self.context.double_type(),
         }
     }
 
     pub fn compile_entry_function(&self, function: &types::Function) -> llvm::Type {
-        let mut arguments = vec![llvm::Type::pointer(self.compile_unsized_environment())];
+        let mut arguments = vec![self
+            .context
+            .pointer_type(self.compile_unsized_environment())];
 
         arguments.extend_from_slice(
             &function
@@ -33,25 +39,28 @@ impl TypeCompiler {
                 .collect::<Vec<_>>(),
         );
 
-        llvm::Type::function(self.compile_value(function.result()), &arguments)
+        self.context
+            .function_type(self.compile_value(function.result()), &arguments)
     }
 
     pub fn compile_closure(&self, function_definition: &ast::FunctionDefinition) -> llvm::Type {
-        llvm::Type::struct_(&[
-            llvm::Type::pointer(self.compile_entry_function(function_definition.type_())),
+        self.context.struct_type(&[
+            self.context
+                .pointer_type(self.compile_entry_function(function_definition.type_())),
             self.compile_environment(function_definition.environment()),
         ])
     }
 
     pub fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {
-        llvm::Type::struct_(&[
-            llvm::Type::pointer(self.compile_entry_function(function)),
+        self.context.struct_type(&[
+            self.context
+                .pointer_type(self.compile_entry_function(function)),
             self.compile_unsized_environment(),
         ])
     }
 
     pub fn compile_environment(&self, free_variables: &[ast::Argument]) -> llvm::Type {
-        llvm::Type::struct_(
+        self.context.struct_type(
             &free_variables
                 .iter()
                 .map(|argument| self.compile(argument.type_()))
@@ -60,7 +69,7 @@ impl TypeCompiler {
     }
 
     fn compile_unsized_environment(&self) -> llvm::Type {
-        llvm::Type::struct_(&[])
+        self.context.struct_type(&[])
     }
 }
 
@@ -70,19 +79,20 @@ mod tests {
 
     #[test]
     fn compile_number() {
-        TypeCompiler::new().compile(&types::Value::Number.into());
+        TypeCompiler::new(&llvm::Context::new()).compile(&types::Value::Number.into());
     }
 
     #[test]
     fn compile_function() {
-        TypeCompiler::new().compile(
+        TypeCompiler::new(&llvm::Context::new()).compile(
             &types::Function::new(vec![types::Value::Number.into()], types::Value::Number).into(),
         );
     }
 
     #[test]
     fn compile_function_twice() {
-        let compiler = TypeCompiler::new();
+        let context = llvm::Context::new();
+        let compiler = TypeCompiler::new(&context);
         let type_ =
             types::Function::new(vec![types::Value::Number.into()], types::Value::Number).into();
 

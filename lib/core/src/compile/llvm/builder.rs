@@ -1,5 +1,6 @@
 use super::basic_block::*;
 use super::constants::*;
+use super::context::Context;
 use super::type_::*;
 use super::utilities::c_string;
 use super::value::*;
@@ -7,6 +8,7 @@ use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
 pub struct Builder {
+    context: Context,
     module: LLVMModuleRef,
     function: LLVMValueRef,
     builder: LLVMBuilderRef,
@@ -14,8 +16,11 @@ pub struct Builder {
 
 impl Builder {
     pub fn new(function: Value) -> Builder {
+        let module = unsafe { LLVMGetGlobalParent(function.into()) };
+
         Builder {
-            module: unsafe { LLVMGetGlobalParent(function.into()) },
+            context: unsafe { LLVMGetModuleContext(module) }.into(),
+            module,
             function: function.into(),
             builder: unsafe { LLVMCreateBuilder() },
         }
@@ -159,10 +164,10 @@ impl Builder {
         self.build_call_with_name(
             "llvm.coro.id",
             &[
-                const_int(Type::i32(), 0),
-                self.build_bit_cast(promise, Type::generic_pointer()),
-                const_null(Type::generic_pointer()),
-                const_null(Type::generic_pointer()),
+                const_int(self.context.i32_type(), 0),
+                self.build_bit_cast(promise, self.context.generic_pointer_type()),
+                const_null(self.context.generic_pointer_type()),
+                const_null(self.context.generic_pointer_type()),
             ],
         )
     }
@@ -179,7 +184,10 @@ impl Builder {
 
     #[allow(dead_code)]
     pub fn build_coro_end(&self, handle: Value) {
-        self.build_call_with_name("llvm.coro.end", &[handle, const_int(Type::i1(), 0)]);
+        self.build_call_with_name(
+            "llvm.coro.end",
+            &[handle, const_int(self.context.i1_type(), 0)],
+        );
     }
 
     #[allow(dead_code)]
@@ -201,7 +209,11 @@ impl Builder {
     pub fn build_coro_promise(&self, handle: Value) -> Value {
         self.build_call_with_name(
             "llvm.coro.promise",
-            &[handle, const_int(Type::i32(), 8), const_int(Type::i1(), 0)],
+            &[
+                handle,
+                const_int(self.context.i32_type(), 8),
+                const_int(self.context.i1_type(), 0),
+            ],
         )
     }
 

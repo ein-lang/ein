@@ -6,18 +6,21 @@ use crate::ast;
 use std::collections::HashMap;
 
 pub struct FunctionCompiler<'a> {
-    module: &'a mut llvm::Module,
-    type_compiler: &'a TypeCompiler,
+    context: &'a llvm::Context,
+    module: &'a llvm::Module,
+    type_compiler: &'a TypeCompiler<'a>,
     global_variables: &'a HashMap<String, llvm::Value>,
 }
 
 impl<'a> FunctionCompiler<'a> {
     pub fn new(
-        module: &'a mut llvm::Module,
-        type_compiler: &'a TypeCompiler,
+        context: &'a llvm::Context,
+        module: &'a llvm::Module,
+        type_compiler: &'a TypeCompiler<'a>,
         global_variables: &'a HashMap<String, llvm::Value>,
     ) -> Self {
         Self {
+            context,
             module,
             type_compiler,
             global_variables,
@@ -39,7 +42,7 @@ impl<'a> FunctionCompiler<'a> {
 
         let environment = builder.build_bit_cast(
             llvm::get_param(entry_function, 0),
-            llvm::Type::pointer(
+            self.context.pointer_type(
                 self.type_compiler
                     .compile_environment(function_definition.environment()),
             ),
@@ -53,8 +56,8 @@ impl<'a> FunctionCompiler<'a> {
                 builder.build_load(builder.build_gep(
                     environment,
                     &[
-                        llvm::const_int(llvm::Type::i32(), 0),
-                        llvm::const_int(llvm::Type::i32(), index as u64),
+                        llvm::const_int(self.context.i32_type(), 0),
+                        llvm::const_int(self.context.i32_type(), index as u64),
                     ],
                 )),
             );
@@ -68,7 +71,7 @@ impl<'a> FunctionCompiler<'a> {
         }
 
         builder.build_ret(
-            ExpressionCompiler::new(&builder, self, self.type_compiler)
+            ExpressionCompiler::new(self.context, &builder, self, self.type_compiler)
                 .compile(&function_definition.body(), &variables)?,
         );
 

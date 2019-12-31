@@ -10,9 +10,10 @@ use crate::types::{self, Type};
 use std::collections::HashMap;
 
 pub struct ModuleCompiler<'a> {
-    module: &'a mut llvm::Module,
+    context: &'a llvm::Context,
+    module: &'a llvm::Module,
     ast_module: &'a ast::Module,
-    type_compiler: &'a TypeCompiler,
+    type_compiler: &'a TypeCompiler<'a>,
     global_variables: HashMap<String, llvm::Value>,
     initializers: HashMap<String, llvm::Value>,
     initializer_configuration: &'a InitializerConfiguration,
@@ -20,12 +21,14 @@ pub struct ModuleCompiler<'a> {
 
 impl<'a> ModuleCompiler<'a> {
     pub fn new(
-        module: &'a mut llvm::Module,
+        context: &'a llvm::Context,
+        module: &'a llvm::Module,
         ast_module: &'a ast::Module,
-        type_compiler: &'a TypeCompiler,
+        type_compiler: &'a TypeCompiler<'a>,
         initializer_configuration: &'a InitializerConfiguration,
     ) -> ModuleCompiler<'a> {
         ModuleCompiler {
+            context,
             module,
             ast_module,
             type_compiler,
@@ -91,8 +94,13 @@ impl<'a> ModuleCompiler<'a> {
         function_definition: &ast::FunctionDefinition,
     ) -> Result<(), CompileError> {
         self.global_variables[function_definition.name()].set_initializer(llvm::const_struct(&[
-            FunctionCompiler::new(self.module, self.type_compiler, &self.global_variables)
-                .compile(function_definition)?,
+            FunctionCompiler::new(
+                self.context,
+                self.module,
+                self.type_compiler,
+                &self.global_variables,
+            )
+            .compile(function_definition)?,
             llvm::const_struct(&[]),
         ]));
 
@@ -116,15 +124,21 @@ impl<'a> ModuleCompiler<'a> {
 
         let initializer = self.module.add_function(
             &Self::get_initializer_name(value_definition.name()),
-            llvm::Type::function(llvm::Type::void(), &[]),
+            self.context.function_type(self.context.void_type(), &[]),
         );
 
         let builder = llvm::Builder::new(initializer);
         builder.position_at_end(builder.append_basic_block("entry"));
         builder.build_store(
             ExpressionCompiler::new(
+                self.context,
                 &builder,
-                &mut FunctionCompiler::new(self.module, self.type_compiler, &self.global_variables),
+                &mut FunctionCompiler::new(
+                    self.context,
+                    self.module,
+                    self.type_compiler,
+                    &self.global_variables,
+                ),
                 &self.type_compiler,
             )
             .compile(&value_definition.body(), &self.global_variables)?,
@@ -142,13 +156,13 @@ impl<'a> ModuleCompiler<'a> {
     fn compile_module_initializer(&mut self) -> Result<(), CompileError> {
         let flag = self.module.add_global(
             &[self.initializer_configuration.name(), "$initialized"].concat(),
-            llvm::Type::i1(),
+            self.context.i1_type(),
         );
-        flag.set_initializer(llvm::const_int(llvm::Type::i1(), 0));
+        flag.set_initializer(llvm::const_int(self.context.i1_type(), 0));
 
         let initializer = self.module.add_function(
             self.initializer_configuration.name(),
-            llvm::Type::function(llvm::Type::void(), &[]),
+            self.context.function_type(self.context.void_type(), &[]),
         );
 
         let builder = llvm::Builder::new(initializer);
@@ -164,7 +178,7 @@ impl<'a> ModuleCompiler<'a> {
             self.initializer_configuration.dependent_initializer_names()
         {
             self.module
-                .declare_function(dependent_initializer_name, llvm::Type::void(), &[]);
+                .declare_function(dependent_initializer_name, self.context.void_type(), &[]);
             builder.build_call_with_name(dependent_initializer_name, &[]);
         }
 
@@ -172,7 +186,7 @@ impl<'a> ModuleCompiler<'a> {
             builder.build_call(self.initializers[name], &[]);
         }
 
-        builder.build_store(llvm::const_int(llvm::Type::i1(), 1), flag);
+        builder.build_store(llvm::const_int(self.context.i1_type(), 1), flag);
 
         builder.build_br(end_block);
         builder.position_at_end(end_block);

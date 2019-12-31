@@ -6,18 +6,21 @@ use crate::ast;
 use std::collections::HashMap;
 
 pub struct ExpressionCompiler<'a, 'b> {
+    context: &'b llvm::Context,
     builder: &'b llvm::Builder,
     function_compiler: &'b mut FunctionCompiler<'a>,
-    type_compiler: &'a TypeCompiler,
+    type_compiler: &'a TypeCompiler<'a>,
 }
 
 impl<'a, 'b> ExpressionCompiler<'a, 'b> {
     pub fn new(
+        context: &'b llvm::Context,
         builder: &'b llvm::Builder,
         function_compiler: &'b mut FunctionCompiler<'a>,
-        type_compiler: &'a TypeCompiler,
+        type_compiler: &'a TypeCompiler<'a>,
     ) -> Self {
         Self {
+            context,
             builder,
             function_compiler,
             type_compiler,
@@ -36,8 +39,8 @@ impl<'a, 'b> ExpressionCompiler<'a, 'b> {
                 let mut arguments = vec![self.builder.build_gep(
                     closure,
                     &[
-                        llvm::const_int(llvm::Type::i32(), 0),
-                        llvm::const_int(llvm::Type::i32(), 1),
+                        llvm::const_int(self.context.i32_type(), 0),
+                        llvm::const_int(self.context.i32_type(), 1),
                     ],
                 )];
 
@@ -49,8 +52,8 @@ impl<'a, 'b> ExpressionCompiler<'a, 'b> {
                     self.builder.build_load(self.builder.build_gep(
                         closure,
                         &[
-                            llvm::const_int(llvm::Type::i32(), 0),
-                            llvm::const_int(llvm::Type::i32(), 0),
+                            llvm::const_int(self.context.i32_type(), 0),
+                            llvm::const_int(self.context.i32_type(), 0),
                         ],
                     )),
                     &arguments,
@@ -68,7 +71,7 @@ impl<'a, 'b> ExpressionCompiler<'a, 'b> {
                         definition.name().into(),
                         self.builder.build_bit_cast(
                             pointer,
-                            llvm::Type::pointer(
+                            self.context.pointer_type(
                                 self.type_compiler
                                     .compile_unsized_closure(definition.type_()),
                             ),
@@ -77,7 +80,7 @@ impl<'a, 'b> ExpressionCompiler<'a, 'b> {
                     closures.insert(
                         definition.name(),
                         self.builder
-                            .build_bit_cast(pointer, llvm::Type::pointer(closure_type)),
+                            .build_bit_cast(pointer, self.context.pointer_type(closure_type)),
                     );
                 }
 
@@ -89,8 +92,8 @@ impl<'a, 'b> ExpressionCompiler<'a, 'b> {
                         self.builder.build_gep(
                             closure,
                             &[
-                                llvm::const_int(llvm::Type::i32(), 0),
-                                llvm::const_int(llvm::Type::i32(), 0),
+                                llvm::const_int(self.context.i32_type(), 0),
+                                llvm::const_int(self.context.i32_type(), 0),
                             ],
                         ),
                     );
@@ -109,9 +112,9 @@ impl<'a, 'b> ExpressionCompiler<'a, 'b> {
                             self.builder.build_gep(
                                 closure,
                                 &[
-                                    llvm::const_int(llvm::Type::i32(), 0),
-                                    llvm::const_int(llvm::Type::i32(), 1),
-                                    llvm::const_int(llvm::Type::i32(), index as u64),
+                                    llvm::const_int(self.context.i32_type(), 0),
+                                    llvm::const_int(self.context.i32_type(), 1),
+                                    llvm::const_int(self.context.i32_type(), index as u64),
                                 ],
                             ),
                         );
@@ -132,7 +135,9 @@ impl<'a, 'b> ExpressionCompiler<'a, 'b> {
 
                 self.compile(let_values.expression(), &variables)
             }
-            ast::Expression::Number(number) => Ok(llvm::const_real(llvm::Type::double(), *number)),
+            ast::Expression::Number(number) => {
+                Ok(llvm::const_real(self.context.double_type(), *number))
+            }
             ast::Expression::Operation(operation) => {
                 let lhs = self.compile(operation.lhs(), variables)?;
                 let rhs = self.compile(operation.rhs(), variables)?;

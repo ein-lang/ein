@@ -22,11 +22,14 @@ pub fn compile(
 ) -> Result<Module, CompileError> {
     verify(&ast_module)?;
 
-    let mut module = llvm::Module::new("main");
+    let context = llvm::Context::new();
+    let mut module = context.create_module("main");
+
     ModuleCompiler::new(
+        &context,
         &mut module,
         ast_module,
-        &TypeCompiler::new(),
+        &TypeCompiler::new(&context),
         initializer_configuration,
     )
     .compile()?;
