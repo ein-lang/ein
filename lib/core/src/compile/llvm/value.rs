@@ -23,11 +23,6 @@ impl Value {
     pub fn is_global_variable(self) -> Value {
         unsafe { LLVMIsAGlobalVariable(self.into()) }.into()
     }
-
-    #[allow(dead_code)]
-    pub fn dump(self) {
-        unsafe { LLVMDumpValue(self.into()) }
-    }
 }
 
 impl From<LLVMValueRef> for Value {

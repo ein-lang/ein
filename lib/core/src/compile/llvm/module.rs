@@ -38,11 +38,6 @@ impl Module {
     fn context(&self) -> Context {
         unsafe { LLVMGetModuleContext(self.internal) }.into()
     }
-
-    #[allow(dead_code)]
-    pub fn dump(&self) {
-        unsafe { LLVMDumpModule(self.internal) }
-    }
 }
 
 impl std::fmt::Display for Module {

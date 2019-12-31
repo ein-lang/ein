@@ -20,11 +20,6 @@ impl Builder {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn build_alloca(&self, type_: Type) -> Value {
-        unsafe { LLVMBuildAlloca(self.builder, type_.into(), c_string("").as_ptr()) }.into()
-    }
-
     pub fn build_load(&self, pointer: Value) -> Value {
         unsafe { LLVMBuildLoad(self.builder, pointer.into(), c_string("").as_ptr()) }.into()
     }

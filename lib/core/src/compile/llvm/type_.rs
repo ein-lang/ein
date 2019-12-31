@@ -37,11 +37,6 @@ impl Type {
     pub fn size(self) -> Value {
         unsafe { LLVMSizeOf(self.into()) }.into()
     }
-
-    #[allow(dead_code)]
-    pub fn dump(self) {
-        unsafe { LLVMDumpType(self.into()) }
-    }
 }
 
 impl From<LLVMTypeRef> for Type {
