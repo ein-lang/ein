@@ -38,8 +38,14 @@ impl Module {
         unsafe { LLVMGetModuleContext(self.internal) }.into()
     }
 
-    pub fn write_bitcode_to_memory_buffer(&self) -> MemoryBuffer {
+    pub fn to_bitcode(&self) -> Vec<u8> {
         MemoryBuffer::new(unsafe { LLVMWriteBitcodeToMemoryBuffer(self.internal) })
+            .as_bytes()
+            .to_vec()
+    }
+
+    pub fn from_bitcode(bitcode: &[u8]) -> Self {
+        MemoryBuffer::from(bitcode).get_bitcode_module()
     }
 
     pub fn verify(&self) {

@@ -34,12 +34,14 @@ impl MemoryBuffer {
 
 impl From<&[u8]> for MemoryBuffer {
     fn from(buffer: &[u8]) -> Self {
-        Self::new(unsafe {
-            LLVMCreateMemoryBufferWithMemoryRangeCopy(
-                &buffer[0] as *const u8 as *const i8,
-                buffer.len(),
-                std::ptr::null(),
-            )
-        })
+        Self {
+            internal: unsafe {
+                LLVMCreateMemoryBufferWithMemoryRangeCopy(
+                    &buffer[0] as *const u8 as *const i8,
+                    buffer.len(),
+                    std::ptr::null(),
+                )
+            },
+        }
     }
 }

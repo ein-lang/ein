@@ -13,7 +13,6 @@ pub use basic_block::*;
 pub use builder::*;
 pub use constants::*;
 pub use context::*;
-pub use memory_buffer::*;
 pub use module::*;
 pub use type_::*;
 pub use type_kind::*;
