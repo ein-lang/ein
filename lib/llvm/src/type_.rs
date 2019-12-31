@@ -30,8 +30,8 @@ impl Type {
         unsafe { LLVMGetStructElementTypes(self.into(), elements.as_mut_ptr()) };
 
         elements
-            .iter()
-            .map(|type_| (*type_).into())
+            .drain(..)
+            .map(|type_| type_.into())
             .collect::<Vec<_>>()
     }
 
