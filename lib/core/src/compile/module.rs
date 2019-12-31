@@ -1,5 +1,3 @@
-use super::llvm;
-
 pub struct Module {
     module: llvm::Module,
 }
@@ -9,17 +7,11 @@ impl Module {
         Self { module }
     }
 
-    pub fn link(&mut self, module: Module) {
-        self.module.link(module.module)
-    }
-
-    pub fn deserialize(buffer: &[u8]) -> Self {
-        Self::new(llvm::get_bitcode_module(buffer.into()))
+    pub fn deserialize(bitcode: &[u8]) -> Self {
+        Self::new(llvm::Module::from_bitcode(bitcode))
     }
 
     pub fn serialize(&self) -> Vec<u8> {
-        llvm::write_bitcode_to_memory_buffer(&self.module)
-            .as_bytes()
-            .into()
+        self.module.to_bitcode()
     }
 }

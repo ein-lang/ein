@@ -1,4 +1,5 @@
 use super::type_::Type;
+use llvm_sys::analysis::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
@@ -8,10 +9,6 @@ pub struct Value {
 }
 
 impl Value {
-    pub(super) fn new(internal: LLVMValueRef) -> Self {
-        Self { internal }
-    }
-
     pub fn set_initializer(self, value: Value) {
         unsafe { LLVMSetInitializer(self.into(), value.into()) };
     }
@@ -24,15 +21,23 @@ impl Value {
         unsafe { LLVMIsAGlobalVariable(self.into()) }.into()
     }
 
-    #[allow(dead_code)]
-    pub fn dump(self) {
-        unsafe { LLVMDumpValue(self.into()) }
+    pub fn get_param(self, index: std::os::raw::c_uint) -> Value {
+        unsafe { LLVMGetParam(self.internal, index) }.into()
+    }
+
+    pub fn verify_function(self) {
+        unsafe {
+            LLVMVerifyFunction(
+                self.internal,
+                LLVMVerifierFailureAction::LLVMAbortProcessAction,
+            )
+        };
     }
 }
 
 impl From<LLVMValueRef> for Value {
-    fn from(value_ref: LLVMValueRef) -> Self {
-        Self::new(value_ref)
+    fn from(internal: LLVMValueRef) -> Self {
+        Self { internal }
     }
 }
 

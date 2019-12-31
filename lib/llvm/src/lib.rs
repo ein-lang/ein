@@ -1,23 +1,19 @@
 mod basic_block;
-mod bitcode;
 mod builder;
 mod constants;
+mod context;
 mod memory_buffer;
 mod module;
 mod type_;
 mod type_kind;
 mod utilities;
 mod value;
-mod verification;
 
 pub use basic_block::*;
-pub use bitcode::*;
 pub use builder::*;
 pub use constants::*;
-pub use memory_buffer::*;
+pub use context::*;
 pub use module::*;
 pub use type_::*;
 pub use type_kind::*;
-pub use utilities::get_param;
 pub use value::*;
-pub use verification::*;

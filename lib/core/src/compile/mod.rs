@@ -3,7 +3,6 @@ mod expression_compiler;
 mod function_compiler;
 mod initializer_configuration;
 mod initializer_sorter;
-mod llvm;
 mod module;
 mod module_compiler;
 mod type_compiler;
@@ -22,11 +21,14 @@ pub fn compile(
 ) -> Result<Module, CompileError> {
     verify(&ast_module)?;
 
-    let mut module = llvm::Module::new("main");
+    let context = llvm::Context::new();
+    let module = context.create_module("main");
+
     ModuleCompiler::new(
-        &mut module,
+        &context,
+        &module,
         ast_module,
-        &TypeCompiler::new(),
+        &TypeCompiler::new(&context),
         initializer_configuration,
     )
     .compile()?;

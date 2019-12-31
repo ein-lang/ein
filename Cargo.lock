@@ -129,7 +129,7 @@ dependencies = [
 name = "core"
 version = "0.1.0"
 dependencies = [
- "llvm-sys 90.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "llvm 0.1.0",
  "petgraph 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -339,6 +339,13 @@ dependencies = [
  "libc 0.2.66 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkg-config 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "vcpkg 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "llvm"
+version = "0.1.0"
+dependencies = [
+ "llvm-sys 90.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

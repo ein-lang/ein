@@ -9,12 +9,12 @@ pub enum Type {
 
 impl From<Function> for Type {
     fn from(function: Function) -> Self {
-        Type::Function(function)
+        Self::Function(function)
     }
 }
 
 impl From<Value> for Type {
     fn from(value: Value) -> Self {
-        Type::Value(value)
+        Self::Value(value)
     }
 }
