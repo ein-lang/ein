@@ -59,7 +59,7 @@ impl TypeCompiler {
         )
     }
 
-    pub fn compile_unsized_environment(&self) -> llvm::Type {
+    fn compile_unsized_environment(&self) -> llvm::Type {
         llvm::Type::struct_(&[])
     }
 }
