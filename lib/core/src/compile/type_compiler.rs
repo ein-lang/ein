@@ -63,3 +63,30 @@ impl TypeCompiler {
         llvm::Type::struct_(&[])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn compile_number() {
+        TypeCompiler::new().compile(&types::Value::Number.into());
+    }
+
+    #[test]
+    fn compile_function() {
+        TypeCompiler::new().compile(
+            &types::Function::new(vec![types::Value::Number.into()], types::Value::Number).into(),
+        );
+    }
+
+    #[test]
+    fn compile_function_twice() {
+        let compiler = TypeCompiler::new();
+        let type_ =
+            types::Function::new(vec![types::Value::Number.into()], types::Value::Number).into();
+
+        compiler.compile(&type_);
+        compiler.compile(&type_);
+    }
+}
