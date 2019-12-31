@@ -1,6 +1,4 @@
 use super::basic_block::*;
-use super::constants::*;
-use super::context::Context;
 use super::type_::*;
 use super::utilities::c_string;
 use super::value::*;
@@ -8,7 +6,6 @@ use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
 pub struct Builder {
-    context: Context,
     module: LLVMModuleRef,
     function: LLVMValueRef,
     builder: LLVMBuilderRef,
@@ -16,11 +13,8 @@ pub struct Builder {
 
 impl Builder {
     pub fn new(function: Value) -> Builder {
-        let module = unsafe { LLVMGetGlobalParent(function.into()) };
-
         Builder {
-            context: unsafe { LLVMGetModuleContext(module) }.into(),
-            module,
+            module: unsafe { LLVMGetGlobalParent(function.into()) },
             function: function.into(),
             builder: unsafe { LLVMCreateBuilder() },
         }
@@ -157,64 +151,6 @@ impl Builder {
 
     pub fn position_at_end(&self, block: BasicBlock) {
         unsafe { LLVMPositionBuilderAtEnd(self.builder, block.into()) };
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_id(&self, promise: Value) -> Value {
-        self.build_call_with_name(
-            "llvm.coro.id",
-            &[
-                const_int(self.context.i32_type(), 0),
-                self.build_bit_cast(promise, self.context.generic_pointer_type()),
-                const_null(self.context.generic_pointer_type()),
-                const_null(self.context.generic_pointer_type()),
-            ],
-        )
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_size_i32(&self) -> Value {
-        self.build_call_with_name("llvm.coro.size.i32", &[])
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_begin(&self, id: Value, frame: Value) -> Value {
-        self.build_call_with_name("llvm.coro.begin", &[id, frame])
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_end(&self, handle: Value) {
-        self.build_call_with_name(
-            "llvm.coro.end",
-            &[handle, const_int(self.context.i1_type(), 0)],
-        );
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_free(&self, id: Value, handle: Value) -> Value {
-        self.build_call_with_name("llvm.coro.free", &[id, handle])
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_resume(&self, handle: Value) {
-        self.build_call_with_name("llvm.coro.resume", &[handle]);
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_done(&self, handle: Value) -> Value {
-        self.build_call_with_name("llvm.coro.done", &[handle])
-    }
-
-    #[allow(dead_code)]
-    pub fn build_coro_promise(&self, handle: Value) -> Value {
-        self.build_call_with_name(
-            "llvm.coro.promise",
-            &[
-                handle,
-                const_int(self.context.i32_type(), 8),
-                const_int(self.context.i1_type(), 0),
-            ],
-        )
     }
 
     pub fn build_malloc(&self, size: Value) -> Value {
