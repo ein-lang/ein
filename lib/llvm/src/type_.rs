@@ -2,6 +2,7 @@ use super::type_kind::*;
 use super::value::Value;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
+use std::os::raw::c_uint;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Type {
@@ -36,6 +37,23 @@ impl Type {
 
     pub fn size(self) -> Value {
         unsafe { LLVMSizeOf(self.into()) }.into()
+    }
+
+    pub fn struct_set_body(self, elements: &[Self]) {
+        assert_eq!(self.kind(), TypeKind::Struct);
+
+        unsafe {
+            LLVMStructSetBody(
+                self.internal,
+                elements
+                    .iter()
+                    .map(|type_| type_.into())
+                    .collect::<Vec<LLVMTypeRef>>()
+                    .as_mut_ptr(),
+                elements.len() as c_uint,
+                0,
+            )
+        }
     }
 }
 
