@@ -1,6 +1,7 @@
 use super::module::Module;
 use super::type_::Type;
 use super::utilities::*;
+use super::value::Value;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 use std::os::raw::c_uint;
@@ -18,6 +19,22 @@ impl Context {
 
     pub fn create_module(&self, name: &str) -> Module {
         unsafe { LLVMModuleCreateWithNameInContext(c_string(name).as_ptr(), self.internal) }.into()
+    }
+
+    pub fn const_struct(&self, elements: &[Value]) -> Value {
+        unsafe {
+            LLVMConstStructInContext(
+                self.internal,
+                elements
+                    .iter()
+                    .map(|type_| type_.into())
+                    .collect::<Vec<LLVMValueRef>>()
+                    .as_mut_ptr(),
+                elements.len() as c_uint,
+                0,
+            )
+        }
+        .into()
     }
 
     pub fn generic_pointer_type(&self) -> Type {

@@ -93,16 +93,18 @@ impl<'a> ModuleCompiler<'a> {
         &mut self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<(), CompileError> {
-        self.global_variables[function_definition.name()].set_initializer(llvm::const_struct(&[
-            FunctionCompiler::new(
-                self.context,
-                self.module,
-                self.type_compiler,
-                &self.global_variables,
-            )
-            .compile(function_definition)?,
-            llvm::const_struct(&[]),
-        ]));
+        self.global_variables[function_definition.name()].set_initializer(
+            self.context.const_struct(&[
+                FunctionCompiler::new(
+                    self.context,
+                    self.module,
+                    self.type_compiler,
+                    &self.global_variables,
+                )
+                .compile(function_definition)?,
+                self.context.const_struct(&[]),
+            ]),
+        );
 
         Ok(())
     }
