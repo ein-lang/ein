@@ -3,7 +3,6 @@ use super::type_::*;
 use super::utilities::*;
 use super::value::*;
 use llvm_sys::core::*;
-use llvm_sys::linker::*;
 use llvm_sys::prelude::*;
 
 pub struct Module {
@@ -34,12 +33,6 @@ impl Module {
             self.context().generic_pointer_type(),
             &[self.context().i64_type()],
         );
-    }
-
-    pub fn link(&self, other: Self) {
-        unsafe {
-            LLVMLinkModules2(self.internal(), other.internal());
-        }
     }
 
     fn context(&self) -> Context {

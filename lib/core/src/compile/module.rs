@@ -9,10 +9,6 @@ impl Module {
         Self { module }
     }
 
-    pub fn link(&mut self, module: Module) {
-        self.module.link(module.module)
-    }
-
     pub fn deserialize(buffer: &[u8]) -> Self {
         Self::new(llvm::get_bitcode_module(buffer.into()))
     }
