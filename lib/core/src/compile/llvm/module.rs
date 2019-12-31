@@ -34,51 +34,7 @@ impl Module {
     }
 
     pub fn declare_intrinsics(&mut self) {
-        self.declare_function(
-            "llvm.coro.id",
-            Type::token(),
-            &[
-                Type::i32(),
-                Type::generic_pointer(),
-                Type::generic_pointer(),
-                Type::generic_pointer(),
-            ],
-        );
-
-        self.declare_function("llvm.coro.size.i32", Type::i32(), &[]);
-        self.declare_function("llvm.coro.size.i64", Type::i64(), &[]);
-
-        self.declare_function(
-            "llvm.coro.begin",
-            Type::generic_pointer(),
-            &[Type::token(), Type::generic_pointer()],
-        );
-        self.declare_function(
-            "llvm.coro.end",
-            Type::i1(),
-            &[Type::generic_pointer(), Type::i1()],
-        );
-        self.declare_function(
-            "llvm.coro.suspend",
-            Type::i8(),
-            &[Type::token(), Type::i1()],
-        );
-        self.declare_function(
-            "llvm.coro.free",
-            Type::generic_pointer(),
-            &[Type::token(), Type::generic_pointer()],
-        );
-
-        self.declare_function("llvm.coro.done", Type::i1(), &[Type::generic_pointer()]);
-        self.declare_function(
-            "llvm.coro.promise",
-            Type::generic_pointer(),
-            &[Type::generic_pointer(), Type::i32(), Type::i1()],
-        );
-        self.declare_function("llvm.coro.resume", Type::void(), &[Type::generic_pointer()]);
-
         self.declare_function("malloc", Type::generic_pointer(), &[Type::i64()]);
-        self.declare_function("free", Type::void(), &[Type::generic_pointer()]);
     }
 
     pub fn link(&mut self, other: Self) {

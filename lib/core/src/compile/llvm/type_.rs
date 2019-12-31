@@ -48,10 +48,6 @@ impl Type {
         unsafe { LLVMDumpType(self.into()) }
     }
 
-    pub fn token() -> Self {
-        unsafe { LLVMTokenTypeInContext(LLVMGetGlobalContext()) }.into()
-    }
-
     pub fn generic_pointer() -> Self {
         Self::pointer(Self::i8())
     }
