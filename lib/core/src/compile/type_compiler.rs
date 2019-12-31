@@ -3,13 +3,15 @@ use crate::types::{self, Type};
 
 pub struct TypeCompiler<'a> {
     context: &'a llvm::Context,
+    module: &'a llvm::Module,
     struct_types: Vec<llvm::Type>,
 }
 
 impl<'a> TypeCompiler<'a> {
-    pub fn new(context: &'a llvm::Context) -> Self {
+    pub fn new(context: &'a llvm::Context, module: &'a llvm::Module) -> Self {
         Self {
             context,
+            module,
             struct_types: vec![],
         }
     }
@@ -59,7 +61,13 @@ impl<'a> TypeCompiler<'a> {
     }
 
     pub fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {
-        let type_ = self.context.named_struct_type(&function.to_id());
+        let id = function.to_id();
+
+        if let Some(type_) = self.module.get_type_by_name(&id) {
+            return type_;
+        }
+
+        let type_ = self.context.named_struct_type(&id);
 
         type_.struct_set_body(&[
             self.context.pointer_type(
@@ -88,6 +96,7 @@ impl<'a> TypeCompiler<'a> {
     fn push_struct_type(&self, type_: llvm::Type) -> Self {
         Self {
             context: self.context,
+            module: self.module,
             struct_types: self.struct_types.iter().chain(&[type_]).cloned().collect(),
         }
     }
@@ -99,26 +108,31 @@ mod tests {
 
     #[test]
     fn compile_number() {
-        TypeCompiler::new(&llvm::Context::new()).compile(&types::Value::Number.into());
+        let context = llvm::Context::new();
+        TypeCompiler::new(&context, &context.create_module(""))
+            .compile(&types::Value::Number.into());
     }
 
     #[test]
     fn compile_function() {
-        TypeCompiler::new(&llvm::Context::new()).compile(
+        let context = llvm::Context::new();
+        TypeCompiler::new(&context, &context.create_module("")).compile(
             &types::Function::new(vec![types::Value::Number.into()], types::Value::Number).into(),
         );
     }
 
     #[test]
     fn compile_recursive_function_type() {
-        TypeCompiler::new(&llvm::Context::new())
+        let context = llvm::Context::new();
+        TypeCompiler::new(&context, &context.create_module(""))
             .compile(&types::Function::new(vec![Type::Index(0)], types::Value::Number).into());
     }
 
     #[test]
     fn compile_function_twice() {
         let context = llvm::Context::new();
-        let compiler = TypeCompiler::new(&context);
+        let module = context.create_module("");
+        let compiler = TypeCompiler::new(&context, &module);
         let type_ =
             types::Function::new(vec![types::Value::Number.into()], types::Value::Number).into();
 

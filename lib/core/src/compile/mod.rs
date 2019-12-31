@@ -28,7 +28,7 @@ pub fn compile(
         &context,
         &module,
         ast_module,
-        &TypeCompiler::new(&context),
+        &TypeCompiler::new(&context, &module),
         initializer_configuration,
     )
     .compile()?;
