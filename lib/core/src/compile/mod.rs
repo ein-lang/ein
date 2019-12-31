@@ -23,11 +23,11 @@ pub fn compile(
     verify(&ast_module)?;
 
     let context = llvm::Context::new();
-    let mut module = context.create_module("main");
+    let module = context.create_module("main");
 
     ModuleCompiler::new(
         &context,
-        &mut module,
+        &module,
         ast_module,
         &TypeCompiler::new(&context),
         initializer_configuration,
