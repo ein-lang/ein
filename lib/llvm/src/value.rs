@@ -1,4 +1,5 @@
 use super::type_::Type;
+use llvm_sys::analysis::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
@@ -8,7 +9,7 @@ pub struct Value {
 }
 
 impl Value {
-    pub(super) fn new(internal: LLVMValueRef) -> Self {
+    pub(crate) fn new(internal: LLVMValueRef) -> Self {
         Self { internal }
     }
 
@@ -26,6 +27,15 @@ impl Value {
 
     pub fn get_param(self, index: std::os::raw::c_uint) -> Value {
         unsafe { LLVMGetParam(self.internal, index) }.into()
+    }
+
+    pub fn verify_function(self) {
+        unsafe {
+            LLVMVerifyFunction(
+                self.internal,
+                LLVMVerifierFailureAction::LLVMAbortProcessAction,
+            )
+        };
     }
 }
 

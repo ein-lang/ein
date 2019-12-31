@@ -75,7 +75,7 @@ impl<'a> ModuleCompiler<'a> {
 
         self.compile_module_initializer()?;
 
-        llvm::verify_module(self.module);
+        self.module.verify();
 
         Ok(())
     }
@@ -147,7 +147,7 @@ impl<'a> ModuleCompiler<'a> {
         );
         builder.build_ret_void();
 
-        llvm::verify_function(initializer);
+        initializer.verify_function();
         self.initializers
             .insert(value_definition.name().into(), initializer);
 

@@ -1,7 +1,10 @@
 use super::context::Context;
+use super::memory_buffer::MemoryBuffer;
 use super::type_::*;
 use super::utilities::*;
 use super::value::*;
+use llvm_sys::analysis::*;
+use llvm_sys::bit_writer::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
@@ -10,10 +13,6 @@ pub struct Module {
 }
 
 impl Module {
-    pub(super) fn internal(&self) -> LLVMModuleRef {
-        self.internal
-    }
-
     pub fn add_function(&self, name: &str, function_type: Type) -> Value {
         unsafe { LLVMAddFunction(self.internal, c_string(name).as_ptr(), function_type.into()) }
             .into()
@@ -37,6 +36,20 @@ impl Module {
 
     fn context(&self) -> Context {
         unsafe { LLVMGetModuleContext(self.internal) }.into()
+    }
+
+    pub fn write_bitcode_to_memory_buffer(&self) -> MemoryBuffer {
+        MemoryBuffer::new(unsafe { LLVMWriteBitcodeToMemoryBuffer(self.internal) })
+    }
+
+    pub fn verify(&self) {
+        unsafe {
+            LLVMVerifyModule(
+                self.internal,
+                LLVMVerifierFailureAction::LLVMAbortProcessAction,
+                std::ptr::null_mut(),
+            )
+        };
     }
 }
 

@@ -1,26 +1,33 @@
+use super::module::Module;
+use llvm_sys::bit_reader::*;
 use llvm_sys::core::*;
 use llvm_sys::prelude::*;
 
 #[derive(Debug)]
 pub struct MemoryBuffer {
-    memory_buffer: LLVMMemoryBufferRef,
+    internal: LLVMMemoryBufferRef,
 }
 
 impl MemoryBuffer {
-    pub fn new(memory_buffer: LLVMMemoryBufferRef) -> Self {
-        Self { memory_buffer }
-    }
-
-    pub(super) fn internal(&self) -> LLVMMemoryBufferRef {
-        self.memory_buffer
+    pub fn new(internal: LLVMMemoryBufferRef) -> Self {
+        Self { internal }
     }
 
     pub fn as_bytes(&self) -> &[u8] {
         unsafe {
             std::slice::from_raw_parts(
-                LLVMGetBufferStart(self.memory_buffer) as *const u8,
-                LLVMGetBufferSize(self.memory_buffer),
+                LLVMGetBufferStart(self.internal) as *const u8,
+                LLVMGetBufferSize(self.internal),
             )
+        }
+    }
+
+    pub fn get_bitcode_module(&self) -> Module {
+        let mut module = std::mem::MaybeUninit::uninit();
+
+        unsafe {
+            LLVMGetBitcodeModule2(self.internal, module.as_mut_ptr());
+            module.assume_init().into()
         }
     }
 }

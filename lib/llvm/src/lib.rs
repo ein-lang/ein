@@ -1,5 +1,4 @@
 mod basic_block;
-mod bitcode;
 mod builder;
 mod constants;
 mod context;
@@ -9,10 +8,8 @@ mod type_;
 mod type_kind;
 mod utilities;
 mod value;
-mod verification;
 
 pub use basic_block::*;
-pub use bitcode::*;
 pub use builder::*;
 pub use constants::*;
 pub use context::*;
@@ -21,4 +18,3 @@ pub use module::*;
 pub use type_::*;
 pub use type_kind::*;
 pub use value::*;
-pub use verification::*;

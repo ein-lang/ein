@@ -74,7 +74,7 @@ impl<'a> FunctionCompiler<'a> {
                 .compile(&function_definition.body(), &variables)?,
         );
 
-        llvm::verify_function(entry_function);
+        entry_function.verify_function();
 
         Ok(entry_function)
     }

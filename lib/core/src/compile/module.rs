@@ -8,11 +8,12 @@ impl Module {
     }
 
     pub fn deserialize(buffer: &[u8]) -> Self {
-        Self::new(llvm::get_bitcode_module(buffer.into()))
+        Self::new(llvm::MemoryBuffer::from(buffer).get_bitcode_module())
     }
 
     pub fn serialize(&self) -> Vec<u8> {
-        llvm::write_bitcode_to_memory_buffer(&self.module)
+        self.module
+            .write_bitcode_to_memory_buffer()
             .as_bytes()
             .into()
     }
