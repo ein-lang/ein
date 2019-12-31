@@ -1,5 +1,3 @@
-use super::llvm;
-
 pub struct Module {
     module: llvm::Module,
 }

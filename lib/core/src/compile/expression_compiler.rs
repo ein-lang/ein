@@ -1,6 +1,5 @@
 use super::error::CompileError;
 use super::function_compiler::FunctionCompiler;
-use super::llvm;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
 use std::collections::HashMap;

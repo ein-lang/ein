@@ -4,7 +4,6 @@ use super::expression_compiler::ExpressionCompiler;
 use super::function_compiler::FunctionCompiler;
 use super::initializer_configuration::InitializerConfiguration;
 use super::initializer_sorter::InitializerSorter;
-use super::llvm;
 use super::type_compiler::TypeCompiler;
 use crate::types::{self, Type};
 use std::collections::HashMap;
