@@ -1,4 +1,4 @@
-use super::error::*;
+use super::error::TypeCheckError;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::*;
@@ -112,7 +112,7 @@ impl TypeChecker {
 
                         Ok(function_type.result().clone().into())
                     }
-                    Type::Value(_) => Err(TypeCheckError),
+                    Type::Index(_) | Type::Value(_) => Err(TypeCheckError),
                 }
             }
             Expression::LetFunctions(let_functions) => {

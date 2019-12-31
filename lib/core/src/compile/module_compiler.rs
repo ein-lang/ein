@@ -45,6 +45,7 @@ impl<'a> ModuleCompiler<'a> {
                 Type::Function(function_type) => {
                     self.declare_function(declaration.name(), function_type)
                 }
+                Type::Index(_) => return Err(CompileError::InvalidTypeIndex),
                 Type::Value(value_type) => {
                     self.declare_global_variable(declaration.name(), value_type)
                 }
