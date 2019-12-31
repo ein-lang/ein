@@ -6,7 +6,7 @@ use super::initializer_configuration::InitializerConfiguration;
 use super::initializer_sorter::InitializerSorter;
 use super::llvm;
 use super::type_compiler::TypeCompiler;
-use crate::types;
+use crate::types::{self, Type};
 use std::collections::HashMap;
 
 pub struct ModuleCompiler<'a> {
@@ -40,10 +40,10 @@ impl<'a> ModuleCompiler<'a> {
 
         for declaration in self.ast_module.declarations() {
             match declaration.type_() {
-                types::Type::Function(function_type) => {
+                Type::Function(function_type) => {
                     self.declare_function(declaration.name(), function_type)
                 }
-                types::Type::Value(value_type) => {
+                Type::Value(value_type) => {
                     self.declare_global_variable(declaration.name(), value_type)
                 }
             }
