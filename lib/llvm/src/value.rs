@@ -9,10 +9,6 @@ pub struct Value {
 }
 
 impl Value {
-    pub(crate) fn new(internal: LLVMValueRef) -> Self {
-        Self { internal }
-    }
-
     pub fn set_initializer(self, value: Value) {
         unsafe { LLVMSetInitializer(self.into(), value.into()) };
     }
@@ -40,8 +36,8 @@ impl Value {
 }
 
 impl From<LLVMValueRef> for Value {
-    fn from(value_ref: LLVMValueRef) -> Self {
-        Self::new(value_ref)
+    fn from(internal: LLVMValueRef) -> Self {
+        Self { internal }
     }
 }
 
