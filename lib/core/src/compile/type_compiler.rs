@@ -3,12 +3,14 @@ use crate::ast;
 use crate::types::{self, Type};
 
 pub struct TypeCompiler {
+    context: llvm::Context,
     struct_types: Vec<llvm::Type>,
 }
 
 impl TypeCompiler {
     pub fn new() -> Self {
         Self {
+            context: llvm::Context::new(),
             struct_types: vec![],
         }
     }
@@ -52,7 +54,7 @@ impl TypeCompiler {
     }
 
     pub fn compile_unsized_closure(&self, function: &types::Function) -> llvm::Type {
-        let type_ = llvm::Type::struct_create_named(&function.to_id());
+        let type_ = llvm::Type::struct_create_named(&function.to_id(), &self.context);
 
         type_.struct_set_body(&[
             llvm::Type::pointer(
@@ -76,6 +78,7 @@ impl TypeCompiler {
 
     fn push_struct_type(&self, type_: llvm::Type) -> Self {
         Self {
+            context: self.context.clone(),
             struct_types: self.struct_types.iter().chain(&[type_]).cloned().collect(),
         }
     }

@@ -1,3 +1,4 @@
+use super::context::Context;
 use super::type_::*;
 use super::utilities::*;
 use super::value::*;
@@ -36,7 +37,7 @@ impl Module {
     pub fn declare_intrinsics(&mut self) {
         self.declare_function(
             "llvm.coro.id",
-            Type::token(),
+            Type::token(&self.context()),
             &[
                 Type::i32(),
                 Type::generic_pointer(),
@@ -51,7 +52,7 @@ impl Module {
         self.declare_function(
             "llvm.coro.begin",
             Type::generic_pointer(),
-            &[Type::token(), Type::generic_pointer()],
+            &[Type::token(&self.context()), Type::generic_pointer()],
         );
         self.declare_function(
             "llvm.coro.end",
@@ -61,12 +62,12 @@ impl Module {
         self.declare_function(
             "llvm.coro.suspend",
             Type::i8(),
-            &[Type::token(), Type::i1()],
+            &[Type::token(&self.context()), Type::i1()],
         );
         self.declare_function(
             "llvm.coro.free",
             Type::generic_pointer(),
-            &[Type::token(), Type::generic_pointer()],
+            &[Type::token(&self.context()), Type::generic_pointer()],
         );
 
         self.declare_function("llvm.coro.done", Type::i1(), &[Type::generic_pointer()]);
@@ -85,6 +86,10 @@ impl Module {
         unsafe {
             LLVMLinkModules2(self.internal(), other.internal());
         }
+    }
+
+    fn context(&self) -> Context {
+        unsafe { LLVMGetModuleContext(self.internal) }.into()
     }
 
     #[allow(dead_code)]

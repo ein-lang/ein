@@ -1,3 +1,4 @@
+use super::context::Context;
 use super::type_kind::*;
 use super::utilities::*;
 use super::value::Value;
@@ -49,8 +50,8 @@ impl Type {
         unsafe { LLVMDumpType(self.into()) }
     }
 
-    pub fn token() -> Self {
-        unsafe { LLVMTokenTypeInContext(LLVMGetGlobalContext()) }.into()
+    pub fn token(context: &Context) -> Self {
+        unsafe { LLVMTokenTypeInContext(context.internal()) }.into()
     }
 
     pub fn generic_pointer() -> Self {
@@ -120,8 +121,8 @@ impl Type {
         .into()
     }
 
-    pub fn struct_create_named(name: &str) -> Type {
-        unsafe { LLVMStructCreateNamed(LLVMGetGlobalContext(), c_string(name).as_ptr()) }.into()
+    pub fn struct_create_named(name: &str, context: &Context) -> Type {
+        unsafe { LLVMStructCreateNamed(context.internal(), c_string(name).as_ptr()) }.into()
     }
 
     pub fn struct_set_body(self, elements: &[Self]) {
