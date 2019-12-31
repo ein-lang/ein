@@ -20,6 +20,5 @@ pub use memory_buffer::*;
 pub use module::*;
 pub use type_::*;
 pub use type_kind::*;
-pub use utilities::get_param;
 pub use value::*;
 pub use verification::*;

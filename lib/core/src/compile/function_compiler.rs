@@ -40,7 +40,7 @@ impl<'a> FunctionCompiler<'a> {
         builder.position_at_end(builder.append_basic_block("entry"));
 
         let environment = builder.build_bit_cast(
-            llvm::get_param(entry_function, 0),
+            entry_function.get_param(0),
             self.context.pointer_type(
                 self.type_compiler
                     .compile_environment(function_definition.environment()),
@@ -65,7 +65,7 @@ impl<'a> FunctionCompiler<'a> {
         for (index, argument) in function_definition.arguments().iter().enumerate() {
             variables.insert(
                 argument.name().into(),
-                llvm::get_param(entry_function, index as u32 + 1),
+                entry_function.get_param(index as u32 + 1),
             );
         }
 

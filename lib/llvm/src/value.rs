@@ -23,6 +23,10 @@ impl Value {
     pub fn is_global_variable(self) -> Value {
         unsafe { LLVMIsAGlobalVariable(self.into()) }.into()
     }
+
+    pub fn get_param(self, index: std::os::raw::c_uint) -> Value {
+        unsafe { LLVMGetParam(self.internal, index) }.into()
+    }
 }
 
 impl From<LLVMValueRef> for Value {
