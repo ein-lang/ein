@@ -3,6 +3,7 @@ use super::let_functions::LetFunctions;
 use super::let_values::LetValues;
 use super::operation::Operation;
 use super::variable::Variable;
+use crate::types::Type;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -44,6 +45,16 @@ impl Expression {
             Self::Operation(operation) => operation.find_global_variables(local_variables),
             Self::Variable(variable) => variable.find_global_variables(local_variables),
             _ => HashSet::new(),
+        }
+    }
+
+    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
+        match self {
+            Self::Application(application) => application.convert_types(convert).into(),
+            Self::LetFunctions(let_functions) => let_functions.convert_types(convert).into(),
+            Self::LetValues(let_values) => let_values.convert_types(convert).into(),
+            Self::Operation(operation) => operation.convert_types(convert).into(),
+            _ => self.clone(),
         }
     }
 }

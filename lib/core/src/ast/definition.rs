@@ -1,5 +1,6 @@
 use super::function_definition::*;
 use super::value_definition::*;
+use crate::types::Type;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -34,6 +35,17 @@ impl Definition {
             }
             Self::ValueDefinition(value_definition) => {
                 value_definition.find_global_variables(local_variables)
+            }
+        }
+    }
+
+    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
+        match self {
+            Self::FunctionDefinition(function_definition) => {
+                function_definition.convert_types(convert).into()
+            }
+            Self::ValueDefinition(value_definition) => {
+                value_definition.convert_types(convert).into()
             }
         }
     }

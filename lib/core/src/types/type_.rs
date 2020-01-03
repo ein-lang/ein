@@ -16,6 +16,22 @@ impl Type {
             Self::Value(value) => value.to_id(),
         }
     }
+
+    pub fn into_function(self) -> Option<Function> {
+        match self {
+            Self::Function(function) => Some(function),
+            Self::Index(_) => None,
+            Self::Value(_) => None,
+        }
+    }
+
+    pub fn into_value(self) -> Option<Value> {
+        match self {
+            Self::Function(_) => None,
+            Self::Index(_) => None,
+            Self::Value(value) => Some(value),
+        }
+    }
 }
 
 impl From<Function> for Type {

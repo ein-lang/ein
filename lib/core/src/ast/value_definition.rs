@@ -1,5 +1,5 @@
 use super::expression::Expression;
-use crate::types;
+use crate::types::{self, Type};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -40,5 +40,13 @@ impl ValueDefinition {
 
     pub fn find_global_variables(&self, local_variables: &HashSet<String>) -> HashSet<String> {
         self.body.find_global_variables(&local_variables)
+    }
+
+    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.body.convert_types(convert),
+            convert(&self.type_.clone().into()).into_value().unwrap(),
+        )
     }
 }

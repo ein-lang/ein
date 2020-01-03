@@ -1,6 +1,6 @@
 use super::expression::Expression;
 use super::Argument;
-use crate::types;
+use crate::types::{self, Type};
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -21,21 +21,24 @@ impl FunctionDefinition {
         body: impl Into<Expression>,
         result_type: types::Value,
     ) -> Self {
-        let type_ = types::Function::new(
-            arguments
-                .iter()
-                .map(|argument| argument.type_().clone())
-                .collect(),
-            result_type.clone(),
-        );
-
         Self {
+            type_: types::canonicalize(
+                &types::Function::new(
+                    arguments
+                        .iter()
+                        .map(|argument| argument.type_().clone())
+                        .collect(),
+                    result_type.clone(),
+                )
+                .into(),
+            )
+            .into_function()
+            .unwrap(),
             name: name.into(),
             environment,
             arguments,
             body: body.into(),
             result_type,
-            type_,
         }
     }
 
@@ -105,5 +108,23 @@ impl FunctionDefinition {
         );
 
         self.body.find_global_variables(&local_variables)
+    }
+
+    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.environment
+                .iter()
+                .map(|argument| argument.convert_types(convert))
+                .collect(),
+            self.arguments
+                .iter()
+                .map(|argument| argument.convert_types(convert))
+                .collect(),
+            self.body.convert_types(convert),
+            convert(&self.result_type.clone().into())
+                .into_value()
+                .unwrap(),
+        )
     }
 }
