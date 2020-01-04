@@ -5,11 +5,34 @@ jobs:
       - image: einlang/ci
     steps:
       - checkout
-      - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo build
+  lint:
+    docker:
+      - image: einlang/ci
+    steps:
+      - checkout
+      - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo fmt -- --check
       - run: cargo clippy -- -D warnings
       - run: cargo audit
+  unit_test:
+    docker:
+      - image: einlang/ci
+    steps:
+      - checkout
       - run: cargo test --lib
-      - run: cargo build --release --package runtime
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
+  integration_test:
+    docker:
+      - image: einlang/ci
+    steps:
+      - checkout
+      - run: cargo build --release
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - lint
+      - unit_test
+      - integration_test
