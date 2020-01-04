@@ -5,11 +5,6 @@ jobs:
       - image: einlang/ci
     steps:
       - checkout
-      - run: cargo --version > /tmp/cargo-version
-      - run: pacman -Q > /tmp/pacman.log
-      - restore_cache:
-          keys:
-            - v3-{{ arch }}-{{ checksum "/tmp/pacman.log" }}-{{ checksum "/tmp/cargo-version" }}-{{ checksum "Cargo.lock" }}
       - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo build
       - run: cargo fmt -- --check
@@ -18,8 +13,3 @@ jobs:
       - run: cargo test --lib
       - run: cargo build --release --package runtime
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
-      - save_cache:
-          key: v3-{{ arch }}-{{ checksum "/tmp/pacman.log" }}-{{ checksum "/tmp/cargo-version" }}-{{ checksum "Cargo.lock" }}
-          paths:
-            - target
-            - ~/.cargo
