@@ -32,6 +32,20 @@ impl Type {
             Self::Value(value) => Some(value),
         }
     }
+
+    pub fn unwrap_once(&self, index: usize, type_: &Function) -> Self {
+        match self {
+            Self::Function(function) => function.unwrap_once(index + 1, type_).into(),
+            Self::Index(current_index) => {
+                if *current_index == index {
+                    type_.clone().into()
+                } else {
+                    self.clone()
+                }
+            }
+            Self::Value(value) => value.unwrap_once(index, type_).into(),
+        }
+    }
 }
 
 impl From<Function> for Type {

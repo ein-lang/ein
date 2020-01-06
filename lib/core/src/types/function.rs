@@ -1,3 +1,4 @@
+use super::canonicalize::canonicalize;
 use super::type_::Type;
 use super::value::Value;
 use std::rc::Rc;
@@ -35,6 +36,21 @@ impl Function {
             self.result.to_id()
         )
     }
+
+    pub fn unwrap(&self) -> Self {
+        self.unwrap_once(0, self)
+    }
+
+    pub fn unwrap_once(&self, index: usize, type_: &Self) -> Self {
+        Self {
+            arguments: self
+                .arguments
+                .iter()
+                .map(|argument| canonicalize(&argument.unwrap_once(index, &type_)))
+                .collect(),
+            result: self.result.clone(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -63,5 +79,64 @@ mod tests {
             .to_id(),
             "((Number->Number)->Number)"
         );
+    }
+
+    #[test]
+    fn arguments() {
+        assert_eq!(
+            Function::new(vec![Value::Number.into()], Value::Number).arguments(),
+            &[Value::Number.into()]
+        );
+        assert_eq!(
+            Function::new(vec![Type::Index(0)], Value::Number).arguments(),
+            &[Type::Index(0)]
+        );
+    }
+
+    #[test]
+    fn result() {
+        assert_eq!(
+            Function::new(vec![Value::Number.into()], Value::Number).result(),
+            &Value::Number
+        );
+    }
+
+    #[test]
+    fn unwrap() {
+        for (one, other) in &[
+            (
+                Function::new(vec![Value::Number.into()], Value::Number),
+                Function::new(vec![Value::Number.into()], Value::Number),
+            ),
+            (
+                Function::new(vec![Type::Index(0)], Value::Number),
+                Function::new(
+                    vec![Function::new(vec![Type::Index(0)], Value::Number).into()],
+                    Value::Number,
+                ),
+            ),
+            (
+                Function::new(
+                    vec![
+                        Function::new(vec![Type::Index(1), Value::Number.into()], Value::Number)
+                            .into(),
+                    ],
+                    Value::Number,
+                ),
+                Function::new(
+                    vec![Function::new(
+                        vec![
+                            Function::new(vec![Type::Index(1)], Value::Number).into(),
+                            Value::Number.into(),
+                        ],
+                        Value::Number,
+                    )
+                    .into()],
+                    Value::Number,
+                ),
+            ),
+        ] {
+            assert_eq!(&one.unwrap(), other);
+        }
     }
 }
