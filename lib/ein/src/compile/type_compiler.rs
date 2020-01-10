@@ -49,3 +49,58 @@ impl TypeCompiler {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ast::*;
+    use crate::debug::SourceInformation;
+    use crate::package::*;
+    use crate::path::*;
+
+    #[test]
+    fn compile_number_type() {
+        assert_eq!(
+            TypeCompiler::new(ReferenceTypeResolver::new(&Module::dummy()))
+                .compile(&types::Number::new(SourceInformation::dummy()).into()),
+            core::types::Value::Number.into()
+        );
+    }
+
+    #[test]
+    fn compile_function_type() {
+        assert_eq!(
+            TypeCompiler::new(ReferenceTypeResolver::new(&Module::dummy())).compile(
+                &types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ),
+            core::types::Function::new(
+                vec![core::types::Value::Number.into()],
+                core::types::Value::Number
+            )
+            .into()
+        );
+    }
+
+    #[test]
+    fn compile_reference_type() {
+        assert_eq!(
+            TypeCompiler::new(ReferenceTypeResolver::new(&Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Number::new(SourceInformation::dummy()),
+                )],
+                vec![],
+            )))
+            .compile(&types::Reference::new("Foo", SourceInformation::dummy()).into()),
+            core::types::Value::Number.into()
+        );
+    }
+}
