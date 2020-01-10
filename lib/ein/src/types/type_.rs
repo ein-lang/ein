@@ -1,17 +1,19 @@
 use super::function::Function;
 use super::number::Number;
 use super::reference::Reference;
+use super::unknown::Unknown;
 use super::variable::Variable;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Type {
     Function(Function),
     Number(Number),
     Reference(Reference),
+    Unknown(Unknown),
     Variable(Variable),
 }
 
@@ -21,6 +23,7 @@ impl Type {
             Self::Function(function) => function.source_information(),
             Self::Number(number) => number.source_information(),
             Self::Reference(reference) => reference.source_information(),
+            Self::Unknown(unknown) => unknown.source_information(),
             Self::Variable(variable) => variable.source_information(),
         }
     }
@@ -32,8 +35,7 @@ impl Type {
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
             Self::Function(function) => function.substitute_variables(substitutions).into(),
-            Self::Number(_) => self.clone(),
-            Self::Reference(_) => self.clone(),
+            Self::Number(_) | Self::Reference(_) | Self::Unknown(_) => self.clone(),
             Self::Variable(variable) => match substitutions.get(&variable.id()) {
                 Some(type_) => type_.clone(),
                 None => self.clone(),
@@ -46,7 +48,7 @@ impl Type {
             Self::Function(function) => function.resolve_reference_types(environment).into(),
             Self::Number(_) => self.clone(),
             Self::Reference(reference) => environment[reference.name()].clone(),
-            Self::Variable(_) => unreachable!(),
+            Self::Unknown(_) | Self::Variable(_) => unreachable!(),
         }
     }
 
@@ -74,6 +76,12 @@ impl From<Number> for Type {
 impl From<Reference> for Type {
     fn from(reference: Reference) -> Self {
         Self::Reference(reference)
+    }
+}
+
+impl From<Unknown> for Type {
+    fn from(unknown: Unknown) -> Self {
+        Self::Unknown(unknown)
     }
 }
 

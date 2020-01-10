@@ -49,6 +49,15 @@ impl Expression {
         convert(&expression)
     }
 
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        match self {
+            Self::Application(application) => application.convert_types(convert).into(),
+            Self::Let(let_) => let_.convert_types(convert).into(),
+            Self::Operation(operation) => operation.convert_types(convert).into(),
+            _ => self.clone(),
+        }
+    }
+
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         match self {
             Self::Application(application) => {

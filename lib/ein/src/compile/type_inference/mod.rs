@@ -1,13 +1,18 @@
 mod equation;
+mod equation_set;
 mod error;
 mod type_inferrer;
 
 use crate::ast::*;
+use crate::types::{self, Type};
 pub use error::*;
 use type_inferrer::*;
 
 pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {
-    TypeInferrer::new().infer(module)
+    TypeInferrer::new().infer(&module.convert_types(&mut |type_| match type_ {
+        Type::Unknown(unknown) => types::Variable::new(unknown.source_information().clone()).into(),
+        _ => type_.clone(),
+    }))
 }
 
 #[cfg(test)]
@@ -317,7 +322,7 @@ mod tests {
                     vec![ValueDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
                     .into()],
@@ -402,7 +407,7 @@ mod tests {
                         ValueDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into(),
@@ -489,7 +494,7 @@ mod tests {
                         ValueDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into()
@@ -555,7 +560,7 @@ mod tests {
                         ValueDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into(),
@@ -735,6 +740,45 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn infer_types_with_recursive_reference_types() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![TypeDefinition::new(
+                "Foo",
+                types::Function::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+            )],
+            vec![
+                FunctionDefinition::new(
+                    "f",
+                    vec!["g".into()],
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Variable::new("f", SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ],
         );
         assert_eq!(infer_types(&module), Ok(module));
     }

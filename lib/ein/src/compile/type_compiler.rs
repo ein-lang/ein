@@ -18,7 +18,7 @@ impl TypeCompiler {
             Type::Function(_) => self.compile_function(type_).into(),
             Type::Number(_) => core::types::Value::Number.into(),
             Type::Reference(_) => self.compile(&self.reference_type_resolver.resolve(type_)),
-            Type::Variable(_) => unreachable!(),
+            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 
@@ -36,7 +36,7 @@ impl TypeCompiler {
             Type::Reference(_) => {
                 self.compile_function(&self.reference_type_resolver.resolve(type_))
             }
-            Type::Variable(_) => unreachable!(),
+            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 
@@ -45,7 +45,7 @@ impl TypeCompiler {
             Type::Function(_) => unreachable!(),
             Type::Number(_) => core::types::Value::Number,
             Type::Reference(_) => self.compile_value(&self.reference_type_resolver.resolve(type_)),
-            Type::Variable(_) => unreachable!(),
+            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 }

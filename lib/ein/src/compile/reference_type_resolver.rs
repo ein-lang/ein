@@ -27,6 +27,7 @@ impl ReferenceTypeResolver {
             Type::Function(function) => self.resolve_function(function).into(),
             Type::Number(_) => type_.clone(),
             Type::Reference(reference) => self.resolve(&self.environment[reference.name()]),
+            Type::Unknown(_) => unreachable!(),
             Type::Variable(_) => unreachable!(),
         }
     }

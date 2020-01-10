@@ -1,6 +1,6 @@
 use crate::types::*;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Equation {
     lhs: Type,
     rhs: Type,

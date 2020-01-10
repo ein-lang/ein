@@ -61,6 +61,14 @@ impl Application {
         )
     }
 
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            self.function.convert_types(convert),
+            self.argument.convert_types(convert),
+            self.source_information.clone(),
+        )
+    }
+
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         Self::new(
             self.function.resolve_reference_types(environment),

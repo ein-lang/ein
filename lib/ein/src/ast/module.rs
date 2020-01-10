@@ -113,4 +113,17 @@ impl Module {
                 .collect(),
         )
     }
+
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            self.path.clone(),
+            self.export.clone(),
+            self.imported_modules.clone(),
+            self.type_definitions.clone(),
+            self.definitions
+                .iter()
+                .map(|definition| definition.convert_types(convert))
+                .collect(),
+        )
+    }
 }
