@@ -26,8 +26,8 @@ impl TypeCompiler {
                 if let Some(index) = self.reference_indices.get(reference.name()) {
                     core::types::Type::Index(*index)
                 } else {
-                    let other = self.push_type(reference);
-                    other.compile(&other.reference_type_resolver.resolve(type_))
+                    self.push_type(reference)
+                        .compile(&self.reference_type_resolver.resolve(type_))
                 }
             }
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
