@@ -1,86 +1,80 @@
 use super::super::name_generator::NameGenerator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::debug::*;
 use crate::types::Type;
 
 pub fn desugar_argument_omission(module: &Module) -> Module {
-    let reference_type_resolver = ReferenceTypeResolver::new(module);
     let mut name_generator = NameGenerator::new("omitted_argument_");
 
     module.convert_definitions(&mut |definition| match definition {
-        Definition::FunctionDefinition(function_definition) => {
-            match reference_type_resolver.resolve(function_definition.type_()) {
-                Type::Function(function_type) => {
-                    if function_definition.arguments().len() == function_type.arguments().len() {
-                        function_definition.clone().into()
-                    } else {
-                        let omitted_arguments = (0..(function_type.arguments().len()
-                            - function_definition.arguments().len()))
-                            .map(|_| name_generator.generate())
-                            .collect::<Vec<_>>();
-
-                        FunctionDefinition::new(
-                            function_definition.name(),
-                            function_definition
-                                .arguments()
-                                .iter()
-                                .chain(omitted_arguments.iter())
-                                .cloned()
-                                .collect(),
-                            append_arguments_to_expression(
-                                function_definition.body(),
-                                &omitted_arguments
-                                    .iter()
-                                    .map(|argument| {
-                                        Variable::new(
-                                            argument,
-                                            function_definition.source_information().clone(),
-                                        )
-                                    })
-                                    .collect::<Vec<Variable>>(),
-                            ),
-                            function_definition.type_().clone(),
-                            function_definition.source_information().clone(),
-                        )
-                        .into()
-                    }
-                }
-                _ => unreachable!(),
-            }
-        }
-        Definition::ValueDefinition(value_definition) => {
-            match reference_type_resolver.resolve(value_definition.type_()) {
-                Type::Function(function_type) => {
-                    let arguments = function_type
-                        .arguments()
-                        .iter()
+        Definition::FunctionDefinition(function_definition) => match function_definition.type_() {
+            Type::Function(function_type) => {
+                if function_definition.arguments().len() == function_type.arguments().len() {
+                    function_definition.clone().into()
+                } else {
+                    let omitted_arguments = (0..(function_type.arguments().len()
+                        - function_definition.arguments().len()))
                         .map(|_| name_generator.generate())
                         .collect::<Vec<_>>();
 
                     FunctionDefinition::new(
-                        value_definition.name(),
-                        arguments.clone(),
+                        function_definition.name(),
+                        function_definition
+                            .arguments()
+                            .iter()
+                            .chain(omitted_arguments.iter())
+                            .cloned()
+                            .collect(),
                         append_arguments_to_expression(
-                            value_definition.body(),
-                            &arguments
+                            function_definition.body(),
+                            &omitted_arguments
                                 .iter()
                                 .map(|argument| {
                                     Variable::new(
                                         argument,
-                                        value_definition.source_information().clone(),
+                                        function_definition.source_information().clone(),
                                     )
                                 })
                                 .collect::<Vec<Variable>>(),
                         ),
-                        value_definition.type_().clone(),
-                        value_definition.source_information().clone(),
+                        function_definition.type_().clone(),
+                        function_definition.source_information().clone(),
                     )
                     .into()
                 }
-                _ => value_definition.clone().into(),
             }
-        }
+            _ => unreachable!(),
+        },
+        Definition::ValueDefinition(value_definition) => match value_definition.type_() {
+            Type::Function(function_type) => {
+                let arguments = function_type
+                    .arguments()
+                    .iter()
+                    .map(|_| name_generator.generate())
+                    .collect::<Vec<_>>();
+
+                FunctionDefinition::new(
+                    value_definition.name(),
+                    arguments.clone(),
+                    append_arguments_to_expression(
+                        value_definition.body(),
+                        &arguments
+                            .iter()
+                            .map(|argument| {
+                                Variable::new(
+                                    argument,
+                                    value_definition.source_information().clone(),
+                                )
+                            })
+                            .collect::<Vec<Variable>>(),
+                    ),
+                    value_definition.type_().clone(),
+                    value_definition.source_information().clone(),
+                )
+                .into()
+            }
+            _ => value_definition.clone().into(),
+        },
     })
 }
 
