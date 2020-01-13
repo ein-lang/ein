@@ -11,14 +11,20 @@ impl ReferenceTypeResolver {
     pub fn new(module: &Module) -> Self {
         Self {
             environment: module
-                .type_definitions()
+                .imported_modules()
                 .iter()
-                .map(|type_definition| {
+                .map(move |imported_module| {
+                    imported_module.types().iter().map(move |(name, type_)| {
+                        (imported_module.path().qualify_name(name), type_.clone())
+                    })
+                })
+                .flatten()
+                .chain(module.type_definitions().iter().map(|type_definition| {
                     (
                         type_definition.name().into(),
                         type_definition.type_().clone(),
                     )
-                })
+                }))
                 .collect(),
         }
     }
@@ -54,6 +60,30 @@ mod tests {
         assert_eq!(
             ReferenceTypeResolver::new(&Module::dummy())
                 .resolve(&types::Number::new(SourceInformation::dummy()).into()),
+            types::Number::new(SourceInformation::dummy()).into()
+        );
+    }
+
+    #[test]
+    fn resolve_type_in_imported_module() {
+        assert_eq!(
+            ReferenceTypeResolver::new(&Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![ModuleInterface::new(
+                    ModulePath::new(Package::new("Foo", ""), vec![]),
+                    vec![(
+                        "Foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into()
+                    )]
+                    .drain(..)
+                    .collect(),
+                    Default::default()
+                )],
+                vec![],
+                vec![],
+            ))
+            .resolve(&types::Reference::new("Foo.Foo", SourceInformation::dummy()).into()),
             types::Number::new(SourceInformation::dummy()).into()
         );
     }
