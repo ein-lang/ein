@@ -41,7 +41,7 @@ impl Function {
         self.unwrap_once(0, self)
     }
 
-    pub fn unwrap_once(&self, index: usize, type_: &Self) -> Self {
+    pub(super) fn unwrap_once(&self, index: usize, type_: &Self) -> Self {
         Self {
             arguments: self
                 .arguments

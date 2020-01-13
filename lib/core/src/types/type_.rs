@@ -33,7 +33,7 @@ impl Type {
         }
     }
 
-    pub fn unwrap_once(&self, index: usize, type_: &Function) -> Self {
+    pub(super) fn unwrap_once(&self, index: usize, type_: &Function) -> Self {
         match self {
             Self::Function(function) => function.unwrap_once(index + 1, type_).into(),
             Self::Index(current_index) => {
