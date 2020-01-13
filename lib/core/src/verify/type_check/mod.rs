@@ -148,7 +148,7 @@ mod tests {
     }
 
     #[test]
-    fn check_types_of_applications_of_recursive_functions() {
+    fn check_types_of_applications_of_recursively_typed_functions() {
         let module = Module::new(
             vec![],
             vec![
