@@ -102,4 +102,45 @@ mod tests {
             .into()
         );
     }
+
+    #[test]
+    fn resolve_function_results_recursively() {
+        assert_eq!(
+            ReferenceTypeResolver::new(&Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![
+                    TypeDefinition::new(
+                        "Foo",
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                    ),
+                    TypeDefinition::new(
+                        "Bar",
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                    )
+                ],
+                vec![],
+            ))
+            .resolve(&types::Reference::new("Bar", SourceInformation::dummy()).into()),
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()
+        );
+    }
 }
