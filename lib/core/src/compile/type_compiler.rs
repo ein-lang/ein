@@ -33,20 +33,8 @@ impl<'a> TypeCompiler<'a> {
     }
 
     pub fn compile_entry_function(&self, function: &types::Function) -> llvm::Type {
-        let mut arguments = vec![self
-            .context
-            .pointer_type(self.compile_unsized_environment())];
-
-        arguments.extend_from_slice(
-            &function
-                .arguments()
-                .iter()
-                .map(|type_| self.compile(type_))
-                .collect::<Vec<_>>(),
-        );
-
-        self.context
-            .function_type(self.compile_value(function.result()), &arguments)
+        self.push_struct_type(self.compile_unsized_closure(function))
+            .compile_raw_entry_function(function)
     }
 
     pub fn compile_closure(&self, function_definition: &ast::FunctionDefinition) -> llvm::Type {
@@ -55,7 +43,7 @@ impl<'a> TypeCompiler<'a> {
 
         self.context.struct_type(&[
             self.context
-                .pointer_type(other.compile_entry_function(function_definition.type_())),
+                .pointer_type(other.compile_raw_entry_function(function_definition.type_())),
             other.compile_environment(function_definition.environment()),
         ])
     }
@@ -72,7 +60,7 @@ impl<'a> TypeCompiler<'a> {
         type_.struct_set_body(&[
             self.context.pointer_type(
                 self.push_struct_type(type_)
-                    .compile_entry_function(function),
+                    .compile_raw_entry_function(function),
             ),
             self.compile_unsized_environment(),
         ]);
@@ -91,6 +79,23 @@ impl<'a> TypeCompiler<'a> {
 
     fn compile_unsized_environment(&self) -> llvm::Type {
         self.context.struct_type(&[])
+    }
+
+    fn compile_raw_entry_function(&self, function: &types::Function) -> llvm::Type {
+        let mut arguments = vec![self
+            .context
+            .pointer_type(self.compile_unsized_environment())];
+
+        arguments.extend_from_slice(
+            &function
+                .arguments()
+                .iter()
+                .map(|type_| self.compile(type_))
+                .collect::<Vec<_>>(),
+        );
+
+        self.context
+            .function_type(self.compile_value(function.result()), &arguments)
     }
 
     fn push_struct_type(&self, type_: llvm::Type) -> Self {
@@ -138,5 +143,13 @@ mod tests {
 
         compiler.compile(&type_);
         compiler.compile(&type_);
+    }
+
+    #[test]
+    fn compile_entry_function_of_recursive_function_type() {
+        let context = llvm::Context::new();
+        TypeCompiler::new(&context, &context.create_module("")).compile_entry_function(
+            &types::Function::new(vec![Type::Index(0)], types::Value::Number).into(),
+        );
     }
 }

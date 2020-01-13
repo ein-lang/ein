@@ -1,5 +1,5 @@
 use crate::ast::*;
-use crate::types::Type;
+use crate::types::{self, Type};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -25,10 +25,19 @@ impl ReferenceTypeResolver {
 
     pub fn resolve(&self, type_: &Type) -> Type {
         match type_ {
-            Type::Function(_) | Type::Number(_) => type_.clone(),
+            Type::Function(function) => self.resolve_function(function).into(),
+            Type::Number(_) => type_.clone(),
             Type::Reference(reference) => self.resolve(&self.environment[reference.name()]),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
+    }
+
+    pub fn resolve_function(&self, function: &types::Function) -> types::Function {
+        types::Function::new(
+            function.argument().clone(),
+            self.resolve(function.result()),
+            function.source_information().clone(),
+        )
     }
 }
 
