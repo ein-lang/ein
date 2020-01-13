@@ -1,25 +1,19 @@
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
-use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
 use std::collections::HashMap;
-use std::rc::Rc;
 
 pub struct ModuleCompiler<'a> {
     module: &'a ast::Module,
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
     type_compiler: TypeCompiler,
 }
 
 impl<'a> ModuleCompiler<'a> {
     pub fn new(module: &'a ast::Module) -> Self {
-        let reference_type_resolver = Rc::new(ReferenceTypeResolver::new(module));
-
         Self {
             module,
-            reference_type_resolver: reference_type_resolver.clone(),
-            type_compiler: TypeCompiler::new(reference_type_resolver),
+            type_compiler: TypeCompiler::new(module),
         }
     }
 
@@ -78,8 +72,10 @@ impl<'a> ModuleCompiler<'a> {
                     .arguments()
                     .iter()
                     .zip(
-                        self.reference_type_resolver
-                            .resolve(function_definition.type_())
+                        // Reference types are resolved to bare function types
+                        // by desugaring already here.
+                        function_definition
+                            .type_()
                             .to_function()
                             .expect("function type")
                             .arguments(),

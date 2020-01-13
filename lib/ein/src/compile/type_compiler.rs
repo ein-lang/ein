@@ -1,4 +1,5 @@
 use super::reference_type_resolver::ReferenceTypeResolver;
+use crate::ast;
 use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -10,10 +11,10 @@ pub struct TypeCompiler {
 }
 
 impl TypeCompiler {
-    pub fn new(reference_type_resolver: impl Into<Rc<ReferenceTypeResolver>>) -> Self {
+    pub fn new(module: &ast::Module) -> Self {
         Self {
             reference_indices: HashMap::new(),
-            reference_type_resolver: reference_type_resolver.into(),
+            reference_type_resolver: ReferenceTypeResolver::new(module).into(),
         }
     }
 
@@ -87,7 +88,7 @@ mod tests {
     #[test]
     fn compile_number_type() {
         assert_eq!(
-            TypeCompiler::new(ReferenceTypeResolver::new(&Module::dummy()))
+            TypeCompiler::new(&Module::dummy())
                 .compile(&types::Number::new(SourceInformation::dummy()).into()),
             core::types::Value::Number.into()
         );
@@ -96,7 +97,7 @@ mod tests {
     #[test]
     fn compile_function_type() {
         assert_eq!(
-            TypeCompiler::new(ReferenceTypeResolver::new(&Module::dummy())).compile(
+            TypeCompiler::new(&Module::dummy()).compile(
                 &types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -115,7 +116,7 @@ mod tests {
     #[test]
     fn compile_reference_type() {
         assert_eq!(
-            TypeCompiler::new(ReferenceTypeResolver::new(&Module::new(
+            TypeCompiler::new(&Module::new(
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
@@ -124,7 +125,7 @@ mod tests {
                     types::Number::new(SourceInformation::dummy()),
                 )],
                 vec![],
-            )))
+            ))
             .compile(&types::Reference::new("Foo", SourceInformation::dummy()).into()),
             core::types::Value::Number.into()
         );
@@ -133,7 +134,7 @@ mod tests {
     #[test]
     fn compile_recursive_reference_type() {
         assert_eq!(
-            TypeCompiler::new(ReferenceTypeResolver::new(&Module::new(
+            TypeCompiler::new(&Module::new(
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
@@ -146,7 +147,7 @@ mod tests {
                     ),
                 )],
                 vec![],
-            )))
+            ))
             .compile(&types::Reference::new("Foo", SourceInformation::dummy()).into()),
             core::types::Function::new(
                 vec![core::types::Type::Index(0)],
