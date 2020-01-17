@@ -15,7 +15,7 @@ pub fn desugar_non_variable_applications(module: &Module) -> Module {
                     vec![ValueDefinition::new(
                         function_name.clone(),
                         let_.clone(),
-                        types::Variable::new(source_information.clone()),
+                        types::Unknown::new(source_information.clone()),
                         source_information.clone(),
                     )
                     .into()],
@@ -89,7 +89,7 @@ mod tests {
                             .into()],
                             Variable::new("f", SourceInformation::dummy())
                         ),
-                        types::Variable::new(SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
                     .into()],

@@ -81,6 +81,16 @@ impl FunctionDefinition {
         )
     }
 
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            self.name.clone(),
+            self.arguments.clone(),
+            self.body.convert_types(convert),
+            convert(&self.type_),
+            self.source_information.clone(),
+        )
+    }
+
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         Self::new(
             self.name.clone(),

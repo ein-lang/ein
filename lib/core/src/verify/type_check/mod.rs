@@ -14,7 +14,7 @@ mod tests {
     use super::check_types;
     use super::error::*;
     use crate::ast::*;
-    use crate::types;
+    use crate::types::{self, Type};
 
     #[test]
     fn check_types_with_empty_modules() {
@@ -145,6 +145,34 @@ mod tests {
         );
 
         assert_eq!(check_types(&module), Err(TypeCheckError));
+    }
+
+    #[test]
+    fn check_types_of_applications_of_recursively_typed_functions() {
+        let module = Module::new(
+            vec![],
+            vec![
+                FunctionDefinition::new(
+                    "f",
+                    vec![],
+                    vec![Argument::new(
+                        "x",
+                        types::Function::new(vec![Type::Index(0)], types::Value::Number.into()),
+                    )],
+                    42.0,
+                    types::Value::Number,
+                )
+                .into(),
+                ValueDefinition::new(
+                    "x",
+                    Application::new(Variable::new("f"), vec![Variable::new("f").into()]),
+                    types::Value::Number,
+                )
+                .into(),
+            ],
+        );
+
+        assert_eq!(check_types(&module), Ok(()));
     }
 
     #[test]

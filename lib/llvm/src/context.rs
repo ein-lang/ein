@@ -104,6 +104,10 @@ impl Context {
         }
         .into()
     }
+
+    pub fn named_struct_type(&self, name: &str) -> Type {
+        unsafe { LLVMStructCreateNamed(self.internal, c_string(name).as_ptr()) }.into()
+    }
 }
 
 impl From<LLVMContextRef> for Context {

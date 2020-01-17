@@ -45,6 +45,7 @@ impl<'a> ModuleCompiler<'a> {
                 Type::Function(function_type) => {
                     self.declare_function(declaration.name(), function_type)
                 }
+                Type::Index(_) => return Err(CompileError::InvalidTypeIndex),
                 Type::Value(value_type) => {
                     self.declare_global_variable(declaration.name(), value_type)
                 }
@@ -92,8 +93,11 @@ impl<'a> ModuleCompiler<'a> {
         &mut self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<(), CompileError> {
-        self.global_variables[function_definition.name()].set_initializer(
-            self.context.const_struct(&[
+        let global_variable = self.global_variables[function_definition.name()];
+
+        global_variable.set_initializer(llvm::const_named_struct(
+            global_variable.type_().element(),
+            &[
                 FunctionCompiler::new(
                     self.context,
                     self.module,
@@ -102,8 +106,8 @@ impl<'a> ModuleCompiler<'a> {
                 )
                 .compile(function_definition)?,
                 self.context.const_struct(&[]),
-            ]),
-        );
+            ],
+        ));
 
         Ok(())
     }

@@ -56,6 +56,16 @@ impl Let {
         )
     }
 
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            self.definitions
+                .iter()
+                .map(|definition| definition.convert_types(convert))
+                .collect(),
+            self.expression.convert_types(convert),
+        )
+    }
+
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         Self::new(
             self.definitions

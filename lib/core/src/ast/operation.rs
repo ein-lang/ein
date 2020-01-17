@@ -1,5 +1,6 @@
 use super::expression::Expression;
 use super::operator::Operator;
+use crate::types::Type;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -42,5 +43,13 @@ impl Operation {
         let mut global_variables = self.lhs.find_global_variables(local_variables);
         global_variables.extend(self.rhs.find_global_variables(local_variables));
         global_variables
+    }
+
+    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
+        Self::new(
+            self.operator,
+            self.lhs.convert_types(convert),
+            self.rhs.convert_types(convert),
+        )
     }
 }

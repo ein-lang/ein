@@ -1,4 +1,4 @@
-use super::error::*;
+use super::error::TypeCheckError;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::*;
@@ -96,6 +96,8 @@ impl TypeChecker {
             Expression::Application(application) => {
                 match self.check_variable(application.function(), variables)? {
                     Type::Function(function_type) => {
+                        let function_type = function_type.unwrap();
+
                         if function_type.arguments().len() != application.arguments().len() {
                             return Err(TypeCheckError);
                         }
@@ -105,14 +107,14 @@ impl TypeChecker {
                             .iter()
                             .zip(function_type.arguments())
                         {
-                            if self.check_expression(argument, variables)? != *expected_type {
+                            if &self.check_expression(argument, variables)? != expected_type {
                                 return Err(TypeCheckError);
                             }
                         }
 
                         Ok(function_type.result().clone().into())
                     }
-                    Type::Value(_) => Err(TypeCheckError),
+                    Type::Index(_) | Type::Value(_) => Err(TypeCheckError),
                 }
             }
             Expression::LetFunctions(let_functions) => {

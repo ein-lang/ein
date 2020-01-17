@@ -1,20 +1,21 @@
 use super::equation::*;
+use super::equation_set::EquationSet;
 use super::error::*;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::*;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct TypeInferrer {
     environment: HashMap<String, Type>,
-    equations: Vec<Equation>,
+    equation_set: EquationSet,
 }
 
 impl TypeInferrer {
     pub fn new() -> Self {
         Self {
             environment: HashMap::new(),
-            equations: vec![],
+            equation_set: EquationSet::new(),
         }
     }
 
@@ -92,7 +93,7 @@ impl TypeInferrer {
             let argument_type: Type = types::Variable::new(source_information.clone()).into();
             let result_type: Type = types::Variable::new(source_information.clone()).into();
 
-            self.equations.push(Equation::new(
+            self.equation_set.add(Equation::new(
                 type_,
                 types::Function::new(
                     argument_type.clone(),
@@ -107,7 +108,7 @@ impl TypeInferrer {
         }
 
         let body_type = self.infer_expression(function_definition.body(), &variables)?;
-        self.equations.push(Equation::new(body_type, type_));
+        self.equation_set.add(Equation::new(body_type, type_));
 
         Ok(())
     }
@@ -119,8 +120,8 @@ impl TypeInferrer {
     ) -> Result<(), TypeInferenceError> {
         let type_ = self.infer_expression(value_definition.body(), &variables)?;
 
-        self.equations
-            .push(Equation::new(type_, value_definition.type_().clone()));
+        self.equation_set
+            .add(Equation::new(type_, value_definition.type_().clone()));
 
         Ok(())
     }
@@ -137,7 +138,7 @@ impl TypeInferrer {
                 let result: Type =
                     types::Variable::new(application.source_information().clone()).into();
 
-                self.equations.push(Equation::new(
+                self.equation_set.add(Equation::new(
                     function,
                     types::Function::new(
                         argument,
@@ -213,9 +214,9 @@ impl TypeInferrer {
                 let type_: Type = types::Number::new(operation.source_information().clone()).into();
 
                 let lhs = self.infer_expression(operation.lhs(), variables)?;
-                self.equations.push(Equation::new(lhs, type_.clone()));
+                self.equation_set.add(Equation::new(lhs, type_.clone()));
                 let rhs = self.infer_expression(operation.rhs(), variables)?;
-                self.equations.push(Equation::new(rhs, type_.clone()));
+                self.equation_set.add(Equation::new(rhs, type_.clone()));
 
                 Ok(type_)
             }
@@ -233,11 +234,11 @@ impl TypeInferrer {
     fn reduce_equations(&mut self) -> Result<HashMap<usize, Type>, TypeInferenceError> {
         let mut substitutions = HashMap::<usize, Type>::new();
 
-        while let Some(equation) = self.equations.pop() {
+        while let Some(equation) = self.equation_set.remove() {
             match (equation.lhs(), equation.rhs()) {
                 (Type::Variable(variable), rhs) => {
-                    if let Type::Variable(another_variable) = rhs {
-                        if variable.id() == another_variable.id() {
+                    if let Type::Variable(other_variable) = rhs {
+                        if variable.id() == other_variable.id() {
                             continue;
                         }
                     }
@@ -247,7 +248,7 @@ impl TypeInferrer {
                             substituted_type.clone().substitute_variable(variable, rhs);
                     }
 
-                    for equation in self.equations.iter_mut() {
+                    for equation in self.equation_set.iter_mut() {
                         *equation = Equation::new(
                             equation.lhs().substitute_variable(variable, rhs),
                             equation.rhs().substitute_variable(variable, rhs),
@@ -257,10 +258,10 @@ impl TypeInferrer {
                     substitutions.insert(variable.id(), rhs.clone());
                 }
                 (lhs, Type::Variable(variable)) => self
-                    .equations
-                    .push(Equation::new(variable.clone(), lhs.clone())),
+                    .equation_set
+                    .add(Equation::new(variable.clone(), lhs.clone())),
                 (Type::Reference(reference), other) | (other, Type::Reference(reference)) => {
-                    self.equations.push(Equation::new(
+                    self.equation_set.add(Equation::new(
                         self.environment
                             .get(reference.name())
                             .ok_or_else(|| TypeInferenceError::TypeNotFound {
@@ -271,11 +272,11 @@ impl TypeInferrer {
                     ))
                 }
                 (Type::Function(function1), Type::Function(function2)) => {
-                    self.equations.push(Equation::new(
+                    self.equation_set.add(Equation::new(
                         function1.argument().clone(),
                         function2.argument().clone(),
                     ));
-                    self.equations.push(Equation::new(
+                    self.equation_set.add(Equation::new(
                         function1.result().clone(),
                         function2.result().clone(),
                     ));

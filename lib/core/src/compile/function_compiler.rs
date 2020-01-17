@@ -30,10 +30,11 @@ impl<'a> FunctionCompiler<'a> {
         &mut self,
         function_definition: &ast::FunctionDefinition,
     ) -> Result<llvm::Value, CompileError> {
+        let closure_type = self.type_compiler.compile_closure(function_definition);
+
         let entry_function = self.module.add_function(
             &Self::generate_closure_entry_name(function_definition.name()),
-            self.type_compiler
-                .compile_entry_function(&function_definition.type_()),
+            closure_type.struct_elements()[0].element(),
         );
 
         let builder = llvm::Builder::new(entry_function);
@@ -41,10 +42,7 @@ impl<'a> FunctionCompiler<'a> {
 
         let environment = builder.build_bit_cast(
             entry_function.get_param(0),
-            self.context.pointer_type(
-                self.type_compiler
-                    .compile_environment(function_definition.environment()),
-            ),
+            self.context.pointer_type(closure_type.struct_elements()[1]),
         );
 
         let mut variables = self.global_variables.clone();

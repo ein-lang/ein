@@ -60,6 +60,17 @@ impl Definition {
         }
     }
 
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        match self {
+            Self::FunctionDefinition(function_definition) => {
+                function_definition.convert_types(convert).into()
+            }
+            Self::ValueDefinition(value_definition) => {
+                value_definition.convert_types(convert).into()
+            }
+        }
+    }
+
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         match self {
             Self::FunctionDefinition(function_definition) => function_definition

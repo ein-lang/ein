@@ -34,6 +34,16 @@ impl Module {
         );
     }
 
+    pub fn get_type_by_name(&self, name: &str) -> Option<Type> {
+        let type_ = unsafe { LLVMGetTypeByName(self.internal, c_string(name).as_ptr()) };
+
+        if type_.is_null() {
+            None
+        } else {
+            Some(type_.into())
+        }
+    }
+
     fn context(&self) -> Context {
         unsafe { LLVMGetModuleContext(self.internal) }.into()
     }

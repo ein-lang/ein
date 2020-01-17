@@ -72,6 +72,15 @@ impl Operation {
         )
     }
 
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            self.operator,
+            self.lhs.convert_types(convert),
+            self.rhs.convert_types(convert),
+            self.source_information.clone(),
+        )
+    }
+
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         Self::new(
             self.operator,

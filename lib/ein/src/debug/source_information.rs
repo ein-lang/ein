@@ -49,6 +49,8 @@ impl Display for SourceInformation {
     }
 }
 
+impl Eq for SourceInformation {}
+
 impl PartialEq for SourceInformation {
     fn eq(&self, _: &Self) -> bool {
         true

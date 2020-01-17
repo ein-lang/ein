@@ -190,7 +190,7 @@ fn untyped_function_definition<'a>() -> impl Parser<Stream<'a>, Output = Functio
             name,
             arguments,
             expression,
-            types::Variable::new(source_information.clone()),
+            types::Unknown::new(source_information.clone()),
             source_information,
         )
     })
@@ -203,7 +203,7 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
             ValueDefinition::new(
                 name,
                 expression,
-                types::Variable::new(source_information.clone()),
+                types::Unknown::new(source_information.clone()),
                 source_information,
             )
         },
@@ -715,7 +715,7 @@ mod tests {
             ValueDefinition::new(
                 "x",
                 Number::new(0.0, SourceInformation::dummy()),
-                types::Variable::new(SourceInformation::dummy()),
+                types::Unknown::new(SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
             .into()
@@ -729,7 +729,7 @@ mod tests {
                 "main",
                 vec!["x".into()],
                 Number::new(42.0, SourceInformation::dummy()),
-                types::Variable::new(SourceInformation::dummy()),
+                types::Unknown::new(SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
             .into()
@@ -754,7 +754,7 @@ mod tests {
                     "f",
                     vec!["x".into()],
                     Variable::new("x", SourceInformation::dummy()),
-                    types::Variable::new(SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into(),
@@ -765,7 +765,7 @@ mod tests {
                         Variable::new("x", SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
-                    types::Variable::new(SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into()
@@ -960,7 +960,7 @@ mod tests {
                 vec![ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
-                    types::Variable::new(SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into()],
@@ -973,7 +973,7 @@ mod tests {
                 vec![ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
-                    types::Variable::new(SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into()],
@@ -986,7 +986,7 @@ mod tests {
                 vec![ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
-                    types::Variable::new(SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into()],
@@ -1000,7 +1000,7 @@ mod tests {
                     "f",
                     vec!["x".into()],
                     Variable::new("x", SourceInformation::dummy()),
-                    types::Variable::new(SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into()],
@@ -1031,7 +1031,7 @@ mod tests {
                         "f",
                         vec!["x".into()],
                         Variable::new("x", SourceInformation::dummy()),
-                        types::Variable::new(SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
                     .into(),
@@ -1042,7 +1042,7 @@ mod tests {
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
-                        types::Variable::new(SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
                     .into()
@@ -1074,7 +1074,7 @@ mod tests {
                         Variable::new("x", SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
-                    types::Variable::new(SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into(),],
@@ -1107,7 +1107,7 @@ mod tests {
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
-                        types::Variable::new(SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
                     .into(),
@@ -1119,7 +1119,7 @@ mod tests {
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
-                        types::Variable::new(SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
                     .into()
