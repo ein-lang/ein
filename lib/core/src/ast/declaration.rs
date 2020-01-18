@@ -21,11 +21,4 @@ impl Declaration {
     pub fn type_(&self) -> &Type {
         &self.type_
     }
-
-    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
-        Self {
-            name: self.name.clone(),
-            type_: convert(&self.type_),
-        }
-    }
 }

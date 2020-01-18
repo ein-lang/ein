@@ -4,7 +4,6 @@ use super::value::Value;
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum Type {
     Function(Function),
-    Index(usize),
     Value(Value),
 }
 
@@ -12,7 +11,6 @@ impl Type {
     pub fn to_id(&self) -> String {
         match self {
             Self::Function(function) => function.to_id(),
-            Self::Index(index) => format!("{}", index),
             Self::Value(value) => value.to_id(),
         }
     }
@@ -20,7 +18,6 @@ impl Type {
     pub fn into_function(self) -> Option<Function> {
         match self {
             Self::Function(function) => Some(function),
-            Self::Index(_) => None,
             Self::Value(_) => None,
         }
     }
@@ -28,22 +25,7 @@ impl Type {
     pub fn into_value(self) -> Option<Value> {
         match self {
             Self::Function(_) => None,
-            Self::Index(_) => None,
             Self::Value(value) => Some(value),
-        }
-    }
-
-    pub(super) fn unwrap_once(&self, index: usize, type_: &Function) -> Self {
-        match self {
-            Self::Function(function) => function.unwrap_once(index + 1, type_).into(),
-            Self::Index(current_index) => {
-                if *current_index == index {
-                    type_.clone().into()
-                } else {
-                    self.clone()
-                }
-            }
-            Self::Value(value) => value.unwrap_once(index, type_).into(),
         }
     }
 }
@@ -65,10 +47,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn function_id() {
+    fn to_id() {
         assert_eq!(
-            &Function::new(vec![Type::Index(0)], Value::Number).to_id(),
-            "(0->Number)"
+            &Type::from(Function::new(vec![Value::Number.into()], Value::Number)).to_id(),
+            "(Number->Number)"
         );
     }
 }

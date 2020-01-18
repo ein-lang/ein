@@ -21,7 +21,6 @@ impl<'a> TypeCompiler<'a> {
             Type::Function(function) => self
                 .context
                 .pointer_type(self.compile_unsized_closure(function)),
-            Type::Index(index) => self.context.pointer_type(self.struct_types[*index]),
             Type::Value(value) => self.compile_value(value),
         }
     }
@@ -119,13 +118,6 @@ mod tests {
         TypeCompiler::new(&context, &context.create_module("")).compile(
             &types::Function::new(vec![types::Value::Number.into()], types::Value::Number).into(),
         );
-    }
-
-    #[test]
-    fn compile_recursive_function_type() {
-        let context = llvm::Context::new();
-        TypeCompiler::new(&context, &context.create_module(""))
-            .compile(&types::Function::new(vec![Type::Index(0)], types::Value::Number).into());
     }
 
     #[test]

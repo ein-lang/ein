@@ -1,6 +1,5 @@
 use super::expression::Expression;
 use super::function_definition::FunctionDefinition;
-use crate::types::Type;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -57,16 +56,6 @@ impl LetFunctions {
                 global_variables.extend(argument.find_global_variables(&local_variables));
                 global_variables
             },
-        )
-    }
-
-    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
-        Self::new(
-            self.definitions
-                .iter()
-                .map(|definition| definition.convert_types(convert))
-                .collect(),
-            self.expression.convert_types(convert),
         )
     }
 }
