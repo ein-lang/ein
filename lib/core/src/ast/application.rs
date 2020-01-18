@@ -1,6 +1,5 @@
 use super::expression::Expression;
 use super::variable::Variable;
-use crate::types::Type;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -43,16 +42,5 @@ impl Application {
                 global_variables
             },
         )
-    }
-
-    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
-        Self {
-            function: self.function.clone(),
-            arguments: self
-                .arguments
-                .iter()
-                .map(|argument| argument.convert_types(convert))
-                .collect(),
-        }
     }
 }

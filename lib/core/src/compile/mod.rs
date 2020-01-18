@@ -19,9 +19,7 @@ pub fn compile(
     ast_module: &ast::Module,
     initializer_configuration: &InitializerConfiguration,
 ) -> Result<Module, CompileError> {
-    let ast_module = ast_module.canonicalize_types();
-
-    verify(&ast_module)?;
+    verify(ast_module)?;
 
     let context = llvm::Context::new();
     let module = context.create_module("main");
@@ -29,7 +27,7 @@ pub fn compile(
     ModuleCompiler::new(
         &context,
         &module,
-        &ast_module,
+        ast_module,
         &TypeCompiler::new(&context, &module),
         initializer_configuration,
     )

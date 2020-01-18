@@ -1,6 +1,6 @@
 use super::expression::Expression;
 use super::Argument;
-use crate::types::{self, Type};
+use crate::types;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -22,18 +22,13 @@ impl FunctionDefinition {
         result_type: types::Value,
     ) -> Self {
         Self {
-            type_: types::canonicalize(
-                &types::Function::new(
-                    arguments
-                        .iter()
-                        .map(|argument| argument.type_().clone())
-                        .collect(),
-                    result_type.clone(),
-                )
-                .into(),
-            )
-            .into_function()
-            .unwrap(),
+            type_: types::Function::new(
+                arguments
+                    .iter()
+                    .map(|argument| argument.type_().clone())
+                    .collect(),
+                result_type.clone(),
+            ),
             name: name.into(),
             environment,
             arguments,
@@ -108,23 +103,5 @@ impl FunctionDefinition {
         );
 
         self.body.find_global_variables(&local_variables)
-    }
-
-    pub fn convert_types(&self, convert: &impl Fn(&Type) -> Type) -> Self {
-        Self::new(
-            self.name.clone(),
-            self.environment
-                .iter()
-                .map(|argument| argument.convert_types(convert))
-                .collect(),
-            self.arguments
-                .iter()
-                .map(|argument| argument.convert_types(convert))
-                .collect(),
-            self.body.convert_types(convert),
-            convert(&self.result_type.clone().into())
-                .into_value()
-                .unwrap(),
-        )
     }
 }

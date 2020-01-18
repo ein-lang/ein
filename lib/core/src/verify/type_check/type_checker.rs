@@ -96,8 +96,6 @@ impl TypeChecker {
             Expression::Application(application) => {
                 match self.check_variable(application.function(), variables)? {
                     Type::Function(function_type) => {
-                        let function_type = function_type.unwrap();
-
                         if function_type.arguments().len() != application.arguments().len() {
                             return Err(TypeCheckError);
                         }
@@ -114,7 +112,7 @@ impl TypeChecker {
 
                         Ok(function_type.result().clone().into())
                     }
-                    Type::Index(_) | Type::Value(_) => Err(TypeCheckError),
+                    Type::Value(_) => Err(TypeCheckError),
                 }
             }
             Expression::LetFunctions(let_functions) => {
