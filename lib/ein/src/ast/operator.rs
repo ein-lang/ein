@@ -6,13 +6,13 @@ pub enum Operator {
     Divide,
 }
 
-impl From<&Operator> for core::ast::Operator {
+impl From<&Operator> for ssf::ast::Operator {
     fn from(operator: &Operator) -> Self {
         match operator {
-            Operator::Add => core::ast::Operator::Add,
-            Operator::Subtract => core::ast::Operator::Subtract,
-            Operator::Multiply => core::ast::Operator::Multiply,
-            Operator::Divide => core::ast::Operator::Divide,
+            Operator::Add => ssf::ast::Operator::Add,
+            Operator::Subtract => ssf::ast::Operator::Subtract,
+            Operator::Multiply => ssf::ast::Operator::Multiply,
+            Operator::Divide => ssf::ast::Operator::Divide,
         }
     }
 }

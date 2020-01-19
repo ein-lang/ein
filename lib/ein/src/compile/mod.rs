@@ -23,9 +23,7 @@ const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
 const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
 const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
-pub type ModuleObject = core::compile::Module;
-
-pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterface), CompileError> {
+pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), CompileError> {
     let module = desugar_with_types(&infer_types(&desugar_without_types(module))?);
     let name_qualifier = NameQualifier::new(
         &module,
@@ -38,9 +36,9 @@ pub fn compile(module: &ast::Module) -> Result<(ModuleObject, ast::ModuleInterfa
     );
 
     Ok((
-        core::compile::compile(
+        ssf_llvm::compile(
             &name_qualifier.qualify_core_module(&ModuleCompiler::new(&module).compile()?),
-            &core::compile::InitializerConfiguration::new(
+            &ssf_llvm::InitializerConfiguration::new(
                 if module
                     .definitions()
                     .iter()

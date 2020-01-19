@@ -17,8 +17,8 @@ impl<'a> ModuleCompiler<'a> {
         }
     }
 
-    pub fn compile(&self) -> Result<core::ast::Module, CompileError> {
-        Ok(core::ast::Module::new(
+    pub fn compile(&self) -> Result<ssf::ast::Module, CompileError> {
+        Ok(ssf::ast::Module::new(
             self.module
                 .imported_modules()
                 .iter()
@@ -27,7 +27,7 @@ impl<'a> ModuleCompiler<'a> {
                         .variables()
                         .iter()
                         .map(move |(name, type_)| {
-                            core::ast::Declaration::new(
+                            ssf::ast::Declaration::new(
                                 module_interface.path().fully_qualify_name(name),
                                 self.type_compiler.compile(type_),
                             )
@@ -52,19 +52,19 @@ impl<'a> ModuleCompiler<'a> {
     fn compile_function_definition(
         &self,
         function_definition: &ast::FunctionDefinition,
-    ) -> Result<core::ast::FunctionDefinition, CompileError> {
+    ) -> Result<ssf::ast::FunctionDefinition, CompileError> {
         let core_type = self
             .type_compiler
             .compile_function(function_definition.type_());
 
-        Ok(core::ast::FunctionDefinition::new(
+        Ok(ssf::ast::FunctionDefinition::new(
             function_definition.name(),
             vec![],
             function_definition
                 .arguments()
                 .iter()
                 .zip(core_type.arguments())
-                .map(|(name, type_)| core::ast::Argument::new(name.clone(), type_.clone()))
+                .map(|(name, type_)| ssf::ast::Argument::new(name.clone(), type_.clone()))
                 .collect::<Vec<_>>(),
             ExpressionCompiler::new(&self.type_compiler).compile(
                 function_definition.body(),
@@ -90,8 +90,8 @@ impl<'a> ModuleCompiler<'a> {
     fn compile_value_definition(
         &self,
         value_definition: &ast::ValueDefinition,
-    ) -> Result<core::ast::ValueDefinition, CompileError> {
-        Ok(core::ast::ValueDefinition::new(
+    ) -> Result<ssf::ast::ValueDefinition, CompileError> {
+        Ok(ssf::ast::ValueDefinition::new(
             value_definition.name(),
             ExpressionCompiler::new(&self.type_compiler)
                 .compile(value_definition.body(), &HashMap::new())?,

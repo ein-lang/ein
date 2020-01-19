@@ -7,7 +7,7 @@ mod path;
 mod serialize;
 pub mod types;
 
-pub use compile::{compile, ModuleObject};
+pub use compile::compile;
 pub use package::Package;
 pub use parse::{parse_module, ParseError};
 pub use path::{

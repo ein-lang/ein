@@ -6,11 +6,12 @@ edition = "2018"
 
 [dependencies]
 combine = { version = "4.0.0", features = ["regex"] }
-core = { path = "../core" }
 lazy_static = "1"
 regex = "1"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
+ssf = { git = "https://github.com/raviqqe/ssf", branch = "master" }
+ssf-llvm = { git = "https://github.com/raviqqe/ssf", branch = "master" }
 
 [dev-dependencies]
 indoc = "0.3"
