@@ -18,18 +18,18 @@ impl TypeCompiler {
         }
     }
 
-    pub fn compile(&self, type_: &Type) -> core::types::Type {
+    pub fn compile(&self, type_: &Type) -> ssf::types::Type {
         match type_ {
             Type::Function(_) => self.compile_function(type_).into(),
-            Type::Number(_) => core::types::Value::Number.into(),
+            Type::Number(_) => ssf::types::Value::Number.into(),
             Type::Reference(_) => unimplemented!(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 
-    pub fn compile_function(&self, type_: &types::Type) -> core::types::Function {
+    pub fn compile_function(&self, type_: &types::Type) -> ssf::types::Function {
         match type_ {
-            Type::Function(function) => core::types::Function::new(
+            Type::Function(function) => ssf::types::Function::new(
                 function
                     .arguments()
                     .iter()
@@ -45,10 +45,10 @@ impl TypeCompiler {
         }
     }
 
-    pub fn compile_value(&self, type_: &Type) -> core::types::Value {
+    pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
         match type_ {
             Type::Function(_) => unreachable!(),
-            Type::Number(_) => core::types::Value::Number,
+            Type::Number(_) => ssf::types::Value::Number,
             Type::Reference(_) => self.compile_value(&self.reference_type_resolver.resolve(type_)),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
@@ -66,7 +66,7 @@ mod tests {
         assert_eq!(
             TypeCompiler::new(&Module::dummy())
                 .compile(&types::Number::new(SourceInformation::dummy()).into()),
-            core::types::Value::Number.into()
+            ssf::types::Value::Number.into()
         );
     }
 
@@ -81,9 +81,9 @@ mod tests {
                 )
                 .into()
             ),
-            core::types::Function::new(
-                vec![core::types::Value::Number.into()],
-                core::types::Value::Number
+            ssf::types::Function::new(
+                vec![ssf::types::Value::Number.into()],
+                ssf::types::Value::Number
             )
             .into()
         );

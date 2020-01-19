@@ -7,7 +7,7 @@ use std::rc::Rc;
 #[derive(Debug, PartialEq)]
 pub enum CompileError {
     CircularInitialization,
-    CoreCompile(core::compile::CompileError),
+    CoreCompile(ssf_llvm::CompileError),
     ExportedNameNotFound { name: String },
     MixedDefinitionsInLet(Rc<SourceInformation>),
     TypeInference(TypeInferenceError),
@@ -35,10 +35,10 @@ impl Display for CompileError {
 
 impl Error for CompileError {}
 
-impl From<core::compile::CompileError> for CompileError {
-    fn from(error: core::compile::CompileError) -> Self {
+impl From<ssf_llvm::CompileError> for CompileError {
+    fn from(error: ssf_llvm::CompileError) -> Self {
         match error {
-            core::compile::CompileError::CircularInitialization => Self::CircularInitialization,
+            ssf_llvm::CompileError::CircularInitialization => Self::CircularInitialization,
             _ => Self::CoreCompile(error),
         }
     }

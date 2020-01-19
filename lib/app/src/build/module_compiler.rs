@@ -59,7 +59,7 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
             return Ok((object_file_path, interface_file_path));
         }
 
-        let (module_object, module_interface) = ein::compile(
+        let (bitcode, module_interface) = ein::compile(
             &module.resolve(
                 self.file_path_manager
                     .convert_to_module_path(source_file_path, package),
@@ -67,8 +67,7 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
             ),
         )?;
 
-        self.file_storage
-            .write(&object_file_path, &module_object.serialize())?;
+        self.file_storage.write(&object_file_path, &bitcode)?;
         self.file_storage.write(
             &interface_file_path,
             &ein::serialize_module_interface(&module_interface)?,

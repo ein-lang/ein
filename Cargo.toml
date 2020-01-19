@@ -2,9 +2,7 @@
 members = [
   "cmd/ein",
   "lib/app",
-  "lib/core",
   "lib/infra",
-  "lib/llvm",
   "lib/runtime",
   "lib/ein",
 ]

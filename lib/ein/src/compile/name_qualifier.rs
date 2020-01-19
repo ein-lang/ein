@@ -33,15 +33,15 @@ impl NameQualifier {
         Self { names }
     }
 
-    pub fn qualify_core_module(&self, module: &core::ast::Module) -> core::ast::Module {
-        core::ast::Module::new(
+    pub fn qualify_core_module(&self, module: &ssf::ast::Module) -> ssf::ast::Module {
+        ssf::ast::Module::new(
             module.declarations().to_vec(),
             module
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
-                    core::ast::Definition::FunctionDefinition(function_definition) => {
-                        core::ast::FunctionDefinition::new(
+                    ssf::ast::Definition::FunctionDefinition(function_definition) => {
+                        ssf::ast::FunctionDefinition::new(
                             self.names
                                 .get(function_definition.name())
                                 .cloned()
@@ -53,8 +53,8 @@ impl NameQualifier {
                         )
                         .into()
                     }
-                    core::ast::Definition::ValueDefinition(value_definition) => {
-                        core::ast::ValueDefinition::new(
+                    ssf::ast::Definition::ValueDefinition(value_definition) => {
+                        ssf::ast::ValueDefinition::new(
                             self.names
                                 .get(value_definition.name())
                                 .cloned()
@@ -98,21 +98,21 @@ mod tests {
                 ),
                 HashMap::new()
             )
-            .qualify_core_module(&core::ast::Module::new(
+            .qualify_core_module(&ssf::ast::Module::new(
                 vec![],
-                vec![core::ast::ValueDefinition::new(
+                vec![ssf::ast::ValueDefinition::new(
                     "x",
-                    core::ast::Expression::Number(42.0),
-                    core::types::Value::Number
+                    ssf::ast::Expression::Number(42.0),
+                    ssf::types::Value::Number
                 )
                 .into()]
             )),
-            core::ast::Module::new(
+            ssf::ast::Module::new(
                 vec![],
-                vec![core::ast::ValueDefinition::new(
+                vec![ssf::ast::ValueDefinition::new(
                     "M().x",
-                    core::ast::Expression::Number(42.0),
-                    core::types::Value::Number
+                    ssf::ast::Expression::Number(42.0),
+                    ssf::types::Value::Number
                 )
                 .into()]
             )
@@ -147,21 +147,21 @@ mod tests {
                 ),
                 HashMap::new()
             )
-            .qualify_core_module(&core::ast::Module::new(
+            .qualify_core_module(&ssf::ast::Module::new(
                 vec![],
-                vec![core::ast::ValueDefinition::new(
+                vec![ssf::ast::ValueDefinition::new(
                     "x",
-                    core::ast::Variable::new("B.y"),
-                    core::types::Value::Number
+                    ssf::ast::Variable::new("B.y"),
+                    ssf::types::Value::Number
                 )
                 .into()]
             )),
-            core::ast::Module::new(
+            ssf::ast::Module::new(
                 vec![],
-                vec![core::ast::ValueDefinition::new(
+                vec![ssf::ast::ValueDefinition::new(
                     "M().x",
-                    core::ast::Variable::new("A().B.y"),
-                    core::types::Value::Number
+                    ssf::ast::Variable::new("A().B.y"),
+                    ssf::types::Value::Number
                 )
                 .into()]
             )
