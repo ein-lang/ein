@@ -34,39 +34,7 @@ impl NameQualifier {
     }
 
     pub fn qualify_core_module(&self, module: &ssf::ast::Module) -> ssf::ast::Module {
-        ssf::ast::Module::new(
-            module.declarations().to_vec(),
-            module
-                .definitions()
-                .iter()
-                .map(|definition| match definition {
-                    ssf::ast::Definition::FunctionDefinition(function_definition) => {
-                        ssf::ast::FunctionDefinition::new(
-                            self.names
-                                .get(function_definition.name())
-                                .cloned()
-                                .unwrap_or_else(|| function_definition.name().into()),
-                            function_definition.environment().to_vec(),
-                            function_definition.arguments().to_vec(),
-                            function_definition.body().rename_variables(&self.names),
-                            function_definition.result_type().clone(),
-                        )
-                        .into()
-                    }
-                    ssf::ast::Definition::ValueDefinition(value_definition) => {
-                        ssf::ast::ValueDefinition::new(
-                            self.names
-                                .get(value_definition.name())
-                                .cloned()
-                                .unwrap_or_else(|| value_definition.name().into()),
-                            value_definition.body().rename_variables(&self.names),
-                            value_definition.type_().clone(),
-                        )
-                        .into()
-                    }
-                })
-                .collect(),
-        )
+        module.rename_global_variables(&self.names)
     }
 }
 
