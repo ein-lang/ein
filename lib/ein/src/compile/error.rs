@@ -38,7 +38,9 @@ impl Error for CompileError {}
 impl From<ssf_llvm::CompileError> for CompileError {
     fn from(error: ssf_llvm::CompileError) -> Self {
         match error {
-            ssf_llvm::CompileError::CircularInitialization => Self::CircularInitialization,
+            ssf_llvm::CompileError::Analysis(ssf::AnalysisError::CircularInitialization) => {
+                Self::CircularInitialization
+            }
             _ => Self::CoreCompile(error),
         }
     }
