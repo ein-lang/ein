@@ -34,7 +34,7 @@ impl NameQualifier {
     }
 
     pub fn qualify_core_module(&self, module: &ssf::ast::Module) -> ssf::ast::Module {
-        module.rename_global_variables(&self.names)
+        module.rename_global_definitions(&self.names)
     }
 }
 
