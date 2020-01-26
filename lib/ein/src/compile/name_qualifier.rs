@@ -33,8 +33,8 @@ impl NameQualifier {
         Self { names }
     }
 
-    pub fn qualify_core_module(&self, module: &ssf::ast::Module) -> ssf::ast::Module {
-        module.rename_global_definitions(&self.names)
+    pub fn qualify_core_module(&self, module: &ssf::ir::Module) -> ssf::ir::Module {
+        module.rename_global_variables(&self.names)
     }
 }
 
@@ -66,24 +66,28 @@ mod tests {
                 ),
                 HashMap::new()
             )
-            .qualify_core_module(&ssf::ast::Module::new(
-                vec![],
-                vec![ssf::ast::ValueDefinition::new(
-                    "x",
-                    ssf::ast::Expression::Number(42.0),
-                    ssf::types::Value::Number
+            .qualify_core_module(
+                &ssf::ir::Module::new(
+                    vec![],
+                    vec![ssf::ir::ValueDefinition::new(
+                        "x",
+                        ssf::ir::Expression::Number(42.0),
+                        ssf::types::Value::Number
+                    )
+                    .into()]
                 )
-                .into()]
-            )),
-            ssf::ast::Module::new(
+                .unwrap()
+            ),
+            ssf::ir::Module::new(
                 vec![],
-                vec![ssf::ast::ValueDefinition::new(
+                vec![ssf::ir::ValueDefinition::new(
                     "M().x",
-                    ssf::ast::Expression::Number(42.0),
+                    ssf::ir::Expression::Number(42.0),
                     ssf::types::Value::Number
                 )
                 .into()]
             )
+            .unwrap()
         );
     }
 
@@ -115,24 +119,31 @@ mod tests {
                 ),
                 HashMap::new()
             )
-            .qualify_core_module(&ssf::ast::Module::new(
-                vec![],
-                vec![ssf::ast::ValueDefinition::new(
-                    "x",
-                    ssf::ast::Variable::new("B.y"),
-                    ssf::types::Value::Number
+            .qualify_core_module(
+                &ssf::ir::Module::new(
+                    vec![ssf::ir::Declaration::new("B.y", ssf::types::Value::Number)],
+                    vec![ssf::ir::ValueDefinition::new(
+                        "x",
+                        ssf::ir::Variable::new("B.y"),
+                        ssf::types::Value::Number
+                    )
+                    .into()]
                 )
-                .into()]
-            )),
-            ssf::ast::Module::new(
-                vec![],
-                vec![ssf::ast::ValueDefinition::new(
+                .unwrap()
+            ),
+            ssf::ir::Module::new(
+                vec![ssf::ir::Declaration::new(
+                    "A().B.y",
+                    ssf::types::Value::Number
+                )],
+                vec![ssf::ir::ValueDefinition::new(
                     "M().x",
-                    ssf::ast::Variable::new("A().B.y"),
+                    ssf::ir::Variable::new("A().B.y"),
                     ssf::types::Value::Number
                 )
                 .into()]
             )
+            .unwrap()
         );
     }
 }

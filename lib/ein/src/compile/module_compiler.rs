@@ -17,8 +17,8 @@ impl<'a> ModuleCompiler<'a> {
         }
     }
 
-    pub fn compile(&self) -> Result<ssf::ast::Module, CompileError> {
-        Ok(ssf::ast::Module::new(
+    pub fn compile(&self) -> Result<ssf::ir::Module, CompileError> {
+        Ok(ssf::ir::Module::new(
             self.module
                 .imported_modules()
                 .iter()
@@ -27,8 +27,8 @@ impl<'a> ModuleCompiler<'a> {
                         .variables()
                         .iter()
                         .map(move |(name, type_)| {
-                            ssf::ast::Declaration::new(
-                                module_interface.path().fully_qualify_name(name),
+                            ssf::ir::Declaration::new(
+                                module_interface.path().qualify_name(name),
                                 self.type_compiler.compile(type_),
                             )
                         })
@@ -46,25 +46,24 @@ impl<'a> ModuleCompiler<'a> {
                     }
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
-        ))
+        )?)
     }
 
     fn compile_function_definition(
         &self,
         function_definition: &ast::FunctionDefinition,
-    ) -> Result<ssf::ast::FunctionDefinition, CompileError> {
+    ) -> Result<ssf::ir::FunctionDefinition, CompileError> {
         let core_type = self
             .type_compiler
             .compile_function(function_definition.type_());
 
-        Ok(ssf::ast::FunctionDefinition::new(
+        Ok(ssf::ir::FunctionDefinition::new(
             function_definition.name(),
-            vec![],
             function_definition
                 .arguments()
                 .iter()
                 .zip(core_type.arguments())
-                .map(|(name, type_)| ssf::ast::Argument::new(name.clone(), type_.clone()))
+                .map(|(name, type_)| ssf::ir::Argument::new(name.clone(), type_.clone()))
                 .collect::<Vec<_>>(),
             ExpressionCompiler::new(&self.type_compiler).compile(
                 function_definition.body(),
@@ -90,8 +89,8 @@ impl<'a> ModuleCompiler<'a> {
     fn compile_value_definition(
         &self,
         value_definition: &ast::ValueDefinition,
-    ) -> Result<ssf::ast::ValueDefinition, CompileError> {
-        Ok(ssf::ast::ValueDefinition::new(
+    ) -> Result<ssf::ir::ValueDefinition, CompileError> {
+        Ok(ssf::ir::ValueDefinition::new(
             value_definition.name(),
             ExpressionCompiler::new(&self.type_compiler)
                 .compile(value_definition.body(), &HashMap::new())?,
