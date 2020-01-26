@@ -271,7 +271,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#aeba58a7c684b27416b55bc1e53e4d2bee15c5ec"
+source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#ac045c544f64b2d12ed7c3c7c429a4e7f02a5d5b"
 dependencies = [
  "either 1.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "inkwell_internals 0.1.0 (git+https://github.com/TheDan64/inkwell?branch=llvm8-0)",
@@ -285,7 +285,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#aeba58a7c684b27416b55bc1e53e4d2bee15c5ec"
+source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#ac045c544f64b2d12ed7c3c7c429a4e7f02a5d5b"
 dependencies = [
  "proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -603,7 +603,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#6141e099c3c219362bc397fcc2523335c6084da8"
+source = "git+https://github.com/raviqqe/ssf#236fc1afca0afca1ee305b96e358227a2170a15a"
 dependencies = [
  "petgraph 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -611,7 +611,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#6141e099c3c219362bc397fcc2523335c6084da8"
+source = "git+https://github.com/raviqqe/ssf#236fc1afca0afca1ee305b96e358227a2170a15a"
 dependencies = [
  "inkwell 0.1.0 (git+https://github.com/TheDan64/inkwell?branch=llvm8-0)",
  "ssf 0.1.0 (git+https://github.com/raviqqe/ssf)",
