@@ -1,15 +1,20 @@
-version: 2
+name: test
+on:
+  - push
 jobs:
-  build:
-    docker:
-      - image: einlang/ci
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: einlang/ci
+    env:
+      HOME: /root
     steps:
-      - checkout
+      - uses: actions/checkout@master
       - run: npx cspell '**/*.{feature,md,rs}'
       - run: cargo build
       - run: cargo fmt -- --check
       - run: cargo clippy -- -D warnings
       - run: cargo audit
-      - run: cargo test --lib
+      - run: cargo test
       - run: cargo build --release --package runtime
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
