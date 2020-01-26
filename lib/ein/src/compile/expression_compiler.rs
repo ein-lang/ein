@@ -1,5 +1,4 @@
 use super::error::CompileError;
-use super::free_variable_finder::FreeVariableFinder;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
 use crate::types::Type;
@@ -18,7 +17,7 @@ impl<'a> ExpressionCompiler<'a> {
         &self,
         expression: &ast::Expression,
         local_variables: &HashMap<String, Type>,
-    ) -> Result<ssf::ast::Expression, CompileError> {
+    ) -> Result<ssf::ir::Expression, CompileError> {
         match expression {
             ast::Expression::Application(application) => {
                 let mut function = application.function();
@@ -29,7 +28,7 @@ impl<'a> ExpressionCompiler<'a> {
                     arguments.push(application.argument());
                 }
 
-                Ok(ssf::ast::Application::new(
+                Ok(ssf::ir::Application::new(
                     self.compile(function, local_variables)?
                         .to_variable()
                         .expect("variable")
@@ -50,15 +49,15 @@ impl<'a> ExpressionCompiler<'a> {
                     Ok(self.compile_let_values(let_, local_variables)?.into())
                 }
             },
-            ast::Expression::Number(number) => Ok(ssf::ast::Expression::Number(number.value())),
-            ast::Expression::Operation(operation) => Ok(ssf::ast::Operation::new(
+            ast::Expression::Number(number) => Ok(ssf::ir::Expression::Number(number.value())),
+            ast::Expression::Operation(operation) => Ok(ssf::ir::Operation::new(
                 operation.operator().into(),
                 self.compile(operation.lhs(), local_variables)?,
                 self.compile(operation.rhs(), local_variables)?,
             )
             .into()),
-            ast::Expression::Variable(variable) => Ok(ssf::ast::Expression::Variable(
-                ssf::ast::Variable::new(variable.name()),
+            ast::Expression::Variable(variable) => Ok(ssf::ir::Expression::Variable(
+                ssf::ir::Variable::new(variable.name()),
             )),
         }
     }
@@ -67,7 +66,7 @@ impl<'a> ExpressionCompiler<'a> {
         &self,
         let_: &ast::Let,
         local_variables: &HashMap<String, Type>,
-    ) -> Result<ssf::ast::LetFunctions, CompileError> {
+    ) -> Result<ssf::ir::LetFunctions, CompileError> {
         let function_definitions = let_
             .definitions()
             .iter()
@@ -92,7 +91,7 @@ impl<'a> ExpressionCompiler<'a> {
             }))
             .collect::<HashMap<_, _>>();
 
-        Ok(ssf::ast::LetFunctions::new(
+        Ok(ssf::ir::LetFunctions::new(
             function_definitions
                 .iter()
                 .map(|function_definition| {
@@ -101,27 +100,14 @@ impl<'a> ExpressionCompiler<'a> {
                         .to_function()
                         .expect("function type");
 
-                    Ok(ssf::ast::FunctionDefinition::new(
+                    Ok(ssf::ir::FunctionDefinition::new(
                         function_definition.name(),
-                        FreeVariableFinder::new()
-                            .find(function_definition)
-                            .iter()
-                            .map(|name| {
-                                variables.get(name).map(|type_| {
-                                    ssf::ast::Argument::new(
-                                        name.clone(),
-                                        self.type_compiler.compile(type_),
-                                    )
-                                })
-                            })
-                            .collect::<Option<_>>()
-                            .unwrap_or_else(|| vec![]),
                         function_definition
                             .arguments()
                             .iter()
                             .zip(type_.arguments())
                             .map(|(name, type_)| {
-                                ssf::ast::Argument::new(
+                                ssf::ir::Argument::new(
                                     name.clone(),
                                     self.type_compiler.compile(type_),
                                 )
@@ -153,7 +139,7 @@ impl<'a> ExpressionCompiler<'a> {
         &self,
         let_: &ast::Let,
         local_variables: &HashMap<String, Type>,
-    ) -> Result<ssf::ast::LetValues, CompileError> {
+    ) -> Result<ssf::ir::LetValues, CompileError> {
         let value_definitions = let_
             .definitions()
             .iter()
@@ -178,11 +164,11 @@ impl<'a> ExpressionCompiler<'a> {
             }))
             .collect::<HashMap<_, _>>();
 
-        Ok(ssf::ast::LetValues::new(
+        Ok(ssf::ir::LetValues::new(
             value_definitions
                 .iter()
                 .map(|value_definition| {
-                    Ok(ssf::ast::ValueDefinition::new(
+                    Ok(ssf::ir::ValueDefinition::new(
                         value_definition.name(),
                         self.compile(value_definition.body(), variables)?,
                         self.type_compiler.compile_value(value_definition.type_()),
@@ -216,7 +202,7 @@ mod tests {
                 .into(),
                 &HashMap::new()
             ),
-            Ok(ssf::ast::Operation::new(ssf::ast::Operator::Add, 1.0, 2.0).into())
+            Ok(ssf::ir::Operation::new(ssf::ir::Operator::Add, 1.0, 2.0).into())
         );
     }
 
@@ -237,13 +223,13 @@ mod tests {
                 .into(),
                 &HashMap::new()
             ),
-            Ok(ssf::ast::LetValues::new(
-                vec![ssf::ast::ValueDefinition::new(
+            Ok(ssf::ir::LetValues::new(
+                vec![ssf::ir::ValueDefinition::new(
                     "x",
-                    ssf::ast::Expression::Number(42.0),
+                    ssf::ir::Expression::Number(42.0),
                     ssf::types::Value::Number,
                 )],
-                ssf::ast::Variable::new("x")
+                ssf::ir::Variable::new("x")
             )
             .into())
         );
@@ -271,15 +257,14 @@ mod tests {
                 .into(),
                 &HashMap::new()
             ),
-            Ok(ssf::ast::LetFunctions::new(
-                vec![ssf::ast::FunctionDefinition::new(
+            Ok(ssf::ir::LetFunctions::new(
+                vec![ssf::ir::FunctionDefinition::new(
                     "f",
-                    vec![],
-                    vec![ssf::ast::Argument::new("x", ssf::types::Value::Number)],
+                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
                     42.0,
                     ssf::types::Value::Number,
                 )],
-                ssf::ast::Variable::new("x")
+                ssf::ir::Variable::new("x")
             )
             .into())
         );
@@ -311,24 +296,17 @@ mod tests {
                 .into(),
                 &HashMap::new()
             ),
-            Ok(ssf::ast::LetFunctions::new(
-                vec![ssf::ast::FunctionDefinition::new(
+            Ok(ssf::ir::LetFunctions::new(
+                vec![ssf::ir::FunctionDefinition::new(
                     "f",
-                    vec![ssf::ast::Argument::new(
-                        "f",
-                        ssf::types::Function::new(
-                            vec![ssf::types::Value::Number.into()],
-                            ssf::types::Value::Number
-                        )
-                    )],
-                    vec![ssf::ast::Argument::new("x", ssf::types::Value::Number)],
-                    ssf::ast::Application::new(
-                        ssf::ast::Variable::new("f"),
-                        vec![ssf::ast::Variable::new("x").into()]
+                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
+                    ssf::ir::Application::new(
+                        ssf::ir::Variable::new("f"),
+                        vec![ssf::ir::Variable::new("x").into()]
                     ),
                     ssf::types::Value::Number,
                 )],
-                ssf::ast::Variable::new("x")
+                ssf::ir::Variable::new("x")
             )
             .into())
         );
@@ -370,24 +348,22 @@ mod tests {
                 .into(),
                 &HashMap::new()
             ),
-            Ok(ssf::ast::LetFunctions::new(
-                vec![ssf::ast::FunctionDefinition::new(
+            Ok(ssf::ir::LetFunctions::new(
+                vec![ssf::ir::FunctionDefinition::new(
                     "f",
-                    vec![],
-                    vec![ssf::ast::Argument::new("x", ssf::types::Value::Number)],
-                    ssf::ast::LetFunctions::new(
-                        vec![ssf::ast::FunctionDefinition::new(
+                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
+                    ssf::ir::LetFunctions::new(
+                        vec![ssf::ir::FunctionDefinition::new(
                             "g",
-                            vec![ssf::ast::Argument::new("x", ssf::types::Value::Number)],
-                            vec![ssf::ast::Argument::new("y", ssf::types::Value::Number)],
-                            ssf::ast::Variable::new("x"),
+                            vec![ssf::ir::Argument::new("y", ssf::types::Value::Number)],
+                            ssf::ir::Variable::new("x"),
                             ssf::types::Value::Number,
                         )],
-                        ssf::ast::Variable::new("x")
+                        ssf::ir::Variable::new("x")
                     ),
                     ssf::types::Value::Number,
                 )],
-                ssf::ast::Variable::new("x")
+                ssf::ir::Variable::new("x")
             )
             .into())
         );
@@ -424,21 +400,20 @@ mod tests {
                 .into(),
                 &HashMap::new()
             ),
-            Ok(ssf::ast::LetValues::new(
-                vec![ssf::ast::ValueDefinition::new(
+            Ok(ssf::ir::LetValues::new(
+                vec![ssf::ir::ValueDefinition::new(
                     "y",
                     42.0,
                     ssf::types::Value::Number,
                 )],
-                ssf::ast::LetFunctions::new(
-                    vec![ssf::ast::FunctionDefinition::new(
+                ssf::ir::LetFunctions::new(
+                    vec![ssf::ir::FunctionDefinition::new(
                         "f",
-                        vec![ssf::ast::Argument::new("y", ssf::types::Value::Number)],
-                        vec![ssf::ast::Argument::new("x", ssf::types::Value::Number)],
-                        ssf::ast::Variable::new("y"),
+                        vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
+                        ssf::ir::Variable::new("y"),
                         ssf::types::Value::Number,
                     )],
-                    ssf::ast::Variable::new("y")
+                    ssf::ir::Variable::new("y")
                 )
             )
             .into())

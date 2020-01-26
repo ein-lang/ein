@@ -1,7 +1,6 @@
 mod desugar;
 mod error;
 mod expression_compiler;
-mod free_variable_finder;
 mod module_compiler;
 mod module_interface_compiler;
 mod name_generator;
