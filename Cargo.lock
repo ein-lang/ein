@@ -598,7 +598,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#c5a6de35cd58a3bdb7dab445f64e2b6c60a37ba9"
+source = "git+https://github.com/raviqqe/ssf#5e6f7244edbfa0c3e35683bc3ca7a6087667d95a"
 dependencies = [
  "petgraph 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -606,7 +606,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#c5a6de35cd58a3bdb7dab445f64e2b6c60a37ba9"
+source = "git+https://github.com/raviqqe/ssf#5e6f7244edbfa0c3e35683bc3ca7a6087667d95a"
 dependencies = [
  "inkwell 0.1.0 (git+https://github.com/TheDan64/inkwell?branch=llvm8-0)",
  "ssf 0.1.0 (git+https://github.com/raviqqe/ssf)",
