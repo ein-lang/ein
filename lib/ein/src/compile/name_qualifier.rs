@@ -71,8 +71,8 @@ mod tests {
                     vec![],
                     vec![ssf::ir::ValueDefinition::new(
                         "x",
-                        ssf::ir::Expression::Number(42.0),
-                        ssf::types::Value::Number
+                        ssf::ir::Expression::Float64(42.0),
+                        ssf::types::Value::Float64
                     )
                     .into()]
                 )
@@ -82,8 +82,8 @@ mod tests {
                 vec![],
                 vec![ssf::ir::ValueDefinition::new(
                     "M().x",
-                    ssf::ir::Expression::Number(42.0),
-                    ssf::types::Value::Number
+                    ssf::ir::Expression::Float64(42.0),
+                    ssf::types::Value::Float64
                 )
                 .into()]
             )
@@ -121,11 +121,11 @@ mod tests {
             )
             .qualify_core_module(
                 &ssf::ir::Module::new(
-                    vec![ssf::ir::Declaration::new("B.y", ssf::types::Value::Number)],
+                    vec![ssf::ir::Declaration::new("B.y", ssf::types::Value::Float64)],
                     vec![ssf::ir::ValueDefinition::new(
                         "x",
                         ssf::ir::Variable::new("B.y"),
-                        ssf::types::Value::Number
+                        ssf::types::Value::Float64
                     )
                     .into()]
                 )
@@ -134,12 +134,12 @@ mod tests {
             ssf::ir::Module::new(
                 vec![ssf::ir::Declaration::new(
                     "A().B.y",
-                    ssf::types::Value::Number
+                    ssf::types::Value::Float64
                 )],
                 vec![ssf::ir::ValueDefinition::new(
                     "M().x",
                     ssf::ir::Variable::new("A().B.y"),
-                    ssf::types::Value::Number
+                    ssf::types::Value::Float64
                 )
                 .into()]
             )

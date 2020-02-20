@@ -28,7 +28,7 @@ impl<'a> ExpressionCompiler<'a> {
                     arguments.push(application.argument());
                 }
 
-                Ok(ssf::ir::Application::new(
+                Ok(ssf::ir::FunctionApplication::new(
                     self.compile(function, local_variables)?
                         .to_variable()
                         .expect("variable")
@@ -49,7 +49,7 @@ impl<'a> ExpressionCompiler<'a> {
                     Ok(self.compile_let_values(let_, local_variables)?.into())
                 }
             },
-            ast::Expression::Number(number) => Ok(ssf::ir::Expression::Number(number.value())),
+            ast::Expression::Number(number) => Ok(ssf::ir::Expression::Float64(number.value())),
             ast::Expression::Operation(operation) => Ok(ssf::ir::Operation::new(
                 operation.operator().into(),
                 self.compile(operation.lhs(), local_variables)?,
@@ -226,8 +226,8 @@ mod tests {
             Ok(ssf::ir::LetValues::new(
                 vec![ssf::ir::ValueDefinition::new(
                     "x",
-                    ssf::ir::Expression::Number(42.0),
-                    ssf::types::Value::Number,
+                    ssf::ir::Expression::Float64(42.0),
+                    ssf::types::Value::Float64,
                 )],
                 ssf::ir::Variable::new("x")
             )
@@ -260,9 +260,9 @@ mod tests {
             Ok(ssf::ir::LetFunctions::new(
                 vec![ssf::ir::FunctionDefinition::new(
                     "f",
-                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
+                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Float64)],
                     42.0,
-                    ssf::types::Value::Number,
+                    ssf::types::Value::Float64,
                 )],
                 ssf::ir::Variable::new("x")
             )
@@ -299,12 +299,12 @@ mod tests {
             Ok(ssf::ir::LetFunctions::new(
                 vec![ssf::ir::FunctionDefinition::new(
                     "f",
-                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
-                    ssf::ir::Application::new(
+                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Float64)],
+                    ssf::ir::FunctionApplication::new(
                         ssf::ir::Variable::new("f"),
                         vec![ssf::ir::Variable::new("x").into()]
                     ),
-                    ssf::types::Value::Number,
+                    ssf::types::Value::Float64,
                 )],
                 ssf::ir::Variable::new("x")
             )
@@ -351,17 +351,17 @@ mod tests {
             Ok(ssf::ir::LetFunctions::new(
                 vec![ssf::ir::FunctionDefinition::new(
                     "f",
-                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
+                    vec![ssf::ir::Argument::new("x", ssf::types::Value::Float64)],
                     ssf::ir::LetFunctions::new(
                         vec![ssf::ir::FunctionDefinition::new(
                             "g",
-                            vec![ssf::ir::Argument::new("y", ssf::types::Value::Number)],
+                            vec![ssf::ir::Argument::new("y", ssf::types::Value::Float64)],
                             ssf::ir::Variable::new("x"),
-                            ssf::types::Value::Number,
+                            ssf::types::Value::Float64,
                         )],
                         ssf::ir::Variable::new("x")
                     ),
-                    ssf::types::Value::Number,
+                    ssf::types::Value::Float64,
                 )],
                 ssf::ir::Variable::new("x")
             )
@@ -404,14 +404,14 @@ mod tests {
                 vec![ssf::ir::ValueDefinition::new(
                     "y",
                     42.0,
-                    ssf::types::Value::Number,
+                    ssf::types::Value::Float64,
                 )],
                 ssf::ir::LetFunctions::new(
                     vec![ssf::ir::FunctionDefinition::new(
                         "f",
-                        vec![ssf::ir::Argument::new("x", ssf::types::Value::Number)],
+                        vec![ssf::ir::Argument::new("x", ssf::types::Value::Float64)],
                         ssf::ir::Variable::new("y"),
-                        ssf::types::Value::Number,
+                        ssf::types::Value::Float64,
                     )],
                     ssf::ir::Variable::new("y")
                 )
