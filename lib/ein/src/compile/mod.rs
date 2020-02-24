@@ -37,7 +37,7 @@ pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), 
     Ok((
         ssf_llvm::compile(
             &name_qualifier.qualify_core_module(&ModuleCompiler::new(&module).compile()?),
-            &ssf_llvm::InitializerConfiguration::new(
+            &ssf_llvm::CompileConfiguration::new(
                 if module
                     .definitions()
                     .iter()
@@ -54,6 +54,8 @@ pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), 
                         convert_path_to_initializer_name(module_interface.path())
                     })
                     .collect(),
+                None,
+                None,
             ),
         )?,
         ModuleInterfaceCompiler::new().compile(&module)?,
