@@ -21,7 +21,7 @@ impl TypeCompiler {
     pub fn compile(&self, type_: &Type) -> ssf::types::Type {
         match type_ {
             Type::Function(_) => self.compile_function(type_).into(),
-            Type::Number(_) => ssf::types::Value::Float64.into(),
+            Type::Number(_) => ssf::types::Primitive::Float64.into(),
             Type::Reference(_) => unimplemented!(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
@@ -48,7 +48,7 @@ impl TypeCompiler {
     pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
         match type_ {
             Type::Function(_) => unreachable!(),
-            Type::Number(_) => ssf::types::Value::Float64,
+            Type::Number(_) => ssf::types::Primitive::Float64.into(),
             Type::Reference(_) => self.compile_value(&self.reference_type_resolver.resolve(type_)),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
@@ -66,7 +66,7 @@ mod tests {
         assert_eq!(
             TypeCompiler::new(&Module::dummy())
                 .compile(&types::Number::new(SourceInformation::dummy()).into()),
-            ssf::types::Value::Float64.into()
+            ssf::types::Primitive::Float64.into()
         );
     }
 
@@ -82,8 +82,8 @@ mod tests {
                 .into()
             ),
             ssf::types::Function::new(
-                vec![ssf::types::Value::Float64.into()],
-                ssf::types::Value::Float64
+                vec![ssf::types::Primitive::Float64.into()],
+                ssf::types::Primitive::Float64
             )
             .into()
         );
