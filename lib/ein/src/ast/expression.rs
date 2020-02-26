@@ -1,6 +1,7 @@
 use super::application::Application;
 use super::definition::Definition;
 use super::let_::Let;
+use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
 use super::variable::Variable;
@@ -11,6 +12,7 @@ use std::collections::HashMap;
 pub enum Expression {
     Application(Application),
     Let(Let),
+    None(None),
     Number(Number),
     Operation(Operation),
     Variable(Variable),
@@ -23,9 +25,8 @@ impl Expression {
                 application.substitute_type_variables(substitutions).into()
             }
             Self::Let(let_) => let_.substitute_type_variables(substitutions).into(),
-            Self::Number(number) => Self::Number(number.clone()),
             Self::Operation(operation) => operation.substitute_type_variables(substitutions).into(),
-            Self::Variable(variable) => Self::Variable(variable.clone()),
+            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -34,7 +35,7 @@ impl Expression {
             Self::Application(application) => application.convert_definitions(convert).into(),
             Self::Let(let_) => let_.convert_definitions(convert).into(),
             Self::Operation(operation) => operation.convert_definitions(convert).into(),
-            _ => self.clone(),
+            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -43,7 +44,7 @@ impl Expression {
             Self::Application(application) => application.convert_expressions(convert).into(),
             Self::Let(let_) => let_.convert_expressions(convert).into(),
             Self::Operation(operation) => operation.convert_expressions(convert).into(),
-            _ => self.clone(),
+            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         };
 
         convert(&expression)
@@ -54,7 +55,7 @@ impl Expression {
             Self::Application(application) => application.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            _ => self.clone(),
+            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -65,7 +66,7 @@ impl Expression {
             }
             Self::Let(let_) => let_.resolve_reference_types(environment).into(),
             Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
-            _ => self.clone(),
+            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 }

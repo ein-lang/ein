@@ -29,9 +29,7 @@ impl TypeCompiler {
                 self.compile_value(function.last_result()),
             )
             .into(),
-            Type::None(_) => {
-                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(vec![])]).into()
-            }
+            Type::None(_) => self.compile_none().into(),
             Type::Number(_) => ssf::types::Primitive::Float64.into(),
             Type::Reference(_) => self.compile(&self.reference_type_resolver.resolve(type_)),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
@@ -44,6 +42,10 @@ impl TypeCompiler {
 
     pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
         self.compile(type_).into_value().unwrap()
+    }
+
+    pub fn compile_none(&self) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(vec![])])
     }
 }
 

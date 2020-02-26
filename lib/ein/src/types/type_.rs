@@ -70,6 +70,12 @@ impl From<Function> for Type {
     }
 }
 
+impl From<None> for Type {
+    fn from(none: None) -> Self {
+        Self::None(none)
+    }
+}
+
 impl From<Number> for Type {
     fn from(number: Number) -> Self {
         Self::Number(number)
