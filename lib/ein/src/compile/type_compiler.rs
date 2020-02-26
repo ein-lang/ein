@@ -20,15 +20,6 @@ impl TypeCompiler {
 
     pub fn compile(&self, type_: &Type) -> ssf::types::Type {
         match type_ {
-            Type::Function(_) => self.compile_function(type_).into(),
-            Type::Number(_) => ssf::types::Primitive::Float64.into(),
-            Type::Reference(_) => unimplemented!(),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
-        }
-    }
-
-    pub fn compile_function(&self, type_: &types::Type) -> ssf::types::Function {
-        match type_ {
             Type::Function(function) => ssf::types::Function::new(
                 function
                     .arguments()
@@ -36,22 +27,23 @@ impl TypeCompiler {
                     .map(|type_| self.compile(type_))
                     .collect::<Vec<_>>(),
                 self.compile_value(function.last_result()),
-            ),
-            Type::Number(_) => unreachable!(),
-            Type::Reference(_) => {
-                self.compile_function(&self.reference_type_resolver.resolve(type_))
+            )
+            .into(),
+            Type::None(_) => {
+                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(vec![])]).into()
             }
+            Type::Number(_) => ssf::types::Primitive::Float64.into(),
+            Type::Reference(_) => self.compile(&self.reference_type_resolver.resolve(type_)),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 
+    pub fn compile_function(&self, type_: &types::Type) -> ssf::types::Function {
+        self.compile(type_).into_function().unwrap()
+    }
+
     pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
-        match type_ {
-            Type::Function(_) => unreachable!(),
-            Type::Number(_) => ssf::types::Primitive::Float64.into(),
-            Type::Reference(_) => self.compile_value(&self.reference_type_resolver.resolve(type_)),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
-        }
+        self.compile(type_).into_value().unwrap()
     }
 }
 

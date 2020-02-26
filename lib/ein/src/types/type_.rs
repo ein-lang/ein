@@ -1,4 +1,5 @@
 use super::function::Function;
+use super::none::None;
 use super::number::Number;
 use super::reference::Reference;
 use super::unknown::Unknown;
@@ -11,6 +12,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Type {
     Function(Function),
+    None(None),
     Number(Number),
     Reference(Reference),
     Unknown(Unknown),
@@ -21,6 +23,7 @@ impl Type {
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         match self {
             Self::Function(function) => function.source_information(),
+            Self::None(none) => none.source_information(),
             Self::Number(number) => number.source_information(),
             Self::Reference(reference) => reference.source_information(),
             Self::Unknown(unknown) => unknown.source_information(),
@@ -35,7 +38,7 @@ impl Type {
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
             Self::Function(function) => function.substitute_variables(substitutions).into(),
-            Self::Number(_) | Self::Reference(_) | Self::Unknown(_) => self.clone(),
+            Self::None(_) | Self::Number(_) | Self::Reference(_) | Self::Unknown(_) => self.clone(),
             Self::Variable(variable) => match substitutions.get(&variable.id()) {
                 Some(type_) => type_.clone(),
                 None => self.clone(),
@@ -46,7 +49,7 @@ impl Type {
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         match self {
             Self::Function(function) => function.resolve_reference_types(environment).into(),
-            Self::Number(_) => self.clone(),
+            Self::None(_) | Self::Number(_) => self.clone(),
             Self::Reference(reference) => environment[reference.name()].clone(),
             Self::Unknown(_) | Self::Variable(_) => unreachable!(),
         }
