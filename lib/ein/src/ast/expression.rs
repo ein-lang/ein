@@ -83,6 +83,12 @@ impl From<Let> for Expression {
     }
 }
 
+impl From<None> for Expression {
+    fn from(none: None) -> Expression {
+        Self::None(none)
+    }
+}
+
 impl From<Number> for Expression {
     fn from(number: Number) -> Expression {
         Self::Number(number)
