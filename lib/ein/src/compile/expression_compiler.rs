@@ -41,6 +41,14 @@ impl<'a> ExpressionCompiler<'a> {
                 )
                 .into())
             }
+            ast::Expression::Boolean(boolean) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(
+                    self.type_compiler.compile_boolean(),
+                    boolean.value() as usize,
+                ),
+                vec![],
+            )
+            .into()),
             ast::Expression::Let(let_) => match let_.definitions()[0] {
                 ast::Definition::FunctionDefinition(_) => {
                     Ok(self.compile_let_functions(let_, local_variables)?.into())

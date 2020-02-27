@@ -1,4 +1,5 @@
 use super::application::Application;
+use super::boolean::Boolean;
 use super::definition::Definition;
 use super::let_::Let;
 use super::none::None;
@@ -11,6 +12,7 @@ use std::collections::HashMap;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
     Application(Application),
+    Boolean(Boolean),
     Let(Let),
     None(None),
     Number(Number),
@@ -26,7 +28,7 @@ impl Expression {
             }
             Self::Let(let_) => let_.substitute_type_variables(substitutions).into(),
             Self::Operation(operation) => operation.substitute_type_variables(substitutions).into(),
-            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -35,7 +37,7 @@ impl Expression {
             Self::Application(application) => application.convert_definitions(convert).into(),
             Self::Let(let_) => let_.convert_definitions(convert).into(),
             Self::Operation(operation) => operation.convert_definitions(convert).into(),
-            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -44,7 +46,7 @@ impl Expression {
             Self::Application(application) => application.convert_expressions(convert).into(),
             Self::Let(let_) => let_.convert_expressions(convert).into(),
             Self::Operation(operation) => operation.convert_expressions(convert).into(),
-            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         };
 
         convert(&expression)
@@ -55,7 +57,7 @@ impl Expression {
             Self::Application(application) => application.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -66,7 +68,7 @@ impl Expression {
             }
             Self::Let(let_) => let_.resolve_reference_types(environment).into(),
             Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
-            Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 }
@@ -74,6 +76,12 @@ impl Expression {
 impl From<Application> for Expression {
     fn from(application: Application) -> Expression {
         Self::Application(application)
+    }
+}
+
+impl From<Boolean> for Expression {
+    fn from(boolean: Boolean) -> Expression {
+        Self::Boolean(boolean)
     }
 }
 

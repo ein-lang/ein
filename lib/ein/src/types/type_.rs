@@ -71,6 +71,12 @@ impl Type {
     }
 }
 
+impl From<Boolean> for Type {
+    fn from(boolean: Boolean) -> Self {
+        Self::Boolean(boolean)
+    }
+}
+
 impl From<Function> for Type {
     fn from(function: Function) -> Self {
         Self::Function(function)

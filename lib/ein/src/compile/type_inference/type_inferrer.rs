@@ -149,6 +149,9 @@ impl TypeInferrer {
 
                 Ok(result)
             }
+            Expression::Boolean(boolean) => {
+                Ok(types::Boolean::new(boolean.source_information().clone()).into())
+            }
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
@@ -284,6 +287,7 @@ impl TypeInferrer {
                         function2.result().clone(),
                     ));
                 }
+                (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
                 (lhs, rhs) => {
