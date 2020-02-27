@@ -284,6 +284,7 @@ impl TypeInferrer {
                         function2.result().clone(),
                     ));
                 }
+                (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
                 (lhs, rhs) => {
                     return Err(TypeInferenceError::TypesNotMatched(
