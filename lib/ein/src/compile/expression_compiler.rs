@@ -49,6 +49,11 @@ impl<'a> ExpressionCompiler<'a> {
                     Ok(self.compile_let_values(let_, local_variables)?.into())
                 }
             },
+            ast::Expression::None(_) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
+                vec![],
+            )
+            .into()),
             ast::Expression::Number(number) => {
                 Ok(ssf::ir::Primitive::Float64(number.value()).into())
             }

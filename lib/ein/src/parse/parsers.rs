@@ -18,7 +18,7 @@ use combine::{
 use lazy_static::lazy_static;
 use std::rc::Rc;
 
-const KEYWORDS: &[&str] = &["export", "import", "in", "let", "Number"];
+const KEYWORDS: &[&str] = &["export", "import", "in", "let", "None", "Number"];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
@@ -229,10 +229,15 @@ fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
 
 fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
     choice((
+        none_type().map(Type::from),
         number_type().map(Type::from),
         reference_type().map(Type::from),
         between(sign("("), sign(")"), type_()),
     ))
+}
+
+fn none_type<'a>() -> impl Parser<Stream<'a>, Output = types::None> {
+    attempt(source_information().skip(keyword("None"))).map(types::None::new)
 }
 
 fn number_type<'a>() -> impl Parser<Stream<'a>, Output = types::Number> {
@@ -251,6 +256,7 @@ fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 
 fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice((
+        none_literal().map(Expression::from),
         number_literal().map(Expression::from),
         variable().map(Expression::from),
         between(sign("("), sign(")"), expression()),
@@ -346,6 +352,10 @@ fn concrete_operator<'a>(
             }
         }),
     )
+}
+
+fn none_literal<'a>() -> impl Parser<Stream<'a>, Output = None> {
+    token(source_information().skip(keyword("None"))).map(None::new)
 }
 
 fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
@@ -801,6 +811,10 @@ mod tests {
     #[test]
     fn parse_type() {
         assert!(type_().parse(stream("?", "")).is_err());
+        assert_eq!(
+            type_().parse(stream("None", "")).unwrap().0,
+            types::None::new(SourceInformation::dummy()).into()
+        );
         assert_eq!(
             type_().parse(stream("Number", "")).unwrap().0,
             types::Number::new(SourceInformation::dummy()).into()
@@ -1317,6 +1331,15 @@ mod tests {
         assert_eq!(
             variable().parse(stream("Foo .x", "")).unwrap().0,
             Variable::new("Foo", SourceInformation::dummy()),
+        );
+    }
+
+    #[test]
+    fn parse_none_literal() {
+        assert!(none_literal().parse(stream("", "")).is_err());
+        assert_eq!(
+            none_literal().parse(stream("None", "")).unwrap().0,
+            None::new(SourceInformation::dummy())
         );
     }
 

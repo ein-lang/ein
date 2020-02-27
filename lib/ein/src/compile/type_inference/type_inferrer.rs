@@ -207,6 +207,9 @@ impl TypeInferrer {
 
                 self.infer_expression(let_.expression(), &variables)
             }
+            Expression::None(none) => {
+                Ok(types::None::new(none.source_information().clone()).into())
+            }
             Expression::Number(number) => {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
@@ -281,6 +284,7 @@ impl TypeInferrer {
                         function2.result().clone(),
                     ));
                 }
+                (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
                 (lhs, rhs) => {
                     return Err(TypeInferenceError::TypesNotMatched(

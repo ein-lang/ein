@@ -35,6 +35,18 @@ mod tests {
     }
 
     #[test]
+    fn infer_types_of_none_literals() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            None::new(SourceInformation::dummy()),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
     fn infer_types_of_variables() {
         let module = Module::from_definitions(vec![ValueDefinition::new(
             "x",
