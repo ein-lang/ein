@@ -32,8 +32,8 @@ impl ReferenceTypeResolver {
     pub fn resolve(&self, type_: &Type) -> Type {
         match type_ {
             Type::Function(function) => self.resolve_function(function).into(),
-            Type::None(_) | Type::Number(_) => type_.clone(),
             Type::Reference(reference) => self.resolve(&self.environment[reference.name()]),
+            Type::Boolean(_) | Type::None(_) | Type::Number(_) => type_.clone(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
