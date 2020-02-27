@@ -18,7 +18,9 @@ use combine::{
 use lazy_static::lazy_static;
 use std::rc::Rc;
 
-const KEYWORDS: &[&str] = &["export", "import", "in", "let", "None", "Number"];
+const KEYWORDS: &[&str] = &[
+    "export", "False", "import", "in", "let", "None", "Number", "True",
+];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
