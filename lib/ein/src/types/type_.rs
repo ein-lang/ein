@@ -1,3 +1,4 @@
+use super::boolean::Boolean;
 use super::function::Function;
 use super::none::None;
 use super::number::Number;
@@ -11,6 +12,7 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Type {
+    Boolean(Boolean),
     Function(Function),
     None(None),
     Number(Number),
@@ -22,6 +24,7 @@ pub enum Type {
 impl Type {
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         match self {
+            Self::Boolean(boolean) => boolean.source_information(),
             Self::Function(function) => function.source_information(),
             Self::None(none) => none.source_information(),
             Self::Number(number) => number.source_information(),
@@ -38,19 +41,23 @@ impl Type {
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
             Self::Function(function) => function.substitute_variables(substitutions).into(),
-            Self::None(_) | Self::Number(_) | Self::Reference(_) | Self::Unknown(_) => self.clone(),
             Self::Variable(variable) => match substitutions.get(&variable.id()) {
                 Some(type_) => type_.clone(),
                 None => self.clone(),
             },
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::Reference(_)
+            | Self::Unknown(_) => self.clone(),
         }
     }
 
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         match self {
             Self::Function(function) => function.resolve_reference_types(environment).into(),
-            Self::None(_) | Self::Number(_) => self.clone(),
             Self::Reference(reference) => environment[reference.name()].clone(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) => self.clone(),
             Self::Unknown(_) | Self::Variable(_) => unreachable!(),
         }
     }
@@ -61,6 +68,12 @@ impl Type {
         } else {
             None
         }
+    }
+}
+
+impl From<Boolean> for Type {
+    fn from(boolean: Boolean) -> Self {
+        Self::Boolean(boolean)
     }
 }
 

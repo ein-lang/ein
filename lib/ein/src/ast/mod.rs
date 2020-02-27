@@ -1,4 +1,5 @@
 mod application;
+mod boolean;
 mod definition;
 mod export;
 mod expression;
@@ -17,6 +18,7 @@ mod value_definition;
 mod variable;
 
 pub use application::*;
+pub use boolean::*;
 pub use definition::*;
 pub use export::*;
 pub use expression::*;

@@ -20,6 +20,7 @@ impl TypeCompiler {
 
     pub fn compile(&self, type_: &Type) -> ssf::types::Type {
         match type_ {
+            Type::Boolean(_) => self.compile_boolean().into(),
             Type::Function(function) => ssf::types::Function::new(
                 function
                     .arguments()
@@ -42,6 +43,13 @@ impl TypeCompiler {
 
     pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
         self.compile(type_).into_value().unwrap()
+    }
+
+    pub fn compile_boolean(&self) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![
+            ssf::types::Constructor::new(vec![]),
+            ssf::types::Constructor::new(vec![]),
+        ])
     }
 
     pub fn compile_none(&self) -> ssf::types::Algebraic {

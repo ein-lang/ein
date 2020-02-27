@@ -1,3 +1,4 @@
+mod boolean;
 mod function;
 mod none;
 mod number;
@@ -6,6 +7,7 @@ mod type_;
 mod unknown;
 mod variable;
 
+pub use boolean::*;
 pub use function::*;
 pub use none::*;
 pub use number::*;

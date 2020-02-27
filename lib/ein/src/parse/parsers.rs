@@ -18,7 +18,9 @@ use combine::{
 use lazy_static::lazy_static;
 use std::rc::Rc;
 
-const KEYWORDS: &[&str] = &["export", "import", "in", "let", "None", "Number"];
+const KEYWORDS: &[&str] = &[
+    "export", "False", "import", "in", "let", "None", "Number", "True",
+];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
@@ -229,11 +231,16 @@ fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
 
 fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
     choice((
+        boolean_type().map(Type::from),
         none_type().map(Type::from),
         number_type().map(Type::from),
         reference_type().map(Type::from),
         between(sign("("), sign(")"), type_()),
     ))
+}
+
+fn boolean_type<'a>() -> impl Parser<Stream<'a>, Output = types::Boolean> {
+    attempt(source_information().skip(keyword("Boolean"))).map(types::Boolean::new)
 }
 
 fn none_type<'a>() -> impl Parser<Stream<'a>, Output = types::None> {
@@ -256,6 +263,7 @@ fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 
 fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice((
+        boolean_literal().map(Expression::from),
         none_literal().map(Expression::from),
         number_literal().map(Expression::from),
         variable().map(Expression::from),
@@ -352,6 +360,17 @@ fn concrete_operator<'a>(
             }
         }),
     )
+}
+
+fn boolean_literal<'a>() -> impl Parser<Stream<'a>, Output = Boolean> {
+    token(choice((
+        source_information()
+            .skip(keyword("False"))
+            .map(|source_information| Boolean::new(false, source_information)),
+        source_information()
+            .skip(keyword("True"))
+            .map(|source_information| Boolean::new(true, source_information)),
+    )))
 }
 
 fn none_literal<'a>() -> impl Parser<Stream<'a>, Output = None> {
@@ -811,6 +830,10 @@ mod tests {
     #[test]
     fn parse_type() {
         assert!(type_().parse(stream("?", "")).is_err());
+        assert_eq!(
+            type_().parse(stream("Boolean", "")).unwrap().0,
+            types::Boolean::new(SourceInformation::dummy()).into()
+        );
         assert_eq!(
             type_().parse(stream("None", "")).unwrap().0,
             types::None::new(SourceInformation::dummy()).into()
@@ -1331,6 +1354,19 @@ mod tests {
         assert_eq!(
             variable().parse(stream("Foo .x", "")).unwrap().0,
             Variable::new("Foo", SourceInformation::dummy()),
+        );
+    }
+
+    #[test]
+    fn parse_boolean_literal() {
+        assert!(boolean_literal().parse(stream("", "")).is_err());
+        assert_eq!(
+            boolean_literal().parse(stream("False", "")).unwrap().0,
+            Boolean::new(false, SourceInformation::dummy())
+        );
+        assert_eq!(
+            boolean_literal().parse(stream("True", "")).unwrap().0,
+            Boolean::new(true, SourceInformation::dummy())
         );
     }
 
