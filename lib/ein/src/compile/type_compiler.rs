@@ -47,13 +47,13 @@ impl TypeCompiler {
 
     pub fn compile_boolean(&self) -> ssf::types::Algebraic {
         ssf::types::Algebraic::new(vec![
-            ssf::types::Constructor::new(vec![]),
-            ssf::types::Constructor::new(vec![]),
+            ssf::types::Constructor::unboxed(vec![]),
+            ssf::types::Constructor::unboxed(vec![]),
         ])
     }
 
     pub fn compile_none(&self) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(vec![])])
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![])])
     }
 }
 
