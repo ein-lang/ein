@@ -49,6 +49,7 @@ impl<'a> ExpressionCompiler<'a> {
                 vec![],
             )
             .into()),
+            ast::Expression::If(_) => unimplemented!(),
             ast::Expression::Let(let_) => match let_.definitions()[0] {
                 ast::Definition::FunctionDefinition(_) => {
                     Ok(self.compile_let_functions(let_, local_variables)?.into())

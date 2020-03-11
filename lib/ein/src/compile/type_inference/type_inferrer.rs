@@ -152,6 +152,7 @@ impl TypeInferrer {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
+            Expression::If(_) => unimplemented!(),
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
