@@ -60,9 +60,9 @@ dependencies = [
 
 [[package]]
 name = "backtrace-sys"
-version = "0.1.33"
+version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e17b52e737c40a7d75abca20b29a19a0eb7ba9fc72c5a72dd282a0a3c2c0dc35"
+checksum = "ca797db0057bae1a7aa2eef3283a874695455cecf08a43bfb8507ee0ebc1ed69"
 dependencies = [
  "cc",
  "libc",
@@ -663,7 +663,7 @@ checksum = "5c2fb2ec9bcd216a5b0d0ccf31ab17b5ed1d627960edff65bbe95d3ce221cefc"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#3e11786046c5f42d72c5405ecfa2d589e140e742"
+source = "git+https://github.com/raviqqe/ssf#d16a4ebff588abc6f5349afcbeb608d7a7184df2"
 dependencies = [
  "petgraph",
 ]
@@ -671,7 +671,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#3e11786046c5f42d72c5405ecfa2d589e140e742"
+source = "git+https://github.com/raviqqe/ssf#d16a4ebff588abc6f5349afcbeb608d7a7184df2"
 dependencies = [
  "inkwell",
  "ssf",
