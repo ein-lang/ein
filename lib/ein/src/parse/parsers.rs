@@ -273,6 +273,7 @@ fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 
 fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
     attempt((
+        source_information(),
         keyword("if").expected("if keyword"),
         expression(),
         keyword("then").expected("then keyword"),
@@ -280,7 +281,9 @@ fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
         keyword("else").expected("else keyword"),
         expression(),
     ))
-    .map(|(_, condition, _, then, _, else_)| If::new(condition, then, else_))
+    .map(|(source_information, _, condition, _, then, _, else_)| {
+        If::new(condition, then, else_, source_information)
+    })
 }
 
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
@@ -996,6 +999,7 @@ mod tests {
                 Boolean::new(true, SourceInformation::dummy()),
                 Number::new(42.0, SourceInformation::dummy()),
                 Number::new(13.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
             )
         );
         assert_eq!(
@@ -1011,9 +1015,11 @@ mod tests {
                     Boolean::new(true, SourceInformation::dummy()),
                     Boolean::new(false, SourceInformation::dummy()),
                     Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 ),
                 Number::new(42.0, SourceInformation::dummy()),
                 Number::new(13.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
             )
         );
         assert_eq!(
@@ -1027,8 +1033,10 @@ mod tests {
                     Boolean::new(false, SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
                     Number::new(2.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 ),
                 Number::new(3.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
             )
         );
         assert_eq!(
@@ -1043,7 +1051,9 @@ mod tests {
                     Boolean::new(false, SourceInformation::dummy()),
                     Number::new(2.0, SourceInformation::dummy()),
                     Number::new(3.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 ),
+                SourceInformation::dummy(),
             )
         );
     }

@@ -1,5 +1,6 @@
 use super::definition::Definition;
 use super::expression::Expression;
+use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -9,6 +10,7 @@ pub struct If {
     condition: Rc<Expression>,
     then: Rc<Expression>,
     else_: Rc<Expression>,
+    source_information: Rc<SourceInformation>,
 }
 
 impl If {
@@ -16,11 +18,13 @@ impl If {
         condition: impl Into<Expression>,
         then: impl Into<Expression>,
         else_: impl Into<Expression>,
+        source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
             condition: Rc::new(condition.into()),
             then: Rc::new(then.into()),
             else_: Rc::new(else_.into()),
+            source_information: source_information.into(),
         }
     }
 
@@ -36,11 +40,16 @@ impl If {
         &self.else_
     }
 
+    pub fn source_information(&self) -> &Rc<SourceInformation> {
+        &self.source_information
+    }
+
     pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         Self::new(
             self.condition.substitute_type_variables(substitutions),
             self.then.substitute_type_variables(substitutions),
             self.else_.substitute_type_variables(substitutions),
+            self.source_information.clone(),
         )
     }
 
@@ -49,6 +58,7 @@ impl If {
             self.condition.convert_definitions(convert),
             self.then.convert_definitions(convert),
             self.else_.convert_definitions(convert),
+            self.source_information.clone(),
         )
     }
 
@@ -57,6 +67,7 @@ impl If {
             self.condition.convert_expressions(convert),
             self.then.convert_expressions(convert),
             self.else_.convert_expressions(convert),
+            self.source_information.clone(),
         )
     }
 
@@ -65,6 +76,7 @@ impl If {
             self.condition.convert_types(convert),
             self.then.convert_types(convert),
             self.else_.convert_types(convert),
+            self.source_information.clone(),
         )
     }
 
@@ -73,6 +85,7 @@ impl If {
             self.condition.resolve_reference_types(environment),
             self.then.resolve_reference_types(environment),
             self.else_.resolve_reference_types(environment),
+            self.source_information.clone(),
         )
     }
 }
