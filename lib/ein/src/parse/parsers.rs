@@ -19,7 +19,7 @@ use lazy_static::lazy_static;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "export", "False", "import", "in", "let", "None", "Number", "True",
+    "else", "export", "False", "if", "import", "in", "let", "None", "Number", "then", "True",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -271,6 +271,21 @@ fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     ))
 }
 
+fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
+    attempt((
+        source_information(),
+        keyword("if").expected("if keyword"),
+        expression(),
+        keyword("then").expected("then keyword"),
+        expression(),
+        keyword("else").expected("else keyword"),
+        expression(),
+    ))
+    .map(|(source_information, _, condition, _, then, _, else_)| {
+        If::new(condition, then, else_, source_information)
+    })
+}
+
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
     attempt((
         keyword("let").expected("let keyword"),
@@ -323,6 +338,7 @@ fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice((
         application().map(Expression::from),
+        if_().map(Expression::from),
         let_().map(Expression::from),
         atomic_expression(),
     ))
@@ -969,6 +985,76 @@ mod tests {
         assert_eq!(
             atomic_expression().parse(stream(" x", "")).unwrap().0,
             Variable::new("x", SourceInformation::dummy()).into()
+        );
+    }
+
+    #[test]
+    fn parse_if() {
+        assert_eq!(
+            if_()
+                .parse(stream("if True then 42 else 13", ""))
+                .unwrap()
+                .0,
+            If::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                Number::new(42.0, SourceInformation::dummy()),
+                Number::new(13.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+        );
+        assert_eq!(
+            if_()
+                .parse(stream(
+                    "if if True then False else True then 42 else 13",
+                    ""
+                ))
+                .unwrap()
+                .0,
+            If::new(
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                Number::new(42.0, SourceInformation::dummy()),
+                Number::new(13.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+        );
+        assert_eq!(
+            if_()
+                .parse(stream("if True then if False then 1 else 2 else 3", ""))
+                .unwrap()
+                .0,
+            If::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                If::new(
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Number::new(1.0, SourceInformation::dummy()),
+                    Number::new(2.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                Number::new(3.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+        );
+        assert_eq!(
+            if_()
+                .parse(stream("if True then 1 else if False then 2 else 3", ""))
+                .unwrap()
+                .0,
+            If::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                Number::new(1.0, SourceInformation::dummy()),
+                If::new(
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Number::new(2.0, SourceInformation::dummy()),
+                    Number::new(3.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )
         );
     }
 

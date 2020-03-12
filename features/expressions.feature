@@ -29,3 +29,14 @@ Feature: Expressions
     When I run `sh -c ./command`
     Then stdout from "sh -c ./command" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Use if expressions
+    Given a file named "Main.ein" with:
+    """
+    main : Number -> Number
+    main x = if True then 42 else 13
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./command`
+    Then stdout from "sh -c ./command" should contain exactly "42"
+    And the exit status should be 0
