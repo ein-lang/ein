@@ -6,6 +6,7 @@ use super::let_::Let;
 use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
+use super::record::Record;
 use super::variable::Variable;
 use crate::types::Type;
 use std::collections::HashMap;
@@ -14,6 +15,7 @@ use std::collections::HashMap;
 pub enum Expression {
     Application(Application),
     Boolean(Boolean),
+    Record(Record),
     If(If),
     Let(Let),
     None(None),
@@ -28,6 +30,7 @@ impl Expression {
             Self::Application(application) => {
                 application.substitute_type_variables(substitutions).into()
             }
+            Self::Record(record) => record.substitute_type_variables(substitutions).into(),
             Self::If(if_) => if_.substitute_type_variables(substitutions).into(),
             Self::Let(let_) => let_.substitute_type_variables(substitutions).into(),
             Self::Operation(operation) => operation.substitute_type_variables(substitutions).into(),
@@ -38,6 +41,7 @@ impl Expression {
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         match self {
             Self::Application(application) => application.convert_definitions(convert).into(),
+            Self::Record(record) => record.convert_definitions(convert).into(),
             Self::If(if_) => if_.convert_definitions(convert).into(),
             Self::Let(let_) => let_.convert_definitions(convert).into(),
             Self::Operation(operation) => operation.convert_definitions(convert).into(),
@@ -48,6 +52,7 @@ impl Expression {
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         let expression = match self {
             Self::Application(application) => application.convert_expressions(convert).into(),
+            Self::Record(record) => record.convert_expressions(convert).into(),
             Self::If(if_) => if_.convert_expressions(convert).into(),
             Self::Let(let_) => let_.convert_expressions(convert).into(),
             Self::Operation(operation) => operation.convert_expressions(convert).into(),
@@ -60,6 +65,7 @@ impl Expression {
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         match self {
             Self::Application(application) => application.convert_types(convert).into(),
+            Self::Record(record) => record.convert_types(convert).into(),
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
@@ -72,6 +78,7 @@ impl Expression {
             Self::Application(application) => {
                 application.resolve_reference_types(environment).into()
             }
+            Self::Record(record) => record.resolve_reference_types(environment).into(),
             Self::If(if_) => if_.resolve_reference_types(environment).into(),
             Self::Let(let_) => let_.resolve_reference_types(environment).into(),
             Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
@@ -89,6 +96,12 @@ impl From<Application> for Expression {
 impl From<Boolean> for Expression {
     fn from(boolean: Boolean) -> Expression {
         Self::Boolean(boolean)
+    }
+}
+
+impl From<Record> for Expression {
+    fn from(record: Record) -> Expression {
+        Self::Record(record)
     }
 }
 

@@ -152,6 +152,7 @@ impl TypeInferrer {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
+            Expression::Record(_) => unimplemented!(),
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.equation_set.add(Equation::new(

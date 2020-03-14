@@ -49,6 +49,7 @@ impl<'a> ExpressionCompiler<'a> {
                 vec![],
             )
             .into()),
+            ast::Expression::Record(_) => unimplemented!(),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition(), local_variables)?,
                 vec![

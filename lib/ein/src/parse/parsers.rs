@@ -281,6 +281,7 @@ fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         none_literal().map(Expression::from),
         number_literal().map(Expression::from),
         variable().map(Expression::from),
+        record().map(Expression::from),
         between(sign("("), sign(")"), expression()),
     ))
 }
@@ -347,6 +348,20 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
 fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str> {
     choice((newlines1(), sign(")"), operator().with(value(()))))
         .with(value("application terminator"))
+}
+
+fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
+    attempt((
+        source_information(),
+        sign("{"),
+        sep_end_by((identifier().skip(sign("=")), expression()), sign(",")),
+        sign("}"),
+    ))
+    .map(
+        |(source_information, _, elements, _): (_, _, Vec<(String, Expression)>, _)| {
+            Record::new(elements.into_iter().collect(), source_information)
+        },
+    )
 }
 
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -1510,6 +1525,23 @@ mod tests {
                     Number::new(4.0, SourceInformation::dummy()),
                     SourceInformation::dummy()
                 ),
+                SourceInformation::dummy()
+            )
+        );
+    }
+
+    #[test]
+    fn parse_record() {
+        assert!(record().parse(stream("f", "")).is_err());
+        assert_eq!(
+            record().parse(stream("{ foo = 42 }", "")).unwrap().0,
+            Record::new(
+                vec![(
+                    "foo".into(),
+                    Number::new(42.0, SourceInformation::dummy()).into()
+                )]
+                .into_iter()
+                .collect(),
                 SourceInformation::dummy()
             )
         );
