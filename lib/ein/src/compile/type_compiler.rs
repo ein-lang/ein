@@ -32,15 +32,16 @@ impl TypeCompiler {
             .into(),
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => ssf::types::Primitive::Float64.into(),
-            Type::Record(record) => ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                record
-                    .elements()
-                    .iter()
-                    .map(|(_, type_)| self.compile(type_))
-                    .collect(),
-                true,
-            )])
-            .into(),
+            Type::Record(record) => {
+                ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
+                    record
+                        .elements()
+                        .iter()
+                        .map(|(_, type_)| self.compile(type_))
+                        .collect(),
+                )])
+                .into()
+            }
             Type::Reference(_) => self.compile(&self.reference_type_resolver.resolve(type_)),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
