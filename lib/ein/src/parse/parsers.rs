@@ -1040,6 +1040,14 @@ mod tests {
     #[test]
     fn parse_expression() {
         assert!(expression().parse(stream("?", "")).is_err());
+        assert!(expression()
+            .skip(eof())
+            .parse(stream("Foo () foo", ""))
+            .is_err());
+        assert!(expression()
+            .skip(eof())
+            .parse(stream("Foo ( foo = 42 ) foo", ""))
+            .is_err());
         assert_eq!(
             expression().parse(stream("1", "")).unwrap().0,
             Number::new(1.0, SourceInformation::dummy()).into()
@@ -1549,6 +1557,14 @@ mod tests {
     #[test]
     fn parse_record() {
         assert!(record().parse(stream("f", "")).is_err());
+        assert_eq!(
+            record().parse(stream("Foo ()", "")).unwrap().0,
+            Record::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                Default::default(),
+                SourceInformation::dummy()
+            )
+        );
         assert_eq!(
             record().parse(stream("Foo ( foo = 42 )", "")).unwrap().0,
             Record::new(
