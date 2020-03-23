@@ -74,6 +74,14 @@ impl Type {
             None
         }
     }
+
+    pub fn to_record(&self) -> Option<&Record> {
+        if let Self::Record(record) = self {
+            Some(&record)
+        } else {
+            None
+        }
+    }
 }
 
 impl From<Boolean> for Type {

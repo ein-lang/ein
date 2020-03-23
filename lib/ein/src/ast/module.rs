@@ -55,6 +55,20 @@ impl Module {
         )
     }
 
+    #[cfg(test)]
+    pub fn from_definitions_and_type_definitions(
+        type_definitions: Vec<TypeDefinition>,
+        definitions: Vec<Definition>,
+    ) -> Self {
+        Self::new(
+            ModulePath::new(crate::package::Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            type_definitions,
+            definitions,
+        )
+    }
+
     pub fn path(&self) -> &ModulePath {
         &self.path
     }

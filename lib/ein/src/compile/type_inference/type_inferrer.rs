@@ -152,7 +152,23 @@ impl TypeInferrer {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
-            Expression::Record(_) => unimplemented!(),
+            Expression::Record(record) => {
+                let type_ = types::Record::new(
+                    record
+                        .elements()
+                        .iter()
+                        .map(|(key, expression)| {
+                            Ok((key.clone(), self.infer_expression(expression, variables)?))
+                        })
+                        .collect::<Result<_, _>>()?,
+                    record.source_information().clone(),
+                );
+
+                self.equation_set
+                    .add(Equation::new(record.type_().clone(), type_));
+
+                Ok(record.type_().clone())
+            }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.equation_set.add(Equation::new(
@@ -305,6 +321,25 @@ impl TypeInferrer {
                 (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
+                (Type::Record(one), Type::Record(other)) => {
+                    let create_error = || {
+                        TypeInferenceError::TypesNotMatched(
+                            one.source_information().clone(),
+                            other.source_information().clone(),
+                        )
+                    };
+
+                    if one.elements().len() != other.elements().len() {
+                        return Err(create_error());
+                    }
+
+                    for (key, type_) in one.elements() {
+                        self.equation_set.add(Equation::new(
+                            type_.clone(),
+                            other.elements().get(key).ok_or_else(create_error)?.clone(),
+                        ));
+                    }
+                }
                 (lhs, rhs) => {
                     return Err(TypeInferenceError::TypesNotMatched(
                         lhs.source_information().clone(),
