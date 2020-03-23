@@ -266,9 +266,9 @@ fn number_type<'a>() -> impl Parser<Stream<'a>, Output = types::Number> {
 }
 
 fn reference_type<'a>() -> impl Parser<Stream<'a>, Output = types::Reference> {
-    attempt((source_information(), identifier())).map(|(source_information, identifier)| {
-        types::Reference::new(identifier, source_information)
-    })
+    attempt((source_information(), qualified_identifier())).map(
+        |(source_information, identifier)| types::Reference::new(identifier, source_information),
+    )
 }
 
 fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -440,19 +440,20 @@ fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
 }
 
 fn variable<'a>() -> impl Parser<Stream<'a>, Output = Variable> {
-    token((
-        source_information(),
+    token((source_information(), qualified_identifier()))
+        .map(|(source_information, identifier)| Variable::new(identifier, source_information))
+}
+
+fn qualified_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
+    (
         optional(attempt((raw_identifier(), string(".")))),
         raw_identifier(),
-    ))
-    .map(|(source_information, prefix, identifier)| {
-        Variable::new(
+    )
+        .map(|(prefix, identifier)| {
             prefix
                 .map(|(prefix, _)| [&prefix, ".", &identifier].concat())
-                .unwrap_or(identifier),
-            source_information,
-        )
-    })
+                .unwrap_or(identifier)
+        })
 }
 
 fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
@@ -942,8 +943,12 @@ mod tests {
     fn parse_reference_type() {
         assert!(type_().parse(stream("", "")).is_err());
         assert_eq!(
-            type_().parse(stream("foo", "")).unwrap().0,
-            types::Reference::new("foo", SourceInformation::dummy()).into()
+            type_().parse(stream("Foo", "")).unwrap().0,
+            types::Reference::new("Foo", SourceInformation::dummy()).into()
+        );
+        assert_eq!(
+            type_().parse(stream("Foo.Bar", "")).unwrap().0,
+            types::Reference::new("Foo.Bar", SourceInformation::dummy()).into()
         );
     }
 
