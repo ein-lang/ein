@@ -232,9 +232,9 @@ fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
 fn record_type<'a>() -> impl Parser<Stream<'a>, Output = types::Record> {
     attempt((
         source_information(),
-        sign("{"),
+        sign("("),
         sep_end_by((identifier().skip(sign(":")), type_()), sign(",")),
-        sign("}"),
+        sign(")"),
     ))
     .map(
         |(source_information, _, elements, _): (_, _, Vec<(String, Type)>, _)| {
@@ -353,9 +353,9 @@ fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str
 fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
     attempt((
         source_information(),
-        sign("{"),
+        sign("("),
         sep_end_by((identifier().skip(sign("=")), expression()), sign(",")),
-        sign("}"),
+        sign(")"),
     ))
     .map(
         |(source_information, _, elements, _): (_, _, Vec<(String, Expression)>, _)| {
@@ -851,7 +851,7 @@ mod tests {
     fn parse_type_definition() {
         assert_eq!(
             type_definition()
-                .parse(stream("type Foo = { foo : Number }", ""))
+                .parse(stream("type Foo = ( foo : Number )", ""))
                 .unwrap()
                 .0,
             TypeDefinition::new(
@@ -940,12 +940,12 @@ mod tests {
     fn parse_record_type() {
         assert!(record_type().parse(stream("", "")).is_err());
         assert_eq!(
-            record_type().parse(stream("{}", "")).unwrap().0,
+            record_type().parse(stream("()", "")).unwrap().0,
             types::Record::new(Default::default(), SourceInformation::dummy()).into()
         );
         assert_eq!(
             record_type()
-                .parse(stream("{ foo : Number }", ""))
+                .parse(stream("( foo : Number )", ""))
                 .unwrap()
                 .0,
             types::Record::new(
@@ -961,7 +961,7 @@ mod tests {
         );
         assert_eq!(
             record_type()
-                .parse(stream("{ foo : Number, }", ""))
+                .parse(stream("( foo : Number, )", ""))
                 .unwrap()
                 .0,
             types::Record::new(
@@ -977,7 +977,7 @@ mod tests {
         );
         assert_eq!(
             record_type()
-                .parse(stream("{ foo : Number, bar : Number }", ""))
+                .parse(stream("( foo : Number, bar : Number )", ""))
                 .unwrap()
                 .0,
             types::Record::new(
@@ -999,7 +999,7 @@ mod tests {
         );
         assert_eq!(
             record_type()
-                .parse(stream("{ foo : Number, bar : Number, }", ""))
+                .parse(stream("( foo : Number, bar : Number, )", ""))
                 .unwrap()
                 .0,
             types::Record::new(
@@ -1534,7 +1534,7 @@ mod tests {
     fn parse_record() {
         assert!(record().parse(stream("f", "")).is_err());
         assert_eq!(
-            record().parse(stream("{ foo = 42 }", "")).unwrap().0,
+            record().parse(stream("( foo = 42 )", "")).unwrap().0,
             Record::new(
                 vec![(
                     "foo".into(),
