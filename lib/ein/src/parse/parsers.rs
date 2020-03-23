@@ -353,13 +353,24 @@ fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str
 fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
     attempt((
         source_information(),
+        reference_type(),
         sign("("),
         sep_end_by((identifier().skip(sign("=")), expression()), sign(",")),
         sign(")"),
     ))
     .map(
-        |(source_information, _, elements, _): (_, _, Vec<(String, Expression)>, _)| {
-            Record::new(elements.into_iter().collect(), source_information)
+        |(source_information, reference_type, _, elements, _): (
+            _,
+            _,
+            _,
+            Vec<(String, Expression)>,
+            _,
+        )| {
+            Record::new(
+                reference_type,
+                elements.into_iter().collect(),
+                source_information,
+            )
         },
     )
 }
@@ -1534,8 +1545,9 @@ mod tests {
     fn parse_record() {
         assert!(record().parse(stream("f", "")).is_err());
         assert_eq!(
-            record().parse(stream("( foo = 42 )", "")).unwrap().0,
+            record().parse(stream("Foo ( foo = 42 )", "")).unwrap().0,
             Record::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
                 vec![(
                     "foo".into(),
                     Number::new(42.0, SourceInformation::dummy()).into()
