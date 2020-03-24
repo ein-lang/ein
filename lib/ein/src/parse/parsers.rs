@@ -281,6 +281,7 @@ fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         none_literal().map(Expression::from),
         number_literal().map(Expression::from),
         variable().map(Expression::from),
+        record_element_operator().map(Expression::from),
         between(sign("("), sign(")"), expression()),
     ))
 }
@@ -370,6 +371,14 @@ fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
                 elements.into_iter().collect(),
                 source_information,
             )
+        },
+    )
+}
+
+fn record_element_operator<'a>() -> impl Parser<Stream<'a>, Output = RecordElementOperator> {
+    attempt((source_information(), string("."), raw_identifier())).map(
+        |(source_information, _, identifier)| {
+            RecordElementOperator::new(identifier, source_information)
         },
     )
 }
@@ -1577,6 +1586,17 @@ mod tests {
                 .collect(),
                 SourceInformation::dummy()
             )
+        );
+    }
+
+    #[test]
+    fn parse_record_element_operator() {
+        assert_eq!(
+            record_element_operator()
+                .parse(stream(".foo", ""))
+                .unwrap()
+                .0,
+            RecordElementOperator::new("foo", SourceInformation::dummy())
         );
     }
 
