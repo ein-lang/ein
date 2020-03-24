@@ -7,6 +7,7 @@ use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
 use super::record::Record;
+use super::record_element_operator::RecordElementOperator;
 use super::variable::Variable;
 use crate::types::Type;
 use std::collections::HashMap;
@@ -21,6 +22,7 @@ pub enum Expression {
     None(None),
     Number(Number),
     Operation(Operation),
+    RecordElementOperator(RecordElementOperator),
     Variable(Variable),
 }
 
@@ -34,7 +36,11 @@ impl Expression {
             Self::If(if_) => if_.substitute_type_variables(substitutions).into(),
             Self::Let(let_) => let_.substitute_type_variables(substitutions).into(),
             Self::Operation(operation) => operation.substitute_type_variables(substitutions).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::RecordElementOperator(_)
+            | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -45,7 +51,11 @@ impl Expression {
             Self::If(if_) => if_.convert_definitions(convert).into(),
             Self::Let(let_) => let_.convert_definitions(convert).into(),
             Self::Operation(operation) => operation.convert_definitions(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::RecordElementOperator(_)
+            | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -56,7 +66,11 @@ impl Expression {
             Self::If(if_) => if_.convert_expressions(convert).into(),
             Self::Let(let_) => let_.convert_expressions(convert).into(),
             Self::Operation(operation) => operation.convert_expressions(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::RecordElementOperator(_)
+            | Self::Variable(_) => self.clone(),
         };
 
         convert(&expression)
@@ -69,7 +83,11 @@ impl Expression {
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::RecordElementOperator(_)
+            | Self::Variable(_) => self.clone(),
         }
     }
 
@@ -82,7 +100,11 @@ impl Expression {
             Self::If(if_) => if_.resolve_reference_types(environment).into(),
             Self::Let(let_) => let_.resolve_reference_types(environment).into(),
             Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::RecordElementOperator(_)
+            | Self::Variable(_) => self.clone(),
         }
     }
 }
@@ -132,6 +154,12 @@ impl From<Number> for Expression {
 impl From<Operation> for Expression {
     fn from(operation: Operation) -> Expression {
         Self::Operation(operation)
+    }
+}
+
+impl From<RecordElementOperator> for Expression {
+    fn from(operator: RecordElementOperator) -> Expression {
+        Self::RecordElementOperator(operator)
     }
 }
 

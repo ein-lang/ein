@@ -169,6 +169,7 @@ impl TypeInferrer {
 
                 Ok(record.type_().clone())
             }
+            Expression::RecordElementOperator(_) => unimplemented!(),
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.equation_set.add(Equation::new(
