@@ -281,7 +281,6 @@ fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         none_literal().map(Expression::from),
         number_literal().map(Expression::from),
         variable().map(Expression::from),
-        record().map(Expression::from),
         between(sign("("), sign(")"), expression()),
     ))
 }
@@ -378,6 +377,7 @@ fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice((
         application().map(Expression::from),
+        record().map(Expression::from),
         if_().map(Expression::from),
         let_().map(Expression::from),
         atomic_expression(),

@@ -51,6 +51,14 @@ impl TypeCompiler {
         self.compile(type_).into_function().unwrap()
     }
 
+    pub fn compile_record(&self, type_: &types::Type) -> ssf::types::Algebraic {
+        self.compile(type_)
+            .into_value()
+            .unwrap()
+            .into_algebraic()
+            .unwrap()
+    }
+
     pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
         self.compile(type_).into_value().unwrap()
     }

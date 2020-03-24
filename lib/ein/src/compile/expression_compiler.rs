@@ -49,7 +49,15 @@ impl<'a> ExpressionCompiler<'a> {
                 vec![],
             )
             .into()),
-            ast::Expression::Record(_) => unimplemented!(),
+            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, expression)| self.compile(expression, local_variables))
+                    .collect::<Result<_, _>>()?,
+            )
+            .into()),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition(), local_variables)?,
                 vec![

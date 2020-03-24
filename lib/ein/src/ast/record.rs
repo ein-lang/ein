@@ -2,20 +2,20 @@ use super::definition::Definition;
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Record {
     type_: Type, // Must be record type
-    elements: HashMap<String, Expression>,
+    elements: BTreeMap<String, Expression>,
     source_information: Rc<SourceInformation>,
 }
 
 impl Record {
     pub fn new(
         type_: impl Into<Type>,
-        elements: HashMap<String, Expression>,
+        elements: BTreeMap<String, Expression>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
@@ -29,7 +29,7 @@ impl Record {
         &self.type_
     }
 
-    pub fn elements(&self) -> &HashMap<String, Expression> {
+    pub fn elements(&self) -> &BTreeMap<String, Expression> {
         &self.elements
     }
 
