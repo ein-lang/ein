@@ -31,19 +31,25 @@ impl ReferenceTypeResolver {
 
     pub fn resolve(&self, type_: &Type) -> Type {
         match type_ {
-            Type::Function(function) => self.resolve_function(function).into(),
+            Type::Function(function) => types::Function::new(
+                function.argument().clone(),
+                self.resolve(function.result()),
+                function.source_information().clone(),
+            )
+            .into(),
+            Type::Record(record) => types::Record::new(
+                record
+                    .elements()
+                    .iter()
+                    .map(|(name, type_)| (name.into(), self.resolve(type_)))
+                    .collect(),
+                record.source_information().clone(),
+            )
+            .into(),
             Type::Reference(reference) => self.resolve(&self.environment[reference.name()]),
             Type::Boolean(_) | Type::None(_) | Type::Number(_) => type_.clone(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
-    }
-
-    pub fn resolve_function(&self, function: &types::Function) -> types::Function {
-        types::Function::new(
-            function.argument().clone(),
-            self.resolve(function.result()),
-            function.source_information().clone(),
-        )
     }
 }
 

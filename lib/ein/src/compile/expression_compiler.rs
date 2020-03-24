@@ -49,6 +49,15 @@ impl<'a> ExpressionCompiler<'a> {
                 vec![],
             )
             .into()),
+            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, expression)| self.compile(expression, local_variables))
+                    .collect::<Result<_, _>>()?,
+            )
+            .into()),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition(), local_variables)?,
                 vec![
@@ -486,6 +495,50 @@ mod tests {
                     )
                 ],
                 None
+            )
+            .into())
+        );
+    }
+
+    #[test]
+    fn compile_records() {
+        let type_ = types::Record::new(
+            vec![(
+                "foo".into(),
+                types::Number::new(SourceInformation::dummy()).into(),
+            )]
+            .into_iter()
+            .collect(),
+            SourceInformation::dummy(),
+        );
+        let type_compiler = TypeCompiler::new(&Module::from_definitions_and_type_definitions(
+            vec![TypeDefinition::new("Foo", type_.clone())],
+            vec![],
+        ));
+
+        assert_eq!(
+            ExpressionCompiler::new(&type_compiler).compile(
+                &Record::new(
+                    type_,
+                    vec![(
+                        "foo".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                &HashMap::new()
+            ),
+            Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(
+                    ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(vec![
+                        ssf::types::Primitive::Float64.into()
+                    ])]),
+                    0
+                ),
+                vec![ssf::ir::Primitive::Float64(42.0).into()]
             )
             .into())
         );
