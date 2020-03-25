@@ -2,6 +2,7 @@ use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
+// TODO: Consider renaming this "Alias".
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Reference {
     name: String,

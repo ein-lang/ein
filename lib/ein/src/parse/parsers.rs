@@ -213,8 +213,22 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
 }
 
 fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
-    attempt((keyword("type"), identifier(), sign("="), record_type()))
-        .map(|(_, name, _, type_)| TypeDefinition::new(name, type_))
+    attempt((
+        keyword("type"),
+        source_information(),
+        identifier(),
+        sign("="),
+        sign("("),
+        sep_end_by((identifier().skip(sign(":")), type_()), sign(",")),
+        sign(")"),
+    ))
+    .map(|(_, source_information, name, _, _, elements, _)| {
+        let elements: Vec<_> = elements;
+        TypeDefinition::new(
+            &name,
+            types::Record::new(&name, elements.into_iter().collect(), source_information),
+        )
+    })
 }
 
 fn type_<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -225,20 +239,6 @@ fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
     attempt((source_information(), atomic_type(), sign("->"), type_())).map(
         |(source_information, argument, _, result)| {
             types::Function::new(argument, result, source_information)
-        },
-    )
-}
-
-fn record_type<'a>() -> impl Parser<Stream<'a>, Output = types::Record> {
-    attempt((
-        source_information(),
-        sign("("),
-        sep_end_by((identifier().skip(sign(":")), type_()), sign(",")),
-        sign(")"),
-    ))
-    .map(
-        |(source_information, _, elements, _): (_, _, Vec<(String, Type)>, _)| {
-            types::Record::new(elements.into_iter().collect(), source_information)
         },
     )
 }
@@ -861,24 +861,100 @@ mod tests {
 
     #[test]
     fn parse_type_definition() {
-        assert_eq!(
-            type_definition()
-                .parse(stream("type Foo = ( foo : Number )", ""))
-                .unwrap()
-                .0,
-            TypeDefinition::new(
-                "Foo",
-                types::Record::new(
-                    vec![(
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )]
-                    .into_iter()
-                    .collect(),
-                    SourceInformation::dummy()
-                )
-            )
-        );
+        for (source, expected) in &[
+            (
+                "type Foo = ()",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![].into_iter().collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo = ( foo : Number )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo = ( foo : Number, )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo = ( foo : Number, bar : Number )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![
+                            (
+                                "foo".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                            (
+                                "bar".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo = ( foo : Number, bar : Number, )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![
+                            (
+                                "foo".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                            (
+                                "bar".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+        ] {
+            assert_eq!(
+                &type_definition().parse(stream(source, "")).unwrap().0,
+                expected
+            );
+        }
     }
 
     #[test]
@@ -949,91 +1025,6 @@ mod tests {
         assert_eq!(
             type_().parse(stream("Foo.Bar", "")).unwrap().0,
             types::Reference::new("Foo.Bar", SourceInformation::dummy()).into()
-        );
-    }
-
-    #[test]
-    fn parse_record_type() {
-        assert!(record_type().parse(stream("", "")).is_err());
-        assert_eq!(
-            record_type().parse(stream("()", "")).unwrap().0,
-            types::Record::new(Default::default(), SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number, )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number, bar : Number )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![
-                    (
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    ),
-                    (
-                        "bar".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )
-                ]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number, bar : Number, )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![
-                    (
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    ),
-                    (
-                        "bar".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )
-                ]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
         );
     }
 

@@ -4,28 +4,22 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::rc::Rc;
 
+// Only for type inference
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
-pub struct Record {
-    name: String,
+pub struct AnonymousRecord {
     elements: BTreeMap<String, Type>,
     source_information: Rc<SourceInformation>,
 }
 
-impl Record {
+impl AnonymousRecord {
     pub fn new(
-        name: impl Into<String>,
         elements: BTreeMap<String, Type>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            name: name.into(),
             elements,
             source_information: source_information.into(),
         }
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
     }
 
     pub fn elements(&self) -> &BTreeMap<String, Type> {
@@ -38,7 +32,6 @@ impl Record {
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         Self::new(
-            &self.name,
             self.elements
                 .iter()
                 .map(|(name, type_)| (name.into(), type_.substitute_variables(substitutions)))
@@ -49,7 +42,6 @@ impl Record {
 
     pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
         Self::new(
-            &self.name,
             self.elements
                 .iter()
                 .map(|(name, type_)| (name.into(), type_.resolve_reference_types(environment)))
