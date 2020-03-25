@@ -31,6 +31,15 @@ impl ReferenceTypeResolver {
 
     pub fn resolve(&self, type_: &Type) -> Type {
         match type_ {
+            Type::AnonymousRecord(record) => types::AnonymousRecord::new(
+                record
+                    .elements()
+                    .iter()
+                    .map(|(name, type_)| (name.into(), self.resolve(type_)))
+                    .collect(),
+                record.source_information().clone(),
+            )
+            .into(),
             Type::Function(function) => types::Function::new(
                 function.argument().clone(),
                 self.resolve(function.result()),
@@ -38,6 +47,7 @@ impl ReferenceTypeResolver {
             )
             .into(),
             Type::Record(record) => types::Record::new(
+                record.name(),
                 record
                     .elements()
                     .iter()

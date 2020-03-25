@@ -43,7 +43,7 @@ impl TypeCompiler {
                 .into()
             }
             Type::Reference(_) => self.compile(&self.reference_type_resolver.resolve(type_)),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
+            Type::AnonymousRecord(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 

@@ -503,6 +503,7 @@ mod tests {
     #[test]
     fn compile_records() {
         let type_ = types::Record::new(
+            "Foo",
             vec![(
                 "foo".into(),
                 types::Number::new(SourceInformation::dummy()).into(),
