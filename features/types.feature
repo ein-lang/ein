@@ -18,7 +18,7 @@ Feature: Types
     f x y = 42
 
     main : Number -> Number
-    main x = f False True
+    main x = f false true
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
@@ -32,7 +32,7 @@ Feature: Types
     f x = 42
 
     main : Number -> Number
-    main x = f None
+    main x = f none
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`
