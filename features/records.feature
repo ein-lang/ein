@@ -14,7 +14,7 @@ Feature: Records
   Scenario: Define a record value
     Given a file named "Main.ein" with:
     """
-    type Foo = ( foo : Number )
+    type Foo ( foo : Number )
 
     foo : Foo
     foo = Foo ( foo = 42 )

@@ -217,12 +217,11 @@ fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
         keyword("type"),
         source_information(),
         identifier(),
-        sign("="),
         sign("("),
         sep_end_by((identifier().skip(sign(":")), type_()), sign(",")),
         sign(")"),
     ))
-    .map(|(_, source_information, name, _, _, elements, _)| {
+    .map(|(_, source_information, name, _, elements, _)| {
         let elements: Vec<_> = elements;
         TypeDefinition::new(
             &name,
@@ -863,7 +862,7 @@ mod tests {
     fn parse_type_definition() {
         for (source, expected) in &[
             (
-                "type Foo = ()",
+                "type Foo ()",
                 TypeDefinition::new(
                     "Foo",
                     types::Record::new(
@@ -874,7 +873,7 @@ mod tests {
                 ),
             ),
             (
-                "type Foo = ( foo : Number )",
+                "type Foo ( foo : Number )",
                 TypeDefinition::new(
                     "Foo",
                     types::Record::new(
@@ -890,7 +889,7 @@ mod tests {
                 ),
             ),
             (
-                "type Foo = ( foo : Number, )",
+                "type Foo ( foo : Number, )",
                 TypeDefinition::new(
                     "Foo",
                     types::Record::new(
@@ -906,7 +905,7 @@ mod tests {
                 ),
             ),
             (
-                "type Foo = ( foo : Number, bar : Number )",
+                "type Foo ( foo : Number, bar : Number )",
                 TypeDefinition::new(
                     "Foo",
                     types::Record::new(
@@ -928,7 +927,7 @@ mod tests {
                 ),
             ),
             (
-                "type Foo = ( foo : Number, bar : Number, )",
+                "type Foo ( foo : Number, bar : Number, )",
                 TypeDefinition::new(
                     "Foo",
                     types::Record::new(
