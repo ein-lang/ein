@@ -34,7 +34,7 @@ Feature: Expressions
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = if True then 42 else 13
+    main x = if true then 42 else 13
     """
     And I successfully run `ein build`
     When I run `sh -c ./command`

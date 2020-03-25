@@ -19,7 +19,8 @@ use lazy_static::lazy_static;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "else", "export", "False", "if", "import", "in", "let", "None", "Number", "then", "True",
+    "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "then",
+    "true",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -420,16 +421,16 @@ fn concrete_operator<'a>(
 fn boolean_literal<'a>() -> impl Parser<Stream<'a>, Output = Boolean> {
     token(choice((
         source_information()
-            .skip(keyword("False"))
+            .skip(keyword("false"))
             .map(|source_information| Boolean::new(false, source_information)),
         source_information()
-            .skip(keyword("True"))
+            .skip(keyword("true"))
             .map(|source_information| Boolean::new(true, source_information)),
     )))
 }
 
 fn none_literal<'a>() -> impl Parser<Stream<'a>, Output = None> {
-    token(source_information().skip(keyword("None"))).map(None::new)
+    token(source_information().skip(keyword("none"))).map(None::new)
 }
 
 fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
@@ -1117,7 +1118,7 @@ mod tests {
     fn parse_if() {
         assert_eq!(
             if_()
-                .parse(stream("if True then 42 else 13", ""))
+                .parse(stream("if true then 42 else 13", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1130,7 +1131,7 @@ mod tests {
         assert_eq!(
             if_()
                 .parse(stream(
-                    "if if True then False else True then 42 else 13",
+                    "if if true then false else true then 42 else 13",
                     ""
                 ))
                 .unwrap()
@@ -1149,7 +1150,7 @@ mod tests {
         );
         assert_eq!(
             if_()
-                .parse(stream("if True then if False then 1 else 2 else 3", ""))
+                .parse(stream("if true then if false then 1 else 2 else 3", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1166,7 +1167,7 @@ mod tests {
         );
         assert_eq!(
             if_()
-                .parse(stream("if True then 1 else if False then 2 else 3", ""))
+                .parse(stream("if true then 1 else if false then 2 else 3", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1598,11 +1599,11 @@ mod tests {
     fn parse_boolean_literal() {
         assert!(boolean_literal().parse(stream("", "")).is_err());
         assert_eq!(
-            boolean_literal().parse(stream("False", "")).unwrap().0,
+            boolean_literal().parse(stream("false", "")).unwrap().0,
             Boolean::new(false, SourceInformation::dummy())
         );
         assert_eq!(
-            boolean_literal().parse(stream("True", "")).unwrap().0,
+            boolean_literal().parse(stream("true", "")).unwrap().0,
             Boolean::new(true, SourceInformation::dummy())
         );
     }
@@ -1611,7 +1612,7 @@ mod tests {
     fn parse_none_literal() {
         assert!(none_literal().parse(stream("", "")).is_err());
         assert_eq!(
-            none_literal().parse(stream("None", "")).unwrap().0,
+            none_literal().parse(stream("none", "")).unwrap().0,
             None::new(SourceInformation::dummy())
         );
     }
