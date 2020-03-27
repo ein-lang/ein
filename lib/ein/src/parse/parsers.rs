@@ -94,9 +94,7 @@ fn module_path<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModulePath> {
 }
 
 fn internal_module_path<'a>() -> impl Parser<Stream<'a>, Output = InternalUnresolvedModulePath> {
-    string(".")
-        .with(many1(string("/").with(path_component())))
-        .map(InternalUnresolvedModulePath::new)
+    many1(string("/").with(path_component())).map(InternalUnresolvedModulePath::new)
 }
 
 fn external_module_path<'a>() -> impl Parser<Stream<'a>, Output = ExternalUnresolvedModulePath> {
@@ -671,7 +669,7 @@ mod tests {
     #[test]
     fn parse_import() {
         assert_eq!(
-            import().parse(stream("import \"./Foo\"", "")).unwrap().0,
+            import().parse(stream("import \"/Foo\"", "")).unwrap().0,
             Import::new(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
         );
         assert_eq!(
@@ -687,7 +685,7 @@ mod tests {
     fn parse_module_path() {
         assert!(module_path().parse(stream("?", "")).is_err());
         assert_eq!(
-            module_path().parse(stream("\"./Foo\"", "")).unwrap().0,
+            module_path().parse(stream("\"/Foo\"", "")).unwrap().0,
             UnresolvedModulePath::Internal(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
         );
         assert_eq!(
@@ -698,7 +696,7 @@ mod tests {
             ])),
         );
         assert_eq!(
-            module_path().parse(stream(" \"./Foo\"", "")).unwrap().0,
+            module_path().parse(stream(" \"/Foo\"", "")).unwrap().0,
             UnresolvedModulePath::Internal(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
         );
     }
@@ -707,12 +705,12 @@ mod tests {
     fn parse_internal_module_path() {
         assert!(internal_module_path().parse(stream("?", "")).is_err());
         assert_eq!(
-            internal_module_path().parse(stream("./Foo", "")).unwrap().0,
+            internal_module_path().parse(stream("/Foo", "")).unwrap().0,
             InternalUnresolvedModulePath::new(vec!["Foo".into()]),
         );
         assert_eq!(
             internal_module_path()
-                .parse(stream("./Foo/Bar", ""))
+                .parse(stream("/Foo/Bar", ""))
                 .unwrap()
                 .0,
             InternalUnresolvedModulePath::new(vec!["Foo".into(), "Bar".into()]),
