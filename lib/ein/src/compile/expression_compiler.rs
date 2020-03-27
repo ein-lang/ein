@@ -49,6 +49,7 @@ impl<'a> ExpressionCompiler<'a> {
                 vec![],
             )
             .into()),
+            ast::Expression::Case(_) => unimplemented!(),
             ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
                 record

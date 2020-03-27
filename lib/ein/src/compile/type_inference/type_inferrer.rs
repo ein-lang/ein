@@ -152,6 +152,7 @@ impl TypeInferrer {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
+            Expression::Case(_) => unimplemented!(),
             Expression::Record(record) => {
                 let type_ = types::AnonymousRecord::new(
                     record
