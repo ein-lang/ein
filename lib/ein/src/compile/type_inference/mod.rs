@@ -1092,6 +1092,26 @@ mod tests {
         }
 
         #[test]
+        fn infer_types_of_case_expressions_with_variable_pattern() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    None::new(SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        Variable::new("y", SourceInformation::dummy()),
+                        Variable::new("y", SourceInformation::dummy()),
+                    )],
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
         fn fail_due_to_unmatched_argument_type() {
             let module = Module::from_definitions(vec![ValueDefinition::new(
                 "x",
