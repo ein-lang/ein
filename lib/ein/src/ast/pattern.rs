@@ -22,6 +22,34 @@ impl Pattern {
             Self::Variable(variable) => variable.source_information(),
         }
     }
+
+    pub fn to_boolean(&self) -> Option<&Boolean> {
+        if let Self::Boolean(boolean) = self {
+            Some(&boolean)
+        } else {
+            None
+        }
+    }
+
+    pub fn to_number(&self) -> Option<&Number> {
+        if let Self::Number(number) = self {
+            Some(&number)
+        } else {
+            None
+        }
+    }
+
+    pub fn to_variable(&self) -> Option<&Variable> {
+        if let Self::Variable(variable) = self {
+            Some(&variable)
+        } else {
+            None
+        }
+    }
+
+    pub fn is_variable(&self) -> bool {
+        self.to_variable().is_some()
+    }
 }
 
 impl From<Boolean> for Pattern {
