@@ -6,7 +6,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - run: wget -O - https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 8
+      - run: sudo apt -y update --fix-missing
+      - run: sudo apt -y install llvm-8
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
