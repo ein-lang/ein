@@ -8,6 +8,7 @@ use std::rc::Rc;
 pub enum CompileError {
     CircularInitialization,
     ExportedNameNotFound { name: String },
+    InvalidPattern(Rc<SourceInformation>),
     MixedDefinitionsInLet(Rc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
@@ -22,6 +23,9 @@ impl Display for CompileError {
             }
             Self::ExportedNameNotFound { name } => {
                 write!(formatter, "exported name \"{}\" not found", name)
+            }
+            Self::InvalidPattern(source_information) => {
+                write!(formatter, "invalid pattern\n{}", source_information)
             }
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,

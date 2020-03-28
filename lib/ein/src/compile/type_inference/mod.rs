@@ -795,67 +795,72 @@ mod tests {
         assert_eq!(infer_types(&module), Ok(module));
     }
 
-    #[test]
-    fn infer_types_of_if_expressions() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            If::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            ),
-            types::None::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
-        assert_eq!(infer_types(&module), Ok(module));
-    }
+    mod if_ {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-    #[test]
-    fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            If::new(
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
+        #[test]
+        fn infer_types_of_if_expressions() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
-            ),
-            types::None::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
-        assert_eq!(
-            infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
-                SourceInformation::dummy().into(),
-                SourceInformation::dummy().into()
-            ))
-        );
-    }
+            )
+            .into()]);
+            assert_eq!(infer_types(&module), Ok(module));
+        }
 
-    #[test]
-    fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            If::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                Boolean::new(true, SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
+        #[test]
+        fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
-            ),
-            types::None::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
-        assert_eq!(
-            infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
-                SourceInformation::dummy().into(),
-                SourceInformation::dummy().into()
-            ))
-        );
+            )
+            .into()]);
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
     }
 
     mod records {
@@ -1026,6 +1031,167 @@ mod tests {
                 )
                 .into()],
             );
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+    }
+
+    mod case {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn infer_types_of_case_expressions_with_alternative() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    None::new(SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
+                    )],
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_case_expressions_with_alternatives() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    None::new(SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        ),
+                        Alternative::new(
+                            None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        ),
+                    ],
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_case_expressions_with_variable_pattern() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    None::new(SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        Variable::new("y", SourceInformation::dummy()),
+                        Variable::new("y", SourceInformation::dummy()),
+                    )],
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn fail_due_to_unmatched_argument_type() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
+                    )],
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_due_to_unmatched_pattern_types() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    None::new(SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            Boolean::new(true, SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        ),
+                        Alternative::new(
+                            None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        ),
+                    ],
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_due_to_unmatched_expression_types() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    None::new(SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            None::new(SourceInformation::dummy()),
+                            Boolean::new(true, SourceInformation::dummy()),
+                        ),
+                        Alternative::new(
+                            None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        ),
+                    ],
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
             assert_eq!(
                 infer_types(&module),
                 Err(TypeInferenceError::TypesNotMatched(

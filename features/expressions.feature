@@ -40,3 +40,17 @@ Feature: Expressions
     When I run `sh -c ./command`
     Then stdout from "sh -c ./command" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Use case expressions
+    Given a file named "Main.ein" with:
+    """
+    main : Number -> Number
+    main x =
+      case x of
+        42 -> x
+        y -> y + 13
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./command`
+    Then stdout from "sh -c ./command" should contain exactly "42"
+    And the exit status should be 0
