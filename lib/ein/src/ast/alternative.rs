@@ -26,13 +26,6 @@ impl Alternative {
         &self.expression
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            self.pattern.clone(),
-            self.expression.substitute_type_variables(substitutions),
-        )
-    }
-
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         Self::new(
             self.pattern.clone(),

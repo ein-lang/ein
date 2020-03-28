@@ -45,15 +45,6 @@ impl Operation {
         &self.source_information
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            self.operator,
-            self.lhs.substitute_type_variables(substitutions),
-            self.rhs.substitute_type_variables(substitutions),
-            self.source_information.clone(),
-        )
-    }
-
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         Self::new(
             self.operator,

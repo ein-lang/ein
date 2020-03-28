@@ -26,16 +26,6 @@ impl Let {
         &self.expression
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            self.definitions
-                .iter()
-                .map(|definition| definition.substitute_type_variables(substitutions))
-                .collect::<Vec<_>>(),
-            self.expression.substitute_type_variables(substitutions),
-        )
-    }
-
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         Self::new(
             self.definitions

@@ -25,17 +25,6 @@ impl Definition {
         }
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        match self {
-            Self::FunctionDefinition(function_definition) => function_definition
-                .substitute_type_variables(substitutions)
-                .into(),
-            Self::ValueDefinition(value_definition) => value_definition
-                .substitute_type_variables(substitutions)
-                .into(),
-        }
-    }
-
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         let definition = match self {
             Self::FunctionDefinition(function_definition) => {

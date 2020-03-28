@@ -5,7 +5,6 @@ use super::module_interface::ModuleInterface;
 use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
@@ -87,19 +86,6 @@ impl Module {
 
     pub fn imported_modules(&self) -> &[ModuleInterface] {
         &self.imported_modules
-    }
-
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            self.path.clone(),
-            self.export.clone(),
-            self.imported_modules.clone(),
-            self.type_definitions.clone(),
-            self.definitions
-                .iter()
-                .map(|definition| definition.substitute_type_variables(substitutions))
-                .collect::<Vec<_>>(),
-        )
     }
 
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {

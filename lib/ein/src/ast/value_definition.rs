@@ -44,15 +44,6 @@ impl ValueDefinition {
         &self.source_information
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            self.name.clone(),
-            self.body.substitute_type_variables(substitutions),
-            self.type_.substitute_variables(substitutions),
-            self.source_information.clone(),
-        )
-    }
-
     pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
         Self::new(
             self.name.clone(),
