@@ -165,20 +165,11 @@ impl TypeInferrer {
                 let mut expression_types = vec![];
 
                 for alternative in case.alternatives() {
-                    let pattern_type = self.infer_pattern(alternative.pattern())?;
-                    let expression_type = self.infer_expression(
-                        alternative.expression(),
-                        &if let Pattern::Variable(variable) = alternative.pattern() {
-                            let mut variables = variables.clone();
-                            variables.insert(variable.name().into(), pattern_type.clone());
-                            variables
-                        } else {
-                            variables.clone()
-                        },
-                    )?;
+                    let mut variables = variables.clone();
 
-                    pattern_types.push(pattern_type);
-                    expression_types.push(expression_type);
+                    pattern_types.push(self.infer_pattern(alternative.pattern(), &mut variables)?);
+                    expression_types
+                        .push(self.infer_expression(alternative.expression(), &variables)?);
                 }
 
                 let argument_type = self.infer_expression(case.argument(), variables)?;
@@ -306,7 +297,11 @@ impl TypeInferrer {
         }
     }
 
-    fn infer_pattern(&self, pattern: &Pattern) -> Result<Type, TypeInferenceError> {
+    fn infer_pattern(
+        &mut self,
+        pattern: &Pattern,
+        variables: &mut HashMap<String, Type>,
+    ) -> Result<Type, TypeInferenceError> {
         match pattern {
             Pattern::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
@@ -315,9 +310,30 @@ impl TypeInferrer {
             Pattern::Number(number) => {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
-            Pattern::Record(_) => unimplemented!(),
+            Pattern::Record(record) => {
+                let type_ = types::AnonymousRecord::new(
+                    record
+                        .elements()
+                        .iter()
+                        .map(|(key, pattern)| {
+                            Ok((key.clone(), self.infer_pattern(pattern, variables)?))
+                        })
+                        .collect::<Result<_, _>>()?,
+                    record.source_information().clone(),
+                );
+
+                self.equation_set
+                    .add(Equation::new(type_, record.type_().clone()));
+
+                Ok(record.type_().clone())
+            }
             Pattern::Variable(variable) => {
-                Ok(types::Variable::new(variable.source_information().clone()).into())
+                let type_: Type =
+                    types::Variable::new(variable.source_information().clone()).into();
+
+                variables.insert(variable.name().into(), type_.clone());
+
+                Ok(type_)
             }
         }
     }
@@ -391,6 +407,27 @@ impl TypeInferrer {
                         self.equation_set.add(Equation::new(
                             type_.clone(),
                             anonymous_record
+                                .elements()
+                                .get(key)
+                                .ok_or_else(|| error.clone())?
+                                .clone(),
+                        ));
+                    }
+                }
+                (Type::AnonymousRecord(anonymous_record), Type::Record(record)) => {
+                    let error = TypeInferenceError::TypesNotMatched(
+                        anonymous_record.source_information().clone(),
+                        record.source_information().clone(),
+                    );
+
+                    if anonymous_record.elements().len() > record.elements().len() {
+                        return Err(error);
+                    }
+
+                    for (key, type_) in anonymous_record.elements() {
+                        self.equation_set.add(Equation::new(
+                            type_.clone(),
+                            record
                                 .elements()
                                 .get(key)
                                 .ok_or_else(|| error.clone())?

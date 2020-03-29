@@ -1132,5 +1132,134 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn infer_types_of_case_expressions_with_empty_records() {
+            let record_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        Record::new(
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            Default::default(),
+                            SourceInformation::dummy(),
+                        ),
+                        vec![Alternative::new(
+                            RecordPattern::new(
+                                types::Reference::new("Foo", SourceInformation::dummy()),
+                                Default::default(),
+                                SourceInformation::dummy(),
+                            ),
+                            None::new(SourceInformation::dummy()),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_case_expressions_with_records_with_member() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        Record::new(
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        vec![Alternative::new(
+                            RecordPattern::new(
+                                types::Reference::new("Foo", SourceInformation::dummy()),
+                                vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                    .into_iter()
+                                    .collect(),
+                                SourceInformation::dummy(),
+                            ),
+                            None::new(SourceInformation::dummy()),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_case_expressions_with_records_with_bound_members() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        Record::new(
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        vec![Alternative::new(
+                            RecordPattern::new(
+                                types::Reference::new("Foo", SourceInformation::dummy()),
+                                vec![(
+                                    "foo".into(),
+                                    Variable::new("y", SourceInformation::dummy()).into(),
+                                )]
+                                .into_iter()
+                                .collect(),
+                                SourceInformation::dummy(),
+                            ),
+                            Variable::new("y", SourceInformation::dummy()),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
     }
 }
