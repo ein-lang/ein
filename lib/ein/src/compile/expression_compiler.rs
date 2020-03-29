@@ -119,32 +119,7 @@ impl<'a> ExpressionCompiler<'a> {
                     }
                 }
             }
-            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
-                record
-                    .elements()
-                    .iter()
-                    .map(|(_, expression)| self.compile(expression))
-                    .collect::<Result<_, _>>()?,
-            )
-            .into()),
-            ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
-                self.compile(if_.condition())?,
-                vec![
-                    ssf::ir::AlgebraicAlternative::new(
-                        ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), 0),
-                        vec![],
-                        self.compile(if_.else_())?,
-                    ),
-                    ssf::ir::AlgebraicAlternative::new(
-                        ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), 1),
-                        vec![],
-                        self.compile(if_.then())?,
-                    ),
-                ],
-                None,
-            )
-            .into()),
+            ast::Expression::If(_) => unreachable!(),
             ast::Expression::Let(let_) => match let_.definitions()[0] {
                 ast::Definition::FunctionDefinition(_) => {
                     Ok(self.compile_let_functions(let_)?.into())
@@ -163,6 +138,15 @@ impl<'a> ExpressionCompiler<'a> {
                 operation.operator().into(),
                 self.compile(operation.lhs())?,
                 self.compile(operation.rhs())?,
+            )
+            .into()),
+            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, expression)| self.compile(expression))
+                    .collect::<Result<_, _>>()?,
             )
             .into()),
             ast::Expression::Variable(variable) => Ok(ssf::ir::Expression::Variable(
@@ -478,44 +462,6 @@ mod tests {
                     )],
                     ssf::ir::Variable::new("y")
                 )
-            )
-            .into())
-        );
-    }
-
-    #[test]
-    fn compile_if_expressions() {
-        let type_compiler = TypeCompiler::new(&Module::dummy());
-        let boolean_type = type_compiler.compile_boolean();
-
-        assert_eq!(
-            ExpressionCompiler::new(&type_compiler).compile(
-                &If::new(
-                    Boolean::new(true, SourceInformation::dummy()),
-                    Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(2.0, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-            ),
-            Ok(ssf::ir::AlgebraicCase::new(
-                ssf::ir::ConstructorApplication::new(
-                    ssf::ir::Constructor::new(boolean_type.clone(), 1),
-                    vec![]
-                ),
-                vec![
-                    ssf::ir::AlgebraicAlternative::new(
-                        ssf::ir::Constructor::new(boolean_type.clone(), 0),
-                        vec![],
-                        2.0
-                    ),
-                    ssf::ir::AlgebraicAlternative::new(
-                        ssf::ir::Constructor::new(boolean_type, 1),
-                        vec![],
-                        1.0
-                    )
-                ],
-                None
             )
             .into())
         );
