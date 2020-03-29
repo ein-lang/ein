@@ -9,7 +9,6 @@ use super::operation::Operation;
 use super::record::Record;
 use super::variable::Variable;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
@@ -48,20 +47,6 @@ impl Expression {
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
-        }
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::Application(application) => {
-                application.resolve_reference_types(environment).into()
-            }
-            Self::Case(case) => case.resolve_reference_types(environment).into(),
-            Self::Record(record) => record.resolve_reference_types(environment).into(),
-            Self::If(if_) => if_.resolve_reference_types(environment).into(),
-            Self::Let(let_) => let_.resolve_reference_types(environment).into(),
-            Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }

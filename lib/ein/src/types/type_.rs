@@ -61,17 +61,6 @@ impl Type {
         }
     }
 
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::AnonymousRecord(record) => record.resolve_reference_types(environment).into(),
-            Self::Function(function) => function.resolve_reference_types(environment).into(),
-            Self::Record(record) => record.resolve_reference_types(environment).into(),
-            Self::Reference(reference) => environment[reference.name()].clone(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) => self.clone(),
-            Self::Unknown(_) | Self::Variable(_) => unreachable!(),
-        }
-    }
-
     pub fn to_function(&self) -> Option<&Function> {
         if let Self::Function(function) = self {
             Some(&function)

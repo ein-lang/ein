@@ -1,7 +1,6 @@
 use super::expression::Expression;
 use super::pattern::Pattern;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Alternative {
@@ -34,12 +33,5 @@ impl Alternative {
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         Self::new(self.pattern.clone(), self.expression.convert_types(convert))
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        Self::new(
-            self.pattern.clone(),
-            self.expression.resolve_reference_types(environment),
-        )
     }
 }

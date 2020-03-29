@@ -1,7 +1,7 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -53,19 +53,6 @@ impl Record {
             self.elements
                 .iter()
                 .map(|(name, expression)| (name.into(), expression.convert_types(convert)))
-                .collect(),
-            self.source_information.clone(),
-        )
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        Self::new(
-            self.type_.resolve_reference_types(environment),
-            self.elements
-                .iter()
-                .map(|(name, expression)| {
-                    (name.into(), expression.resolve_reference_types(environment))
-                })
                 .collect(),
             self.source_information.clone(),
         )

@@ -2,7 +2,6 @@ use super::expression::Expression;
 use super::function_definition::*;
 use super::value_definition::*;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
@@ -43,17 +42,6 @@ impl Definition {
             }
             Self::ValueDefinition(value_definition) => {
                 value_definition.convert_types(convert).into()
-            }
-        }
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::FunctionDefinition(function_definition) => function_definition
-                .resolve_reference_types(environment)
-                .into(),
-            Self::ValueDefinition(value_definition) => {
-                value_definition.resolve_reference_types(environment).into()
             }
         }
     }
