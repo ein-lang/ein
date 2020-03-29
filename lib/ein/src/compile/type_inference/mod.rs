@@ -973,6 +973,139 @@ mod tests {
         }
     }
 
+    mod record_update {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn infer_types_of_record_update_with_two_members() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![
+                    (
+                        "foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                    ),
+                    (
+                        "bar".into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordUpdate::new(
+                        Record::new(
+                            reference_type.clone(),
+                            vec![
+                                (
+                                    "foo".into(),
+                                    Number::new(42.0, SourceInformation::dummy()).into(),
+                                ),
+                                (
+                                    "bar".into(),
+                                    Number::new(42.0, SourceInformation::dummy()).into(),
+                                ),
+                            ]
+                            .into_iter()
+                            .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn fail_to_update_all_members() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![
+                    (
+                        "foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                    ),
+                    (
+                        "bar".into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordUpdate::new(
+                        Record::new(
+                            reference_type.clone(),
+                            vec![
+                                (
+                                    "foo".into(),
+                                    Number::new(42.0, SourceInformation::dummy()).into(),
+                                ),
+                                (
+                                    "bar".into(),
+                                    Number::new(42.0, SourceInformation::dummy()).into(),
+                                ),
+                            ]
+                            .into_iter()
+                            .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        vec![
+                            (
+                                "foo".into(),
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                            (
+                                "bar".into(),
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+    }
+
     mod case {
         use super::*;
         use pretty_assertions::assert_eq;

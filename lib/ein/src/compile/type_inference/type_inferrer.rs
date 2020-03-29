@@ -295,7 +295,24 @@ impl TypeInferrer {
 
                 Ok(record.type_().clone())
             }
-            Expression::RecordUpdate(_) => unimplemented!(),
+            Expression::RecordUpdate(record_update) => {
+                let type_ = self.infer_expression(record_update.argument(), variables)?;
+                let anonymous_record = types::AnonymousRecord::new(
+                    record_update
+                        .elements()
+                        .iter()
+                        .map(|(key, element)| {
+                            Ok((key.into(), self.infer_expression(element, variables)?))
+                        })
+                        .collect::<Result<_, _>>()?,
+                    record_update.source_information().clone(),
+                );
+
+                self.equation_set
+                    .add(Equation::new(anonymous_record, type_.clone()));
+
+                Ok(type_)
+            }
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
                     TypeInferenceError::VariableNotFound(
@@ -391,6 +408,27 @@ impl TypeInferrer {
                         self.equation_set.add(Equation::new(
                             type_.clone(),
                             anonymous_record
+                                .elements()
+                                .get(key)
+                                .ok_or_else(|| error.clone())?
+                                .clone(),
+                        ));
+                    }
+                }
+                (Type::AnonymousRecord(anonymous_record), Type::Record(record)) => {
+                    let error = TypeInferenceError::TypesNotMatched(
+                        anonymous_record.source_information().clone(),
+                        record.source_information().clone(),
+                    );
+
+                    if anonymous_record.elements().len() >= record.elements().len() {
+                        return Err(error);
+                    }
+
+                    for (key, type_) in anonymous_record.elements() {
+                        self.equation_set.add(Equation::new(
+                            type_.clone(),
+                            record
                                 .elements()
                                 .get(key)
                                 .ok_or_else(|| error.clone())?
