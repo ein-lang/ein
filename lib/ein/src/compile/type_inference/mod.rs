@@ -795,7 +795,7 @@ mod tests {
         assert_eq!(infer_types(&module), Ok(module));
     }
 
-    mod records {
+    mod record {
         use super::*;
         use pretty_assertions::assert_eq;
 
