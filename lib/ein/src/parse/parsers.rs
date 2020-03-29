@@ -317,12 +317,34 @@ fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
 }
 
 fn pattern<'a>() -> impl Parser<Stream<'a>, Output = Pattern> {
-    choice((
-        boolean_literal().map(Pattern::from),
-        none_literal().map(Pattern::from),
-        number_literal().map(Pattern::from),
-        variable().map(Pattern::from),
+    lazy(|| {
+        no_partial(choice((
+            boolean_literal().map(Pattern::from),
+            none_literal().map(Pattern::from),
+            number_literal().map(Pattern::from),
+            record_pattern().map(Pattern::from),
+            variable().map(Pattern::from),
+        )))
+    })
+    .boxed()
+}
+
+fn record_pattern<'a>() -> impl Parser<Stream<'a>, Output = RecordPattern> {
+    attempt((
+        source_information(),
+        reference_type(),
+        sign("("),
+        sep_end_by((identifier().skip(sign("=")), pattern()), sign(",")),
+        sign(")"),
     ))
+    .map(|(source_information, reference_type, _, elements, _)| {
+        let elements: Vec<(String, Pattern)> = elements;
+        RecordPattern::new(
+            reference_type,
+            elements.into_iter().collect(),
+            source_information,
+        )
+    })
 }
 
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
@@ -1467,6 +1489,44 @@ mod tests {
         assert_eq!(
             pattern().parse(stream("none", "")).unwrap().0,
             None::new(SourceInformation::dummy()).into(),
+        );
+    }
+
+    #[test]
+    fn parse_record_pattern() {
+        assert_eq!(
+            record_pattern().parse(stream("Foo ()", "")).unwrap().0,
+            RecordPattern::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                Default::default(),
+                SourceInformation::dummy()
+            ),
+        );
+        assert_eq!(
+            record_pattern()
+                .parse(stream("Foo ( foo = none )", ""))
+                .unwrap()
+                .0,
+            RecordPattern::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                    .into_iter()
+                    .collect(),
+                SourceInformation::dummy()
+            ),
+        );
+        assert_eq!(
+            record_pattern()
+                .parse(stream("Foo ( foo = none, )", ""))
+                .unwrap()
+                .0,
+            RecordPattern::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                    .into_iter()
+                    .collect(),
+                SourceInformation::dummy()
+            ),
         );
     }
 

@@ -109,6 +109,7 @@ impl<'a> ExpressionCompiler<'a> {
                         default_alternative,
                     )
                     .into()),
+                    Some(ast::Pattern::Record(_)) => unimplemented!(),
                     Some(ast::Pattern::None(_)) | Some(ast::Pattern::Variable(_)) | None => {
                         Err(CompileError::InvalidPattern(
                             case.alternatives()[0]

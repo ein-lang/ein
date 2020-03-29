@@ -315,6 +315,7 @@ impl TypeInferrer {
             Pattern::Number(number) => {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
+            Pattern::Record(_) => unimplemented!(),
             Pattern::Variable(variable) => {
                 Ok(types::Variable::new(variable.source_information().clone()).into())
             }

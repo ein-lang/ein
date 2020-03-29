@@ -1,6 +1,7 @@
 use super::boolean::Boolean;
 use super::none::None;
 use super::number::Number;
+use super::record_pattern::RecordPattern;
 use super::variable::Variable;
 use crate::debug::SourceInformation;
 use std::rc::Rc;
@@ -10,6 +11,7 @@ pub enum Pattern {
     Boolean(Boolean),
     None(None),
     Number(Number),
+    Record(RecordPattern),
     Variable(Variable),
 }
 
@@ -19,6 +21,7 @@ impl Pattern {
             Self::Boolean(boolean) => boolean.source_information(),
             Self::None(none) => none.source_information(),
             Self::Number(number) => number.source_information(),
+            Self::Record(record) => record.source_information(),
             Self::Variable(variable) => variable.source_information(),
         }
     }
@@ -67,6 +70,12 @@ impl From<None> for Pattern {
 impl From<Number> for Pattern {
     fn from(number: Number) -> Self {
         Self::Number(number)
+    }
+}
+
+impl From<RecordPattern> for Pattern {
+    fn from(record: RecordPattern) -> Self {
+        Self::Record(record)
     }
 }
 
