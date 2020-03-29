@@ -203,20 +203,7 @@ impl TypeInferrer {
 
                 Ok(case_type)
             }
-            Expression::If(if_) => {
-                let condition = self.infer_expression(if_.condition(), variables)?;
-                self.equation_set.add(Equation::new(
-                    condition,
-                    types::Boolean::new(if_.source_information().clone()),
-                ));
-
-                let then = self.infer_expression(if_.then(), variables)?;
-                let else_ = self.infer_expression(if_.else_(), variables)?;
-
-                self.equation_set.add(Equation::new(then.clone(), else_));
-
-                Ok(then)
-            }
+            Expression::If(_) => unreachable!(),
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
