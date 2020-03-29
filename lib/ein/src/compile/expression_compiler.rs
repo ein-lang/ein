@@ -149,6 +149,7 @@ impl<'a> ExpressionCompiler<'a> {
                     .collect::<Result<_, _>>()?,
             )
             .into()),
+            ast::Expression::RecordUpdate(_) => unimplemented!(),
             ast::Expression::Variable(variable) => Ok(ssf::ir::Expression::Variable(
                 ssf::ir::Variable::new(variable.name()),
             )),

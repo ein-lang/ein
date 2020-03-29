@@ -295,6 +295,7 @@ impl TypeInferrer {
 
                 Ok(record.type_().clone())
             }
+            Expression::RecordUpdate(_) => unimplemented!(),
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
                     TypeInferenceError::VariableNotFound(
