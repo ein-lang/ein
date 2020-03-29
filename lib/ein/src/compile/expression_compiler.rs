@@ -109,28 +109,24 @@ impl<'a> ExpressionCompiler<'a> {
                         default_alternative,
                     )
                     .into()),
-                    Some(ast::Pattern::Record(record)) => {
-                        let record_type = record.type_();
-
-                        Ok(ssf::ir::AlgebraicCase::new(
-                            argument,
-                            alternatives
-                                .iter()
-                                .map(|alternative| -> Result<_, CompileError> {
-                                    Ok(ssf::ir::AlgebraicAlternative::new(
-                                        ssf::ir::Constructor::new(
-                                            self.type_compiler.compile_record(record_type),
-                                            0,
-                                        ),
-                                        record.elements().keys().cloned().collect(),
-                                        self.compile(alternative.expression())?,
-                                    ))
-                                })
-                                .collect::<Result<_, _>>()?,
-                            default_alternative,
-                        )
-                        .into())
-                    }
+                    Some(ast::Pattern::Record(record)) => Ok(ssf::ir::AlgebraicCase::new(
+                        argument,
+                        alternatives
+                            .iter()
+                            .map(|alternative| -> Result<_, CompileError> {
+                                Ok(ssf::ir::AlgebraicAlternative::new(
+                                    ssf::ir::Constructor::new(
+                                        self.type_compiler.compile_record(record.type_()),
+                                        0,
+                                    ),
+                                    record.elements().keys().cloned().collect(),
+                                    self.compile(alternative.expression())?,
+                                ))
+                            })
+                            .collect::<Result<_, _>>()?,
+                        default_alternative,
+                    )
+                    .into()),
                     Some(ast::Pattern::None(_)) | Some(ast::Pattern::Variable(_)) | None => {
                         Err(CompileError::InvalidPattern(
                             case.alternatives()[0]
