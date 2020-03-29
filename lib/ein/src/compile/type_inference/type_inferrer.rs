@@ -203,23 +203,6 @@ impl TypeInferrer {
 
                 Ok(case_type)
             }
-            Expression::Record(record) => {
-                let type_ = types::AnonymousRecord::new(
-                    record
-                        .elements()
-                        .iter()
-                        .map(|(key, expression)| {
-                            Ok((key.clone(), self.infer_expression(expression, variables)?))
-                        })
-                        .collect::<Result<_, _>>()?,
-                    record.source_information().clone(),
-                );
-
-                self.equation_set
-                    .add(Equation::new(record.type_().clone(), type_));
-
-                Ok(record.type_().clone())
-            }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.equation_set.add(Equation::new(
@@ -307,6 +290,23 @@ impl TypeInferrer {
                 self.equation_set.add(Equation::new(rhs, type_.clone()));
 
                 Ok(type_)
+            }
+            Expression::Record(record) => {
+                let type_ = types::AnonymousRecord::new(
+                    record
+                        .elements()
+                        .iter()
+                        .map(|(key, expression)| {
+                            Ok((key.clone(), self.infer_expression(expression, variables)?))
+                        })
+                        .collect::<Result<_, _>>()?,
+                    record.source_information().clone(),
+                );
+
+                self.equation_set
+                    .add(Equation::new(record.type_().clone(), type_));
+
+                Ok(record.type_().clone())
             }
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
