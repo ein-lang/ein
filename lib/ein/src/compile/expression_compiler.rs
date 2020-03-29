@@ -109,7 +109,28 @@ impl<'a> ExpressionCompiler<'a> {
                         default_alternative,
                     )
                     .into()),
-                    Some(ast::Pattern::Record(_)) => unimplemented!(),
+                    Some(ast::Pattern::Record(record)) => {
+                        let record_type = record.type_();
+
+                        Ok(ssf::ir::AlgebraicCase::new(
+                            argument,
+                            alternatives
+                                .iter()
+                                .map(|alternative| -> Result<_, CompileError> {
+                                    Ok(ssf::ir::AlgebraicAlternative::new(
+                                        ssf::ir::Constructor::new(
+                                            self.type_compiler.compile_record(record_type),
+                                            0,
+                                        ),
+                                        record.elements().keys().cloned().collect(),
+                                        self.compile(alternative.expression())?,
+                                    ))
+                                })
+                                .collect::<Result<_, _>>()?,
+                            default_alternative,
+                        )
+                        .into())
+                    }
                     Some(ast::Pattern::None(_)) | Some(ast::Pattern::Variable(_)) | None => {
                         Err(CompileError::InvalidPattern(
                             case.alternatives()[0]
@@ -469,7 +490,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_case_expressions() {
+    fn compile_primitive_case_expressions() {
         let type_compiler = TypeCompiler::new(&Module::dummy());
         let boolean_type = type_compiler.compile_boolean();
 
@@ -587,6 +608,73 @@ mod tests {
             assert_eq!(
                 ExpressionCompiler::new(&type_compiler).compile(&source.into()),
                 Ok(target)
+            );
+        }
+    }
+
+    #[test]
+    fn compile_record_case_expressions() {
+        let record_type = types::Record::new(
+            "Foo",
+            vec![(
+                "foo".into(),
+                types::Number::new(SourceInformation::dummy()).into(),
+            )]
+            .into_iter()
+            .collect(),
+            SourceInformation::dummy(),
+        );
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        let type_compiler = TypeCompiler::new(&Module::from_definitions_and_type_definitions(
+            vec![TypeDefinition::new("Foo", record_type.clone())],
+            vec![],
+        ));
+        let algebraic_type = type_compiler.compile_record(&record_type.clone().into());
+
+        for (source, target) in vec![(
+            Case::new(
+                Record::new(
+                    reference_type.clone(),
+                    vec![(
+                        "foo".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                ),
+                vec![Alternative::new(
+                    RecordPattern::new(
+                        reference_type,
+                        vec![(
+                            "foo".into(),
+                            Variable::new("foo", SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    Number::new(42.0, SourceInformation::dummy()),
+                )],
+                SourceInformation::dummy(),
+            ),
+            ssf::ir::AlgebraicCase::new(
+                ssf::ir::ConstructorApplication::new(
+                    ssf::ir::Constructor::new(algebraic_type.clone(), 0),
+                    vec![42.0.into()],
+                ),
+                vec![ssf::ir::AlgebraicAlternative::new(
+                    ssf::ir::Constructor::new(algebraic_type.clone(), 0),
+                    vec!["foo".into()],
+                    42.0,
+                )],
+                None,
+            ),
+        )] {
+            assert_eq!(
+                ExpressionCompiler::new(&type_compiler).compile(&source.into()),
+                Ok(target.into())
             );
         }
     }

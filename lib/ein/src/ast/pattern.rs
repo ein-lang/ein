@@ -42,6 +42,14 @@ impl Pattern {
         }
     }
 
+    pub fn to_record(&self) -> Option<&RecordPattern> {
+        if let Self::Record(record) = self {
+            Some(&record)
+        } else {
+            None
+        }
+    }
+
     pub fn to_variable(&self) -> Option<&Variable> {
         if let Self::Variable(variable) = self {
             Some(&variable)
