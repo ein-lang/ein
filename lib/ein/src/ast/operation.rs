@@ -1,4 +1,3 @@
-use super::definition::Definition;
 use super::expression::Expression;
 use super::operator::Operator;
 use crate::debug::SourceInformation;
@@ -43,15 +42,6 @@ impl Operation {
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         &self.source_information
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.operator,
-            self.lhs.convert_definitions(convert),
-            self.rhs.convert_definitions(convert),
-            self.source_information.clone(),
-        )
     }
 
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {

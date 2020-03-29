@@ -1,4 +1,3 @@
-use super::definition::Definition;
 use super::expression::Expression;
 use super::pattern::Pattern;
 use crate::types::Type;
@@ -24,13 +23,6 @@ impl Alternative {
 
     pub fn expression(&self) -> &Expression {
         &self.expression
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.pattern.clone(),
-            self.expression.convert_definitions(convert),
-        )
     }
 
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {

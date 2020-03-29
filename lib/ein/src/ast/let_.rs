@@ -26,16 +26,6 @@ impl Let {
         &self.expression
     }
 
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.definitions
-                .iter()
-                .map(|definition| definition.convert_definitions(convert))
-                .collect(),
-            self.expression.convert_definitions(convert),
-        )
-    }
-
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         Self::new(
             self.definitions

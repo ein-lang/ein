@@ -1,6 +1,7 @@
 use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
+use super::let_::Let;
 use super::module_interface::ModuleInterface;
 use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
@@ -88,7 +89,10 @@ impl Module {
         &self.imported_modules
     }
 
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
+    pub fn convert_definitions(
+        &self,
+        mut convert: &mut impl FnMut(&Definition) -> Definition,
+    ) -> Self {
         Self::new(
             self.path.clone(),
             self.export.clone(),
@@ -96,7 +100,21 @@ impl Module {
             self.type_definitions.clone(),
             self.definitions
                 .iter()
-                .map(|definition| definition.convert_definitions(convert))
+                .map(|definition| {
+                    let definition = definition.convert_expressions(&mut |expression| {
+                        if let Expression::Let(let_) = expression {
+                            Let::new(
+                                let_.definitions().iter().map(&mut convert).collect(),
+                                let_.expression().clone(),
+                            )
+                            .into()
+                        } else {
+                            expression.clone()
+                        }
+                    });
+
+                    convert(&definition)
+                })
                 .collect(),
         )
     }

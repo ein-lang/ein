@@ -1,4 +1,3 @@
-use super::definition::Definition;
 use super::expression::Expression;
 use crate::debug::*;
 use crate::types::Type;
@@ -42,15 +41,6 @@ impl ValueDefinition {
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         &self.source_information
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.name.clone(),
-            self.body.convert_definitions(convert),
-            self.type_.clone(),
-            self.source_information.clone(),
-        )
     }
 
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {

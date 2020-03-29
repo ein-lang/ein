@@ -25,19 +25,6 @@ impl Definition {
         }
     }
 
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        let definition = match self {
-            Self::FunctionDefinition(function_definition) => {
-                function_definition.convert_definitions(convert).into()
-            }
-            Self::ValueDefinition(value_definition) => {
-                value_definition.convert_definitions(convert).into()
-            }
-        };
-
-        convert(&definition)
-    }
-
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         match self {
             Self::FunctionDefinition(function_definition) => {

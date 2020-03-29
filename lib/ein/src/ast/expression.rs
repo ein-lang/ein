@@ -1,7 +1,6 @@
 use super::application::Application;
 use super::boolean::Boolean;
 use super::case::Case;
-use super::definition::Definition;
 use super::if_::If;
 use super::let_::Let;
 use super::none::None;
@@ -27,18 +26,6 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        match self {
-            Self::Application(application) => application.convert_definitions(convert).into(),
-            Self::Case(case) => case.convert_definitions(convert).into(),
-            Self::Record(record) => record.convert_definitions(convert).into(),
-            Self::If(if_) => if_.convert_definitions(convert).into(),
-            Self::Let(let_) => let_.convert_definitions(convert).into(),
-            Self::Operation(operation) => operation.convert_definitions(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
-        }
-    }
-
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         let expression = match self {
             Self::Application(application) => application.convert_expressions(convert).into(),

@@ -1,4 +1,3 @@
-use super::definition::Definition;
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
@@ -35,17 +34,6 @@ impl Record {
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         &self.source_information
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.type_.clone(),
-            self.elements
-                .iter()
-                .map(|(name, expression)| (name.into(), expression.convert_definitions(convert)))
-                .collect(),
-            self.source_information.clone(),
-        )
     }
 
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
