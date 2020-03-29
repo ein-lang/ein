@@ -1,7 +1,6 @@
 use super::application::Application;
 use super::boolean::Boolean;
 use super::case::Case;
-use super::definition::Definition;
 use super::if_::If;
 use super::let_::Let;
 use super::none::None;
@@ -10,7 +9,6 @@ use super::operation::Operation;
 use super::record::Record;
 use super::variable::Variable;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
@@ -27,32 +25,6 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        match self {
-            Self::Application(application) => {
-                application.substitute_type_variables(substitutions).into()
-            }
-            Self::Case(case) => case.substitute_type_variables(substitutions).into(),
-            Self::Record(record) => record.substitute_type_variables(substitutions).into(),
-            Self::If(if_) => if_.substitute_type_variables(substitutions).into(),
-            Self::Let(let_) => let_.substitute_type_variables(substitutions).into(),
-            Self::Operation(operation) => operation.substitute_type_variables(substitutions).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
-        }
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        match self {
-            Self::Application(application) => application.convert_definitions(convert).into(),
-            Self::Case(case) => case.convert_definitions(convert).into(),
-            Self::Record(record) => record.convert_definitions(convert).into(),
-            Self::If(if_) => if_.convert_definitions(convert).into(),
-            Self::Let(let_) => let_.convert_definitions(convert).into(),
-            Self::Operation(operation) => operation.convert_definitions(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
-        }
-    }
-
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         let expression = match self {
             Self::Application(application) => application.convert_expressions(convert).into(),
@@ -75,20 +47,6 @@ impl Expression {
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
-        }
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::Application(application) => {
-                application.resolve_reference_types(environment).into()
-            }
-            Self::Case(case) => case.resolve_reference_types(environment).into(),
-            Self::Record(record) => record.resolve_reference_types(environment).into(),
-            Self::If(if_) => if_.resolve_reference_types(environment).into(),
-            Self::Let(let_) => let_.resolve_reference_types(environment).into(),
-            Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }

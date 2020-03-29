@@ -117,6 +117,7 @@ fn append_arguments_to_expression_with_source_information(
 mod tests {
     use super::*;
     use crate::types;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn complement_an_omitted_argument_of_value_definition() {

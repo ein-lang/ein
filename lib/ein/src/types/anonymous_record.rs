@@ -39,14 +39,4 @@ impl AnonymousRecord {
             self.source_information.clone(),
         )
     }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        Self::new(
-            self.elements
-                .iter()
-                .map(|(name, type_)| (name.into(), type_.resolve_reference_types(environment)))
-                .collect(),
-            self.source_information.clone(),
-        )
-    }
 }

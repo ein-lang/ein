@@ -37,7 +37,15 @@ impl TypeInferrer {
 
         self.collect_equations(module)?;
 
-        Ok(module.substitute_type_variables(&self.reduce_equations()?))
+        let substitutions = self.reduce_equations()?;
+
+        Ok(module.convert_types(&mut |type_| {
+            if let Type::Variable(variable) = type_ {
+                substitutions[&variable.id()].clone()
+            } else {
+                type_.clone()
+            }
+        }))
     }
 
     fn collect_equations(&mut self, module: &Module) -> Result<(), TypeInferenceError> {
