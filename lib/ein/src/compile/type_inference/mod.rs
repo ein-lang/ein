@@ -19,7 +19,7 @@ pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {
 mod tests {
     use super::error::*;
     use super::infer_types;
-    use crate::ast::*;
+    use crate::ast::{self, *};
     use crate::debug::*;
     use crate::package::Package;
     use crate::path::*;
@@ -1026,6 +1026,7 @@ mod tests {
                 )
                 .into()],
             );
+
             assert_eq!(
                 infer_types(&module),
                 Err(TypeInferenceError::TypesNotMatched(
@@ -1033,6 +1034,96 @@ mod tests {
                     SourceInformation::dummy().into()
                 ))
             );
+        }
+
+        #[test]
+        fn infer_types_of_record_element_operator_with_single_element_records() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        RecordElementOperator::new("foo", SourceInformation::dummy()),
+                        Record::new(
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_record_element_operator_with_multiple_element_records() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![
+                    (
+                        "foo".into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ),
+                    (
+                        "bar".into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        RecordElementOperator::new("foo", SourceInformation::dummy()),
+                        Record::new(
+                            reference_type.clone(),
+                            vec![
+                                (
+                                    "foo".into(),
+                                    ast::None::new(SourceInformation::dummy()).into(),
+                                ),
+                                (
+                                    "bar".into(),
+                                    ast::None::new(SourceInformation::dummy()).into(),
+                                ),
+                            ]
+                            .into_iter()
+                            .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
         }
     }
 }

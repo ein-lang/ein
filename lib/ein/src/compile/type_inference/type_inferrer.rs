@@ -265,7 +265,23 @@ impl TypeInferrer {
 
                 Ok(record.type_().clone())
             }
-            Expression::RecordElementOperator(_) => unimplemented!(),
+            Expression::RecordElementOperator(record_element_operator) => {
+                let source_information = record_element_operator.source_information();
+
+                let result = types::Variable::new(source_information.clone());
+                let function = types::Function::new(
+                    types::AnonymousRecord::new(
+                        vec![(record_element_operator.key().into(), result.clone().into())]
+                            .into_iter()
+                            .collect(),
+                        source_information.clone(),
+                    ),
+                    result,
+                    source_information.clone(),
+                );
+
+                Ok(function.into())
+            }
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
                     TypeInferenceError::VariableNotFound(
@@ -313,13 +329,14 @@ impl TypeInferrer {
                         .clone(),
                 )),
                 (Type::Function(one), Type::Function(other)) => {
-                    // TODO Handle covariance and contravariance correctly.
                     self.equation_set.add(Equation::new(
                         one.argument().clone(),
                         other.argument().clone(),
                     ));
+
+                    // Handle contravariance.
                     self.equation_set
-                        .add(Equation::new(one.result().clone(), other.result().clone()));
+                        .add(Equation::new(other.result().clone(), one.result().clone()));
                 }
                 (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}
@@ -346,6 +363,27 @@ impl TypeInferrer {
                         self.equation_set.add(Equation::new(
                             type_.clone(),
                             anonymous_record
+                                .elements()
+                                .get(key)
+                                .ok_or_else(|| error.clone())?
+                                .clone(),
+                        ));
+                    }
+                }
+                (Type::AnonymousRecord(anonymous_record), Type::Record(record)) => {
+                    let error = TypeInferenceError::TypesNotMatched(
+                        anonymous_record.source_information().clone(),
+                        record.source_information().clone(),
+                    );
+
+                    if anonymous_record.elements().len() > record.elements().len() {
+                        return Err(error);
+                    }
+
+                    for (key, type_) in anonymous_record.elements() {
+                        self.equation_set.add(Equation::new(
+                            type_.clone(),
+                            record
                                 .elements()
                                 .get(key)
                                 .ok_or_else(|| error.clone())?
