@@ -795,6 +795,74 @@ mod tests {
         assert_eq!(infer_types(&module), Ok(module));
     }
 
+    mod if_ {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn infer_types_of_if_expressions() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+    }
+
     mod record {
         use super::*;
         use pretty_assertions::assert_eq;
