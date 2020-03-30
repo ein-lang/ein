@@ -160,49 +160,6 @@ impl TypeInferrer {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
-            Expression::Case(case) => {
-                let mut pattern_types = vec![];
-                let mut expression_types = vec![];
-
-                for alternative in case.alternatives() {
-                    let pattern_type = self.infer_pattern(alternative.pattern())?;
-                    let expression_type = self.infer_expression(
-                        alternative.expression(),
-                        &if let Pattern::Variable(variable) = alternative.pattern() {
-                            let mut variables = variables.clone();
-                            variables.insert(variable.name().into(), pattern_type.clone());
-                            variables
-                        } else {
-                            variables.clone()
-                        },
-                    )?;
-
-                    pattern_types.push(pattern_type);
-                    expression_types.push(expression_type);
-                }
-
-                let argument_type = self.infer_expression(case.argument(), variables)?;
-                self.equation_set
-                    .add(Equation::new(pattern_types[0].clone(), argument_type));
-
-                for pattern_type in &pattern_types {
-                    self.equation_set.add(Equation::new(
-                        pattern_type.clone(),
-                        pattern_types[0].clone(),
-                    ));
-                }
-
-                for expression_type in &expression_types {
-                    self.equation_set.add(Equation::new(
-                        expression_type.clone(),
-                        expression_types[0].clone(),
-                    ));
-                }
-
-                let case_type = expression_types.drain(..).next().unwrap();
-
-                Ok(case_type)
-            }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.equation_set.add(Equation::new(
@@ -315,21 +272,6 @@ impl TypeInferrer {
                         variable.source_information().clone(),
                     )
                 })
-            }
-        }
-    }
-
-    fn infer_pattern(&self, pattern: &Pattern) -> Result<Type, TypeInferenceError> {
-        match pattern {
-            Pattern::Boolean(boolean) => {
-                Ok(types::Boolean::new(boolean.source_information().clone()).into())
-            }
-            Pattern::None(none) => Ok(types::None::new(none.source_information().clone()).into()),
-            Pattern::Number(number) => {
-                Ok(types::Number::new(number.source_information().clone()).into())
-            }
-            Pattern::Variable(variable) => {
-                Ok(types::Variable::new(variable.source_information().clone()).into())
             }
         }
     }
