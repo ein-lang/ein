@@ -119,7 +119,11 @@ impl<'a> ExpressionCompiler<'a> {
                                         self.type_compiler.compile_record(record.type_()),
                                         0,
                                     ),
-                                    record.elements().keys().cloned().collect(),
+                                    record
+                                        .elements()
+                                        .values()
+                                        .map(|pattern| pattern.to_variable().unwrap().name().into())
+                                        .collect(),
                                     self.compile(alternative.expression())?,
                                 ))
                             })
@@ -642,7 +646,7 @@ mod tests {
                 ),
                 vec![Alternative::new(
                     RecordPattern::new(
-                        reference_type,
+                        reference_type.clone(),
                         vec![(
                             "foo".into(),
                             Variable::new("foo", SourceInformation::dummy()).into(),
