@@ -119,15 +119,6 @@ impl<'a> ExpressionCompiler<'a> {
                     }
                 }
             }
-            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
-                record
-                    .elements()
-                    .iter()
-                    .map(|(_, expression)| self.compile(expression))
-                    .collect::<Result<_, _>>()?,
-            )
-            .into()),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition())?,
                 vec![
@@ -163,6 +154,15 @@ impl<'a> ExpressionCompiler<'a> {
                 operation.operator().into(),
                 self.compile(operation.lhs())?,
                 self.compile(operation.rhs())?,
+            )
+            .into()),
+            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, expression)| self.compile(expression))
+                    .collect::<Result<_, _>>()?,
             )
             .into()),
             ast::Expression::Variable(variable) => Ok(ssf::ir::Expression::Variable(
