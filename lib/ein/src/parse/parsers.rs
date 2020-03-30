@@ -19,7 +19,8 @@ use lazy_static::lazy_static;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "else", "export", "False", "if", "import", "in", "let", "None", "Number", "then", "True",
+    "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "then",
+    "true",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -93,9 +94,7 @@ fn module_path<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModulePath> {
 }
 
 fn internal_module_path<'a>() -> impl Parser<Stream<'a>, Output = InternalUnresolvedModulePath> {
-    string(".")
-        .with(many1(string("/").with(path_component())))
-        .map(InternalUnresolvedModulePath::new)
+    many1(string("/").with(path_component())).map(InternalUnresolvedModulePath::new)
 }
 
 fn external_module_path<'a>() -> impl Parser<Stream<'a>, Output = ExternalUnresolvedModulePath> {
@@ -213,8 +212,21 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
 }
 
 fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
-    attempt((keyword("type"), identifier(), sign("="), record_type()))
-        .map(|(_, name, _, type_)| TypeDefinition::new(name, type_))
+    attempt((
+        keyword("type"),
+        source_information(),
+        identifier(),
+        sign("("),
+        sep_end_by((identifier().skip(sign(":")), type_()), sign(",")),
+        sign(")"),
+    ))
+    .map(|(_, source_information, name, _, elements, _)| {
+        let elements: Vec<_> = elements;
+        TypeDefinition::new(
+            &name,
+            types::Record::new(&name, elements.into_iter().collect(), source_information),
+        )
+    })
 }
 
 fn type_<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -225,20 +237,6 @@ fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
     attempt((source_information(), atomic_type(), sign("->"), type_())).map(
         |(source_information, argument, _, result)| {
             types::Function::new(argument, result, source_information)
-        },
-    )
-}
-
-fn record_type<'a>() -> impl Parser<Stream<'a>, Output = types::Record> {
-    attempt((
-        source_information(),
-        sign("("),
-        sep_end_by((identifier().skip(sign(":")), type_()), sign(",")),
-        sign(")"),
-    ))
-    .map(
-        |(source_information, _, elements, _): (_, _, Vec<(String, Type)>, _)| {
-            types::Record::new(elements.into_iter().collect(), source_information)
         },
     )
 }
@@ -430,16 +428,16 @@ fn concrete_operator<'a>(
 fn boolean_literal<'a>() -> impl Parser<Stream<'a>, Output = Boolean> {
     token(choice((
         source_information()
-            .skip(keyword("False"))
+            .skip(keyword("false"))
             .map(|source_information| Boolean::new(false, source_information)),
         source_information()
-            .skip(keyword("True"))
+            .skip(keyword("true"))
             .map(|source_information| Boolean::new(true, source_information)),
     )))
 }
 
 fn none_literal<'a>() -> impl Parser<Stream<'a>, Output = None> {
-    token(source_information().skip(keyword("None"))).map(None::new)
+    token(source_information().skip(keyword("none"))).map(None::new)
 }
 
 fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
@@ -680,7 +678,7 @@ mod tests {
     #[test]
     fn parse_import() {
         assert_eq!(
-            import().parse(stream("import \"./Foo\"", "")).unwrap().0,
+            import().parse(stream("import \"/Foo\"", "")).unwrap().0,
             Import::new(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
         );
         assert_eq!(
@@ -696,7 +694,7 @@ mod tests {
     fn parse_module_path() {
         assert!(module_path().parse(stream("?", "")).is_err());
         assert_eq!(
-            module_path().parse(stream("\"./Foo\"", "")).unwrap().0,
+            module_path().parse(stream("\"/Foo\"", "")).unwrap().0,
             UnresolvedModulePath::Internal(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
         );
         assert_eq!(
@@ -707,7 +705,7 @@ mod tests {
             ])),
         );
         assert_eq!(
-            module_path().parse(stream(" \"./Foo\"", "")).unwrap().0,
+            module_path().parse(stream(" \"/Foo\"", "")).unwrap().0,
             UnresolvedModulePath::Internal(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
         );
     }
@@ -716,12 +714,12 @@ mod tests {
     fn parse_internal_module_path() {
         assert!(internal_module_path().parse(stream("?", "")).is_err());
         assert_eq!(
-            internal_module_path().parse(stream("./Foo", "")).unwrap().0,
+            internal_module_path().parse(stream("/Foo", "")).unwrap().0,
             InternalUnresolvedModulePath::new(vec!["Foo".into()]),
         );
         assert_eq!(
             internal_module_path()
-                .parse(stream("./Foo/Bar", ""))
+                .parse(stream("/Foo/Bar", ""))
                 .unwrap()
                 .0,
             InternalUnresolvedModulePath::new(vec!["Foo".into(), "Bar".into()]),
@@ -870,24 +868,100 @@ mod tests {
 
     #[test]
     fn parse_type_definition() {
-        assert_eq!(
-            type_definition()
-                .parse(stream("type Foo = ( foo : Number )", ""))
-                .unwrap()
-                .0,
-            TypeDefinition::new(
-                "Foo",
-                types::Record::new(
-                    vec![(
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )]
-                    .into_iter()
-                    .collect(),
-                    SourceInformation::dummy()
-                )
-            )
-        );
+        for (source, expected) in &[
+            (
+                "type Foo ()",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![].into_iter().collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo ( foo : Number )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo ( foo : Number, )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo ( foo : Number, bar : Number )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![
+                            (
+                                "foo".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                            (
+                                "bar".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo ( foo : Number, bar : Number, )",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![
+                            (
+                                "foo".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                            (
+                                "bar".into(),
+                                types::Number::new(SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+        ] {
+            assert_eq!(
+                &type_definition().parse(stream(source, "")).unwrap().0,
+                expected
+            );
+        }
     }
 
     #[test]
@@ -958,91 +1032,6 @@ mod tests {
         assert_eq!(
             type_().parse(stream("Foo.Bar", "")).unwrap().0,
             types::Reference::new("Foo.Bar", SourceInformation::dummy()).into()
-        );
-    }
-
-    #[test]
-    fn parse_record_type() {
-        assert!(record_type().parse(stream("", "")).is_err());
-        assert_eq!(
-            record_type().parse(stream("()", "")).unwrap().0,
-            types::Record::new(Default::default(), SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number, )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number, bar : Number )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![
-                    (
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    ),
-                    (
-                        "bar".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )
-                ]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            record_type()
-                .parse(stream("( foo : Number, bar : Number, )", ""))
-                .unwrap()
-                .0,
-            types::Record::new(
-                vec![
-                    (
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    ),
-                    (
-                        "bar".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )
-                ]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .into()
         );
     }
 
@@ -1136,7 +1125,7 @@ mod tests {
     fn parse_if() {
         assert_eq!(
             if_()
-                .parse(stream("if True then 42 else 13", ""))
+                .parse(stream("if true then 42 else 13", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1149,7 +1138,7 @@ mod tests {
         assert_eq!(
             if_()
                 .parse(stream(
-                    "if if True then False else True then 42 else 13",
+                    "if if true then false else true then 42 else 13",
                     ""
                 ))
                 .unwrap()
@@ -1168,7 +1157,7 @@ mod tests {
         );
         assert_eq!(
             if_()
-                .parse(stream("if True then if False then 1 else 2 else 3", ""))
+                .parse(stream("if true then if false then 1 else 2 else 3", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1185,7 +1174,7 @@ mod tests {
         );
         assert_eq!(
             if_()
-                .parse(stream("if True then 1 else if False then 2 else 3", ""))
+                .parse(stream("if true then 1 else if false then 2 else 3", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1628,11 +1617,11 @@ mod tests {
     fn parse_boolean_literal() {
         assert!(boolean_literal().parse(stream("", "")).is_err());
         assert_eq!(
-            boolean_literal().parse(stream("False", "")).unwrap().0,
+            boolean_literal().parse(stream("false", "")).unwrap().0,
             Boolean::new(false, SourceInformation::dummy())
         );
         assert_eq!(
-            boolean_literal().parse(stream("True", "")).unwrap().0,
+            boolean_literal().parse(stream("true", "")).unwrap().0,
             Boolean::new(true, SourceInformation::dummy())
         );
     }
@@ -1641,7 +1630,7 @@ mod tests {
     fn parse_none_literal() {
         assert!(none_literal().parse(stream("", "")).is_err());
         assert_eq!(
-            none_literal().parse(stream("None", "")).unwrap().0,
+            none_literal().parse(stream("none", "")).unwrap().0,
             None::new(SourceInformation::dummy())
         );
     }

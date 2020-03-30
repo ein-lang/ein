@@ -14,7 +14,7 @@ Feature: Modules
   Scenario: Import a module
     Given a file named "Main.ein" with:
     """
-    import "./Foo"
+    import "/Foo"
 
     main : Number -> Number
     main x = x
@@ -34,7 +34,7 @@ Feature: Modules
   Scenario: Import a name in a module
     Given a file named "Main.ein" with:
     """
-    import "./Foo"
+    import "/Foo"
 
     main : Number -> Number
     main x = Foo.a
@@ -54,8 +54,8 @@ Feature: Modules
   Scenario: Allow diamond dependency
     Given a file named "Main.ein" with:
     """
-    import "./Bar"
-    import "./Foo"
+    import "/Bar"
+    import "/Foo"
 
     main : Number -> Number
     main x = Foo.foo + Bar.bar
@@ -64,7 +64,7 @@ Feature: Modules
     """
     export { foo }
 
-    import "./Baz"
+    import "/Baz"
 
     foo : Number
     foo = Baz.baz
@@ -73,7 +73,7 @@ Feature: Modules
     """
     export { bar }
 
-    import "./Baz"
+    import "/Baz"
 
     bar : Number
     bar = Baz.baz

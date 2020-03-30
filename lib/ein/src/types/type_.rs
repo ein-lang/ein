@@ -1,3 +1,4 @@
+use super::anonymous_record::AnonymousRecord;
 use super::boolean::Boolean;
 use super::function::Function;
 use super::none::None;
@@ -13,6 +14,7 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Type {
+    AnonymousRecord(AnonymousRecord),
     Boolean(Boolean),
     Function(Function),
     None(None),
@@ -26,6 +28,7 @@ pub enum Type {
 impl Type {
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         match self {
+            Self::AnonymousRecord(record) => record.source_information(),
             Self::Boolean(boolean) => boolean.source_information(),
             Self::Function(function) => function.source_information(),
             Self::None(none) => none.source_information(),
@@ -43,6 +46,7 @@ impl Type {
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
+            Self::AnonymousRecord(record) => record.substitute_variables(substitutions).into(),
             Self::Function(function) => function.substitute_variables(substitutions).into(),
             Self::Record(record) => record.substitute_variables(substitutions).into(),
             Self::Variable(variable) => match substitutions.get(&variable.id()) {
@@ -54,16 +58,6 @@ impl Type {
             | Self::Number(_)
             | Self::Reference(_)
             | Self::Unknown(_) => self.clone(),
-        }
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::Function(function) => function.resolve_reference_types(environment).into(),
-            Self::Record(record) => record.resolve_reference_types(environment).into(),
-            Self::Reference(reference) => environment[reference.name()].clone(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) => self.clone(),
-            Self::Unknown(_) | Self::Variable(_) => unreachable!(),
         }
     }
 
@@ -81,6 +75,12 @@ impl Type {
         } else {
             None
         }
+    }
+}
+
+impl From<AnonymousRecord> for Type {
+    fn from(record: AnonymousRecord) -> Self {
+        Self::AnonymousRecord(record)
     }
 }
 

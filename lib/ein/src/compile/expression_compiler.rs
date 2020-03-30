@@ -1,8 +1,6 @@
 use super::error::CompileError;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
-use crate::types::Type;
-use std::collections::HashMap;
 
 pub struct ExpressionCompiler<'a> {
     type_compiler: &'a TypeCompiler,
@@ -16,7 +14,6 @@ impl<'a> ExpressionCompiler<'a> {
     pub fn compile(
         &self,
         expression: &ast::Expression,
-        local_variables: &HashMap<String, Type>,
     ) -> Result<ssf::ir::Expression, CompileError> {
         match expression {
             ast::Expression::Application(application) => {
@@ -29,14 +26,14 @@ impl<'a> ExpressionCompiler<'a> {
                 }
 
                 Ok(ssf::ir::FunctionApplication::new(
-                    self.compile(function, local_variables)?
+                    self.compile(function)?
                         .to_variable()
                         .expect("variable")
                         .clone(),
                     arguments
                         .iter()
                         .rev()
-                        .map(|argument| self.compile(argument, local_variables))
+                        .map(|argument| self.compile(argument))
                         .collect::<Result<_, _>>()?,
                 )
                 .into())
@@ -49,28 +46,18 @@ impl<'a> ExpressionCompiler<'a> {
                 vec![],
             )
             .into()),
-            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
-                record
-                    .elements()
-                    .iter()
-                    .map(|(_, expression)| self.compile(expression, local_variables))
-                    .collect::<Result<_, _>>()?,
-            )
-            .into()),
-            ast::Expression::RecordElementOperator(_) => unimplemented!(),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
-                self.compile(if_.condition(), local_variables)?,
+                self.compile(if_.condition())?,
                 vec![
                     ssf::ir::AlgebraicAlternative::new(
                         ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), 0),
                         vec![],
-                        self.compile(if_.else_(), local_variables)?,
+                        self.compile(if_.else_())?,
                     ),
                     ssf::ir::AlgebraicAlternative::new(
                         ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), 1),
                         vec![],
-                        self.compile(if_.then(), local_variables)?,
+                        self.compile(if_.then())?,
                     ),
                 ],
                 None,
@@ -78,11 +65,9 @@ impl<'a> ExpressionCompiler<'a> {
             .into()),
             ast::Expression::Let(let_) => match let_.definitions()[0] {
                 ast::Definition::FunctionDefinition(_) => {
-                    Ok(self.compile_let_functions(let_, local_variables)?.into())
+                    Ok(self.compile_let_functions(let_)?.into())
                 }
-                ast::Definition::ValueDefinition(_) => {
-                    Ok(self.compile_let_values(let_, local_variables)?.into())
-                }
+                ast::Definition::ValueDefinition(_) => Ok(self.compile_let_values(let_)?.into()),
             },
             ast::Expression::None(_) => Ok(ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
@@ -94,10 +79,20 @@ impl<'a> ExpressionCompiler<'a> {
             }
             ast::Expression::Operation(operation) => Ok(ssf::ir::Operation::new(
                 operation.operator().into(),
-                self.compile(operation.lhs(), local_variables)?,
-                self.compile(operation.rhs(), local_variables)?,
+                self.compile(operation.lhs())?,
+                self.compile(operation.rhs())?,
             )
             .into()),
+            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, expression)| self.compile(expression))
+                    .collect::<Result<_, _>>()?,
+            )
+            .into()),
+            ast::Expression::RecordElementOperator(_) => unimplemented!(),
             ast::Expression::Variable(variable) => Ok(ssf::ir::Expression::Variable(
                 ssf::ir::Variable::new(variable.name()),
             )),
@@ -107,7 +102,6 @@ impl<'a> ExpressionCompiler<'a> {
     fn compile_let_functions(
         &self,
         let_: &ast::Let,
-        local_variables: &HashMap<String, Type>,
     ) -> Result<ssf::ir::LetFunctions, CompileError> {
         let function_definitions = let_
             .definitions()
@@ -121,17 +115,6 @@ impl<'a> ExpressionCompiler<'a> {
                 }
             })
             .collect::<Result<Vec<&ast::FunctionDefinition>, _>>()?;
-
-        let variables = &local_variables
-            .iter()
-            .map(|(name, type_)| (name.clone(), type_.clone()))
-            .chain(function_definitions.iter().map(|function_definition| {
-                (
-                    function_definition.name().into(),
-                    function_definition.type_().clone(),
-                )
-            }))
-            .collect::<HashMap<_, _>>();
 
         Ok(ssf::ir::LetFunctions::new(
             function_definitions
@@ -155,33 +138,16 @@ impl<'a> ExpressionCompiler<'a> {
                                 )
                             })
                             .collect(),
-                        self.compile(
-                            function_definition.body(),
-                            &variables
-                                .iter()
-                                .map(|(name, type_)| (name.clone(), type_.clone()))
-                                .chain(
-                                    function_definition
-                                        .arguments()
-                                        .iter()
-                                        .zip(type_.arguments())
-                                        .map(|(argument, type_)| (argument.clone(), type_.clone())),
-                                )
-                                .collect(),
-                        )?,
+                        self.compile(function_definition.body())?,
                         self.type_compiler.compile_value(type_.last_result()),
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
-            self.compile(let_.expression(), variables)?,
+            self.compile(let_.expression())?,
         ))
     }
 
-    fn compile_let_values(
-        &self,
-        let_: &ast::Let,
-        local_variables: &HashMap<String, Type>,
-    ) -> Result<ssf::ir::LetValues, CompileError> {
+    fn compile_let_values(&self, let_: &ast::Let) -> Result<ssf::ir::LetValues, CompileError> {
         let value_definitions = let_
             .definitions()
             .iter()
@@ -195,29 +161,18 @@ impl<'a> ExpressionCompiler<'a> {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let variables = &local_variables
-            .iter()
-            .map(|(name, type_)| (name.clone(), type_.clone()))
-            .chain(value_definitions.iter().map(|value_definition| {
-                (
-                    value_definition.name().into(),
-                    value_definition.type_().clone(),
-                )
-            }))
-            .collect::<HashMap<_, _>>();
-
         Ok(ssf::ir::LetValues::new(
             value_definitions
                 .iter()
                 .map(|value_definition| {
                     Ok(ssf::ir::ValueDefinition::new(
                         value_definition.name(),
-                        self.compile(value_definition.body(), variables)?,
+                        self.compile(value_definition.body())?,
                         self.type_compiler.compile_value(value_definition.type_()),
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
-            self.compile(let_.expression(), variables)?,
+            self.compile(let_.expression())?,
         ))
     }
 }
@@ -229,7 +184,7 @@ mod tests {
     use crate::ast::*;
     use crate::debug::SourceInformation;
     use crate::types;
-    use std::collections::HashMap;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn compile_operation() {
@@ -242,7 +197,6 @@ mod tests {
                     SourceInformation::dummy()
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::Operation::new(ssf::ir::Operator::Add, 1.0, 2.0).into())
         );
@@ -263,7 +217,6 @@ mod tests {
                     Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::LetValues::new(
                 vec![ssf::ir::ValueDefinition::new(
@@ -297,7 +250,6 @@ mod tests {
                     Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::LetFunctions::new(
                 vec![ssf::ir::FunctionDefinition::new(
@@ -336,7 +288,6 @@ mod tests {
                     Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::LetFunctions::new(
                 vec![ssf::ir::FunctionDefinition::new(
@@ -388,7 +339,6 @@ mod tests {
                     Variable::new("x", SourceInformation::dummy())
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::LetFunctions::new(
                 vec![ssf::ir::FunctionDefinition::new(
@@ -440,7 +390,6 @@ mod tests {
                     )
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::LetValues::new(
                 vec![ssf::ir::ValueDefinition::new(
@@ -476,7 +425,6 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::AlgebraicCase::new(
                 ssf::ir::ConstructorApplication::new(
@@ -504,6 +452,7 @@ mod tests {
     #[test]
     fn compile_records() {
         let type_ = types::Record::new(
+            "Foo",
             vec![(
                 "foo".into(),
                 types::Number::new(SourceInformation::dummy()).into(),
@@ -530,7 +479,6 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                &HashMap::new()
             ),
             Ok(ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(

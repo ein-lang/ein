@@ -858,13 +858,14 @@ mod tests {
         );
     }
 
-    mod records {
+    mod record {
         use super::*;
         use pretty_assertions::assert_eq;
 
         #[test]
         fn infer_types_of_empty_records() {
-            let record_type = types::Record::new(Default::default(), SourceInformation::dummy());
+            let record_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
             let module = Module::from_definitions_and_type_definitions(
@@ -887,6 +888,7 @@ mod tests {
         #[test]
         fn infer_types_of_records_with_single_keys() {
             let record_type = types::Record::new(
+                "Foo",
                 vec![(
                     "foo".into(),
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -921,7 +923,8 @@ mod tests {
 
         #[test]
         fn fail_to_infer_types_of_records_due_to_wrong_number_of_keys() {
-            let record_type = types::Record::new(Default::default(), SourceInformation::dummy());
+            let record_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
             let module = Module::from_definitions_and_type_definitions(
@@ -955,6 +958,7 @@ mod tests {
         #[test]
         fn fail_to_infer_types_of_records_due_to_wrong_member_types() {
             let record_type = types::Record::new(
+                "Foo",
                 vec![(
                     "foo".into(),
                     types::None::new(SourceInformation::dummy()).into(),
@@ -980,6 +984,44 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                     reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+            assert_eq!(
+                infer_types(&module),
+                Err(TypeInferenceError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_records_due_to_unmatched_identity() {
+            let foo_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
+            let bar_type =
+                types::Record::new("Bar", Default::default(), SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![
+                    TypeDefinition::new("Foo", foo_type),
+                    TypeDefinition::new("Bar", bar_type),
+                ],
+                vec![ValueDefinition::new(
+                    "x",
+                    Record::new(
+                        types::Reference::new("Foo", SourceInformation::dummy()),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Reference::new("Bar", SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into()],

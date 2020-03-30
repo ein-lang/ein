@@ -37,7 +37,15 @@ impl TypeInferrer {
 
         self.collect_equations(module)?;
 
-        Ok(module.substitute_type_variables(&self.reduce_equations()?))
+        let substitutions = self.reduce_equations()?;
+
+        Ok(module.convert_types(&mut |type_| {
+            if let Type::Variable(variable) = type_ {
+                substitutions[&variable.id()].clone()
+            } else {
+                type_.clone()
+            }
+        }))
     }
 
     fn collect_equations(&mut self, module: &Module) -> Result<(), TypeInferenceError> {
@@ -152,24 +160,6 @@ impl TypeInferrer {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
-            Expression::Record(record) => {
-                let type_ = types::Record::new(
-                    record
-                        .elements()
-                        .iter()
-                        .map(|(key, expression)| {
-                            Ok((key.clone(), self.infer_expression(expression, variables)?))
-                        })
-                        .collect::<Result<_, _>>()?,
-                    record.source_information().clone(),
-                );
-
-                self.equation_set
-                    .add(Equation::new(record.type_().clone(), type_));
-
-                Ok(record.type_().clone())
-            }
-            Expression::RecordElementOperator(_) => unimplemented!(),
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.equation_set.add(Equation::new(
@@ -258,6 +248,24 @@ impl TypeInferrer {
 
                 Ok(type_)
             }
+            Expression::Record(record) => {
+                let type_ = types::AnonymousRecord::new(
+                    record
+                        .elements()
+                        .iter()
+                        .map(|(key, expression)| {
+                            Ok((key.clone(), self.infer_expression(expression, variables)?))
+                        })
+                        .collect::<Result<_, _>>()?,
+                    record.source_information().clone(),
+                );
+
+                self.equation_set
+                    .add(Equation::new(record.type_().clone(), type_));
+
+                Ok(record.type_().clone())
+            }
+            Expression::RecordElementOperator(_) => unimplemented!(),
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
                     TypeInferenceError::VariableNotFound(
@@ -281,63 +289,67 @@ impl TypeInferrer {
                         }
                     }
 
-                    for (_, substituted_type) in substitutions.iter_mut() {
-                        *substituted_type =
-                            substituted_type.clone().substitute_variable(variable, rhs);
-                    }
-
-                    for equation in self.equation_set.iter_mut() {
-                        *equation = Equation::new(
-                            equation.lhs().substitute_variable(variable, rhs),
-                            equation.rhs().substitute_variable(variable, rhs),
-                        )
-                    }
-
-                    substitutions.insert(variable.id(), rhs.clone());
+                    self.substitute_variable(variable, rhs, &mut substitutions);
                 }
-                (lhs, Type::Variable(variable)) => self
-                    .equation_set
-                    .add(Equation::new(variable.clone(), lhs.clone())),
-                (Type::Reference(reference), other) | (other, Type::Reference(reference)) => {
-                    self.equation_set.add(Equation::new(
-                        self.environment
-                            .get(reference.name())
-                            .ok_or_else(|| TypeInferenceError::TypeNotFound {
-                                reference: reference.clone(),
-                            })?
-                            .clone(),
-                        other.clone(),
-                    ))
+                (lhs, Type::Variable(variable)) => {
+                    self.substitute_variable(variable, lhs, &mut substitutions);
                 }
-                (Type::Function(function1), Type::Function(function2)) => {
+                (Type::Reference(reference), other) => self.equation_set.add(Equation::new(
+                    self.environment
+                        .get(reference.name())
+                        .ok_or_else(|| TypeInferenceError::TypeNotFound {
+                            reference: reference.clone(),
+                        })?
+                        .clone(),
+                    other.clone(),
+                )),
+                (one, Type::Reference(reference)) => self.equation_set.add(Equation::new(
+                    one.clone(),
+                    self.environment
+                        .get(reference.name())
+                        .ok_or_else(|| TypeInferenceError::TypeNotFound {
+                            reference: reference.clone(),
+                        })?
+                        .clone(),
+                )),
+                (Type::Function(one), Type::Function(other)) => {
+                    // TODO Handle covariance and contravariance correctly.
                     self.equation_set.add(Equation::new(
-                        function1.argument().clone(),
-                        function2.argument().clone(),
+                        one.argument().clone(),
+                        other.argument().clone(),
                     ));
-                    self.equation_set.add(Equation::new(
-                        function1.result().clone(),
-                        function2.result().clone(),
-                    ));
+                    self.equation_set
+                        .add(Equation::new(one.result().clone(), other.result().clone()));
                 }
                 (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
                 (Type::Record(one), Type::Record(other)) => {
-                    let create_error = || {
-                        TypeInferenceError::TypesNotMatched(
+                    if one.name() != other.name() {
+                        return Err(TypeInferenceError::TypesNotMatched(
                             one.source_information().clone(),
                             other.source_information().clone(),
-                        )
+                        ));
                     };
+                }
+                (Type::Record(record), Type::AnonymousRecord(anonymous_record)) => {
+                    let error = TypeInferenceError::TypesNotMatched(
+                        record.source_information().clone(),
+                        anonymous_record.source_information().clone(),
+                    );
 
-                    if one.elements().len() != other.elements().len() {
-                        return Err(create_error());
+                    if record.elements().len() != anonymous_record.elements().len() {
+                        return Err(error);
                     }
 
-                    for (key, type_) in one.elements() {
+                    for (key, type_) in record.elements() {
                         self.equation_set.add(Equation::new(
                             type_.clone(),
-                            other.elements().get(key).ok_or_else(create_error)?.clone(),
+                            anonymous_record
+                                .elements()
+                                .get(key)
+                                .ok_or_else(|| error.clone())?
+                                .clone(),
                         ));
                     }
                 }
@@ -351,5 +363,27 @@ impl TypeInferrer {
         }
 
         Ok(substitutions)
+    }
+
+    fn substitute_variable(
+        &mut self,
+        variable: &types::Variable,
+        type_: &Type,
+        substitutions: &mut HashMap<usize, Type>,
+    ) {
+        for (_, substituted_type) in substitutions.iter_mut() {
+            *substituted_type = substituted_type
+                .clone()
+                .substitute_variable(variable, type_);
+        }
+
+        for equation in self.equation_set.iter_mut() {
+            *equation = Equation::new(
+                equation.lhs().substitute_variable(variable, type_),
+                equation.rhs().substitute_variable(variable, type_),
+            )
+        }
+
+        substitutions.insert(variable.id(), type_.clone());
     }
 }

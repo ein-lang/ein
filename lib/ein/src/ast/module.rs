@@ -1,11 +1,11 @@
 use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
+use super::let_::Let;
 use super::module_interface::ModuleInterface;
 use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
@@ -89,7 +89,10 @@ impl Module {
         &self.imported_modules
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+    pub fn convert_definitions(
+        &self,
+        mut convert: &mut impl FnMut(&Definition) -> Definition,
+    ) -> Self {
         Self::new(
             self.path.clone(),
             self.export.clone(),
@@ -97,20 +100,21 @@ impl Module {
             self.type_definitions.clone(),
             self.definitions
                 .iter()
-                .map(|definition| definition.substitute_type_variables(substitutions))
-                .collect::<Vec<_>>(),
-        )
-    }
+                .map(|definition| {
+                    let definition = definition.convert_expressions(&mut |expression| {
+                        if let Expression::Let(let_) = expression {
+                            Let::new(
+                                let_.definitions().iter().map(&mut convert).collect(),
+                                let_.expression().clone(),
+                            )
+                            .into()
+                        } else {
+                            expression.clone()
+                        }
+                    });
 
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.path.clone(),
-            self.export.clone(),
-            self.imported_modules.clone(),
-            self.type_definitions.clone(),
-            self.definitions
-                .iter()
-                .map(|definition| definition.convert_definitions(convert))
+                    convert(&definition)
+                })
                 .collect(),
         )
     }

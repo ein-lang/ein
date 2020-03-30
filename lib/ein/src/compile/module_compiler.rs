@@ -2,7 +2,6 @@ use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
-use std::collections::HashMap;
 
 pub struct ModuleCompiler<'a> {
     module: &'a ast::Module,
@@ -65,23 +64,7 @@ impl<'a> ModuleCompiler<'a> {
                 .zip(core_type.arguments())
                 .map(|(name, type_)| ssf::ir::Argument::new(name.clone(), type_.clone()))
                 .collect::<Vec<_>>(),
-            ExpressionCompiler::new(&self.type_compiler).compile(
-                function_definition.body(),
-                &function_definition
-                    .arguments()
-                    .iter()
-                    .zip(
-                        // Reference types are resolved to bare function types
-                        // by desugaring already here.
-                        function_definition
-                            .type_()
-                            .to_function()
-                            .expect("function type")
-                            .arguments(),
-                    )
-                    .map(|(name, type_)| (name.clone(), type_.clone()))
-                    .collect(),
-            )?,
+            ExpressionCompiler::new(&self.type_compiler).compile(function_definition.body())?,
             core_type.result().clone(),
         ))
     }
@@ -92,8 +75,7 @@ impl<'a> ModuleCompiler<'a> {
     ) -> Result<ssf::ir::ValueDefinition, CompileError> {
         Ok(ssf::ir::ValueDefinition::new(
             value_definition.name(),
-            ExpressionCompiler::new(&self.type_compiler)
-                .compile(value_definition.body(), &HashMap::new())?,
+            ExpressionCompiler::new(&self.type_compiler).compile(value_definition.body())?,
             self.type_compiler.compile_value(value_definition.type_()),
         ))
     }

@@ -1,8 +1,6 @@
-use super::definition::Definition;
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -37,22 +35,6 @@ impl Application {
         &self.source_information
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            self.function.substitute_type_variables(substitutions),
-            self.argument.substitute_type_variables(substitutions),
-            self.source_information.clone(),
-        )
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.function.convert_definitions(convert),
-            self.argument.convert_definitions(convert),
-            self.source_information.clone(),
-        )
-    }
-
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         Self::new(
             self.function.convert_expressions(convert),
@@ -65,14 +47,6 @@ impl Application {
         Self::new(
             self.function.convert_types(convert),
             self.argument.convert_types(convert),
-            self.source_information.clone(),
-        )
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        Self::new(
-            self.function.resolve_reference_types(environment),
-            self.argument.resolve_reference_types(environment),
             self.source_information.clone(),
         )
     }
