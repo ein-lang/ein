@@ -267,17 +267,11 @@ impl TypeInferrer {
             }
             Expression::RecordElementOperator(record_element_operator) => {
                 let source_information = record_element_operator.source_information();
-
                 let result = types::Variable::new(source_information.clone());
-                let function = types::Function::new(
-                    record_element_operator.type_().clone(),
-                    result.clone(),
-                    source_information.clone(),
-                );
 
                 self.equation_set.add(Equation::new(
                     types::AnonymousRecord::new(
-                        vec![(record_element_operator.key().into(), result.into())]
+                        vec![(record_element_operator.key().into(), result.clone().into())]
                             .into_iter()
                             .collect(),
                         source_information.clone(),
@@ -285,7 +279,12 @@ impl TypeInferrer {
                     record_element_operator.type_().clone(),
                 ));
 
-                Ok(function.into())
+                Ok(types::Function::new(
+                    record_element_operator.type_().clone(),
+                    result,
+                    source_information.clone(),
+                )
+                .into())
             }
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
