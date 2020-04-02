@@ -1,20 +1,18 @@
 use super::reference_type_resolver::ReferenceTypeResolver;
-use crate::ast;
 use crate::types::{self, Type};
 use std::collections::HashMap;
-use std::rc::Rc;
 
 #[derive(Debug)]
-pub struct TypeCompiler {
+pub struct TypeCompiler<'a> {
     reference_indices: HashMap<String, usize>,
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    reference_type_resolver: &'a ReferenceTypeResolver,
 }
 
-impl TypeCompiler {
-    pub fn new(module: &ast::Module) -> Self {
+impl<'a> TypeCompiler<'a> {
+    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
         Self {
             reference_indices: HashMap::new(),
-            reference_type_resolver: ReferenceTypeResolver::new(module).into(),
+            reference_type_resolver,
         }
     }
 
@@ -84,7 +82,7 @@ mod tests {
     #[test]
     fn compile_number_type() {
         assert_eq!(
-            TypeCompiler::new(&Module::dummy())
+            TypeCompiler::new(&ReferenceTypeResolver::new(&Module::dummy()))
                 .compile(&types::Number::new(SourceInformation::dummy()).into()),
             ssf::types::Primitive::Float64.into()
         );
@@ -93,7 +91,7 @@ mod tests {
     #[test]
     fn compile_function_type() {
         assert_eq!(
-            TypeCompiler::new(&Module::dummy()).compile(
+            TypeCompiler::new(&ReferenceTypeResolver::new(&Module::dummy())).compile(
                 &types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),

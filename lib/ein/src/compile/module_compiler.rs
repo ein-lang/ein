@@ -5,14 +5,20 @@ use crate::ast;
 
 pub struct ModuleCompiler<'a> {
     module: &'a ast::Module,
-    type_compiler: TypeCompiler,
+    expression_compiler: &'a ExpressionCompiler<'a>,
+    type_compiler: &'a TypeCompiler<'a>,
 }
 
 impl<'a> ModuleCompiler<'a> {
-    pub fn new(module: &'a ast::Module) -> Self {
+    pub fn new(
+        module: &'a ast::Module,
+        expression_compiler: &'a ExpressionCompiler,
+        type_compiler: &'a TypeCompiler,
+    ) -> Self {
         Self {
             module,
-            type_compiler: TypeCompiler::new(module),
+            expression_compiler,
+            type_compiler,
         }
     }
 
@@ -64,7 +70,8 @@ impl<'a> ModuleCompiler<'a> {
                 .zip(core_type.arguments())
                 .map(|(name, type_)| ssf::ir::Argument::new(name.clone(), type_.clone()))
                 .collect::<Vec<_>>(),
-            ExpressionCompiler::new(&self.type_compiler).compile(function_definition.body())?,
+            self.expression_compiler
+                .compile(function_definition.body())?,
             core_type.result().clone(),
         ))
     }
@@ -75,7 +82,7 @@ impl<'a> ModuleCompiler<'a> {
     ) -> Result<ssf::ir::ValueDefinition, CompileError> {
         Ok(ssf::ir::ValueDefinition::new(
             value_definition.name(),
-            ExpressionCompiler::new(&self.type_compiler).compile(value_definition.body())?,
+            self.expression_compiler.compile(value_definition.body())?,
             self.type_compiler.compile_value(value_definition.type_()),
         ))
     }
