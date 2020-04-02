@@ -280,7 +280,7 @@ impl TypeInferrer {
                     argument.clone(),
                 ));
                 self.equation_set
-                    .add(Equation::new(operation.type_().clone(), argument.clone()));
+                    .add(Equation::new(operation.type_().clone(), argument));
 
                 Ok(result.into())
             }

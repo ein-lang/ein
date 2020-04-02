@@ -30,7 +30,7 @@ pub fn desugar_record_element_operators(module: &Module) -> Module {
             )
             .into()
         }
-        _ => expression.clone().into(),
+        _ => expression.clone(),
     })
 }
 

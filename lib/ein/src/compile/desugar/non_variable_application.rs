@@ -8,7 +8,7 @@ pub fn desugar_non_variable_applications(module: &Module) -> Module {
     module.convert_expressions(&mut |expression| match expression {
         Expression::Application(application) => match application.function() {
             Expression::Application(_) | Expression::Variable(_) => application.clone().into(),
-            // Treat let expressions in a special way to omit extra let expresssions.
+            // Treat let expressions in a special way to omit extra let expressions.
             Expression::Let(let_) => Let::new(
                 let_.definitions().to_vec(),
                 Application::new(
