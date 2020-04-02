@@ -7,14 +7,25 @@ pub fn desugar_non_variable_applications(module: &Module) -> Module {
 
     module.convert_expressions(&mut |expression| match expression {
         Expression::Application(application) => match application.function() {
-            Expression::Let(let_) => {
+            Expression::Application(_) | Expression::Variable(_) => application.clone().into(),
+            // Treat let expressions in a special way to omit extra let expresssions.
+            Expression::Let(let_) => Let::new(
+                let_.definitions().to_vec(),
+                Application::new(
+                    let_.expression().clone(),
+                    application.argument().clone(),
+                    application.source_information().clone(),
+                ),
+            )
+            .into(),
+            function => {
                 let function_name = name_generator.generate();
                 let source_information = application.source_information();
 
                 Let::new(
                     vec![ValueDefinition::new(
                         function_name.clone(),
-                        let_.clone(),
+                        function.clone(),
                         types::Unknown::new(source_information.clone()),
                         source_information.clone(),
                     )
@@ -27,7 +38,6 @@ pub fn desugar_non_variable_applications(module: &Module) -> Module {
                 )
                 .into()
             }
-            _ => application.clone().into(),
         },
         _ => expression.clone(),
     })
@@ -38,6 +48,7 @@ mod tests {
     use super::*;
     use crate::debug::*;
     use crate::types;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn convert_non_variable_applications() {
@@ -72,29 +83,86 @@ mod tests {
             Module::from_definitions(vec![ValueDefinition::new(
                 "x",
                 Let::new(
-                    vec![ValueDefinition::new(
-                        "generated_function_0",
-                        Let::new(
-                            vec![FunctionDefinition::new(
-                                "f",
-                                vec!["y".into()],
-                                Variable::new("y", SourceInformation::dummy()),
-                                types::Function::new(
-                                    types::Number::new(SourceInformation::dummy()),
-                                    types::Number::new(SourceInformation::dummy()),
-                                    SourceInformation::dummy()
-                                ),
-                                SourceInformation::dummy(),
-                            )
-                            .into()],
-                            Variable::new("f", SourceInformation::dummy())
+                    vec![FunctionDefinition::new(
+                        "f",
+                        vec!["y".into()],
+                        Variable::new("y", SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
                         ),
-                        types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
                     .into()],
                     Application::new(
-                        Variable::new("generated_function_0", SourceInformation::dummy()),
+                        Variable::new("f", SourceInformation::dummy()),
+                        Variable::new("z", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        );
+    }
+
+    #[test]
+    fn convert_non_variable_applications_wrapped_by_another_applications() {
+        assert_eq!(
+            desugar_non_variable_applications(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Application::new(
+                            Let::new(
+                                vec![FunctionDefinition::new(
+                                    "f",
+                                    vec!["y".into()],
+                                    Variable::new("y", SourceInformation::dummy()),
+                                    types::Function::new(
+                                        types::Number::new(SourceInformation::dummy()),
+                                        types::Number::new(SourceInformation::dummy()),
+                                        SourceInformation::dummy()
+                                    ),
+                                    SourceInformation::dummy(),
+                                )
+                                .into()],
+                                Variable::new("f", SourceInformation::dummy())
+                            ),
+                            Variable::new("z", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        Variable::new("z", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])),
+            Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Let::new(
+                    vec![FunctionDefinition::new(
+                        "f",
+                        vec!["y".into()],
+                        Variable::new("y", SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into()],
+                    Application::new(
+                        Application::new(
+                            Variable::new("f", SourceInformation::dummy()),
+                            Variable::new("z", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
                         Variable::new("z", SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
