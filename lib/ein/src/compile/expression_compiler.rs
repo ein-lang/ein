@@ -24,53 +24,28 @@ impl<'a> ExpressionCompiler<'a> {
         expression: &ast::Expression,
     ) -> Result<ssf::ir::Expression, CompileError> {
         match expression {
-            ast::Expression::Application(application) => match application.function() {
-                ast::Expression::RecordElementOperator(operator) => {
-                    let record_type = self.reference_type_resolver.resolve(operator.type_());
+            ast::Expression::Application(application) => {
+                let mut function = application.function();
+                let mut arguments = vec![application.argument()];
 
-                    Ok(ssf::ir::AlgebraicCase::new(
-                        self.compile(application.argument())?,
-                        vec![ssf::ir::AlgebraicAlternative::new(
-                            ssf::ir::Constructor::new(
-                                self.type_compiler.compile_record(operator.type_()),
-                                0,
-                            ),
-                            record_type
-                                .to_record()
-                                .unwrap()
-                                .elements()
-                                .keys()
-                                .map(|key| format!("${}", key))
-                                .collect(),
-                            ssf::ir::Variable::new(format!("${}", operator.key())),
-                        )],
-                        None,
-                    )
-                    .into())
+                while let ast::Expression::Application(application) = &*function {
+                    function = application.function();
+                    arguments.push(application.argument());
                 }
-                _ => {
-                    let mut function = application.function();
-                    let mut arguments = vec![application.argument()];
 
-                    while let ast::Expression::Application(application) = &*function {
-                        function = application.function();
-                        arguments.push(application.argument());
-                    }
-
-                    Ok(ssf::ir::FunctionApplication::new(
-                        self.compile(function)?
-                            .to_variable()
-                            .expect("variable")
-                            .clone(),
-                        arguments
-                            .iter()
-                            .rev()
-                            .map(|argument| self.compile(argument))
-                            .collect::<Result<_, _>>()?,
-                    )
-                    .into())
-                }
-            },
+                Ok(ssf::ir::FunctionApplication::new(
+                    self.compile(function)?
+                        .to_variable()
+                        .expect("variable")
+                        .clone(),
+                    arguments
+                        .iter()
+                        .rev()
+                        .map(|argument| self.compile(argument))
+                        .collect::<Result<_, _>>()?,
+                )
+                .into())
+            }
             ast::Expression::Boolean(boolean) => Ok(ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(
                     self.type_compiler.compile_boolean(),
@@ -125,7 +100,29 @@ impl<'a> ExpressionCompiler<'a> {
                     .collect::<Result<_, _>>()?,
             )
             .into()),
-            // Compiled as function applications
+            ast::Expression::RecordElementOperation(operation) => {
+                let record_type = self.reference_type_resolver.resolve(operation.type_());
+
+                Ok(ssf::ir::AlgebraicCase::new(
+                    self.compile(operation.argument())?,
+                    vec![ssf::ir::AlgebraicAlternative::new(
+                        ssf::ir::Constructor::new(
+                            self.type_compiler.compile_record(operation.type_()),
+                            0,
+                        ),
+                        record_type
+                            .to_record()
+                            .unwrap()
+                            .elements()
+                            .keys()
+                            .map(|key| format!("${}", key))
+                            .collect(),
+                        ssf::ir::Variable::new(format!("${}", operation.key())),
+                    )],
+                    None,
+                )
+                .into())
+            }
             ast::Expression::RecordElementOperator(_) => unreachable!(),
             ast::Expression::Variable(variable) => {
                 Ok(ssf::ir::Variable::new(variable.name()).into())
@@ -568,7 +565,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_record_element_operators() {
+    fn compile_record_element_operations() {
         let type_ = types::Record::new(
             "Foo",
             vec![(
@@ -588,12 +585,8 @@ mod tests {
 
         assert_eq!(
             ExpressionCompiler::new(&type_compiler, &reference_type_resolver).compile(
-                &Application::new(
-                    RecordElementOperator::with_type(
-                        "foo",
-                        types::Reference::new("Foo", SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
+                &RecordElementOperation::new(
+                    "foo",
                     Record::new(
                         type_.clone(),
                         vec![(
@@ -604,7 +597,8 @@ mod tests {
                         .collect(),
                         SourceInformation::dummy(),
                     ),
-                    SourceInformation::dummy(),
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
                 .into(),
             ),

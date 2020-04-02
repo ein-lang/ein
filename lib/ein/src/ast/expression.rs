@@ -6,6 +6,7 @@ use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
 use super::record::Record;
+use super::record_element_operation::RecordElementOperation;
 use super::record_element_operator::RecordElementOperator;
 use super::variable::Variable;
 use crate::types::Type;
@@ -21,6 +22,7 @@ pub enum Expression {
     Number(Number),
     Operation(Operation),
     RecordElementOperator(RecordElementOperator),
+    RecordElementOperation(RecordElementOperation),
     Variable(Variable),
 }
 
@@ -32,6 +34,9 @@ impl Expression {
             Self::If(if_) => if_.convert_expressions(convert).into(),
             Self::Let(let_) => let_.convert_expressions(convert).into(),
             Self::Operation(operation) => operation.convert_expressions(convert).into(),
+            Self::RecordElementOperation(operation) => {
+                operation.convert_expressions(convert).into()
+            }
             Self::Boolean(_)
             | Self::None(_)
             | Self::Number(_)
@@ -49,8 +54,12 @@ impl Expression {
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            Self::RecordElementOperator(operator) => operator.convert_types(convert).into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::RecordElementOperation(operation) => operation.convert_types(convert).into(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::RecordElementOperator(_)
+            | Self::Variable(_) => self.clone(),
         }
     }
 }
@@ -106,6 +115,12 @@ impl From<Operation> for Expression {
 impl From<RecordElementOperator> for Expression {
     fn from(operator: RecordElementOperator) -> Expression {
         Self::RecordElementOperator(operator)
+    }
+}
+
+impl From<RecordElementOperation> for Expression {
+    fn from(operation: RecordElementOperation) -> Expression {
+        Self::RecordElementOperation(operation)
     }
 }
 

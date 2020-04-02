@@ -265,27 +265,26 @@ impl TypeInferrer {
 
                 Ok(record.type_().clone())
             }
-            Expression::RecordElementOperator(record_element_operator) => {
-                let source_information = record_element_operator.source_information();
+            Expression::RecordElementOperation(operation) => {
+                let source_information = operation.source_information();
+                let argument = self.infer_expression(operation.argument(), variables)?;
                 let result = types::Variable::new(source_information.clone());
 
                 self.equation_set.add(Equation::new(
                     types::AnonymousRecord::new(
-                        vec![(record_element_operator.key().into(), result.clone().into())]
+                        vec![(operation.key().into(), result.clone().into())]
                             .into_iter()
                             .collect(),
                         source_information.clone(),
                     ),
-                    record_element_operator.type_().clone(),
+                    argument.clone(),
                 ));
+                self.equation_set
+                    .add(Equation::new(operation.type_().clone(), argument.clone()));
 
-                Ok(types::Function::new(
-                    record_element_operator.type_().clone(),
-                    result,
-                    source_information.clone(),
-                )
-                .into())
+                Ok(result.into())
             }
+            Expression::RecordElementOperator(_) => unreachable!(),
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
                     TypeInferenceError::VariableNotFound(
