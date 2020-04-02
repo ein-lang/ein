@@ -270,15 +270,20 @@ impl TypeInferrer {
 
                 let result = types::Variable::new(source_information.clone());
                 let function = types::Function::new(
+                    record_element_operator.type_().clone(),
+                    result.clone(),
+                    source_information.clone(),
+                );
+
+                self.equation_set.add(Equation::new(
                     types::AnonymousRecord::new(
-                        vec![(record_element_operator.key().into(), result.clone().into())]
+                        vec![(record_element_operator.key().into(), result.into())]
                             .into_iter()
                             .collect(),
                         source_information.clone(),
                     ),
-                    result,
-                    source_information.clone(),
-                );
+                    record_element_operator.type_().clone(),
+                ));
 
                 Ok(function.into())
             }

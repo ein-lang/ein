@@ -49,11 +49,8 @@ impl Expression {
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            Self::Boolean(_)
-            | Self::None(_)
-            | Self::Number(_)
-            | Self::RecordElementOperator(_)
-            | Self::Variable(_) => self.clone(),
+            Self::RecordElementOperator(operator) => operator.convert_types(convert).into(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 }
