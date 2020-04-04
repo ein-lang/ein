@@ -1,11 +1,11 @@
 pub mod ast;
 mod compile;
-pub mod debug;
+mod debug;
 mod package;
 mod parse;
 mod path;
 mod serialize;
-pub mod types;
+mod types;
 
 pub use compile::compile;
 pub use package::Package;
