@@ -369,27 +369,6 @@ impl TypeInferrer {
                         ));
                     }
                 }
-                (Type::AnonymousRecord(anonymous_record), Type::Record(record)) => {
-                    let error = TypeInferenceError::TypesNotMatched(
-                        anonymous_record.source_information().clone(),
-                        record.source_information().clone(),
-                    );
-
-                    if anonymous_record.elements().len() > record.elements().len() {
-                        return Err(error);
-                    }
-
-                    for (key, type_) in anonymous_record.elements() {
-                        self.equation_set.add(Equation::new(
-                            type_.clone(),
-                            record
-                                .elements()
-                                .get(key)
-                                .ok_or_else(|| error.clone())?
-                                .clone(),
-                        ));
-                    }
-                }
                 (lhs, rhs) => {
                     return Err(TypeInferenceError::TypesNotMatched(
                         lhs.source_information().clone(),
