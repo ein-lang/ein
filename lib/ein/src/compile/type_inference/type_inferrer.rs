@@ -1,6 +1,6 @@
 use super::equation::*;
-use super::equation_set::EquationSet;
 use super::error::*;
+use super::subsumption_set::SubsumptionSet;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::*;
@@ -8,14 +8,14 @@ use std::collections::*;
 #[derive(Debug)]
 pub struct TypeInferrer {
     environment: HashMap<String, Type>,
-    equation_set: EquationSet,
+    subsumption_set: SubsumptionSet,
 }
 
 impl TypeInferrer {
     pub fn new() -> Self {
         Self {
             environment: HashMap::new(),
-            equation_set: EquationSet::new(),
+            subsumption_set: SubsumptionSet::new(),
         }
     }
 
@@ -101,14 +101,14 @@ impl TypeInferrer {
             let argument_type: Type = types::Variable::new(source_information.clone()).into();
             let result_type: Type = types::Variable::new(source_information.clone()).into();
 
-            self.equation_set.add(Equation::new(
-                type_,
+            self.subsumption_set.add_equation(
                 types::Function::new(
                     argument_type.clone(),
                     result_type.clone(),
                     source_information.clone(),
                 ),
-            ));
+                type_,
+            );
 
             variables.insert(argument_name.into(), argument_type);
 
@@ -116,7 +116,7 @@ impl TypeInferrer {
         }
 
         let body_type = self.infer_expression(function_definition.body(), &variables)?;
-        self.equation_set.add(Equation::new(body_type, type_));
+        self.subsumption_set.add_subsumption(body_type, type_);
 
         Ok(())
     }
@@ -128,8 +128,8 @@ impl TypeInferrer {
     ) -> Result<(), TypeInferenceError> {
         let type_ = self.infer_expression(value_definition.body(), &variables)?;
 
-        self.equation_set
-            .add(Equation::new(type_, value_definition.type_().clone()));
+        self.subsumption_set
+            .add_subsumption(type_, value_definition.type_().clone());
 
         Ok(())
     }
@@ -146,14 +146,14 @@ impl TypeInferrer {
                 let result: Type =
                     types::Variable::new(application.source_information().clone()).into();
 
-                self.equation_set.add(Equation::new(
+                self.subsumption_set.add_subsumption(
                     function,
                     types::Function::new(
                         argument,
                         result.clone(),
                         application.source_information().clone(),
                     ),
-                ));
+                );
 
                 Ok(result)
             }
@@ -162,17 +162,19 @@ impl TypeInferrer {
             }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
-                self.equation_set.add(Equation::new(
+                self.subsumption_set.add_equation(
                     condition,
                     types::Boolean::new(if_.source_information().clone()),
-                ));
+                );
 
                 let then = self.infer_expression(if_.then(), variables)?;
                 let else_ = self.infer_expression(if_.else_(), variables)?;
+                let result = types::Variable::new(if_.source_information().clone());
 
-                self.equation_set.add(Equation::new(then.clone(), else_));
+                self.subsumption_set.add_subsumption(then, result);
+                self.subsumption_set.add_subsumption(else_, result);
 
-                Ok(then)
+                Ok(result.into())
             }
             Expression::Let(let_) => {
                 let mut variables = variables.clone();

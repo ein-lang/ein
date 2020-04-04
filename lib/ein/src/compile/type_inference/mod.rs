@@ -1,6 +1,8 @@
 mod equation;
 mod equation_set;
 mod error;
+mod subsumption;
+mod subsumption_set;
 mod type_inferrer;
 
 use crate::ast::*;
