@@ -2,7 +2,6 @@ use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
-use crate::types::Type;
 
 pub struct ModuleCompiler<'a> {
     module: &'a ast::Module,
@@ -51,52 +50,8 @@ impl<'a> ModuleCompiler<'a> {
                         Ok(self.compile_value_definition(value_definition)?.into())
                     }
                 })
-                .chain(
-                    self.module
-                        .type_definitions()
-                        .iter()
-                        .flat_map(|type_definition| self.compile_type_definition(type_definition))
-                        .map(Ok),
-                )
                 .collect::<Result<Vec<_>, CompileError>>()?,
         )?)
-    }
-
-    fn compile_type_definition(
-        &self,
-        type_definition: &ast::TypeDefinition,
-    ) -> Vec<ssf::ir::Definition> {
-        if let Type::Record(record_type) = type_definition.type_() {
-            let algebraic_type = self.type_compiler.compile_record(record_type);
-
-            record_type
-                .elements()
-                .iter()
-                .map(|(key, type_)| {
-                    ssf::ir::FunctionDefinition::new(
-                        format!("{}.{}", record_type.name(), key),
-                        vec![ssf::ir::Argument::new("x", algebraic_type.clone())],
-                        ssf::ir::AlgebraicCase::new(
-                            ssf::ir::Variable::new("x"),
-                            vec![ssf::ir::AlgebraicAlternative::new(
-                                ssf::ir::Constructor::new(algebraic_type.clone(), 0),
-                                record_type
-                                    .elements()
-                                    .keys()
-                                    .map(|key| format!("${}", key))
-                                    .collect(),
-                                ssf::ir::Variable::new(format!("${}", key)),
-                            )],
-                            None,
-                        ),
-                        self.type_compiler.compile_value(type_),
-                    )
-                    .into()
-                })
-                .collect()
-        } else {
-            vec![]
-        }
     }
 
     fn compile_function_definition(

@@ -57,22 +57,6 @@ impl TypeInferrer {
             }
         }
 
-        for type_definition in module.type_definitions() {
-            if let Type::Record(record) = type_definition.type_() {
-                for (key, type_) in record.elements() {
-                    variables.insert(
-                        format!("{}.{}", record.name(), key),
-                        types::Function::new(
-                            record.clone(),
-                            type_.clone(),
-                            type_.source_information().clone(),
-                        )
-                        .into(),
-                    );
-                }
-            }
-        }
-
         for definition in module.definitions() {
             match definition {
                 Definition::FunctionDefinition(function_definition) => {
@@ -281,6 +265,26 @@ impl TypeInferrer {
 
                 Ok(record.type_().clone())
             }
+            Expression::RecordElementOperation(operation) => {
+                let source_information = operation.source_information();
+                let argument = self.infer_expression(operation.argument(), variables)?;
+                let result = types::Variable::new(source_information.clone());
+
+                self.equation_set.add(Equation::new(
+                    types::AnonymousRecord::new(
+                        vec![(operation.key().into(), result.clone().into())]
+                            .into_iter()
+                            .collect(),
+                        source_information.clone(),
+                    ),
+                    argument.clone(),
+                ));
+                self.equation_set
+                    .add(Equation::new(operation.type_().clone(), argument));
+
+                Ok(result.into())
+            }
+            Expression::RecordElementOperator(_) => unreachable!(),
             Expression::Variable(variable) => {
                 variables.get(variable.name()).cloned().ok_or_else(|| {
                     TypeInferenceError::VariableNotFound(

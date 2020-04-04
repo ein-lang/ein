@@ -19,11 +19,11 @@ pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {
 mod tests {
     use super::error::*;
     use super::infer_types;
-    use crate::ast::*;
+    use crate::ast::{self, *};
     use crate::debug::*;
     use crate::package::Package;
     use crate::path::*;
-    use crate::types;
+    use crate::types::{self, Type};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -1037,7 +1037,7 @@ mod tests {
         }
 
         #[test]
-        fn infer_types_of_record_element_functions() {
+        fn infer_types_of_record_element_operation_with_single_element_records() {
             let record_type = types::Record::new(
                 "Foo",
                 vec![(
@@ -1048,29 +1048,99 @@ mod tests {
                 .collect(),
                 SourceInformation::dummy(),
             );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let module = Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![ValueDefinition::new(
-                    "x",
-                    Application::new(
-                        Variable::new("Foo.foo", SourceInformation::dummy()),
-                        Record::new(
-                            types::Reference::new("Foo", SourceInformation::dummy()),
-                            vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
-                                .into_iter()
-                                .collect(),
+            let create_module = |type_: Type| {
+                Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new("Foo", record_type.clone())],
+                    vec![ValueDefinition::new(
+                        "x",
+                        RecordElementOperation::new(
+                            "foo",
+                            Record::new(
+                                reference_type.clone(),
+                                vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                    .into_iter()
+                                    .collect(),
+                                SourceInformation::dummy(),
+                            ),
+                            type_,
                             SourceInformation::dummy(),
                         ),
+                        types::None::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
-                    types::None::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
+                    )
+                    .into()],
                 )
-                .into()],
-            );
+            };
 
-            assert_eq!(infer_types(&module), Ok(module));
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(reference_type.clone().into()))
+            );
+        }
+
+        #[test]
+        fn infer_types_of_record_element_operation_with_multiple_element_records() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![
+                    (
+                        "foo".into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ),
+                    (
+                        "bar".into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let create_module = |type_: Type| {
+                Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new("Foo", record_type.clone())],
+                    vec![ValueDefinition::new(
+                        "x",
+                        RecordElementOperation::new(
+                            "foo",
+                            Record::new(
+                                reference_type.clone(),
+                                vec![
+                                    (
+                                        "foo".into(),
+                                        ast::None::new(SourceInformation::dummy()).into(),
+                                    ),
+                                    (
+                                        "bar".into(),
+                                        ast::None::new(SourceInformation::dummy()).into(),
+                                    ),
+                                ]
+                                .into_iter()
+                                .collect(),
+                                SourceInformation::dummy(),
+                            ),
+                            type_,
+                            SourceInformation::dummy(),
+                        ),
+                        types::None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()],
+                )
+            };
+
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(reference_type.clone().into()))
+            );
         }
     }
 }
