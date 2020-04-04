@@ -1,5 +1,6 @@
 use crate::types::*;
 
+// TODO Consider renaming as it is not symmetric.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Equation {
     lhs: Type,
