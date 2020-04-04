@@ -39,7 +39,7 @@ pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), 
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_compiler = TypeCompiler::new(&reference_type_resolver);
-    let expression_compiler = ExpressionCompiler::new(&type_compiler, &reference_type_resolver);
+    let expression_compiler = ExpressionCompiler::new(&type_compiler);
 
     Ok((
         ssf_llvm::compile(

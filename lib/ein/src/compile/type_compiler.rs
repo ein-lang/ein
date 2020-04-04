@@ -30,16 +30,7 @@ impl<'a> TypeCompiler<'a> {
             .into(),
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => ssf::types::Primitive::Float64.into(),
-            Type::Record(record) => {
-                ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
-                    record
-                        .elements()
-                        .iter()
-                        .map(|(_, type_)| self.compile(type_))
-                        .collect(),
-                )])
-                .into()
-            }
+            Type::Record(record) => self.compile_record(record).into(),
             Type::Reference(_) => self.compile(&self.reference_type_resolver.resolve(type_)),
             Type::AnonymousRecord(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
@@ -49,12 +40,14 @@ impl<'a> TypeCompiler<'a> {
         self.compile(type_).into_function().unwrap()
     }
 
-    pub fn compile_record(&self, type_: &types::Type) -> ssf::types::Algebraic {
-        self.compile(type_)
-            .into_value()
-            .unwrap()
-            .into_algebraic()
-            .unwrap()
+    pub fn compile_record(&self, record: &types::Record) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
+            record
+                .elements()
+                .iter()
+                .map(|(_, type_)| self.compile(type_))
+                .collect(),
+        )])
     }
 
     pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {

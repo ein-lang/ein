@@ -1,22 +1,14 @@
 use super::error::CompileError;
-use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
 
 pub struct ExpressionCompiler<'a> {
     type_compiler: &'a TypeCompiler<'a>,
-    reference_type_resolver: &'a ReferenceTypeResolver,
 }
 
 impl<'a> ExpressionCompiler<'a> {
-    pub fn new(
-        type_compiler: &'a TypeCompiler<'a>,
-        reference_type_resolver: &'a ReferenceTypeResolver,
-    ) -> Self {
-        Self {
-            type_compiler,
-            reference_type_resolver,
-        }
+    pub fn new(type_compiler: &'a TypeCompiler<'a>) -> Self {
+        Self { type_compiler }
     }
 
     pub fn compile(
@@ -92,7 +84,15 @@ impl<'a> ExpressionCompiler<'a> {
             )
             .into()),
             ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
+                ssf::ir::Constructor::new(
+                    self.type_compiler
+                        .compile(record.type_())
+                        .into_value()
+                        .unwrap()
+                        .into_algebraic()
+                        .unwrap(),
+                    0,
+                ),
                 record
                     .elements()
                     .iter()
@@ -100,30 +100,6 @@ impl<'a> ExpressionCompiler<'a> {
                     .collect::<Result<_, _>>()?,
             )
             .into()),
-            ast::Expression::RecordElementOperation(operation) => {
-                let record_type = self.reference_type_resolver.resolve(operation.type_());
-
-                Ok(ssf::ir::AlgebraicCase::new(
-                    self.compile(operation.argument())?,
-                    vec![ssf::ir::AlgebraicAlternative::new(
-                        ssf::ir::Constructor::new(
-                            self.type_compiler.compile_record(operation.type_()),
-                            0,
-                        ),
-                        record_type
-                            .to_record()
-                            .unwrap()
-                            .elements()
-                            .keys()
-                            .map(|key| format!("${}", key))
-                            .collect(),
-                        ssf::ir::Variable::new(format!("${}", operation.key())),
-                    )],
-                    None,
-                )
-                .into())
-            }
-            ast::Expression::RecordElementOperator(_) => unreachable!(),
             ast::Expression::Variable(variable) => {
                 Ok(ssf::ir::Variable::new(variable.name()).into())
             }
@@ -220,13 +196,10 @@ mod tests {
 
     #[test]
     fn compile_operation() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-
         assert_eq!(
-            ExpressionCompiler::new(
-                &TypeCompiler::new(&reference_type_resolver),
-                &reference_type_resolver
-            )
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
             .compile(
                 &Operation::new(
                     Operator::Add,
@@ -242,13 +215,10 @@ mod tests {
 
     #[test]
     fn compile_let_values() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-
         assert_eq!(
-            ExpressionCompiler::new(
-                &TypeCompiler::new(&reference_type_resolver),
-                &reference_type_resolver
-            )
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
             .compile(
                 &Let::new(
                     vec![ValueDefinition::new(
@@ -276,13 +246,10 @@ mod tests {
 
     #[test]
     fn compile_let_functions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-
         assert_eq!(
-            ExpressionCompiler::new(
-                &TypeCompiler::new(&reference_type_resolver),
-                &reference_type_resolver
-            )
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
             .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
@@ -316,13 +283,10 @@ mod tests {
 
     #[test]
     fn compile_let_functions_with_recursive_functions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-
         assert_eq!(
-            ExpressionCompiler::new(
-                &TypeCompiler::new(&reference_type_resolver),
-                &reference_type_resolver
-            )
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
             .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
@@ -363,13 +327,10 @@ mod tests {
 
     #[test]
     fn compile_nested_let_functions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-
         assert_eq!(
-            ExpressionCompiler::new(
-                &TypeCompiler::new(&reference_type_resolver),
-                &reference_type_resolver
-            )
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
             .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
@@ -425,13 +386,10 @@ mod tests {
 
     #[test]
     fn compile_let_values_with_free_variables() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-
         assert_eq!(
-            ExpressionCompiler::new(
-                &TypeCompiler::new(&reference_type_resolver),
-                &reference_type_resolver
-            )
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
             .compile(
                 &Let::new(
                     vec![ValueDefinition::new(
@@ -486,7 +444,7 @@ mod tests {
         let boolean_type = type_compiler.compile_boolean();
 
         assert_eq!(
-            ExpressionCompiler::new(&type_compiler, &reference_type_resolver).compile(
+            ExpressionCompiler::new(&type_compiler).compile(
                 &If::new(
                     Boolean::new(true, SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
@@ -538,7 +496,7 @@ mod tests {
         let type_compiler = TypeCompiler::new(&reference_type_resolver);
 
         assert_eq!(
-            ExpressionCompiler::new(&type_compiler, &reference_type_resolver).compile(
+            ExpressionCompiler::new(&type_compiler).compile(
                 &Record::new(
                     type_,
                     vec![(
@@ -559,68 +517,6 @@ mod tests {
                     0
                 ),
                 vec![ssf::ir::Primitive::Float64(42.0).into()]
-            )
-            .into())
-        );
-    }
-
-    #[test]
-    fn compile_record_element_operations() {
-        let type_ = types::Record::new(
-            "Foo",
-            vec![(
-                "foo".into(),
-                types::Number::new(SourceInformation::dummy()).into(),
-            )]
-            .into_iter()
-            .collect(),
-            SourceInformation::dummy(),
-        );
-        let reference_type_resolver =
-            ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", type_.clone())],
-                vec![],
-            ));
-        let type_compiler = TypeCompiler::new(&reference_type_resolver);
-
-        assert_eq!(
-            ExpressionCompiler::new(&type_compiler, &reference_type_resolver).compile(
-                &RecordElementOperation::new(
-                    "foo",
-                    Record::new(
-                        type_.clone(),
-                        vec![(
-                            "foo".into(),
-                            Number::new(42.0, SourceInformation::dummy()).into()
-                        )]
-                        .into_iter()
-                        .collect(),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Reference::new("Foo", SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                )
-                .into(),
-            ),
-            Ok(ssf::ir::AlgebraicCase::new(
-                ssf::ir::ConstructorApplication::new(
-                    ssf::ir::Constructor::new(
-                        ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(vec![
-                            ssf::types::Primitive::Float64.into()
-                        ])]),
-                        0
-                    ),
-                    vec![ssf::ir::Primitive::Float64(42.0).into()]
-                ),
-                vec![ssf::ir::AlgebraicAlternative::new(
-                    ssf::ir::Constructor::new(
-                        type_compiler.compile_record(&type_.into()).into(),
-                        0
-                    ),
-                    vec!["$foo".into()],
-                    ssf::ir::Variable::new("$foo")
-                ),],
-                None
             )
             .into())
         );
