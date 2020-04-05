@@ -4,89 +4,84 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::types::Type;
 
-pub fn desugar_argument_omission(module: &Module) -> Module {
+pub fn desugar_argument_omission(module: &Module) -> Result<Module, CompileError> {
     let mut name_generator = NameGenerator::new("omitted_argument_");
 
-    module
-        .convert_definitions(&mut |definition| -> Result<_, CompileError> {
-            match definition {
-                Definition::FunctionDefinition(function_definition) => {
-                    match function_definition.type_() {
-                        Type::Function(function_type) => {
-                            if function_definition.arguments().len()
-                                == function_type.arguments().len()
-                            {
-                                Ok(function_definition.clone().into())
-                            } else {
-                                let omitted_arguments = (0..(function_type.arguments().len()
-                                    - function_definition.arguments().len()))
-                                    .map(|_| name_generator.generate())
-                                    .collect::<Vec<_>>();
-
-                                Ok(FunctionDefinition::new(
-                                    function_definition.name(),
-                                    function_definition
-                                        .arguments()
-                                        .iter()
-                                        .chain(omitted_arguments.iter())
-                                        .cloned()
-                                        .collect(),
-                                    append_arguments_to_expression(
-                                        function_definition.body(),
-                                        &omitted_arguments
-                                            .iter()
-                                            .map(|argument| {
-                                                Variable::new(
-                                                    argument,
-                                                    function_definition
-                                                        .source_information()
-                                                        .clone(),
-                                                )
-                                            })
-                                            .collect::<Vec<Variable>>(),
-                                    ),
-                                    function_definition.type_().clone(),
-                                    function_definition.source_information().clone(),
-                                )
-                                .into())
-                            }
-                        }
-                        _ => unreachable!(),
-                    }
-                }
-                Definition::ValueDefinition(value_definition) => match value_definition.type_() {
+    module.convert_definitions(&mut |definition| -> Result<_, CompileError> {
+        match definition {
+            Definition::FunctionDefinition(function_definition) => {
+                match function_definition.type_() {
                     Type::Function(function_type) => {
-                        let arguments = function_type
-                            .arguments()
-                            .iter()
-                            .map(|_| name_generator.generate())
-                            .collect::<Vec<_>>();
+                        if function_definition.arguments().len() == function_type.arguments().len()
+                        {
+                            Ok(function_definition.clone().into())
+                        } else {
+                            let omitted_arguments = (0..(function_type.arguments().len()
+                                - function_definition.arguments().len()))
+                                .map(|_| name_generator.generate())
+                                .collect::<Vec<_>>();
 
-                        Ok(FunctionDefinition::new(
-                            value_definition.name(),
-                            arguments.clone(),
-                            append_arguments_to_expression(
-                                value_definition.body(),
-                                &arguments
+                            Ok(FunctionDefinition::new(
+                                function_definition.name(),
+                                function_definition
+                                    .arguments()
                                     .iter()
-                                    .map(|argument| {
-                                        Variable::new(
-                                            argument,
-                                            value_definition.source_information().clone(),
-                                        )
-                                    })
-                                    .collect::<Vec<Variable>>(),
-                            ),
-                            value_definition.type_().clone(),
-                            value_definition.source_information().clone(),
-                        )
-                        .into())
+                                    .chain(omitted_arguments.iter())
+                                    .cloned()
+                                    .collect(),
+                                append_arguments_to_expression(
+                                    function_definition.body(),
+                                    &omitted_arguments
+                                        .iter()
+                                        .map(|argument| {
+                                            Variable::new(
+                                                argument,
+                                                function_definition.source_information().clone(),
+                                            )
+                                        })
+                                        .collect::<Vec<Variable>>(),
+                                ),
+                                function_definition.type_().clone(),
+                                function_definition.source_information().clone(),
+                            )
+                            .into())
+                        }
                     }
-                    _ => Ok(value_definition.clone().into()),
-                },
+                    _ => unreachable!(),
+                }
             }
-        })
-        .unwrap()
+            Definition::ValueDefinition(value_definition) => match value_definition.type_() {
+                Type::Function(function_type) => {
+                    let arguments = function_type
+                        .arguments()
+                        .iter()
+                        .map(|_| name_generator.generate())
+                        .collect::<Vec<_>>();
+
+                    Ok(FunctionDefinition::new(
+                        value_definition.name(),
+                        arguments.clone(),
+                        append_arguments_to_expression(
+                            value_definition.body(),
+                            &arguments
+                                .iter()
+                                .map(|argument| {
+                                    Variable::new(
+                                        argument,
+                                        value_definition.source_information().clone(),
+                                    )
+                                })
+                                .collect::<Vec<Variable>>(),
+                        ),
+                        value_definition.type_().clone(),
+                        value_definition.source_information().clone(),
+                    )
+                    .into())
+                }
+                _ => Ok(value_definition.clone().into()),
+            },
+        }
+    })
 }
 
 fn append_arguments_to_expression(expression: &Expression, arguments: &[Variable]) -> Expression {
@@ -144,7 +139,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Module::from_definitions(vec![FunctionDefinition::new(
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["omitted_argument_0".into()],
                 Application::new(
@@ -159,7 +154,7 @@ mod tests {
                 ),
                 SourceInformation::dummy(),
             )
-            .into()])
+            .into()]))
         );
     }
 
@@ -181,7 +176,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Module::from_definitions(vec![FunctionDefinition::new(
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["omitted_argument_0".into(), "omitted_argument_1".into()],
                 Application::new(
@@ -204,7 +199,7 @@ mod tests {
                 ),
                 SourceInformation::dummy(),
             )
-            .into()])
+            .into()]))
         );
     }
 
@@ -227,7 +222,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Module::from_definitions(vec![FunctionDefinition::new(
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["x".into(), "omitted_argument_0".into()],
                 Application::new(
@@ -246,7 +241,7 @@ mod tests {
                 ),
                 SourceInformation::dummy(),
             )
-            .into()])
+            .into()]))
         );
     }
 
@@ -273,7 +268,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Module::from_definitions(vec![FunctionDefinition::new(
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec![
                     "x".into(),
@@ -304,7 +299,7 @@ mod tests {
                 ),
                 SourceInformation::dummy(),
             )
-            .into()])
+            .into()]))
         );
     }
 }

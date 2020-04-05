@@ -3,56 +3,54 @@ use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 
-pub fn desugar_record_update(module: &Module) -> Module {
+pub fn desugar_record_update(module: &Module) -> Result<Module, CompileError> {
     let mut name_generator = NameGenerator::new("record_update_argument_");
     let reference_type_resolver = ReferenceTypeResolver::new(module);
 
-    module
-        .convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            if let Expression::RecordUpdate(record_update) = expression {
-                let type_ = reference_type_resolver.resolve_reference(record_update.type_());
-                let record_type = type_.to_record().unwrap();
-                let source_information = record_update.source_information();
-                let name = name_generator.generate();
+    module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
+        if let Expression::RecordUpdate(record_update) = expression {
+            let type_ = reference_type_resolver.resolve_reference(record_update.type_());
+            let record_type = type_.to_record().unwrap();
+            let source_information = record_update.source_information();
+            let name = name_generator.generate();
 
-                Ok(Let::new(
-                    vec![ValueDefinition::new(
-                        &name,
-                        record_update.argument().clone(),
-                        record_update.type_().clone(),
-                        source_information.clone(),
-                    )
-                    .into()],
-                    RecordConstruction::new(
-                        record_update.type_().clone(),
-                        record_type
-                            .elements()
-                            .iter()
-                            .map(|(key, _)| {
-                                (
-                                    key.clone(),
-                                    Application::new(
-                                        Variable::new(
-                                            format!("{}.{}", record_type.name(), key),
-                                            source_information.clone(),
-                                        ),
-                                        Variable::new(&name, source_information.clone()),
-                                        source_information.clone(),
-                                    )
-                                    .into(),
-                                )
-                            })
-                            .chain(record_update.elements().clone())
-                            .collect(),
-                        source_information.clone(),
-                    ),
+            Ok(Let::new(
+                vec![ValueDefinition::new(
+                    &name,
+                    record_update.argument().clone(),
+                    record_update.type_().clone(),
+                    source_information.clone(),
                 )
-                .into())
-            } else {
-                Ok(expression.clone())
-            }
-        })
-        .unwrap()
+                .into()],
+                RecordConstruction::new(
+                    record_update.type_().clone(),
+                    record_type
+                        .elements()
+                        .iter()
+                        .map(|(key, _)| {
+                            (
+                                key.clone(),
+                                Application::new(
+                                    Variable::new(
+                                        format!("{}.{}", record_type.name(), key),
+                                        source_information.clone(),
+                                    ),
+                                    Variable::new(&name, source_information.clone()),
+                                    source_information.clone(),
+                                )
+                                .into(),
+                            )
+                        })
+                        .chain(record_update.elements().clone())
+                        .collect(),
+                    source_information.clone(),
+                ),
+            )
+            .into())
+        } else {
+            Ok(expression.clone())
+        }
+    })
 }
 
 #[cfg(test)]
@@ -104,7 +102,7 @@ mod tests {
                 )
                 .into()]
             )),
-            Module::from_definitions_and_type_definitions(
+            Ok(Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![ValueDefinition::new(
                     "x",
@@ -145,7 +143,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()]
-            )
+            ))
         );
     }
 }
