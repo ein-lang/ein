@@ -1,5 +1,6 @@
 use super::type_inference::TypeInferenceError;
 use crate::debug::*;
+use crate::types;
 use std::error::Error;
 use std::fmt::Display;
 use std::rc::Rc;
@@ -12,6 +13,7 @@ pub enum CompileError {
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
     TypeInference(TypeInferenceError),
+    UndefinedType(types::Reference),
 }
 
 impl Display for CompileError {
@@ -31,6 +33,12 @@ impl Display for CompileError {
             Self::SsfAnalysis(error) => write!(formatter, "{}", error),
             Self::SsfCompile(error) => write!(formatter, "{}", error),
             Self::TypeInference(error) => write!(formatter, "{}", error),
+            Self::UndefinedType(reference) => write!(
+                formatter,
+                "type \"{}\" undefined\n{}",
+                reference.name(),
+                reference.source_information()
+            ),
         }
     }
 }

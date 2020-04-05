@@ -1,3 +1,4 @@
+use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::types::{self, Type};
 use std::collections::HashMap;
@@ -16,46 +17,57 @@ impl<'a> TypeCompiler<'a> {
         }
     }
 
-    pub fn compile(&self, type_: &Type) -> ssf::types::Type {
+    pub fn compile(&self, type_: &Type) -> Result<ssf::types::Type, CompileError> {
         match type_ {
-            Type::Boolean(_) => self.compile_boolean().into(),
-            Type::Function(function) => ssf::types::Function::new(
+            Type::Boolean(_) => Ok(self.compile_boolean().into()),
+            Type::Function(function) => Ok(ssf::types::Function::new(
                 function
                     .arguments()
                     .iter()
                     .map(|type_| self.compile(type_))
-                    .collect::<Vec<_>>(),
-                self.compile_value(function.last_result()),
+                    .collect::<Result<_, _>>()?,
+                self.compile_value(function.last_result())?,
             )
-            .into(),
-            Type::None(_) => self.compile_none().into(),
-            Type::Number(_) => ssf::types::Primitive::Float64.into(),
-            Type::Record(record) => self.compile_record(record).into(),
+            .into()),
+            Type::None(_) => Ok(self.compile_none().into()),
+            Type::Number(_) => Ok(ssf::types::Primitive::Float64.into()),
+            Type::Record(record) => Ok(self.compile_record(record)?.into()),
             Type::Reference(reference) => self.compile_reference(reference),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 
-    pub fn compile_reference(&self, reference: &types::Reference) -> ssf::types::Type {
-        self.compile(&self.reference_type_resolver.resolve_reference(reference))
+    pub fn compile_reference(
+        &self,
+        reference: &types::Reference,
+    ) -> Result<ssf::types::Type, CompileError> {
+        self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
     }
 
-    pub fn compile_function(&self, type_: &types::Type) -> ssf::types::Function {
-        self.compile(type_).into_function().unwrap()
+    pub fn compile_function(
+        &self,
+        type_: &types::Type,
+    ) -> Result<ssf::types::Function, CompileError> {
+        Ok(self.compile(type_)?.into_function().unwrap())
     }
 
-    pub fn compile_record(&self, record: &types::Record) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
-            record
-                .elements()
-                .iter()
-                .map(|(_, type_)| self.compile(type_))
-                .collect(),
-        )])
+    pub fn compile_record(
+        &self,
+        record: &types::Record,
+    ) -> Result<ssf::types::Algebraic, CompileError> {
+        Ok(ssf::types::Algebraic::new(vec![
+            ssf::types::Constructor::boxed(
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, type_)| self.compile(type_))
+                    .collect::<Result<_, _>>()?,
+            ),
+        ]))
     }
 
-    pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
-        self.compile(type_).into_value().unwrap()
+    pub fn compile_value(&self, type_: &Type) -> Result<ssf::types::Value, CompileError> {
+        Ok(self.compile(type_)?.into_value().unwrap())
     }
 
     pub fn compile_boolean(&self) -> ssf::types::Algebraic {
@@ -81,7 +93,7 @@ mod tests {
         assert_eq!(
             TypeCompiler::new(&ReferenceTypeResolver::new(&Module::dummy()))
                 .compile(&types::Number::new(SourceInformation::dummy()).into()),
-            ssf::types::Primitive::Float64.into()
+            Ok(ssf::types::Primitive::Float64.into())
         );
     }
 
@@ -96,11 +108,11 @@ mod tests {
                 )
                 .into()
             ),
-            ssf::types::Function::new(
+            Ok(ssf::types::Function::new(
                 vec![ssf::types::Primitive::Float64.into()],
                 ssf::types::Primitive::Float64
             )
-            .into()
+            .into())
         );
     }
 }

@@ -84,7 +84,7 @@ impl<'a> ExpressionCompiler<'a> {
                 Ok(ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(
                         self.type_compiler
-                            .compile_reference(record.type_())
+                            .compile_reference(record.type_())?
                             .into_value()
                             .unwrap()
                             .into_algebraic()
@@ -139,14 +139,14 @@ impl<'a> ExpressionCompiler<'a> {
                             .iter()
                             .zip(type_.arguments())
                             .map(|(name, type_)| {
-                                ssf::ir::Argument::new(
+                                Ok(ssf::ir::Argument::new(
                                     name.clone(),
-                                    self.type_compiler.compile(type_),
-                                )
+                                    self.type_compiler.compile(type_)?,
+                                ))
                             })
-                            .collect(),
+                            .collect::<Result<_, CompileError>>()?,
                         self.compile(function_definition.body())?,
-                        self.type_compiler.compile_value(type_.last_result()),
+                        self.type_compiler.compile_value(type_.last_result())?,
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
@@ -175,7 +175,7 @@ impl<'a> ExpressionCompiler<'a> {
                     Ok(ssf::ir::ValueDefinition::new(
                         value_definition.name(),
                         self.compile(value_definition.body())?,
-                        self.type_compiler.compile_value(value_definition.type_()),
+                        self.type_compiler.compile_value(value_definition.type_())?,
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
