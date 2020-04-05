@@ -5,19 +5,19 @@ use std::collections::BTreeMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Record {
+pub struct RecordConstruction {
     type_: Type, // Must be record type
     elements: BTreeMap<String, Expression>,
     source_information: Rc<SourceInformation>,
 }
 
-impl Record {
+impl RecordConstruction {
     pub fn new(
         type_: impl Into<Type>,
         elements: BTreeMap<String, Expression>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
-        Self {
+        RecordConstruction {
             type_: type_.into(),
             elements,
             source_information: source_information.into(),

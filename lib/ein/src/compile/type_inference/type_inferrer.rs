@@ -264,7 +264,7 @@ impl TypeInferrer {
 
                 Ok(type_)
             }
-            Expression::Record(record) => {
+            Expression::RecordConstruction(record) => {
                 let type_ = types::AnonymousRecord::new(
                     record
                         .elements()

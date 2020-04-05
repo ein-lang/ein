@@ -872,7 +872,7 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
-                    Record::new(
+                    RecordConstruction::new(
                         reference_type.clone(),
                         Default::default(),
                         SourceInformation::dummy(),
@@ -903,7 +903,7 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
-                    Record::new(
+                    RecordConstruction::new(
                         reference_type.clone(),
                         vec![(
                             "foo".into(),
@@ -931,7 +931,7 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
-                    Record::new(
+                    RecordConstruction::new(
                         reference_type.clone(),
                         vec![(
                             "foo".into(),
@@ -973,7 +973,7 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
-                    Record::new(
+                    RecordConstruction::new(
                         reference_type.clone(),
                         vec![(
                             "foo".into(),
@@ -1011,7 +1011,7 @@ mod tests {
                 ],
                 vec![ValueDefinition::new(
                     "x",
-                    Record::new(
+                    RecordConstruction::new(
                         types::Reference::new("Foo", SourceInformation::dummy()),
                         vec![(
                             "foo".into(),
@@ -1055,7 +1055,7 @@ mod tests {
                     "x",
                     Application::new(
                         Variable::new("Foo.foo", SourceInformation::dummy()),
-                        Record::new(
+                        RecordConstruction::new(
                             types::Reference::new("Foo", SourceInformation::dummy()),
                             vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
                                 .into_iter()

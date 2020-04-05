@@ -348,7 +348,7 @@ fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str
         .with(value("application terminator"))
 }
 
-fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
+fn record_construction<'a>() -> impl Parser<Stream<'a>, Output = RecordConstruction> {
     attempt((
         source_information(),
         reference_type(),
@@ -366,7 +366,7 @@ fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
             .len()
             == elements.len()
         {
-            value(Record::new(
+            value(RecordConstruction::new(
                 reference_type,
                 elements.into_iter().collect(),
                 source_information,
@@ -417,7 +417,7 @@ fn record_update<'a>() -> impl Parser<Stream<'a>, Output = RecordUpdate> {
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice((
         application().map(Expression::from),
-        record().map(Expression::from),
+        record_construction().map(Expression::from),
         record_update().map(Expression::from),
         if_().map(Expression::from),
         let_().map(Expression::from),
@@ -1587,19 +1587,22 @@ mod tests {
     }
 
     #[test]
-    fn parse_record() {
-        assert!(record().parse(stream("f", "")).is_err());
+    fn parse_record_construction() {
+        assert!(record_construction().parse(stream("f", "")).is_err());
         assert_eq!(
-            record().parse(stream("Foo ()", "")).unwrap().0,
-            Record::new(
+            record_construction().parse(stream("Foo ()", "")).unwrap().0,
+            RecordConstruction::new(
                 types::Reference::new("Foo", SourceInformation::dummy()),
                 Default::default(),
                 SourceInformation::dummy()
             )
         );
         assert_eq!(
-            record().parse(stream("Foo ( foo = 42 )", "")).unwrap().0,
-            Record::new(
+            record_construction()
+                .parse(stream("Foo ( foo = 42 )", ""))
+                .unwrap()
+                .0,
+            RecordConstruction::new(
                 types::Reference::new("Foo", SourceInformation::dummy()),
                 vec![(
                     "foo".into(),
@@ -1611,11 +1614,11 @@ mod tests {
             )
         );
         assert_eq!(
-            record()
+            record_construction()
                 .parse(stream("Foo ( foo = 42, bar = 42 )", ""))
                 .unwrap()
                 .0,
-            Record::new(
+            RecordConstruction::new(
                 types::Reference::new("Foo", SourceInformation::dummy()),
                 vec![
                     (
@@ -1632,7 +1635,7 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
-        assert!(record()
+        assert!(record_construction()
             .parse(stream("Foo ( foo = 42, foo = 42 )", ""))
             .is_err());
         assert_eq!(
@@ -1642,7 +1645,7 @@ mod tests {
                 .0,
             Application::new(
                 Variable::new("foo", SourceInformation::dummy()),
-                Record::new(
+                RecordConstruction::new(
                     types::Reference::new("Foo", SourceInformation::dummy()),
                     vec![(
                         "foo".into(),

@@ -80,23 +80,25 @@ impl<'a> ExpressionCompiler<'a> {
                 self.compile(operation.rhs())?,
             )
             .into()),
-            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(
-                    self.type_compiler
-                        .compile(record.type_())
-                        .into_value()
-                        .unwrap()
-                        .into_algebraic()
-                        .unwrap(),
-                    0,
-                ),
-                record
-                    .elements()
-                    .iter()
-                    .map(|(_, expression)| self.compile(expression))
-                    .collect::<Result<_, _>>()?,
-            )
-            .into()),
+            ast::Expression::RecordConstruction(record) => {
+                Ok(ssf::ir::ConstructorApplication::new(
+                    ssf::ir::Constructor::new(
+                        self.type_compiler
+                            .compile(record.type_())
+                            .into_value()
+                            .unwrap()
+                            .into_algebraic()
+                            .unwrap(),
+                        0,
+                    ),
+                    record
+                        .elements()
+                        .iter()
+                        .map(|(_, expression)| self.compile(expression))
+                        .collect::<Result<_, _>>()?,
+                )
+                .into())
+            }
             ast::Expression::RecordUpdate(_) => unreachable!(),
             ast::Expression::Variable(variable) => {
                 Ok(ssf::ir::Variable::new(variable.name()).into())
@@ -541,7 +543,7 @@ mod tests {
 
         assert_eq!(
             ExpressionCompiler::new(&type_compiler).compile(
-                &Record::new(
+                &RecordConstruction::new(
                     type_,
                     vec![(
                         "foo".into(),

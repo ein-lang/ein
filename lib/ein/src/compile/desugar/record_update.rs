@@ -21,7 +21,7 @@ pub fn desugar_record_update(module: &Module) -> Module {
                     source_information.clone(),
                 )
                 .into()],
-                Record::new(
+                RecordConstruction::new(
                     record_update.type_().clone(),
                     record_type
                         .elements()
@@ -113,7 +113,7 @@ mod tests {
                             SourceInformation::dummy(),
                         )
                         .into()],
-                        Record::new(
+                        RecordConstruction::new(
                             reference_type.clone(),
                             vec![
                                 (
