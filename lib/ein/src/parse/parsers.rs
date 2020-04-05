@@ -1567,6 +1567,29 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+        assert_eq!(
+            application()
+                .parse(stream("foo (Foo ( foo = 42 ))", ""))
+                .unwrap()
+                .0,
+            Application::new(
+                Variable::new("foo", SourceInformation::dummy()),
+                Record::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    vec![(
+                        "foo".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+        );
+        assert!(application()
+            .parse(stream("foo Foo ( foo = 42 )", ""))
+            .is_err());
     }
 
     #[test]
