@@ -25,16 +25,19 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
         let expression = match self {
-            Self::Application(application) => application.convert_expressions(convert).into(),
+            Self::Application(application) => application.convert_expressions(convert)?.into(),
             Self::RecordConstruction(record_construction) => {
-                record_construction.convert_expressions(convert).into()
+                record_construction.convert_expressions(convert)?.into()
             }
-            Self::RecordUpdate(record_update) => record_update.convert_expressions(convert).into(),
-            Self::If(if_) => if_.convert_expressions(convert).into(),
-            Self::Let(let_) => let_.convert_expressions(convert).into(),
-            Self::Operation(operation) => operation.convert_expressions(convert).into(),
+            Self::RecordUpdate(record_update) => record_update.convert_expressions(convert)?.into(),
+            Self::If(if_) => if_.convert_expressions(convert)?.into(),
+            Self::Let(let_) => let_.convert_expressions(convert)?.into(),
+            Self::Operation(operation) => operation.convert_expressions(convert)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         };
 

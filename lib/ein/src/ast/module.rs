@@ -89,11 +89,11 @@ impl Module {
         &self.imported_modules
     }
 
-    pub fn convert_definitions(
+    pub fn convert_definitions<E>(
         &self,
-        mut convert: &mut impl FnMut(&Definition) -> Definition,
-    ) -> Self {
-        Self::new(
+        mut convert: &mut impl FnMut(&Definition) -> Result<Definition, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
@@ -103,24 +103,30 @@ impl Module {
                 .map(|definition| {
                     let definition = definition.convert_expressions(&mut |expression| {
                         if let Expression::Let(let_) = expression {
-                            Let::new(
-                                let_.definitions().iter().map(&mut convert).collect(),
+                            Ok(Let::new(
+                                let_.definitions()
+                                    .iter()
+                                    .map(&mut convert)
+                                    .collect::<Result<_, _>>()?,
                                 let_.expression().clone(),
                             )
-                            .into()
+                            .into())
                         } else {
-                            expression.clone()
+                            Ok(expression.clone())
                         }
-                    });
+                    })?;
 
                     convert(&definition)
                 })
-                .collect(),
-        )
+                .collect::<Result<_, _>>()?,
+        ))
     }
 
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
-        Self::new(
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
@@ -128,8 +134,8 @@ impl Module {
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_expressions(convert))
-                .collect(),
-        )
+                .collect::<Result<_, _>>()?,
+        ))
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
