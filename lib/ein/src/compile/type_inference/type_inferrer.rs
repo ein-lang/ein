@@ -333,7 +333,6 @@ impl TypeInferrer {
                         other.argument().clone(),
                     ));
 
-                    // Handle contravariance.
                     self.equation_set
                         .add(Equation::new(other.result().clone(), one.result().clone()));
                 }

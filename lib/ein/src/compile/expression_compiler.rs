@@ -193,11 +193,12 @@ mod tests {
 
     #[test]
     fn compile_non_variable_function_applications() {
-        let type_compiler = TypeCompiler::new(&Module::dummy());
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_compiler = TypeCompiler::new(&reference_type_resolver);
         let boolean_type = type_compiler.compile_boolean();
 
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new(&Module::dummy())).compile(
+            ExpressionCompiler::new(&type_compiler).compile(
                 &Application::new(
                     If::new(
                         Boolean::new(true, SourceInformation::dummy()),
