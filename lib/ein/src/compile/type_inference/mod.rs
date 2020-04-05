@@ -795,6 +795,69 @@ mod tests {
         assert_eq!(infer_types(&module), Ok(module));
     }
 
+    #[test]
+    fn infer_types_of_if_expressions() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            If::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            If::new(
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(
+            infer_types(&module),
+            Err(TypeInferenceError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
+            ))
+        );
+    }
+
+    #[test]
+    fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            If::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                Boolean::new(true, SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(
+            infer_types(&module),
+            Err(TypeInferenceError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
+            ))
+        );
+    }
+
     mod record {
         use super::*;
         use pretty_assertions::assert_eq;
@@ -963,6 +1026,7 @@ mod tests {
                 )
                 .into()],
             );
+
             assert_eq!(
                 infer_types(&module),
                 Err(TypeInferenceError::TypesNotMatched(
@@ -1203,67 +1267,40 @@ mod tests {
         }
 
         #[test]
-        fn fail_due_to_unmatched_pattern_types() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                Case::new(
-                    None::new(SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            Boolean::new(true, SourceInformation::dummy()),
-                            None::new(SourceInformation::dummy()),
-                        ),
-                        Alternative::new(
-                            None::new(SourceInformation::dummy()),
-                            None::new(SourceInformation::dummy()),
-                        ),
-                    ],
-                    SourceInformation::dummy(),
-                ),
-                types::None::new(SourceInformation::dummy()),
+        fn infer_types_of_record_element_functions() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
                 SourceInformation::dummy(),
-            )
-            .into()]);
-
-            assert_eq!(
-                infer_types(&module),
-                Err(TypeInferenceError::TypesNotMatched(
-                    SourceInformation::dummy().into(),
-                    SourceInformation::dummy().into()
-                ))
             );
-        }
 
-        #[test]
-        fn fail_due_to_unmatched_expression_types() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                Case::new(
-                    None::new(SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            None::new(SourceInformation::dummy()),
-                            Boolean::new(true, SourceInformation::dummy()),
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Variable::new("Foo.foo", SourceInformation::dummy()),
+                        Record::new(
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy(),
                         ),
-                        Alternative::new(
-                            None::new(SourceInformation::dummy()),
-                            None::new(SourceInformation::dummy()),
-                        ),
-                    ],
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                ),
-                types::None::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()]);
-
-            assert_eq!(
-                infer_types(&module),
-                Err(TypeInferenceError::TypesNotMatched(
-                    SourceInformation::dummy().into(),
-                    SourceInformation::dummy().into()
-                ))
+                )
+                .into()],
             );
+
+            assert_eq!(infer_types(&module), Ok(module));
         }
     }
 }

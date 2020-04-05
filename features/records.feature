@@ -26,3 +26,16 @@ Feature: Records
     When I run `sh -c ./command`
     Then stdout from "sh -c ./command" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Access a record's element
+    Given a file named "Main.ein" with:
+    """
+    type Foo ( foo : Number )
+
+    main : Number -> Number
+    main x = Foo.foo (Foo ( foo = 42 ))
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./command`
+    Then stdout from "sh -c ./command" should contain exactly "42"
+    And the exit status should be 0

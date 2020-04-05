@@ -3,11 +3,11 @@ use super::type_compiler::TypeCompiler;
 use crate::ast;
 
 pub struct ExpressionCompiler<'a> {
-    type_compiler: &'a TypeCompiler,
+    type_compiler: &'a TypeCompiler<'a>,
 }
 
 impl<'a> ExpressionCompiler<'a> {
-    pub fn new(type_compiler: &'a TypeCompiler) -> Self {
+    pub fn new(type_compiler: &'a TypeCompiler<'a>) -> Self {
         Self { type_compiler }
     }
 
@@ -26,10 +26,7 @@ impl<'a> ExpressionCompiler<'a> {
                 }
 
                 Ok(ssf::ir::FunctionApplication::new(
-                    self.compile(function)?
-                        .to_variable()
-                        .expect("variable")
-                        .clone(),
+                    self.compile(function)?,
                     arguments
                         .iter()
                         .rev()
@@ -46,80 +43,23 @@ impl<'a> ExpressionCompiler<'a> {
                 vec![],
             )
             .into()),
-            ast::Expression::Case(case) => {
-                let argument = self.compile(case.argument())?;
-
-                let alternatives = case
-                    .alternatives()
-                    .iter()
-                    .take_while(|alternative| !alternative.pattern().is_variable())
-                    .collect::<Vec<_>>();
-
-                let default_alternative = case
-                    .alternatives()
-                    .iter()
-                    .find(|alternative| alternative.pattern().is_variable())
-                    .map(|alternative| -> Result<_, CompileError> {
-                        Ok(ssf::ir::DefaultAlternative::new(
-                            alternative.pattern().to_variable().unwrap().name(),
-                            self.compile(alternative.expression())?,
-                        ))
-                    })
-                    .transpose()?;
-
-                match alternatives.get(0).map(|alternative| alternative.pattern()) {
-                    Some(ast::Pattern::Boolean(_)) => Ok(ssf::ir::AlgebraicCase::new(
-                        argument,
-                        alternatives
-                            .iter()
-                            .map(|alternative| -> Result<_, CompileError> {
-                                Ok(ssf::ir::AlgebraicAlternative::new(
-                                    ssf::ir::Constructor::new(
-                                        self.type_compiler.compile_boolean(),
-                                        alternative
-                                            .pattern()
-                                            .to_boolean()
-                                            .map(|boolean| boolean.value())
-                                            .unwrap()
-                                            as usize,
-                                    ),
-                                    vec![],
-                                    self.compile(alternative.expression())?,
-                                ))
-                            })
-                            .collect::<Result<_, _>>()?,
-                        default_alternative,
-                    )
-                    .into()),
-                    Some(ast::Pattern::Number(_)) => Ok(ssf::ir::PrimitiveCase::new(
-                        argument,
-                        alternatives
-                            .iter()
-                            .map(|alternative| -> Result<_, CompileError> {
-                                Ok(ssf::ir::PrimitiveAlternative::new(
-                                    alternative
-                                        .pattern()
-                                        .to_number()
-                                        .map(|number| number.value())
-                                        .unwrap(),
-                                    self.compile(alternative.expression())?,
-                                ))
-                            })
-                            .collect::<Result<_, _>>()?,
-                        default_alternative,
-                    )
-                    .into()),
-                    Some(ast::Pattern::None(_)) | Some(ast::Pattern::Variable(_)) | None => {
-                        Err(CompileError::InvalidPattern(
-                            case.alternatives()[0]
-                                .pattern()
-                                .source_information()
-                                .clone(),
-                        ))
-                    }
-                }
-            }
-            ast::Expression::If(_) => unreachable!(),
+            ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
+                self.compile(if_.condition())?,
+                vec![
+                    ssf::ir::AlgebraicAlternative::new(
+                        ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), 0),
+                        vec![],
+                        self.compile(if_.else_())?,
+                    ),
+                    ssf::ir::AlgebraicAlternative::new(
+                        ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), 1),
+                        vec![],
+                        self.compile(if_.then())?,
+                    ),
+                ],
+                None,
+            )
+            .into()),
             ast::Expression::Let(let_) => match let_.definitions()[0] {
                 ast::Definition::FunctionDefinition(_) => {
                     Ok(self.compile_let_functions(let_)?.into())
@@ -141,7 +81,15 @@ impl<'a> ExpressionCompiler<'a> {
             )
             .into()),
             ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_record(record.type_()), 0),
+                ssf::ir::Constructor::new(
+                    self.type_compiler
+                        .compile(record.type_())
+                        .into_value()
+                        .unwrap()
+                        .into_algebraic()
+                        .unwrap(),
+                    0,
+                ),
                 record
                     .elements()
                     .iter()
@@ -150,9 +98,9 @@ impl<'a> ExpressionCompiler<'a> {
             )
             .into()),
             ast::Expression::RecordUpdate(_) => unimplemented!(),
-            ast::Expression::Variable(variable) => Ok(ssf::ir::Expression::Variable(
-                ssf::ir::Variable::new(variable.name()),
-            )),
+            ast::Expression::Variable(variable) => {
+                Ok(ssf::ir::Variable::new(variable.name()).into())
+            }
         }
     }
 
@@ -236,6 +184,7 @@ impl<'a> ExpressionCompiler<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::type_compiler::TypeCompiler;
     use super::ExpressionCompiler;
     use crate::ast::*;
@@ -244,9 +193,58 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
+    fn compile_non_variable_function_applications() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_compiler = TypeCompiler::new(&reference_type_resolver);
+        let boolean_type = type_compiler.compile_boolean();
+
+        assert_eq!(
+            ExpressionCompiler::new(&type_compiler).compile(
+                &Application::new(
+                    If::new(
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Variable::new("f", SourceInformation::dummy()),
+                        Variable::new("g", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+            ),
+            Ok(ssf::ir::FunctionApplication::new(
+                ssf::ir::AlgebraicCase::new(
+                    ssf::ir::ConstructorApplication::new(
+                        ssf::ir::Constructor::new(boolean_type.clone(), 1),
+                        vec![]
+                    ),
+                    vec![
+                        ssf::ir::AlgebraicAlternative::new(
+                            ssf::ir::Constructor::new(boolean_type.clone(), 0),
+                            vec![],
+                            ssf::ir::Variable::new("g")
+                        ),
+                        ssf::ir::AlgebraicAlternative::new(
+                            ssf::ir::Constructor::new(boolean_type, 1),
+                            vec![],
+                            ssf::ir::Variable::new("f")
+                        )
+                    ],
+                    None
+                ),
+                vec![42.0.into()]
+            )
+            .into())
+        );
+    }
+
+    #[test]
     fn compile_operation() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new(&Module::dummy())).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
+            .compile(
                 &Operation::new(
                     Operator::Add,
                     Number::new(1.0, SourceInformation::dummy()),
@@ -262,7 +260,10 @@ mod tests {
     #[test]
     fn compile_let_values() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new(&Module::dummy())).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
+            .compile(
                 &Let::new(
                     vec![ValueDefinition::new(
                         "x",
@@ -290,7 +291,10 @@ mod tests {
     #[test]
     fn compile_let_functions() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new(&Module::dummy())).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
+            .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -324,7 +328,10 @@ mod tests {
     #[test]
     fn compile_let_functions_with_recursive_functions() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new(&Module::dummy())).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
+            .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -365,7 +372,10 @@ mod tests {
     #[test]
     fn compile_nested_let_functions() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new(&Module::dummy())).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
+            .compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -421,7 +431,10 @@ mod tests {
     #[test]
     fn compile_let_values_with_free_variables() {
         assert_eq!(
-            ExpressionCompiler::new(&TypeCompiler::new(&Module::dummy())).compile(
+            ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::dummy()
+            )),)
+            .compile(
                 &Let::new(
                     vec![ValueDefinition::new(
                         "y",
@@ -469,126 +482,42 @@ mod tests {
     }
 
     #[test]
-    fn compile_case_expressions() {
-        let type_compiler = TypeCompiler::new(&Module::dummy());
+    fn compile_if_expressions() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_compiler = TypeCompiler::new(&reference_type_resolver);
         let boolean_type = type_compiler.compile_boolean();
 
-        for (source, target) in vec![
-            (
-                Case::new(
-                    Number::new(42.0, SourceInformation::dummy()),
-                    vec![Alternative::new(
-                        Number::new(42.0, SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                    )],
+        assert_eq!(
+            ExpressionCompiler::new(&type_compiler).compile(
+                &If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Number::new(1.0, SourceInformation::dummy()),
+                    Number::new(2.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                ),
-                ssf::ir::PrimitiveCase::new(
-                    42.0,
-                    vec![ssf::ir::PrimitiveAlternative::new(42.0, 42.0)],
-                    None,
                 )
                 .into(),
             ),
-            (
-                Case::new(
-                    Number::new(42.0, SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            Number::new(42.0, SourceInformation::dummy()),
-                            Number::new(42.0, SourceInformation::dummy()),
-                        ),
-                        Alternative::new(
-                            Variable::new("x", SourceInformation::dummy()),
-                            Variable::new("x", SourceInformation::dummy()),
-                        ),
-                    ],
-                    SourceInformation::dummy(),
+            Ok(ssf::ir::AlgebraicCase::new(
+                ssf::ir::ConstructorApplication::new(
+                    ssf::ir::Constructor::new(boolean_type.clone(), 1),
+                    vec![]
                 ),
-                ssf::ir::PrimitiveCase::new(
-                    42.0,
-                    vec![ssf::ir::PrimitiveAlternative::new(42.0, 42.0)],
-                    Some(ssf::ir::DefaultAlternative::new(
-                        "x",
-                        ssf::ir::Variable::new("x"),
-                    )),
-                )
-                .into(),
-            ),
-            (
-                Case::new(
-                    Boolean::new(false, SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            Boolean::new(false, SourceInformation::dummy()),
-                            Number::new(42.0, SourceInformation::dummy()),
-                        ),
-                        Alternative::new(
-                            Boolean::new(true, SourceInformation::dummy()),
-                            Number::new(42.0, SourceInformation::dummy()),
-                        ),
-                    ],
-                    SourceInformation::dummy(),
-                ),
-                ssf::ir::AlgebraicCase::new(
-                    ssf::ir::ConstructorApplication::new(
+                vec![
+                    ssf::ir::AlgebraicAlternative::new(
                         ssf::ir::Constructor::new(boolean_type.clone(), 0),
                         vec![],
+                        2.0
                     ),
-                    vec![
-                        ssf::ir::AlgebraicAlternative::new(
-                            ssf::ir::Constructor::new(boolean_type.clone(), 0),
-                            vec![],
-                            42.0,
-                        ),
-                        ssf::ir::AlgebraicAlternative::new(
-                            ssf::ir::Constructor::new(boolean_type.clone(), 1),
-                            vec![],
-                            42.0,
-                        ),
-                    ],
-                    None,
-                )
-                .into(),
-            ),
-            (
-                Case::new(
-                    Boolean::new(false, SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            Boolean::new(false, SourceInformation::dummy()),
-                            Number::new(42.0, SourceInformation::dummy()),
-                        ),
-                        Alternative::new(
-                            Variable::new("x", SourceInformation::dummy()),
-                            Variable::new("x", SourceInformation::dummy()),
-                        ),
-                    ],
-                    SourceInformation::dummy(),
-                ),
-                ssf::ir::AlgebraicCase::new(
-                    ssf::ir::ConstructorApplication::new(
-                        ssf::ir::Constructor::new(boolean_type.clone(), 0),
+                    ssf::ir::AlgebraicAlternative::new(
+                        ssf::ir::Constructor::new(boolean_type, 1),
                         vec![],
-                    ),
-                    vec![ssf::ir::AlgebraicAlternative::new(
-                        ssf::ir::Constructor::new(boolean_type.clone(), 0),
-                        vec![],
-                        42.0,
-                    )],
-                    Some(ssf::ir::DefaultAlternative::new(
-                        "x",
-                        ssf::ir::Variable::new("x"),
-                    )),
-                )
-                .into(),
-            ),
-        ] {
-            assert_eq!(
-                ExpressionCompiler::new(&type_compiler).compile(&source.into()),
-                Ok(target)
-            );
-        }
+                        1.0
+                    )
+                ],
+                None
+            )
+            .into())
+        );
     }
 
     #[test]
@@ -603,10 +532,12 @@ mod tests {
             .collect(),
             SourceInformation::dummy(),
         );
-        let type_compiler = TypeCompiler::new(&Module::from_definitions_and_type_definitions(
-            vec![TypeDefinition::new("Foo", type_.clone())],
-            vec![],
-        ));
+        let reference_type_resolver =
+            ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", type_.clone())],
+                vec![],
+            ));
+        let type_compiler = TypeCompiler::new(&reference_type_resolver);
 
         assert_eq!(
             ExpressionCompiler::new(&type_compiler).compile(

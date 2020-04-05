@@ -1,6 +1,5 @@
 use super::application::Application;
 use super::boolean::Boolean;
-use super::case::Case;
 use super::if_::If;
 use super::let_::Let;
 use super::none::None;
@@ -15,7 +14,6 @@ use crate::types::Type;
 pub enum Expression {
     Application(Application),
     Boolean(Boolean),
-    Case(Case),
     Record(Record),
     RecordUpdate(RecordUpdate),
     If(If),
@@ -30,7 +28,6 @@ impl Expression {
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         let expression = match self {
             Self::Application(application) => application.convert_expressions(convert).into(),
-            Self::Case(case) => case.convert_expressions(convert).into(),
             Self::Record(record) => record.convert_expressions(convert).into(),
             Self::RecordUpdate(record_update) => record_update.convert_expressions(convert).into(),
             Self::If(if_) => if_.convert_expressions(convert).into(),
@@ -45,7 +42,6 @@ impl Expression {
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         match self {
             Self::Application(application) => application.convert_types(convert).into(),
-            Self::Case(case) => case.convert_types(convert).into(),
             Self::Record(record) => record.convert_types(convert).into(),
             Self::RecordUpdate(record_update) => record_update.convert_types(convert).into(),
             Self::If(if_) => if_.convert_types(convert).into(),
@@ -65,12 +61,6 @@ impl From<Application> for Expression {
 impl From<Boolean> for Expression {
     fn from(boolean: Boolean) -> Expression {
         Self::Boolean(boolean)
-    }
-}
-
-impl From<Case> for Expression {
-    fn from(case: Case) -> Expression {
-        Self::Case(case)
     }
 }
 

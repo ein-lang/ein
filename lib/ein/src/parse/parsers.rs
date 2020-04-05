@@ -19,8 +19,8 @@ use lazy_static::lazy_static;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "case", "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "of",
-    "then", "true",
+    "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "then",
+    "true",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -298,33 +298,6 @@ fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
     })
 }
 
-fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
-    attempt((
-        source_information(),
-        keyword("case").expected("case keyword"),
-        expression(),
-        keyword("of").expected("of keyword"),
-        many1(alternative()),
-    ))
-    .map(|(source_information, _, argument, _, alternatives)| {
-        Case::new(argument, alternatives, source_information)
-    })
-}
-
-fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
-    attempt((pattern(), sign("->"), expression()))
-        .map(|(pattern, _, expression)| Alternative::new(pattern, expression))
-}
-
-fn pattern<'a>() -> impl Parser<Stream<'a>, Output = Pattern> {
-    choice((
-        boolean_literal().map(Pattern::from),
-        none_literal().map(Pattern::from),
-        number_literal().map(Pattern::from),
-        variable().map(Pattern::from),
-    ))
-}
-
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
     attempt((
         keyword("let").expected("let keyword"),
@@ -405,7 +378,6 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         record().map(Expression::from),
         if_().map(Expression::from),
         let_().map(Expression::from),
-        case().map(Expression::from),
         atomic_expression(),
     ))
 }
@@ -1405,72 +1377,6 @@ mod tests {
     }
 
     #[test]
-    fn parse_case() {
-        assert_eq!(
-            case().parse(stream("case x of x -> x", "")).unwrap().0,
-            Case::new(
-                Variable::new("x", SourceInformation::dummy()),
-                vec![Alternative::new(
-                    Variable::new("x", SourceInformation::dummy()),
-                    Variable::new("x", SourceInformation::dummy()),
-                )],
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            case().parse(stream("case x of\nx -> x", "")).unwrap().0,
-            Case::new(
-                Variable::new("x", SourceInformation::dummy()),
-                vec![Alternative::new(
-                    Variable::new("x", SourceInformation::dummy()),
-                    Variable::new("x", SourceInformation::dummy()),
-                )],
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            case()
-                .parse(stream("case x of\nx -> x\nx -> x", ""))
-                .unwrap()
-                .0,
-            Case::new(
-                Variable::new("x", SourceInformation::dummy()),
-                vec![
-                    Alternative::new(
-                        Variable::new("x", SourceInformation::dummy()),
-                        Variable::new("x", SourceInformation::dummy()),
-                    ),
-                    Alternative::new(
-                        Variable::new("x", SourceInformation::dummy()),
-                        Variable::new("x", SourceInformation::dummy()),
-                    )
-                ],
-                SourceInformation::dummy(),
-            )
-        );
-    }
-
-    #[test]
-    fn parse_pattern() {
-        assert_eq!(
-            pattern().parse(stream("x", "")).unwrap().0,
-            Variable::new("x", SourceInformation::dummy()).into(),
-        );
-        assert_eq!(
-            pattern().parse(stream("true", "")).unwrap().0,
-            Boolean::new(true, SourceInformation::dummy()).into(),
-        );
-        assert_eq!(
-            pattern().parse(stream("42", "")).unwrap().0,
-            Number::new(42.0, SourceInformation::dummy()).into(),
-        );
-        assert_eq!(
-            pattern().parse(stream("none", "")).unwrap().0,
-            None::new(SourceInformation::dummy()).into(),
-        );
-    }
-
-    #[test]
     fn parse_application() {
         assert!(application().parse(stream("f", "")).is_err());
         assert_eq!(
@@ -1661,6 +1567,29 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+        assert_eq!(
+            application()
+                .parse(stream("foo (Foo ( foo = 42 ))", ""))
+                .unwrap()
+                .0,
+            Application::new(
+                Variable::new("foo", SourceInformation::dummy()),
+                Record::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    vec![(
+                        "foo".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+        );
+        assert!(application()
+            .parse(stream("foo Foo ( foo = 42 )", ""))
+            .is_err());
     }
 
     #[test]
