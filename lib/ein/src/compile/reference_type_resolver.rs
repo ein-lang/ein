@@ -41,7 +41,7 @@ impl ReferenceTypeResolver {
             )
             .into(),
             Type::Function(function) => types::Function::new(
-                function.argument().clone(),
+                self.resolve(function.argument()),
                 self.resolve(function.result()),
                 function.source_information().clone(),
             )
