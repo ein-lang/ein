@@ -29,6 +29,10 @@ impl ReferenceTypeResolver {
         }
     }
 
+    pub fn resolve_reference(&self, reference: &types::Reference) -> Type {
+        self.resolve(&self.environment[reference.name()])
+    }
+
     pub fn resolve(&self, type_: &Type) -> Type {
         match type_ {
             Type::AnonymousRecord(record) => types::AnonymousRecord::new(
@@ -56,7 +60,7 @@ impl ReferenceTypeResolver {
                 record.source_information().clone(),
             )
             .into(),
-            Type::Reference(reference) => self.resolve(&self.environment[reference.name()]),
+            Type::Reference(reference) => self.resolve_reference(reference),
             Type::Boolean(_) | Type::None(_) | Type::Number(_) => type_.clone(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }

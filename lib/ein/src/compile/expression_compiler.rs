@@ -84,7 +84,7 @@ impl<'a> ExpressionCompiler<'a> {
                 Ok(ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(
                         self.type_compiler
-                            .compile(record.type_())
+                            .compile_reference(record.type_())
                             .into_value()
                             .unwrap()
                             .into_algebraic()
@@ -544,7 +544,7 @@ mod tests {
         assert_eq!(
             ExpressionCompiler::new(&type_compiler).compile(
                 &RecordConstruction::new(
-                    type_,
+                    types::Reference::new("Foo", SourceInformation::dummy()),
                     vec![(
                         "foo".into(),
                         Number::new(42.0, SourceInformation::dummy()).into()

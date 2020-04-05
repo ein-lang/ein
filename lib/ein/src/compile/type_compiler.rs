@@ -31,9 +31,13 @@ impl<'a> TypeCompiler<'a> {
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => ssf::types::Primitive::Float64.into(),
             Type::Record(record) => self.compile_record(record).into(),
-            Type::Reference(_) => self.compile(&self.reference_type_resolver.resolve(type_)),
+            Type::Reference(reference) => self.compile_reference(reference),
             Type::AnonymousRecord(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
+    }
+
+    pub fn compile_reference(&self, reference: &types::Reference) -> ssf::types::Type {
+        self.compile(&self.reference_type_resolver.resolve_reference(reference))
     }
 
     pub fn compile_function(&self, type_: &types::Type) -> ssf::types::Function {

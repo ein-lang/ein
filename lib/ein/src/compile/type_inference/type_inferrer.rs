@@ -279,7 +279,7 @@ impl TypeInferrer {
                 self.equation_set
                     .add(Equation::new(record.type_().clone(), type_));
 
-                Ok(record.type_().clone())
+                Ok(record.type_().clone().into())
             }
             Expression::RecordUpdate(_) => unreachable!(),
             Expression::Variable(variable) => {
