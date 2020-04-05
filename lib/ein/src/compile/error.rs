@@ -1,4 +1,4 @@
-use super::type_inference::TypeInferenceError;
+use crate::ast;
 use crate::debug::*;
 use crate::types;
 use std::error::Error;
@@ -12,8 +12,9 @@ pub enum CompileError {
     MixedDefinitionsInLet(Rc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
-    TypeInference(TypeInferenceError),
-    UndefinedType(types::Reference),
+    TypeNotFound(types::Reference),
+    TypesNotMatched(Rc<SourceInformation>, Rc<SourceInformation>),
+    VariableNotFound(ast::Variable),
 }
 
 impl Display for CompileError {
@@ -32,12 +33,22 @@ impl Display for CompileError {
             ),
             Self::SsfAnalysis(error) => write!(formatter, "{}", error),
             Self::SsfCompile(error) => write!(formatter, "{}", error),
-            Self::TypeInference(error) => write!(formatter, "{}", error),
-            Self::UndefinedType(reference) => write!(
+            Self::TypeNotFound(reference) => write!(
                 formatter,
                 "type \"{}\" undefined\n{}",
                 reference.name(),
                 reference.source_information()
+            ),
+            Self::TypesNotMatched(lhs_source_information, rhs_source_information) => write!(
+                formatter,
+                "types not matched\n{}\n{}",
+                lhs_source_information, rhs_source_information
+            ),
+            Self::VariableNotFound(variable) => write!(
+                formatter,
+                "variable \"{}\" not found\n{}",
+                variable.name(),
+                variable.source_information()
             ),
         }
     }
@@ -57,11 +68,5 @@ impl From<ssf::AnalysisError> for CompileError {
 impl From<ssf_llvm::CompileError> for CompileError {
     fn from(error: ssf_llvm::CompileError) -> Self {
         Self::SsfCompile(error)
-    }
-}
-
-impl From<TypeInferenceError> for CompileError {
-    fn from(error: TypeInferenceError) -> Self {
-        Self::TypeInference(error)
     }
 }

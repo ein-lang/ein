@@ -1,23 +1,29 @@
 mod equation;
 mod equation_set;
-mod error;
 mod type_inferrer;
 
+use super::error::CompileError;
+use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::types::{self, Type};
-pub use error::*;
 use type_inferrer::*;
 
-pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {
-    TypeInferrer::new().infer(&module.convert_types(&mut |type_| match type_ {
-        Type::Unknown(unknown) => types::Variable::new(unknown.source_information().clone()).into(),
-        _ => type_.clone(),
-    }))
+pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
+    let reference_type_resolver = ReferenceTypeResolver::new(module);
+
+    TypeInferrer::new(&reference_type_resolver).infer(&module.convert_types(
+        &mut |type_| match type_ {
+            Type::Unknown(unknown) => {
+                types::Variable::new(unknown.source_information().clone()).into()
+            }
+            _ => type_.clone(),
+        },
+    ))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::error::*;
+    use super::super::error::CompileError;
     use super::infer_types;
     use crate::ast::*;
     use crate::debug::*;
@@ -74,7 +80,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -120,7 +126,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -192,7 +198,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -246,7 +252,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -318,7 +324,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -375,10 +381,10 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::VariableNotFound(
-                "y".into(),
-                SourceInformation::dummy().into()
-            ))
+            Err(CompileError::VariableNotFound(Variable::new(
+                "y",
+                SourceInformation::dummy()
+            )))
         );
     }
 
@@ -677,10 +683,10 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::VariableNotFound(
-                "b".into(),
-                SourceInformation::dummy().into(),
-            ))
+            Err(CompileError::VariableNotFound(Variable::new(
+                "b",
+                SourceInformation::dummy(),
+            )))
         );
     }
 
@@ -723,9 +729,10 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypeNotFound {
-                reference: types::Reference::new("Foo", SourceInformation::dummy())
-            })
+            Err(CompileError::TypeNotFound(types::Reference::new(
+                "Foo",
+                SourceInformation::dummy()
+            )))
         );
     }
 
@@ -828,7 +835,7 @@ mod tests {
         .into()]);
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -851,7 +858,7 @@ mod tests {
         .into()]);
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -948,7 +955,7 @@ mod tests {
             );
             assert_eq!(
                 infer_types(&module),
-                Err(TypeInferenceError::TypesNotMatched(
+                Err(CompileError::TypesNotMatched(
                     SourceInformation::dummy().into(),
                     SourceInformation::dummy().into()
                 ))
@@ -990,7 +997,7 @@ mod tests {
             );
             assert_eq!(
                 infer_types(&module),
-                Err(TypeInferenceError::TypesNotMatched(
+                Err(CompileError::TypesNotMatched(
                     SourceInformation::dummy().into(),
                     SourceInformation::dummy().into()
                 ))
@@ -1029,7 +1036,7 @@ mod tests {
 
             assert_eq!(
                 infer_types(&module),
-                Err(TypeInferenceError::TypesNotMatched(
+                Err(CompileError::TypesNotMatched(
                     SourceInformation::dummy().into(),
                     SourceInformation::dummy().into()
                 ))

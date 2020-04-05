@@ -33,7 +33,7 @@ impl ReferenceTypeResolver {
         self.resolve(
             self.environment
                 .get(reference.name())
-                .ok_or_else(|| CompileError::UndefinedType(reference.clone()))?,
+                .ok_or_else(|| CompileError::TypeNotFound(reference.clone()))?,
         )
     }
 
