@@ -4,11 +4,11 @@ use crate::ast::*;
 
 pub fn desugar_record_update(module: &Module) -> Module {
     let mut name_generator = NameGenerator::new("record_update_argument_");
-    let referece_type_resolver = ReferenceTypeResolver::new(module);
+    let reference_type_resolver = ReferenceTypeResolver::new(module);
 
     module.convert_expressions(&mut |expression| {
         if let Expression::RecordUpdate(record_update) = expression {
-            let type_ = referece_type_resolver.resolve(record_update.type_());
+            let type_ = reference_type_resolver.resolve(record_update.type_());
             let record_type = type_.to_record().unwrap();
             let source_information = record_update.source_information();
             let name = name_generator.generate();
