@@ -16,6 +16,7 @@ use combine::{
     unexpected_any, value, Parser, Positioned,
 };
 use lazy_static::lazy_static;
+use std::collections::HashSet;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
@@ -355,19 +356,60 @@ fn record<'a>() -> impl Parser<Stream<'a>, Output = Record> {
         sep_end_by((identifier().skip(sign("=")), expression()), sign(",")),
         sign(")"),
     ))
-    .map(
-        |(source_information, reference_type, _, elements, _): (
-            _,
-            _,
-            _,
-            Vec<(String, Expression)>,
-            _,
-        )| {
-            Record::new(
+    .then(|(source_information, reference_type, _, elements, _)| {
+        let elements: Vec<_> = elements;
+
+        if elements
+            .iter()
+            .map(|(key, _)| key.into())
+            .collect::<HashSet<String>>()
+            .len()
+            == elements.len()
+        {
+            value(Record::new(
                 reference_type,
                 elements.into_iter().collect(),
                 source_information,
-            )
+            ))
+            .left()
+        } else {
+            unexpected_any("duplicated keys in record construction").right()
+        }
+    })
+}
+
+fn record_update<'a>() -> impl Parser<Stream<'a>, Output = RecordUpdate> {
+    attempt((
+        source_information(),
+        reference_type(),
+        sign("("),
+        sign("..."),
+        atomic_expression(),
+        sign(","),
+        sep_end_by1((identifier().skip(sign("=")), expression()), sign(",")),
+        sign(")"),
+    ))
+    .then(
+        |(source_information, reference_type, _, _, argument, _, elements, _)| {
+            let elements: Vec<_> = elements;
+
+            if elements
+                .iter()
+                .map(|(key, _)| key.into())
+                .collect::<HashSet<String>>()
+                .len()
+                == elements.len()
+            {
+                value(RecordUpdate::new(
+                    reference_type,
+                    argument,
+                    elements.into_iter().collect(),
+                    source_information,
+                ))
+                .left()
+            } else {
+                unexpected_any("duplicated keys in record update").right()
+            }
         },
     )
 }
@@ -376,6 +418,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice((
         application().map(Expression::from),
         record().map(Expression::from),
+        record_update().map(Expression::from),
         if_().map(Expression::from),
         let_().map(Expression::from),
         atomic_expression(),
@@ -1568,6 +1611,31 @@ mod tests {
             )
         );
         assert_eq!(
+            record()
+                .parse(stream("Foo ( foo = 42, bar = 42 )", ""))
+                .unwrap()
+                .0,
+            Record::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                vec![
+                    (
+                        "foo".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    ),
+                    (
+                        "bar".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )
+                ]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            )
+        );
+        assert!(record()
+            .parse(stream("Foo ( foo = 42, foo = 42 )", ""))
+            .is_err());
+        assert_eq!(
             application()
                 .parse(stream("foo (Foo ( foo = 42 ))", ""))
                 .unwrap()
@@ -1589,6 +1657,54 @@ mod tests {
         );
         assert!(application()
             .parse(stream("foo Foo ( foo = 42 )", ""))
+            .is_err());
+    }
+
+    #[test]
+    fn parse_record_update() {
+        assert_eq!(
+            record_update()
+                .parse(stream("Foo ( ...foo, bar = 42 )", ""))
+                .unwrap()
+                .0,
+            RecordUpdate::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                Variable::new("foo", SourceInformation::dummy()),
+                vec![(
+                    "bar".into(),
+                    Number::new(42.0, SourceInformation::dummy()).into()
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
+            record_update()
+                .parse(stream("Foo ( ...foo, bar = 42, )", ""))
+                .unwrap()
+                .0,
+            RecordUpdate::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                Variable::new("foo", SourceInformation::dummy()),
+                vec![(
+                    "bar".into(),
+                    Number::new(42.0, SourceInformation::dummy()).into()
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            )
+        );
+        assert!(record_update().parse(stream("Foo ( ...foo )", "")).is_err());
+        assert!(record_update()
+            .parse(stream("Foo ( ...foo, bar = 42, bar = 42 )", ""))
+            .is_err());
+        assert!(record_update()
+            .parse(stream("Foo ( ...(foo bar), baz = 42 )", ""))
+            .is_ok());
+        assert!(record_update()
+            .parse(stream("Foo ( ...foo bar, baz = 42 )", ""))
             .is_err());
     }
 

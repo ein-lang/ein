@@ -6,6 +6,7 @@ use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
 use super::record::Record;
+use super::record_update::RecordUpdate;
 use super::variable::Variable;
 use crate::types::Type;
 
@@ -14,6 +15,7 @@ pub enum Expression {
     Application(Application),
     Boolean(Boolean),
     Record(Record),
+    RecordUpdate(RecordUpdate),
     If(If),
     Let(Let),
     None(None),
@@ -27,6 +29,7 @@ impl Expression {
         let expression = match self {
             Self::Application(application) => application.convert_expressions(convert).into(),
             Self::Record(record) => record.convert_expressions(convert).into(),
+            Self::RecordUpdate(record_update) => record_update.convert_expressions(convert).into(),
             Self::If(if_) => if_.convert_expressions(convert).into(),
             Self::Let(let_) => let_.convert_expressions(convert).into(),
             Self::Operation(operation) => operation.convert_expressions(convert).into(),
@@ -40,6 +43,7 @@ impl Expression {
         match self {
             Self::Application(application) => application.convert_types(convert).into(),
             Self::Record(record) => record.convert_types(convert).into(),
+            Self::RecordUpdate(record_update) => record_update.convert_types(convert).into(),
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
@@ -63,6 +67,12 @@ impl From<Boolean> for Expression {
 impl From<Record> for Expression {
     fn from(record: Record) -> Expression {
         Self::Record(record)
+    }
+}
+
+impl From<RecordUpdate> for Expression {
+    fn from(record_update: RecordUpdate) -> Expression {
+        Self::RecordUpdate(record_update)
     }
 }
 

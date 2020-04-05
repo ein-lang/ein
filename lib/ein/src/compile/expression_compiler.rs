@@ -97,6 +97,7 @@ impl<'a> ExpressionCompiler<'a> {
                     .collect::<Result<_, _>>()?,
             )
             .into()),
+            ast::Expression::RecordUpdate(_) => unreachable!(),
             ast::Expression::Variable(variable) => {
                 Ok(ssf::ir::Variable::new(variable.name()).into())
             }
