@@ -6,6 +6,7 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordUpdate {
+    type_: Type,
     argument: Box<Expression>,
     elements: BTreeMap<String, Expression>,
     source_information: Rc<SourceInformation>,
@@ -13,15 +14,21 @@ pub struct RecordUpdate {
 
 impl RecordUpdate {
     pub fn new(
+        type_: impl Into<Type>,
         argument: impl Into<Expression>,
         elements: BTreeMap<String, Expression>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
+            type_: type_.into(),
             argument: Box::new(argument.into()),
             elements,
             source_information: source_information.into(),
         }
+    }
+
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
     pub fn argument(&self) -> &Expression {
@@ -38,6 +45,7 @@ impl RecordUpdate {
 
     pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
         Self::new(
+            self.type_.clone(),
             self.argument.convert_expressions(convert),
             self.elements
                 .iter()
@@ -49,6 +57,7 @@ impl RecordUpdate {
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         Self::new(
+            convert(&self.type_),
             self.argument.convert_types(convert),
             self.elements
                 .iter()
