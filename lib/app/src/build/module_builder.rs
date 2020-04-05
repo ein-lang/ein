@@ -34,13 +34,13 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleBuilder<'a, D, S> {
         package: &ein::Package,
         external_module_interfaces: &HashMap<
             ein::ExternalUnresolvedModulePath,
-            ein::ast::ModuleInterface,
+            ein::ModuleInterface,
         >,
     ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
         let mut module_interfaces = external_module_interfaces
             .iter()
             .map(|(path, module_interface)| (path.clone().into(), module_interface.clone()))
-            .collect::<HashMap<ein::UnresolvedModulePath, ein::ast::ModuleInterface>>();
+            .collect::<HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>>();
 
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
@@ -57,7 +57,7 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleBuilder<'a, D, S> {
                 self.module_compiler
                     .compile(package, &module_interfaces, &source_file_path)?;
 
-            let module_interface = serde_json::from_str::<ein::ast::ModuleInterface>(
+            let module_interface = serde_json::from_str::<ein::ModuleInterface>(
                 &self.file_storage.read_to_string(&interface_file_path)?,
             )?;
             module_interfaces.insert(

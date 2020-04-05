@@ -7,8 +7,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-type ExternalModuleInterfaces =
-    HashMap<ein::ExternalUnresolvedModulePath, ein::ast::ModuleInterface>;
+type ExternalModuleInterfaces = HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>;
 
 pub struct ExternalPackageInitializer<
     'a,
