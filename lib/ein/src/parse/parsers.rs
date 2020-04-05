@@ -1700,6 +1700,12 @@ mod tests {
         assert!(record_update()
             .parse(stream("Foo ( ...foo, bar = 42, bar = 42 )", ""))
             .is_err());
+        assert!(record_update()
+            .parse(stream("Foo ( ...(foo bar), baz = 42 )", ""))
+            .is_ok());
+        assert!(record_update()
+            .parse(stream("Foo ( ...foo bar, baz = 42 )", ""))
+            .is_err());
     }
 
     #[test]
