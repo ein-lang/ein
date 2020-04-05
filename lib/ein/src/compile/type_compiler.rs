@@ -32,7 +32,7 @@ impl<'a> TypeCompiler<'a> {
             Type::Number(_) => ssf::types::Primitive::Float64.into(),
             Type::Record(record) => self.compile_record(record).into(),
             Type::Reference(reference) => self.compile_reference(reference),
-            Type::AnonymousRecord(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
+            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 

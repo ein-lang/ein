@@ -4,6 +4,7 @@ use super::error::*;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::*;
+use std::iter::FromIterator;
 
 #[derive(Debug)]
 pub struct TypeInferrer {
@@ -265,19 +266,30 @@ impl TypeInferrer {
                 Ok(type_)
             }
             Expression::RecordConstruction(record) => {
-                let type_ = types::AnonymousRecord::new(
-                    record
-                        .elements()
-                        .iter()
-                        .map(|(key, expression)| {
-                            Ok((key.clone(), self.infer_expression(expression, variables)?))
-                        })
-                        .collect::<Result<_, _>>()?,
-                    record.source_information().clone(),
-                );
+                let record_type = self
+                    .environment
+                    .get(record.type_().name())
+                    .and_then(|type_| type_.to_record())
+                    .ok_or_else(|| TypeInferenceError::TypeNotFound {
+                        reference: record.type_().clone(),
+                    })?
+                    .clone();
 
-                self.equation_set
-                    .add(Equation::new(record.type_().clone(), type_));
+                if HashSet::<&String>::from_iter(record.elements().keys())
+                    != HashSet::from_iter(record_type.elements().keys())
+                {
+                    return Err(TypeInferenceError::TypesNotMatched(
+                        record.source_information().clone(),
+                        record_type.source_information().clone(),
+                    ));
+                }
+
+                for (key, expression) in record.elements() {
+                    let type_ = self.infer_expression(expression, variables)?;
+
+                    self.equation_set
+                        .add(Equation::new(type_, record_type.elements()[key].clone()));
+                }
 
                 Ok(record.type_().clone().into())
             }
@@ -347,27 +359,6 @@ impl TypeInferrer {
                             other.source_information().clone(),
                         ));
                     };
-                }
-                (Type::Record(record), Type::AnonymousRecord(anonymous_record)) => {
-                    let error = TypeInferenceError::TypesNotMatched(
-                        record.source_information().clone(),
-                        anonymous_record.source_information().clone(),
-                    );
-
-                    if record.elements().len() != anonymous_record.elements().len() {
-                        return Err(error);
-                    }
-
-                    for (key, type_) in record.elements() {
-                        self.equation_set.add(Equation::new(
-                            type_.clone(),
-                            anonymous_record
-                                .elements()
-                                .get(key)
-                                .ok_or_else(|| error.clone())?
-                                .clone(),
-                        ));
-                    }
                 }
                 (lhs, rhs) => {
                     return Err(TypeInferenceError::TypesNotMatched(
