@@ -1026,6 +1026,7 @@ mod tests {
                 )
                 .into()],
             );
+
             assert_eq!(
                 infer_types(&module),
                 Err(TypeInferenceError::TypesNotMatched(
@@ -1033,6 +1034,43 @@ mod tests {
                     SourceInformation::dummy().into()
                 ))
             );
+        }
+
+        #[test]
+        fn infer_types_of_record_element_functions() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Variable::new("Foo.foo", SourceInformation::dummy()),
+                        Record::new(
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
         }
     }
 }

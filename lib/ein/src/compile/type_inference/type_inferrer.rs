@@ -57,6 +57,22 @@ impl TypeInferrer {
             }
         }
 
+        for type_definition in module.type_definitions() {
+            if let Type::Record(record) = type_definition.type_() {
+                for (key, type_) in record.elements() {
+                    variables.insert(
+                        format!("{}.{}", record.name(), key),
+                        types::Function::new(
+                            record.clone(),
+                            type_.clone(),
+                            type_.source_information().clone(),
+                        )
+                        .into(),
+                    );
+                }
+            }
+        }
+
         for definition in module.definitions() {
             match definition {
                 Definition::FunctionDefinition(function_definition) => {
@@ -312,13 +328,13 @@ impl TypeInferrer {
                         .clone(),
                 )),
                 (Type::Function(one), Type::Function(other)) => {
-                    // TODO Handle covariance and contravariance correctly.
                     self.equation_set.add(Equation::new(
                         one.argument().clone(),
                         other.argument().clone(),
                     ));
+
                     self.equation_set
-                        .add(Equation::new(one.result().clone(), other.result().clone()));
+                        .add(Equation::new(other.result().clone(), one.result().clone()));
                 }
                 (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}

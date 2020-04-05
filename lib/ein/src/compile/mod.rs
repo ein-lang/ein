@@ -13,9 +13,12 @@ use crate::ast;
 use crate::path::ModulePath;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
+use expression_compiler::ExpressionCompiler;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use name_qualifier::NameQualifier;
+use reference_type_resolver::ReferenceTypeResolver;
+use type_compiler::TypeCompiler;
 use type_inference::infer_types;
 
 const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
@@ -34,9 +37,15 @@ pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), 
         .collect(),
     );
 
+    let reference_type_resolver = ReferenceTypeResolver::new(&module);
+    let type_compiler = TypeCompiler::new(&reference_type_resolver);
+    let expression_compiler = ExpressionCompiler::new(&type_compiler);
+
     Ok((
         ssf_llvm::compile(
-            &name_qualifier.qualify_core_module(&ModuleCompiler::new(&module).compile()?),
+            &name_qualifier.qualify_core_module(
+                &ModuleCompiler::new(&module, &expression_compiler, &type_compiler).compile()?,
+            ),
             &ssf_llvm::CompileConfiguration::new(
                 if module
                     .definitions()
