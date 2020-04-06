@@ -35,7 +35,7 @@ impl Display for CompileError {
             Self::SsfCompile(error) => write!(formatter, "{}", error),
             Self::TypeNotFound(reference) => write!(
                 formatter,
-                "type \"{}\" undefined\n{}",
+                "type \"{}\" not found\n{}",
                 reference.name(),
                 reference.source_information()
             ),
