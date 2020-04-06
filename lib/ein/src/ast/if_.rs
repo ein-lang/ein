@@ -42,13 +42,16 @@ impl If {
         &self.source_information
     }
 
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
-        Self::new(
-            self.condition.convert_expressions(convert),
-            self.then.convert_expressions(convert),
-            self.else_.convert_expressions(convert),
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
+            self.condition.convert_expressions(convert)?,
+            self.then.convert_expressions(convert)?,
+            self.else_.convert_expressions(convert)?,
             self.source_information.clone(),
-        )
+        ))
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {

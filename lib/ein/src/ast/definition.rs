@@ -24,15 +24,18 @@ impl Definition {
         }
     }
 
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
-        match self {
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
+        Ok(match self {
             Self::FunctionDefinition(function_definition) => {
-                function_definition.convert_expressions(convert).into()
+                function_definition.convert_expressions(convert)?.into()
             }
             Self::ValueDefinition(value_definition) => {
-                value_definition.convert_expressions(convert).into()
+                value_definition.convert_expressions(convert)?.into()
             }
-        }
+        })
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {

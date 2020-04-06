@@ -80,23 +80,25 @@ impl<'a> ExpressionCompiler<'a> {
                 self.compile(operation.rhs())?,
             )
             .into()),
-            ast::Expression::Record(record) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(
-                    self.type_compiler
-                        .compile(record.type_())
-                        .into_value()
-                        .unwrap()
-                        .into_algebraic()
-                        .unwrap(),
-                    0,
-                ),
-                record
-                    .elements()
-                    .iter()
-                    .map(|(_, expression)| self.compile(expression))
-                    .collect::<Result<_, _>>()?,
-            )
-            .into()),
+            ast::Expression::RecordConstruction(record) => {
+                Ok(ssf::ir::ConstructorApplication::new(
+                    ssf::ir::Constructor::new(
+                        self.type_compiler
+                            .compile_reference(record.type_())?
+                            .into_value()
+                            .unwrap()
+                            .into_algebraic()
+                            .unwrap(),
+                        0,
+                    ),
+                    record
+                        .elements()
+                        .iter()
+                        .map(|(_, expression)| self.compile(expression))
+                        .collect::<Result<_, _>>()?,
+                )
+                .into())
+            }
             ast::Expression::RecordUpdate(_) => unreachable!(),
             ast::Expression::Variable(variable) => {
                 Ok(ssf::ir::Variable::new(variable.name()).into())
@@ -137,14 +139,14 @@ impl<'a> ExpressionCompiler<'a> {
                             .iter()
                             .zip(type_.arguments())
                             .map(|(name, type_)| {
-                                ssf::ir::Argument::new(
+                                Ok(ssf::ir::Argument::new(
                                     name.clone(),
-                                    self.type_compiler.compile(type_),
-                                )
+                                    self.type_compiler.compile(type_)?,
+                                ))
                             })
-                            .collect(),
+                            .collect::<Result<_, CompileError>>()?,
                         self.compile(function_definition.body())?,
-                        self.type_compiler.compile_value(type_.last_result()),
+                        self.type_compiler.compile_value(type_.last_result())?,
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
@@ -173,7 +175,7 @@ impl<'a> ExpressionCompiler<'a> {
                     Ok(ssf::ir::ValueDefinition::new(
                         value_definition.name(),
                         self.compile(value_definition.body())?,
-                        self.type_compiler.compile_value(value_definition.type_()),
+                        self.type_compiler.compile_value(value_definition.type_())?,
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
@@ -541,8 +543,8 @@ mod tests {
 
         assert_eq!(
             ExpressionCompiler::new(&type_compiler).compile(
-                &Record::new(
-                    type_,
+                &RecordConstruction::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
                     vec![(
                         "foo".into(),
                         Number::new(42.0, SourceInformation::dummy()).into()

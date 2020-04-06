@@ -1,4 +1,3 @@
-mod anonymous_record;
 mod boolean;
 mod function;
 mod none;
@@ -9,7 +8,6 @@ mod type_;
 mod unknown;
 mod variable;
 
-pub use anonymous_record::*;
 pub use boolean::*;
 pub use function::*;
 pub use none::*;

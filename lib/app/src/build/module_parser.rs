@@ -15,7 +15,7 @@ impl<'a, D: FilePathDisplayer> ModuleParser<'a, D> {
         &self,
         source: &str,
         file_path: &FilePath,
-    ) -> Result<ein::ast::UnresolvedModule, ein::ParseError> {
+    ) -> Result<ein::UnresolvedModule, ein::ParseError> {
         ein::parse_module(source, &self.file_path_displayer.display(file_path))
     }
 }

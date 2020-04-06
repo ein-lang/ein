@@ -25,14 +25,17 @@ impl Let {
         &self.expression
     }
 
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
-        Self::new(
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_expressions(convert))
-                .collect(),
-            self.expression.convert_expressions(convert),
-        )
+                .collect::<Result<_, _>>()?,
+            self.expression.convert_expressions(convert)?,
+        ))
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {

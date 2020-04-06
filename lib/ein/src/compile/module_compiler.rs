@@ -33,13 +33,13 @@ impl<'a> ModuleCompiler<'a> {
                         .variables()
                         .iter()
                         .map(move |(name, type_)| {
-                            ssf::ir::Declaration::new(
+                            Ok(ssf::ir::Declaration::new(
                                 module_interface.path().qualify_name(name),
-                                self.type_compiler.compile(type_),
-                            )
+                                self.type_compiler.compile(type_)?,
+                            ))
                         })
                 })
-                .collect(),
+                .collect::<Result<_, CompileError>>()?,
             self.module
                 .definitions()
                 .iter()
@@ -51,29 +51,33 @@ impl<'a> ModuleCompiler<'a> {
                         Ok(self.compile_value_definition(value_definition)?.into())
                     }
                 })
+                .collect::<Result<Vec<_>, CompileError>>()?
+                .into_iter()
                 .chain(
                     self.module
                         .type_definitions()
                         .iter()
-                        .flat_map(|type_definition| self.compile_type_definition(type_definition))
-                        .map(Ok),
+                        .map(|type_definition| self.compile_type_definition(type_definition))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .into_iter()
+                        .flatten(),
                 )
-                .collect::<Result<Vec<_>, CompileError>>()?,
+                .collect(),
         )?)
     }
 
     fn compile_type_definition(
         &self,
         type_definition: &ast::TypeDefinition,
-    ) -> Vec<ssf::ir::Definition> {
+    ) -> Result<Vec<ssf::ir::Definition>, CompileError> {
         if let Type::Record(record_type) = type_definition.type_() {
-            let algebraic_type = self.type_compiler.compile_record(record_type);
+            let algebraic_type = self.type_compiler.compile_record(record_type)?;
 
             record_type
                 .elements()
                 .iter()
                 .map(|(key, type_)| {
-                    ssf::ir::FunctionDefinition::new(
+                    Ok(ssf::ir::FunctionDefinition::new(
                         format!("{}.{}", record_type.name(), key),
                         vec![ssf::ir::Argument::new("x", algebraic_type.clone())],
                         ssf::ir::AlgebraicCase::new(
@@ -89,13 +93,13 @@ impl<'a> ModuleCompiler<'a> {
                             )],
                             None,
                         ),
-                        self.type_compiler.compile_value(type_),
+                        self.type_compiler.compile_value(type_)?,
                     )
-                    .into()
+                    .into())
                 })
                 .collect()
         } else {
-            vec![]
+            Ok(vec![])
         }
     }
 
@@ -105,7 +109,7 @@ impl<'a> ModuleCompiler<'a> {
     ) -> Result<ssf::ir::FunctionDefinition, CompileError> {
         let core_type = self
             .type_compiler
-            .compile_function(function_definition.type_());
+            .compile_function(function_definition.type_())?;
 
         Ok(ssf::ir::FunctionDefinition::new(
             function_definition.name(),
@@ -128,7 +132,7 @@ impl<'a> ModuleCompiler<'a> {
         Ok(ssf::ir::ValueDefinition::new(
             value_definition.name(),
             self.expression_compiler.compile(value_definition.body())?,
-            self.type_compiler.compile_value(value_definition.type_()),
+            self.type_compiler.compile_value(value_definition.type_())?,
         ))
     }
 }
