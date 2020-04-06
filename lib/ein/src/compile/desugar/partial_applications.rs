@@ -2,18 +2,16 @@ use super::super::error::CompileError;
 use super::super::name_generator::NameGenerator;
 use crate::ast::*;
 use crate::debug::*;
-use crate::types::{self, Type};
+use crate::types::Type;
 
 pub struct PartialApplicationDesugarer {
-    function_name_generator: NameGenerator,
-    argument_name_generator: NameGenerator,
+    name_generator: NameGenerator,
 }
 
 impl PartialApplicationDesugarer {
     pub fn new() -> Self {
         Self {
-            function_name_generator: NameGenerator::new("pa_function_"),
-            argument_name_generator: NameGenerator::new("pa_argument_"),
+            name_generator: NameGenerator::new("pa_argument_"),
         }
     }
 
@@ -21,7 +19,7 @@ impl PartialApplicationDesugarer {
         module
             .convert_definitions(&mut |definition| -> Result<_, CompileError> {
                 if let Definition::ValueDefinition(value_definition) = definition {
-                    Ok(self.desugar_value_definition(value_definition).into())
+                    Ok(self.desugar_value_definition(value_definition))
                 } else {
                     Ok(definition.clone())
                 }
@@ -35,60 +33,18 @@ impl PartialApplicationDesugarer {
             })
     }
 
-    fn desugar_value_definition(&mut self, value_definition: &ValueDefinition) -> ValueDefinition {
-        if let Type::Function(function_type) = value_definition.type_() {
-            ValueDefinition::new(
+    fn desugar_value_definition(&mut self, value_definition: &ValueDefinition) -> Definition {
+        if let Type::Function(_) = value_definition.type_() {
+            FunctionDefinition::new(
                 value_definition.name(),
-                self.convert_partial_applications(value_definition.body(), function_type),
+                vec![],
+                value_definition.body().clone(),
                 value_definition.type_().clone(),
                 value_definition.source_information().clone(),
             )
+            .into()
         } else {
-            value_definition.clone()
-        }
-    }
-
-    fn convert_partial_applications(
-        &mut self,
-        expression: &Expression,
-        function_type: &types::Function,
-    ) -> Expression {
-        match expression {
-            Expression::Application(application) => {
-                let name = self.function_name_generator.generate();
-
-                Let::new(
-                    vec![FunctionDefinition::new(
-                        &name,
-                        vec![],
-                        application.clone(),
-                        function_type.clone(),
-                        application.source_information().clone(),
-                    )
-                    .into()],
-                    Variable::new(name, application.source_information().clone()),
-                )
-                .into()
-            }
-            Expression::If(if_) => If::new(
-                if_.condition().clone(),
-                self.convert_partial_applications(if_.then(), function_type),
-                self.convert_partial_applications(if_.else_(), function_type),
-                if_.source_information().clone(),
-            )
-            .into(),
-            Expression::Let(let_) => Let::new(
-                let_.definitions().to_vec(),
-                self.convert_partial_applications(let_.expression(), function_type),
-            )
-            .into(),
-            Expression::Variable(_) => expression.clone(),
-            Expression::Boolean(_)
-            | Expression::None(_)
-            | Expression::Number(_)
-            | Expression::Operation(_)
-            | Expression::RecordConstruction(_)
-            | Expression::RecordUpdate(_) => unreachable!(),
+            value_definition.clone().into()
         }
     }
 
@@ -103,7 +59,7 @@ impl PartialApplicationDesugarer {
         } else {
             let omitted_arguments = (0..(function_type.arguments().len()
                 - function_definition.arguments().len()))
-                .map(|_| self.argument_name_generator.generate())
+                .map(|_| self.name_generator.generate())
                 .collect::<Vec<_>>();
 
             FunctionDefinition::new(
@@ -186,10 +142,44 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn do_not_convert_value_definitions_of_variables() {
-        let value_definition = ValueDefinition::new(
-            "f",
-            Variable::new("g", SourceInformation::dummy()),
+    fn complement_an_omitted_argument_of_value_definition() {
+        assert_eq!(
+            PartialApplicationDesugarer::new().desugar(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "f",
+                    Variable::new("g", SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])),
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["pa_argument_0".into()],
+                Application::new(
+                    Variable::new("g", SourceInformation::dummy()),
+                    Variable::new("pa_argument_0", SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()]))
+        );
+    }
+
+    #[test]
+    fn complement_2_omitted_arguments_of_value_definition() {
+        let function_type = types::Function::new(
+            types::Number::new(SourceInformation::dummy()),
             types::Function::new(
                 types::Number::new(SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -200,54 +190,25 @@ mod tests {
 
         assert_eq!(
             PartialApplicationDesugarer::new().desugar(&Module::from_definitions(vec![
-                value_definition.clone().into()
-            ])),
-            Ok(Module::from_definitions(vec![value_definition.into()]))
-        );
-    }
-
-    #[test]
-    fn convert_value_definitions_of_applications() {
-        let function_type = types::Function::new(
-            types::Number::new(SourceInformation::dummy()),
-            types::Number::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        );
-
-        assert_eq!(
-            PartialApplicationDesugarer::new().desugar(&Module::from_definitions(vec![
                 ValueDefinition::new(
                     "f",
-                    Application::new(
-                        Variable::new("g", SourceInformation::dummy()),
-                        Variable::new("x", SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
+                    Variable::new("g", SourceInformation::dummy()),
                     function_type.clone(),
                     SourceInformation::dummy(),
                 )
                 .into()
             ])),
-            Ok(Module::from_definitions(vec![ValueDefinition::new(
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
-                Let::new(
-                    vec![FunctionDefinition::new(
-                        "pa_function_0",
-                        vec!["pa_argument_0".into()],
-                        Application::new(
-                            Application::new(
-                                Variable::new("g", SourceInformation::dummy()),
-                                Variable::new("x", SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            Variable::new("pa_argument_0", SourceInformation::dummy()),
-                            SourceInformation::dummy(),
-                        ),
-                        function_type.clone(),
-                        SourceInformation::dummy()
-                    )
-                    .into()],
-                    Variable::new("pa_function_0", SourceInformation::dummy())
+                vec!["pa_argument_0".into(), "pa_argument_1".into()],
+                Application::new(
+                    Application::new(
+                        Variable::new("g", SourceInformation::dummy()),
+                        Variable::new("pa_argument_0", SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    Variable::new("pa_argument_1", SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 ),
                 function_type.clone(),
                 SourceInformation::dummy(),
