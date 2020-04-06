@@ -1,13 +1,13 @@
-mod partial_applications;
-mod record_update;
+mod partial_application_desugarer;
+mod record_update_desugarer;
 
 use super::error::CompileError;
 use crate::ast::*;
-use partial_applications::*;
-use record_update::*;
+use partial_application_desugarer::PartialApplicationDesugarer;
+use record_update_desugarer::RecordUpdateDesugarer;
 
 pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
-    desugar_record_update(module)
+    RecordUpdateDesugarer::new().desugar(module)
 }
 
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
