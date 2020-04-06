@@ -4,7 +4,7 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::types::Type;
 
-pub fn desugar_unsaturated_applications(module: &Module) -> Result<Module, CompileError> {
+pub fn desugar_partial_applications(module: &Module) -> Result<Module, CompileError> {
     let mut name_generator = NameGenerator::new("omitted_argument_");
 
     module.convert_definitions(&mut |definition| -> Result<_, CompileError> {
@@ -128,19 +128,17 @@ mod tests {
     #[test]
     fn complement_an_omitted_argument_of_value_definition() {
         assert_eq!(
-            desugar_unsaturated_applications(&Module::from_definitions(vec![
-                ValueDefinition::new(
-                    "f",
-                    Variable::new("g", SourceInformation::dummy()),
-                    types::Function::new(
-                        types::Number::new(SourceInformation::dummy()),
-                        types::Number::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])),
+            desugar_partial_applications(&Module::from_definitions(vec![ValueDefinition::new(
+                "f",
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
             Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["omitted_argument_0".into()],
@@ -163,23 +161,21 @@ mod tests {
     #[test]
     fn complement_2_omitted_arguments_of_value_definition() {
         assert_eq!(
-            desugar_unsaturated_applications(&Module::from_definitions(vec![
-                ValueDefinition::new(
-                    "f",
-                    Variable::new("g", SourceInformation::dummy()),
+            desugar_partial_applications(&Module::from_definitions(vec![ValueDefinition::new(
+                "f",
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
-                        types::Function::new(
-                            types::Number::new(SourceInformation::dummy()),
-                            types::Number::new(SourceInformation::dummy()),
-                            SourceInformation::dummy()
-                        ),
+                        types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
             Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["omitted_argument_0".into(), "omitted_argument_1".into()],
@@ -210,24 +206,22 @@ mod tests {
     #[test]
     fn complement_an_omitted_argument_of_function_definition() {
         assert_eq!(
-            desugar_unsaturated_applications(&Module::from_definitions(vec![
-                FunctionDefinition::new(
-                    "f",
-                    vec!["x".into()],
-                    Variable::new("g", SourceInformation::dummy()),
+            desugar_partial_applications(&Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into()],
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
-                        types::Function::new(
-                            types::Number::new(SourceInformation::dummy()),
-                            types::Number::new(SourceInformation::dummy()),
-                            SourceInformation::dummy()
-                        ),
+                        types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
             Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["x".into(), "omitted_argument_0".into()],
@@ -254,28 +248,26 @@ mod tests {
     #[test]
     fn complement_2_omitted_arguments_of_function_definition() {
         assert_eq!(
-            desugar_unsaturated_applications(&Module::from_definitions(vec![
-                FunctionDefinition::new(
-                    "f",
-                    vec!["x".into()],
-                    Variable::new("g", SourceInformation::dummy()),
+            desugar_partial_applications(&Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into()],
+                Variable::new("g", SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
                         types::Function::new(
                             types::Number::new(SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy()
-                            ),
+                            types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
                     ),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()])),
             Ok(Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec![
