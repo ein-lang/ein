@@ -11,5 +11,5 @@ pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
 }
 
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
-    desugar_partial_applications(module)
+    PartialApplicationDesugarer::new().desugar(module)
 }
