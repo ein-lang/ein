@@ -441,6 +441,12 @@ fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
         concrete_operator("-", Operator::Subtract),
         concrete_operator("*", Operator::Multiply),
         concrete_operator("/", Operator::Divide),
+        concrete_operator("=", Operator::Equal),
+        concrete_operator("/=", Operator::NotEqual),
+        concrete_operator("<", Operator::LessThan),
+        concrete_operator("<=", Operator::LessThanOrEqual),
+        concrete_operator(">", Operator::GreaterThan),
+        concrete_operator(">=", Operator::GreaterThanOrEqual),
     ))
 }
 
@@ -1715,7 +1721,21 @@ mod tests {
     fn parse_operator() {
         assert!(operator().parse(stream("", "")).is_err());
         assert!(operator().parse(stream("++", "")).is_err());
-        assert_eq!(operator().parse(stream("+", "")).unwrap().0, Operator::Add);
+
+        for (source, expected) in &[
+            ("+", Operator::Add),
+            ("-", Operator::Subtract),
+            ("*", Operator::Multiply),
+            ("/", Operator::Divide),
+            ("=", Operator::Equal),
+            ("/=", Operator::NotEqual),
+            ("<", Operator::LessThan),
+            ("<=", Operator::LessThanOrEqual),
+            (">", Operator::GreaterThan),
+            (">=", Operator::GreaterThanOrEqual),
+        ] {
+            assert_eq!(operator().parse(stream(source, "")).unwrap().0, *expected);
+        }
     }
 
     #[test]
