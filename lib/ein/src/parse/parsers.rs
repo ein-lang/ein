@@ -344,8 +344,14 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
 }
 
 fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str> {
-    choice((newlines1(), sign(")"), operator().with(value(()))))
-        .with(value("application terminator"))
+    choice((
+        newlines1(),
+        sign(")"),
+        operator().with(value(())),
+        any_keyword(),
+    ))
+    .with(value("application terminator"))
+    .expected("application terminator")
 }
 
 fn record_construction<'a>() -> impl Parser<Stream<'a>, Output = RecordConstruction> {
@@ -508,21 +514,34 @@ fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 }
 
 fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
+    attempt(unchecked_identifier().then(|identifier| {
+        if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
+            unexpected_any("keyword").left()
+        } else {
+            value(identifier).right()
+        }
+    }))
+}
+
+fn unchecked_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
     attempt(
         (many1(letter()), many(alpha_num()))
-            .map(|(head, tail): (String, String)| [head, tail].concat())
-            .then(|identifier| {
-                if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
-                    unexpected_any("keyword").left()
-                } else {
-                    value(identifier).right()
-                }
-            }),
+            .map(|(head, tail): (String, String)| [head, tail].concat()),
     )
 }
 
 fn keyword<'a>(name: &'static str) -> impl Parser<Stream<'a>, Output = ()> {
     token(string(name).skip(not_followed_by(alpha_num()))).with(value(()))
+}
+
+fn any_keyword<'a>() -> impl Parser<Stream<'a>, Output = ()> {
+    token(unchecked_identifier().then(|keyword| {
+        if KEYWORDS.contains(&keyword.as_str()) {
+            value(()).left()
+        } else {
+            unexpected_any("non-keyword").right()
+        }
+    }))
 }
 
 fn sign<'a>(sign: &'static str) -> impl Parser<Stream<'a>, Output = ()> {
@@ -545,7 +564,9 @@ fn source_information<'a>() -> impl Parser<Stream<'a>, Output = SourceInformatio
 }
 
 fn blank<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    many::<Vec<_>, _, _>(choice((spaces1(), newline()))).with(value(()))
+    many::<Vec<_>, _, _>(choice((spaces1(), newline())))
+        .with(value(()))
+        .expected("blank")
 }
 
 fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
@@ -554,8 +575,8 @@ fn spaces1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 
 fn newlines1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
     choice((
-        many1(newline()),
-        many::<Vec<_>, _, _>(newline()).with(eof()),
+        attempt(many1(newline())),
+        attempt(many::<Vec<_>, _, _>(newline()).with(eof())),
     ))
 }
 
@@ -1522,11 +1543,49 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+        assert_eq!(
+            application()
+                .parse(stream(
+                    indoc!(
+                        "
+                        f
+                        x)
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Application::new(
+                Variable::new("f", SourceInformation::dummy()),
+                Variable::new("x", SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
+            application()
+                .parse(stream(
+                    indoc!(
+                        "
+                        f
+                        x then
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Application::new(
+                Variable::new("f", SourceInformation::dummy()),
+                Variable::new("x", SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+        );
     }
 
     #[test]
     fn parse_application_terminator() {
-        for source in &["", "\n", " \n", "\n\n", "+", ")", "\n)", "\n )"] {
+        for source in &["", "\n", " \n", "\n\n", "+", ")", "\n)", "\n )", "then"] {
             assert!(application_terminator().parse(stream(source, "")).is_ok());
         }
     }
