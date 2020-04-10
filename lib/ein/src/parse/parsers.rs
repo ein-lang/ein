@@ -428,7 +428,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 fn operation<'a>() -> impl Parser<Stream<'a>, Output = Operation> {
     attempt((
         term(),
-        many1((source_information(), operator(), term()).map(
+        many1(attempt((source_information(), operator(), term())).map(
             |(source_information, operator, expression)| (operator, expression, source_information),
         )),
     ))
@@ -441,7 +441,7 @@ fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
         concrete_operator("-", Operator::Subtract),
         concrete_operator("*", Operator::Multiply),
         concrete_operator("/", Operator::Divide),
-        concrete_operator("=", Operator::Equal),
+        concrete_operator("==", Operator::Equal),
         concrete_operator("/=", Operator::NotEqual),
         concrete_operator("<", Operator::LessThan),
         concrete_operator("<=", Operator::LessThanOrEqual),
@@ -581,6 +581,7 @@ fn comment<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 mod tests {
     use super::*;
     use indoc::indoc;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn parse_module() {
@@ -1095,6 +1096,16 @@ mod tests {
             Variable::new("x", SourceInformation::dummy()).into()
         );
         assert_eq!(
+            expression().parse(stream("x + 1", "")).unwrap().0,
+            Operation::new(
+                Operator::Add,
+                Variable::new("x", SourceInformation::dummy()),
+                Number::new(1.0, SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
             expression().parse(stream("x + y z", "")).unwrap().0,
             Operation::new(
                 Operator::Add,
@@ -1226,6 +1237,23 @@ mod tests {
                     Number::new(3.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 ),
+                SourceInformation::dummy(),
+            )
+        );
+        assert_eq!(
+            if_()
+                .parse(stream("if x < 0 then 42 else 13", ""))
+                .unwrap()
+                .0,
+            If::new(
+                Operation::new(
+                    Operator::LessThan,
+                    Variable::new("x", SourceInformation::dummy()),
+                    Number::new(0.0, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                Number::new(42.0, SourceInformation::dummy()),
+                Number::new(13.0, SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
         );
@@ -1516,6 +1544,15 @@ mod tests {
             )
         );
         assert_eq!(
+            operation().parse(stream("1 + 1 then", "")).unwrap().0,
+            Operation::new(
+                Operator::Add,
+                Number::new(1.0, SourceInformation::dummy()),
+                Number::new(1.0, SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
             operation().parse(stream("1 + 1 + 1", "")).unwrap().0,
             Operation::new(
                 Operator::Add,
@@ -1587,6 +1624,15 @@ mod tests {
                     Number::new(4.0, SourceInformation::dummy()),
                     SourceInformation::dummy()
                 ),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
+            operation().parse(stream("1 == 1", "")).unwrap().0,
+            Operation::new(
+                Operator::Equal,
+                Number::new(1.0, SourceInformation::dummy()),
+                Number::new(1.0, SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
         );
@@ -1727,7 +1773,7 @@ mod tests {
             ("-", Operator::Subtract),
             ("*", Operator::Multiply),
             ("/", Operator::Divide),
-            ("=", Operator::Equal),
+            ("==", Operator::Equal),
             ("/=", Operator::NotEqual),
             ("<", Operator::LessThan),
             ("<=", Operator::LessThanOrEqual),
