@@ -242,14 +242,28 @@ impl<'a> TypeInferrer<'a> {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
             Expression::Operation(operation) => {
-                let type_: Type = types::Number::new(operation.source_information().clone()).into();
+                let number_type = types::Number::new(operation.source_information().clone());
 
                 let lhs = self.infer_expression(operation.lhs(), variables)?;
-                self.equation_set.add(Equation::new(lhs, type_.clone()));
+                self.equation_set
+                    .add(Equation::new(lhs, number_type.clone()));
                 let rhs = self.infer_expression(operation.rhs(), variables)?;
-                self.equation_set.add(Equation::new(rhs, type_.clone()));
+                self.equation_set
+                    .add(Equation::new(rhs, number_type.clone()));
 
-                Ok(type_)
+                Ok(match operation.operator() {
+                    Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
+                        number_type.into()
+                    }
+                    Operator::Equal
+                    | Operator::NotEqual
+                    | Operator::LessThan
+                    | Operator::LessThanOrEqual
+                    | Operator::GreaterThan
+                    | Operator::GreaterThanOrEqual => {
+                        types::Boolean::new(number_type.source_information().clone()).into()
+                    }
+                })
             }
             Expression::RecordConstruction(record) => {
                 let type_ = self
