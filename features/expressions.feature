@@ -41,7 +41,7 @@ Feature: Expressions
     Then stdout from "sh -c ./command" should contain exactly "42"
     And the exit status should be 0
 
-  Scenario: Use arithmetic operations
+  Scenario: Use arithmetic operators
     Given a file named "ein.json" with:
     """
     {
