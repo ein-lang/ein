@@ -5,7 +5,7 @@ Feature: Expressions
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -26,8 +26,8 @@ Feature: Expressions
       x
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use if expressions
@@ -37,8 +37,8 @@ Feature: Expressions
     main x = if true then 42 else 13
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use arithmetic operators
@@ -47,7 +47,7 @@ Feature: Expressions
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -58,8 +58,8 @@ Feature: Expressions
     main x = 0 + 1 * 3 - 4 / 2
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "1"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "1"
     And the exit status should be 0
 
   Scenario: Use an equality operator
@@ -68,7 +68,7 @@ Feature: Expressions
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -79,6 +79,6 @@ Feature: Expressions
     main x = if x == 0 then 13 else 42
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0

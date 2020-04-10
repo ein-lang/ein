@@ -5,7 +5,7 @@ Feature: Error
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }

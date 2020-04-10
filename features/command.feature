@@ -5,7 +5,7 @@ Feature: Command
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -16,8 +16,8 @@ Feature: Command
     main x = x
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Build a command twice
@@ -26,7 +26,7 @@ Feature: Command
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -46,7 +46,7 @@ Feature: Command
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -67,7 +67,7 @@ Feature: Command
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {
         "github.com/ein-lang/sample-package": { "version": "master" }
@@ -82,6 +82,6 @@ Feature: Command
     main = Foo.foo
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0

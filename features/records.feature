@@ -5,7 +5,7 @@ Feature: Records
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -23,8 +23,8 @@ Feature: Records
     main x = 42
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Access a record's element
@@ -36,8 +36,8 @@ Feature: Records
     main x = Foo.foo (Foo ( foo = 42 ))
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Update a record's element
@@ -52,6 +52,6 @@ Feature: Records
     main x = Foo.foo (Foo ( ...foo, foo = 42 ))
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
