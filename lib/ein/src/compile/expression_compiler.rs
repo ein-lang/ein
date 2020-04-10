@@ -35,14 +35,7 @@ impl<'a> ExpressionCompiler<'a> {
                 )
                 .into())
             }
-            ast::Expression::Boolean(boolean) => Ok(ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(
-                    self.type_compiler.compile_boolean(),
-                    boolean.value() as usize,
-                ),
-                vec![],
-            )
-            .into()),
+            ast::Expression::Boolean(boolean) => Ok(self.compile_boolean(boolean.value()).into()),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition())?,
                 vec![
@@ -74,12 +67,40 @@ impl<'a> ExpressionCompiler<'a> {
             ast::Expression::Number(number) => {
                 Ok(ssf::ir::Primitive::Float64(number.value()).into())
             }
-            ast::Expression::Operation(operation) => Ok(ssf::ir::Operation::new(
-                operation.operator().into(),
-                self.compile(operation.lhs())?,
-                self.compile(operation.rhs())?,
-            )
-            .into()),
+            ast::Expression::Operation(operation) => {
+                let compiled = ssf::ir::Operation::new(
+                    operation.operator().into(),
+                    self.compile(operation.lhs())?,
+                    self.compile(operation.rhs())?,
+                );
+
+                Ok(match operation.operator() {
+                    ast::Operator::Add
+                    | ast::Operator::Subtract
+                    | ast::Operator::Multiply
+                    | ast::Operator::Divide => compiled.into(),
+                    ast::Operator::Equal
+                    | ast::Operator::NotEqual
+                    | ast::Operator::LessThan
+                    | ast::Operator::LessThanOrEqual
+                    | ast::Operator::GreaterThan
+                    | ast::Operator::GreaterThanOrEqual => ssf::ir::PrimitiveCase::new(
+                        compiled,
+                        vec![
+                            ssf::ir::PrimitiveAlternative::new(
+                                ssf::ir::Primitive::Integer8(0),
+                                self.compile_boolean(false),
+                            ),
+                            ssf::ir::PrimitiveAlternative::new(
+                                ssf::ir::Primitive::Integer8(1),
+                                self.compile_boolean(true),
+                            ),
+                        ],
+                        None,
+                    )
+                    .into(),
+                })
+            }
             ast::Expression::RecordConstruction(record) => {
                 Ok(ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(
@@ -182,6 +203,13 @@ impl<'a> ExpressionCompiler<'a> {
             self.compile(let_.expression())?,
         ))
     }
+
+    fn compile_boolean(&self, value: bool) -> ssf::ir::ConstructorApplication {
+        ssf::ir::ConstructorApplication::new(
+            ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), value as usize),
+            vec![],
+        )
+    }
 }
 
 #[cfg(test)]
@@ -241,7 +269,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_operation() {
+    fn compile_arithmetic_operation() {
         assert_eq!(
             ExpressionCompiler::new(&TypeCompiler::new(&ReferenceTypeResolver::new(
                 &Module::dummy()
@@ -256,6 +284,45 @@ mod tests {
                 .into(),
             ),
             Ok(ssf::ir::Operation::new(ssf::ir::Operator::Add, 1.0, 2.0).into())
+        );
+    }
+
+    #[test]
+    fn compile_comparison_operation() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_compiler = TypeCompiler::new(&reference_type_resolver);
+
+        assert_eq!(
+            ExpressionCompiler::new(&type_compiler).compile(
+                &Operation::new(
+                    Operator::Equal,
+                    Number::new(1.0, SourceInformation::dummy()),
+                    Number::new(2.0, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+            ),
+            Ok(ssf::ir::PrimitiveCase::new(
+                ssf::ir::Operation::new(ssf::ir::Operator::Equal, 1.0, 2.0),
+                vec![
+                    ssf::ir::PrimitiveAlternative::new(
+                        ssf::ir::Primitive::Integer8(0),
+                        ssf::ir::ConstructorApplication::new(
+                            ssf::ir::Constructor::new(type_compiler.compile_boolean(), 0),
+                            vec![],
+                        ),
+                    ),
+                    ssf::ir::PrimitiveAlternative::new(
+                        ssf::ir::Primitive::Integer8(1),
+                        ssf::ir::ConstructorApplication::new(
+                            ssf::ir::Constructor::new(type_compiler.compile_boolean(), 1),
+                            vec![],
+                        ),
+                    ),
+                ],
+                None,
+            )
+            .into())
         );
     }
 
