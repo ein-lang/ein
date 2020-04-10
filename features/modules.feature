@@ -5,7 +5,7 @@ Feature: Modules
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -27,8 +27,8 @@ Feature: Modules
     a = 42
     """
     When I successfully run `ein build`
-    And I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    And I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Import a name in a module
@@ -47,8 +47,8 @@ Feature: Modules
     a = 42
     """
     When I successfully run `ein build`
-    And I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    And I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Allow diamond dependency
@@ -86,6 +86,6 @@ Feature: Modules
     baz = 21
     """
     When I successfully run `ein build`
-    And I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    And I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0

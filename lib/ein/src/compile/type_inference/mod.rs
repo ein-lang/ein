@@ -1080,4 +1080,40 @@ mod tests {
             assert_eq!(infer_types(&module), Ok(module));
         }
     }
+
+    #[test]
+    fn infer_types_of_arithmetic_operations() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Operation::new(
+                Operator::Add,
+                Number::new(42.0, SourceInformation::dummy()),
+                Number::new(42.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn infer_types_of_comparison_operations() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Operation::new(
+                Operator::Equal,
+                Number::new(42.0, SourceInformation::dummy()),
+                Number::new(42.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::Boolean::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+
+        assert_eq!(infer_types(&module), Ok(module));
+    }
 }

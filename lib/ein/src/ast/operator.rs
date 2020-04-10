@@ -4,6 +4,12 @@ pub enum Operator {
     Subtract,
     Multiply,
     Divide,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
 }
 
 impl From<&Operator> for ssf::ir::Operator {
@@ -13,6 +19,12 @@ impl From<&Operator> for ssf::ir::Operator {
             Operator::Subtract => ssf::ir::Operator::Subtract,
             Operator::Multiply => ssf::ir::Operator::Multiply,
             Operator::Divide => ssf::ir::Operator::Divide,
+            Operator::Equal => ssf::ir::Operator::Equal,
+            Operator::NotEqual => ssf::ir::Operator::NotEqual,
+            Operator::LessThan => ssf::ir::Operator::LessThan,
+            Operator::LessThanOrEqual => ssf::ir::Operator::LessThanOrEqual,
+            Operator::GreaterThan => ssf::ir::Operator::GreaterThan,
+            Operator::GreaterThanOrEqual => ssf::ir::Operator::GreaterThanOrEqual,
         }
     }
 }
