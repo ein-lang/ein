@@ -3,6 +3,8 @@ jobs:
   build:
     docker:
       - image: einlang/ci
+    environment:
+      CARGO_BUILD_JOBS: 2
     steps:
       - checkout
       - run: npx cspell '**/*.{feature,md,rs}'
