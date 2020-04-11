@@ -7,26 +7,25 @@ macro_rules! choice {
     }
 }
 
-pub fn many<'a, F: Extend<P::Output> + Default, I: combine::Stream, P: Parser<I>>(
+pub fn many<F: Extend<P::Output> + Default, I: combine::Stream, P: Parser<I>>(
     p: P,
 ) -> combine::parser::repeat::Many<F, combine::parser::combinator::Try<P>> {
     combine::many(attempt(p))
 }
 
-pub fn many1<'a, F: Extend<P::Output> + Default, I: combine::Stream, P: Parser<I>>(
+pub fn many1<F: Extend<P::Output> + Default, I: combine::Stream, P: Parser<I>>(
     p: P,
 ) -> combine::parser::repeat::Many1<F, combine::parser::combinator::Try<P>> {
     combine::many1(attempt(p))
 }
 
-pub fn optional<'a, I: combine::Stream, P: Parser<I>>(
+pub fn optional<I: combine::Stream, P: Parser<I>>(
     p: P,
 ) -> combine::parser::choice::Optional<combine::parser::combinator::Try<P>> {
     combine::optional(attempt(p))
 }
 
 pub fn sep_end_by<
-    'a,
     F: Extend<P::Output> + Default,
     I: combine::Stream,
     P: Parser<I>,
@@ -43,7 +42,6 @@ pub fn sep_end_by<
 }
 
 pub fn sep_end_by1<
-    'a,
     F: Extend<P::Output> + Default,
     I: combine::Stream,
     P: Parser<I>,

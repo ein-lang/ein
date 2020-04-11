@@ -443,7 +443,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 fn operation<'a>() -> impl Parser<Stream<'a>, Output = Operation> {
     (
         term(),
-        many1(((source_information(), operator(), term())).map(
+        many1((source_information(), operator(), term()).map(
             |(source_information, operator, expression)| (operator, expression, source_information),
         )),
     )
