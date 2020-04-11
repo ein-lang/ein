@@ -1,3 +1,5 @@
+#[macro_use]
+mod attempt;
 mod error;
 mod parsers;
 mod utilities;
