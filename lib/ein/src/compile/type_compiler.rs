@@ -1,18 +1,17 @@
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::types::{self, Type};
-use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct TypeCompiler<'a> {
-    reference_indices: HashMap<String, usize>,
+    references: Vec<String>,
     reference_type_resolver: &'a ReferenceTypeResolver,
 }
 
 impl<'a> TypeCompiler<'a> {
     pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
         Self {
-            reference_indices: HashMap::new(),
+            references: vec![],
             reference_type_resolver,
         }
     }
@@ -41,7 +40,16 @@ impl<'a> TypeCompiler<'a> {
         &self,
         reference: &types::Reference,
     ) -> Result<ssf::types::Type, CompileError> {
-        self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
+        if let Some(index) = self
+            .references
+            .iter()
+            .rev()
+            .position(|name| name == reference.name())
+        {
+            Ok(ssf::types::Value::Index(index).into())
+        } else {
+            self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
+        }
     }
 
     pub fn compile_function(
@@ -55,12 +63,14 @@ impl<'a> TypeCompiler<'a> {
         &self,
         record: &types::Record,
     ) -> Result<ssf::types::Algebraic, CompileError> {
+        let other = self.push_reference(record.name());
+
         Ok(ssf::types::Algebraic::new(vec![
             ssf::types::Constructor::boxed(
                 record
                     .elements()
                     .iter()
-                    .map(|(_, type_)| self.compile(type_))
+                    .map(|(_, type_)| other.compile(type_))
                     .collect::<Result<_, _>>()?,
             ),
         ]))
@@ -79,6 +89,18 @@ impl<'a> TypeCompiler<'a> {
 
     pub fn compile_none(&self) -> ssf::types::Algebraic {
         ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![])])
+    }
+
+    fn push_reference(&self, reference: &str) -> Self {
+        Self {
+            references: self
+                .references
+                .clone()
+                .into_iter()
+                .chain(vec![reference.into()])
+                .collect(),
+            reference_type_resolver: self.reference_type_resolver,
+        }
     }
 }
 
@@ -113,6 +135,89 @@ mod tests {
                 ssf::types::Primitive::Float64
             )
             .into())
+        );
+    }
+
+    #[test]
+    fn compile_recursive_record_type() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        assert_eq!(
+            TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new(
+                        "Foo",
+                        types::Record::new(
+                            "Foo",
+                            vec![("foo".into(), reference_type.clone().into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy()
+                        )
+                    )],
+                    vec![]
+                )
+            ))
+            .compile(&reference_type.into()),
+            Ok(
+                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                    vec![ssf::types::Value::Index(0).into()],
+                    true
+                )])
+                .into()
+            )
+        );
+    }
+
+    #[test]
+    fn compile_nested_recursive_record_type() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        assert_eq!(
+            TypeCompiler::new(&ReferenceTypeResolver::new(
+                &Module::from_definitions_and_type_definitions(
+                    vec![
+                        TypeDefinition::new(
+                            "Foo",
+                            types::Record::new(
+                                "Foo",
+                                vec![(
+                                    "foo".into(),
+                                    types::Reference::new("Bar", SourceInformation::dummy()).into()
+                                )]
+                                .into_iter()
+                                .collect(),
+                                SourceInformation::dummy()
+                            )
+                        ),
+                        TypeDefinition::new(
+                            "Bar",
+                            types::Record::new(
+                                "Bar",
+                                vec![("bar".into(), reference_type.clone().into())]
+                                    .into_iter()
+                                    .collect(),
+                                SourceInformation::dummy()
+                            )
+                        )
+                    ],
+                    vec![]
+                )
+            ))
+            .compile(&reference_type.into()),
+            Ok(
+                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                    vec![
+                        ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                            vec![ssf::types::Value::Index(1).into()],
+                            true
+                        )])
+                        .into()
+                    ],
+                    true
+                )])
+                .into()
+            )
         );
     }
 }
