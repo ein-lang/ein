@@ -1,16 +1,15 @@
-mod argument_omission;
-mod non_variable_application;
-mod resolve_function_reference_types;
+mod partial_application_desugarer;
+mod record_update_desugarer;
 
+use super::error::CompileError;
 use crate::ast::*;
-use argument_omission::*;
-use non_variable_application::*;
-use resolve_function_reference_types::*;
+use partial_application_desugarer::PartialApplicationDesugarer;
+use record_update_desugarer::RecordUpdateDesugarer;
 
-pub fn desugar_without_types(module: &Module) -> Module {
-    desugar_non_variable_applications(module)
+pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
+    RecordUpdateDesugarer::new().desugar(module)
 }
 
-pub fn desugar_with_types(module: &Module) -> Module {
-    desugar_argument_omission(&resolve_function_reference_types(module))
+pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
+    PartialApplicationDesugarer::new().desugar(module)
 }

@@ -1,8 +1,6 @@
-use super::definition::Definition;
 use super::expression::Expression;
 use crate::debug::*;
 use crate::types::Type;
-use std::collections::HashMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -44,31 +42,16 @@ impl ValueDefinition {
         &self.source_information
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.name.clone(),
-            self.body.substitute_type_variables(substitutions),
-            self.type_.substitute_variables(substitutions),
-            self.source_information.clone(),
-        )
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.name.clone(),
-            self.body.convert_definitions(convert),
+            self.body.convert_expressions(convert)?,
             self.type_.clone(),
             self.source_information.clone(),
-        )
-    }
-
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
-        Self::new(
-            self.name.clone(),
-            self.body.convert_expressions(convert),
-            self.type_.clone(),
-            self.source_information.clone(),
-        )
+        ))
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
@@ -76,15 +59,6 @@ impl ValueDefinition {
             self.name.clone(),
             self.body.convert_types(convert),
             convert(&self.type_),
-            self.source_information.clone(),
-        )
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        Self::new(
-            self.name.clone(),
-            self.body.resolve_reference_types(environment),
-            self.type_.resolve_reference_types(environment),
             self.source_information.clone(),
         )
     }

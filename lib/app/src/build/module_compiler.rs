@@ -28,7 +28,7 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
     pub fn compile(
         &self,
         package: &ein::Package,
-        module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ast::ModuleInterface>,
+        module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>,
         source_file_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
@@ -80,7 +80,7 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
         &self,
         source_file_path: &FilePath,
         source: &str,
-        imported_module_interfaces: impl IntoIterator<Item = &'b ein::ast::ModuleInterface>,
+        imported_module_interfaces: impl IntoIterator<Item = &'b ein::ModuleInterface>,
     ) -> FilePath {
         let mut hasher = DefaultHasher::new();
 

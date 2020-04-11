@@ -1,57 +1,84 @@
+use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
-use crate::ast;
 use crate::types::{self, Type};
 use std::collections::HashMap;
-use std::rc::Rc;
 
 #[derive(Debug)]
-pub struct TypeCompiler {
+pub struct TypeCompiler<'a> {
     reference_indices: HashMap<String, usize>,
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    reference_type_resolver: &'a ReferenceTypeResolver,
 }
 
-impl TypeCompiler {
-    pub fn new(module: &ast::Module) -> Self {
+impl<'a> TypeCompiler<'a> {
+    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
         Self {
             reference_indices: HashMap::new(),
-            reference_type_resolver: ReferenceTypeResolver::new(module).into(),
+            reference_type_resolver,
         }
     }
 
-    pub fn compile(&self, type_: &Type) -> ssf::types::Type {
+    pub fn compile(&self, type_: &Type) -> Result<ssf::types::Type, CompileError> {
         match type_ {
-            Type::Function(_) => self.compile_function(type_).into(),
-            Type::Number(_) => ssf::types::Value::Number.into(),
-            Type::Reference(_) => unimplemented!(),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
-        }
-    }
-
-    pub fn compile_function(&self, type_: &types::Type) -> ssf::types::Function {
-        match type_ {
-            Type::Function(function) => ssf::types::Function::new(
+            Type::Boolean(_) => Ok(self.compile_boolean().into()),
+            Type::Function(function) => Ok(ssf::types::Function::new(
                 function
                     .arguments()
                     .iter()
                     .map(|type_| self.compile(type_))
-                    .collect::<Vec<_>>(),
-                self.compile_value(function.last_result()),
-            ),
-            Type::Number(_) => unreachable!(),
-            Type::Reference(_) => {
-                self.compile_function(&self.reference_type_resolver.resolve(type_))
-            }
+                    .collect::<Result<_, _>>()?,
+                self.compile_value(function.last_result())?,
+            )
+            .into()),
+            Type::None(_) => Ok(self.compile_none().into()),
+            Type::Number(_) => Ok(ssf::types::Primitive::Float64.into()),
+            Type::Record(record) => Ok(self.compile_record(record)?.into()),
+            Type::Reference(reference) => self.compile_reference(reference),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }
 
-    pub fn compile_value(&self, type_: &Type) -> ssf::types::Value {
-        match type_ {
-            Type::Function(_) => unreachable!(),
-            Type::Number(_) => ssf::types::Value::Number,
-            Type::Reference(_) => self.compile_value(&self.reference_type_resolver.resolve(type_)),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
-        }
+    pub fn compile_reference(
+        &self,
+        reference: &types::Reference,
+    ) -> Result<ssf::types::Type, CompileError> {
+        self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
+    }
+
+    pub fn compile_function(
+        &self,
+        type_: &types::Type,
+    ) -> Result<ssf::types::Function, CompileError> {
+        Ok(self.compile(type_)?.into_function().unwrap())
+    }
+
+    pub fn compile_record(
+        &self,
+        record: &types::Record,
+    ) -> Result<ssf::types::Algebraic, CompileError> {
+        Ok(ssf::types::Algebraic::new(vec![
+            ssf::types::Constructor::boxed(
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, type_)| self.compile(type_))
+                    .collect::<Result<_, _>>()?,
+            ),
+        ]))
+    }
+
+    pub fn compile_value(&self, type_: &Type) -> Result<ssf::types::Value, CompileError> {
+        Ok(self.compile(type_)?.into_value().unwrap())
+    }
+
+    pub fn compile_boolean(&self) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![
+            ssf::types::Constructor::unboxed(vec![]),
+            ssf::types::Constructor::unboxed(vec![]),
+        ])
+    }
+
+    pub fn compile_none(&self) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![])])
     }
 }
 
@@ -64,16 +91,16 @@ mod tests {
     #[test]
     fn compile_number_type() {
         assert_eq!(
-            TypeCompiler::new(&Module::dummy())
+            TypeCompiler::new(&ReferenceTypeResolver::new(&Module::dummy()))
                 .compile(&types::Number::new(SourceInformation::dummy()).into()),
-            ssf::types::Value::Number.into()
+            Ok(ssf::types::Primitive::Float64.into())
         );
     }
 
     #[test]
     fn compile_function_type() {
         assert_eq!(
-            TypeCompiler::new(&Module::dummy()).compile(
+            TypeCompiler::new(&ReferenceTypeResolver::new(&Module::dummy())).compile(
                 &types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -81,11 +108,11 @@ mod tests {
                 )
                 .into()
             ),
-            ssf::types::Function::new(
-                vec![ssf::types::Value::Number.into()],
-                ssf::types::Value::Number
+            Ok(ssf::types::Function::new(
+                vec![ssf::types::Primitive::Float64.into()],
+                ssf::types::Primitive::Float64
             )
-            .into()
+            .into())
         );
     }
 }

@@ -1,49 +1,44 @@
 use super::application::Application;
-use super::definition::Definition;
+use super::boolean::Boolean;
+use super::if_::If;
 use super::let_::Let;
+use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
+use super::record_construction::RecordConstruction;
+use super::record_update::RecordUpdate;
 use super::variable::Variable;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
     Application(Application),
+    Boolean(Boolean),
+    RecordConstruction(RecordConstruction),
+    RecordUpdate(RecordUpdate),
+    If(If),
     Let(Let),
+    None(None),
     Number(Number),
     Operation(Operation),
     Variable(Variable),
 }
 
 impl Expression {
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        match self {
-            Self::Application(application) => {
-                application.substitute_type_variables(substitutions).into()
-            }
-            Self::Let(let_) => let_.substitute_type_variables(substitutions).into(),
-            Self::Number(number) => Self::Number(number.clone()),
-            Self::Operation(operation) => operation.substitute_type_variables(substitutions).into(),
-            Self::Variable(variable) => Self::Variable(variable.clone()),
-        }
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        match self {
-            Self::Application(application) => application.convert_definitions(convert).into(),
-            Self::Let(let_) => let_.convert_definitions(convert).into(),
-            Self::Operation(operation) => operation.convert_definitions(convert).into(),
-            _ => self.clone(),
-        }
-    }
-
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
         let expression = match self {
-            Self::Application(application) => application.convert_expressions(convert).into(),
-            Self::Let(let_) => let_.convert_expressions(convert).into(),
-            Self::Operation(operation) => operation.convert_expressions(convert).into(),
-            _ => self.clone(),
+            Self::Application(application) => application.convert_expressions(convert)?.into(),
+            Self::RecordConstruction(record_construction) => {
+                record_construction.convert_expressions(convert)?.into()
+            }
+            Self::RecordUpdate(record_update) => record_update.convert_expressions(convert)?.into(),
+            Self::If(if_) => if_.convert_expressions(convert)?.into(),
+            Self::Let(let_) => let_.convert_expressions(convert)?.into(),
+            Self::Operation(operation) => operation.convert_expressions(convert)?.into(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         };
 
         convert(&expression)
@@ -52,20 +47,14 @@ impl Expression {
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         match self {
             Self::Application(application) => application.convert_types(convert).into(),
+            Self::RecordConstruction(record_construction) => {
+                record_construction.convert_types(convert).into()
+            }
+            Self::RecordUpdate(record_update) => record_update.convert_types(convert).into(),
+            Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
-            _ => self.clone(),
-        }
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::Application(application) => {
-                application.resolve_reference_types(environment).into()
-            }
-            Self::Let(let_) => let_.resolve_reference_types(environment).into(),
-            Self::Operation(operation) => operation.resolve_reference_types(environment).into(),
-            _ => self.clone(),
+            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
 }
@@ -76,9 +65,39 @@ impl From<Application> for Expression {
     }
 }
 
+impl From<Boolean> for Expression {
+    fn from(boolean: Boolean) -> Expression {
+        Self::Boolean(boolean)
+    }
+}
+
+impl From<RecordConstruction> for Expression {
+    fn from(record_construction: RecordConstruction) -> Expression {
+        Self::RecordConstruction(record_construction)
+    }
+}
+
+impl From<RecordUpdate> for Expression {
+    fn from(record_update: RecordUpdate) -> Expression {
+        Self::RecordUpdate(record_update)
+    }
+}
+
+impl From<If> for Expression {
+    fn from(if_: If) -> Expression {
+        Self::If(if_)
+    }
+}
+
 impl From<Let> for Expression {
     fn from(let_: Let) -> Expression {
         Self::Let(let_)
+    }
+}
+
+impl From<None> for Expression {
+    fn from(none: None) -> Expression {
+        Self::None(none)
     }
 }
 

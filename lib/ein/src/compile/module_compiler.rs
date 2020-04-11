@@ -2,18 +2,24 @@ use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
 use crate::ast;
-use std::collections::HashMap;
+use crate::types::Type;
 
 pub struct ModuleCompiler<'a> {
     module: &'a ast::Module,
-    type_compiler: TypeCompiler,
+    expression_compiler: &'a ExpressionCompiler<'a>,
+    type_compiler: &'a TypeCompiler<'a>,
 }
 
 impl<'a> ModuleCompiler<'a> {
-    pub fn new(module: &'a ast::Module) -> Self {
+    pub fn new(
+        module: &'a ast::Module,
+        expression_compiler: &'a ExpressionCompiler,
+        type_compiler: &'a TypeCompiler,
+    ) -> Self {
         Self {
             module,
-            type_compiler: TypeCompiler::new(module),
+            expression_compiler,
+            type_compiler,
         }
     }
 
@@ -27,13 +33,13 @@ impl<'a> ModuleCompiler<'a> {
                         .variables()
                         .iter()
                         .map(move |(name, type_)| {
-                            ssf::ir::Declaration::new(
+                            Ok(ssf::ir::Declaration::new(
                                 module_interface.path().qualify_name(name),
-                                self.type_compiler.compile(type_),
-                            )
+                                self.type_compiler.compile(type_)?,
+                            ))
                         })
                 })
-                .collect(),
+                .collect::<Result<_, CompileError>>()?,
             self.module
                 .definitions()
                 .iter()
@@ -45,8 +51,56 @@ impl<'a> ModuleCompiler<'a> {
                         Ok(self.compile_value_definition(value_definition)?.into())
                     }
                 })
-                .collect::<Result<Vec<_>, CompileError>>()?,
+                .collect::<Result<Vec<_>, CompileError>>()?
+                .into_iter()
+                .chain(
+                    self.module
+                        .type_definitions()
+                        .iter()
+                        .map(|type_definition| self.compile_type_definition(type_definition))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .into_iter()
+                        .flatten(),
+                )
+                .collect(),
         )?)
+    }
+
+    fn compile_type_definition(
+        &self,
+        type_definition: &ast::TypeDefinition,
+    ) -> Result<Vec<ssf::ir::Definition>, CompileError> {
+        if let Type::Record(record_type) = type_definition.type_() {
+            let algebraic_type = self.type_compiler.compile_record(record_type)?;
+
+            record_type
+                .elements()
+                .iter()
+                .map(|(key, type_)| {
+                    Ok(ssf::ir::FunctionDefinition::new(
+                        format!("{}.{}", record_type.name(), key),
+                        vec![ssf::ir::Argument::new("x", algebraic_type.clone())],
+                        ssf::ir::AlgebraicCase::new(
+                            ssf::ir::Variable::new("x"),
+                            vec![ssf::ir::AlgebraicAlternative::new(
+                                ssf::ir::Constructor::new(algebraic_type.clone(), 0),
+                                record_type
+                                    .elements()
+                                    .keys()
+                                    .map(|key| format!("${}", key))
+                                    .collect(),
+                                ssf::ir::Variable::new(format!("${}", key)),
+                            )],
+                            None,
+                        ),
+                        self.type_compiler.compile_value(type_)?,
+                    )
+                    .into())
+                })
+                .collect()
+        } else {
+            Ok(vec![])
+        }
     }
 
     fn compile_function_definition(
@@ -55,7 +109,7 @@ impl<'a> ModuleCompiler<'a> {
     ) -> Result<ssf::ir::FunctionDefinition, CompileError> {
         let core_type = self
             .type_compiler
-            .compile_function(function_definition.type_());
+            .compile_function(function_definition.type_())?;
 
         Ok(ssf::ir::FunctionDefinition::new(
             function_definition.name(),
@@ -65,23 +119,8 @@ impl<'a> ModuleCompiler<'a> {
                 .zip(core_type.arguments())
                 .map(|(name, type_)| ssf::ir::Argument::new(name.clone(), type_.clone()))
                 .collect::<Vec<_>>(),
-            ExpressionCompiler::new(&self.type_compiler).compile(
-                function_definition.body(),
-                &function_definition
-                    .arguments()
-                    .iter()
-                    .zip(
-                        // Reference types are resolved to bare function types
-                        // by desugaring already here.
-                        function_definition
-                            .type_()
-                            .to_function()
-                            .expect("function type")
-                            .arguments(),
-                    )
-                    .map(|(name, type_)| (name.clone(), type_.clone()))
-                    .collect(),
-            )?,
+            self.expression_compiler
+                .compile(function_definition.body())?,
             core_type.result().clone(),
         ))
     }
@@ -92,9 +131,8 @@ impl<'a> ModuleCompiler<'a> {
     ) -> Result<ssf::ir::ValueDefinition, CompileError> {
         Ok(ssf::ir::ValueDefinition::new(
             value_definition.name(),
-            ExpressionCompiler::new(&self.type_compiler)
-                .compile(value_definition.body(), &HashMap::new())?,
-            self.type_compiler.compile_value(value_definition.type_()),
+            self.expression_compiler.compile(value_definition.body())?,
+            self.type_compiler.compile_value(value_definition.type_())?,
         ))
     }
 }

@@ -2,7 +2,6 @@ use super::expression::Expression;
 use super::function_definition::*;
 use super::value_definition::*;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
@@ -25,39 +24,18 @@ impl Definition {
         }
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        match self {
-            Self::FunctionDefinition(function_definition) => function_definition
-                .substitute_type_variables(substitutions)
-                .into(),
-            Self::ValueDefinition(value_definition) => value_definition
-                .substitute_type_variables(substitutions)
-                .into(),
-        }
-    }
-
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        let definition = match self {
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
+        Ok(match self {
             Self::FunctionDefinition(function_definition) => {
-                function_definition.convert_definitions(convert).into()
+                function_definition.convert_expressions(convert)?.into()
             }
             Self::ValueDefinition(value_definition) => {
-                value_definition.convert_definitions(convert).into()
+                value_definition.convert_expressions(convert)?.into()
             }
-        };
-
-        convert(&definition)
-    }
-
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
-        match self {
-            Self::FunctionDefinition(function_definition) => {
-                function_definition.convert_expressions(convert).into()
-            }
-            Self::ValueDefinition(value_definition) => {
-                value_definition.convert_expressions(convert).into()
-            }
-        }
+        })
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
@@ -67,17 +45,6 @@ impl Definition {
             }
             Self::ValueDefinition(value_definition) => {
                 value_definition.convert_types(convert).into()
-            }
-        }
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::FunctionDefinition(function_definition) => function_definition
-                .resolve_reference_types(environment)
-                .into(),
-            Self::ValueDefinition(value_definition) => {
-                value_definition.resolve_reference_types(environment).into()
             }
         }
     }

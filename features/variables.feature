@@ -5,7 +5,7 @@ Feature: Variables
     {
       "target": {
         "type": "Command",
-        "name": "command"
+        "name": "foo"
       },
       "dependencies": {}
     }
@@ -20,8 +20,8 @@ Feature: Variables
     main x = y
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Define global variables
@@ -37,8 +37,8 @@ Feature: Variables
     main x = y
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use let-values expression
@@ -53,8 +53,8 @@ Feature: Variables
         y
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use untyped let-values expression
@@ -68,8 +68,8 @@ Feature: Variables
         y
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use nested let-values expression
@@ -87,8 +87,8 @@ Feature: Variables
         y
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use let-functions expression
@@ -103,8 +103,8 @@ Feature: Variables
         f x
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Use untyped let-functions expression
@@ -118,8 +118,8 @@ Feature: Variables
         f x
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
   Scenario: Define multiple functions in a let-functions expression
@@ -134,6 +134,6 @@ Feature: Variables
         g x
     """
     And I successfully run `ein build`
-    When I run `sh -c ./command`
-    Then stdout from "sh -c ./command" should contain exactly "42"
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0

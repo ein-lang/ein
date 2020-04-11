@@ -1,5 +1,8 @@
+use super::boolean::Boolean;
 use super::function::Function;
+use super::none::None;
 use super::number::Number;
+use super::record::Record;
 use super::reference::Reference;
 use super::unknown::Unknown;
 use super::variable::Variable;
@@ -10,8 +13,11 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub enum Type {
+    Boolean(Boolean),
     Function(Function),
+    None(None),
     Number(Number),
+    Record(Record),
     Reference(Reference),
     Unknown(Unknown),
     Variable(Variable),
@@ -20,8 +26,11 @@ pub enum Type {
 impl Type {
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         match self {
+            Self::Boolean(boolean) => boolean.source_information(),
             Self::Function(function) => function.source_information(),
+            Self::None(none) => none.source_information(),
             Self::Number(number) => number.source_information(),
+            Self::Record(record) => record.source_information(),
             Self::Reference(reference) => reference.source_information(),
             Self::Unknown(unknown) => unknown.source_information(),
             Self::Variable(variable) => variable.source_information(),
@@ -35,20 +44,16 @@ impl Type {
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
         match self {
             Self::Function(function) => function.substitute_variables(substitutions).into(),
-            Self::Number(_) | Self::Reference(_) | Self::Unknown(_) => self.clone(),
+            Self::Record(record) => record.substitute_variables(substitutions).into(),
             Self::Variable(variable) => match substitutions.get(&variable.id()) {
                 Some(type_) => type_.clone(),
                 None => self.clone(),
             },
-        }
-    }
-
-    pub fn resolve_reference_types(&self, environment: &HashMap<String, Type>) -> Self {
-        match self {
-            Self::Function(function) => function.resolve_reference_types(environment).into(),
-            Self::Number(_) => self.clone(),
-            Self::Reference(reference) => environment[reference.name()].clone(),
-            Self::Unknown(_) | Self::Variable(_) => unreachable!(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::Reference(_)
+            | Self::Unknown(_) => self.clone(),
         }
     }
 
@@ -59,6 +64,20 @@ impl Type {
             None
         }
     }
+
+    pub fn to_record(&self) -> Option<&Record> {
+        if let Self::Record(record) = self {
+            Some(&record)
+        } else {
+            None
+        }
+    }
+}
+
+impl From<Boolean> for Type {
+    fn from(boolean: Boolean) -> Self {
+        Self::Boolean(boolean)
+    }
 }
 
 impl From<Function> for Type {
@@ -67,9 +86,21 @@ impl From<Function> for Type {
     }
 }
 
+impl From<None> for Type {
+    fn from(none: None) -> Self {
+        Self::None(none)
+    }
+}
+
 impl From<Number> for Type {
     fn from(number: Number) -> Self {
         Self::Number(number)
+    }
+}
+
+impl From<Record> for Type {
+    fn from(record: Record) -> Self {
+        Self::Record(record)
     }
 }
 

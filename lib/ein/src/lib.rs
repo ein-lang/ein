@@ -1,12 +1,13 @@
-pub mod ast;
+mod ast;
 mod compile;
-pub mod debug;
+mod debug;
 mod package;
 mod parse;
 mod path;
 mod serialize;
-pub mod types;
+mod types;
 
+pub use ast::{ModuleInterface, UnresolvedModule};
 pub use compile::compile;
 pub use package::Package;
 pub use parse::{parse_module, ParseError};

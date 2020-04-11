@@ -1,23 +1,29 @@
 mod equation;
 mod equation_set;
-mod error;
 mod type_inferrer;
 
+use super::error::CompileError;
+use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::types::{self, Type};
-pub use error::*;
 use type_inferrer::*;
 
-pub fn infer_types(module: &Module) -> Result<Module, TypeInferenceError> {
-    TypeInferrer::new().infer(&module.convert_types(&mut |type_| match type_ {
-        Type::Unknown(unknown) => types::Variable::new(unknown.source_information().clone()).into(),
-        _ => type_.clone(),
-    }))
+pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
+    let reference_type_resolver = ReferenceTypeResolver::new(module);
+
+    TypeInferrer::new(&reference_type_resolver).infer(&module.convert_types(
+        &mut |type_| match type_ {
+            Type::Unknown(unknown) => {
+                types::Variable::new(unknown.source_information().clone()).into()
+            }
+            _ => type_.clone(),
+        },
+    ))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::error::*;
+    use super::super::error::CompileError;
     use super::infer_types;
     use crate::ast::*;
     use crate::debug::*;
@@ -32,6 +38,18 @@ mod tests {
             infer_types(&Module::from_definitions(vec![])),
             Ok(Module::from_definitions(vec![]))
         );
+    }
+
+    #[test]
+    fn infer_types_of_none_literals() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            None::new(SourceInformation::dummy()),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(infer_types(&module), Ok(module));
     }
 
     #[test]
@@ -62,7 +80,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -108,7 +126,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -180,7 +198,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -234,7 +252,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -306,7 +324,7 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypesNotMatched(
+            Err(CompileError::TypesNotMatched(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
@@ -363,10 +381,10 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::VariableNotFound(
-                "y".into(),
-                SourceInformation::dummy().into()
-            ))
+            Err(CompileError::VariableNotFound(Variable::new(
+                "y",
+                SourceInformation::dummy()
+            )))
         );
     }
 
@@ -665,10 +683,10 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::VariableNotFound(
-                "b".into(),
-                SourceInformation::dummy().into(),
-            ))
+            Err(CompileError::VariableNotFound(Variable::new(
+                "b",
+                SourceInformation::dummy(),
+            )))
         );
     }
 
@@ -711,9 +729,10 @@ mod tests {
 
         assert_eq!(
             infer_types(&module),
-            Err(TypeInferenceError::TypeNotFound {
-                reference: types::Reference::new("Foo", SourceInformation::dummy())
-            })
+            Err(CompileError::TypeNotFound(types::Reference::new(
+                "Foo",
+                SourceInformation::dummy()
+            )))
         );
     }
 
@@ -780,6 +799,321 @@ mod tests {
                 .into(),
             ],
         );
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn infer_types_of_if_expressions() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            If::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            If::new(
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(
+            infer_types(&module),
+            Err(CompileError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
+            ))
+        );
+    }
+
+    #[test]
+    fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            If::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                Boolean::new(true, SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+        assert_eq!(
+            infer_types(&module),
+            Err(CompileError::TypesNotMatched(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
+            ))
+        );
+    }
+
+    mod record {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn infer_types_of_empty_records() {
+            let record_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        Default::default(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_records_with_single_keys() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::Number::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_records_due_to_wrong_number_of_keys() {
+            let record_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+            assert_eq!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_records_due_to_wrong_member_types() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+            assert_eq!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_records_due_to_unmatched_identity() {
+            let foo_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
+            let bar_type =
+                types::Record::new("Bar", Default::default(), SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![
+                    TypeDefinition::new("Foo", foo_type),
+                    TypeDefinition::new("Bar", bar_type),
+                ],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordConstruction::new(
+                        types::Reference::new("Foo", SourceInformation::dummy()),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Reference::new("Bar", SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn infer_types_of_record_element_functions() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Variable::new("Foo.foo", SourceInformation::dummy()),
+                        RecordConstruction::new(
+                            types::Reference::new("Foo", SourceInformation::dummy()),
+                            vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+    }
+
+    #[test]
+    fn infer_types_of_arithmetic_operations() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Operation::new(
+                Operator::Add,
+                Number::new(42.0, SourceInformation::dummy()),
+                Number::new(42.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::Number::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn infer_types_of_comparison_operations() {
+        let module = Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Operation::new(
+                Operator::Equal,
+                Number::new(42.0, SourceInformation::dummy()),
+                Number::new(42.0, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            types::Boolean::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
+
         assert_eq!(infer_types(&module), Ok(module));
     }
 }

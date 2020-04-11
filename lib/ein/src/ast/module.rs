@@ -1,11 +1,11 @@
 use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
+use super::let_::Let;
 use super::module_interface::ModuleInterface;
 use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
 use crate::types::Type;
-use std::collections::HashMap;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
@@ -55,6 +55,20 @@ impl Module {
         )
     }
 
+    #[cfg(test)]
+    pub fn from_definitions_and_type_definitions(
+        type_definitions: Vec<TypeDefinition>,
+        definitions: Vec<Definition>,
+    ) -> Self {
+        Self::new(
+            ModulePath::new(crate::package::Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            type_definitions,
+            definitions,
+        )
+    }
+
     pub fn path(&self) -> &ModulePath {
         &self.path
     }
@@ -75,34 +89,44 @@ impl Module {
         &self.imported_modules
     }
 
-    pub fn substitute_type_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
+    pub fn convert_definitions<E>(
+        &self,
+        mut convert: &mut impl FnMut(&Definition) -> Result<Definition, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
-                .map(|definition| definition.substitute_type_variables(substitutions))
-                .collect::<Vec<_>>(),
-        )
+                .map(|definition| {
+                    let definition = definition.convert_expressions(&mut |expression| {
+                        if let Expression::Let(let_) = expression {
+                            Ok(Let::new(
+                                let_.definitions()
+                                    .iter()
+                                    .map(&mut convert)
+                                    .collect::<Result<_, _>>()?,
+                                let_.expression().clone(),
+                            )
+                            .into())
+                        } else {
+                            Ok(expression.clone())
+                        }
+                    })?;
+
+                    convert(&definition)
+                })
+                .collect::<Result<_, _>>()?,
+        ))
     }
 
-    pub fn convert_definitions(&self, convert: &mut impl FnMut(&Definition) -> Definition) -> Self {
-        Self::new(
-            self.path.clone(),
-            self.export.clone(),
-            self.imported_modules.clone(),
-            self.type_definitions.clone(),
-            self.definitions
-                .iter()
-                .map(|definition| definition.convert_definitions(convert))
-                .collect(),
-        )
-    }
-
-    pub fn convert_expressions(&self, convert: &mut impl FnMut(&Expression) -> Expression) -> Self {
-        Self::new(
+    pub fn convert_expressions<E>(
+        &self,
+        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
@@ -110,8 +134,8 @@ impl Module {
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_expressions(convert))
-                .collect(),
-        )
+                .collect::<Result<_, _>>()?,
+        ))
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
