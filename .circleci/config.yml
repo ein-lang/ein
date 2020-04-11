@@ -6,7 +6,7 @@ jobs:
     steps:
       - checkout
       - run: npx cspell '**/*.{feature,md,rs}'
-      - run: cargo build
+      - run: cargo build -j 2
       - run: cargo fmt -- --check
       - run: cargo clippy -- -D warnings
       - run: cargo audit
