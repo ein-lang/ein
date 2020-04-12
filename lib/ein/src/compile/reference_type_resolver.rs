@@ -44,7 +44,8 @@ impl ReferenceTypeResolver {
             | Type::Function(_)
             | Type::None(_)
             | Type::Number(_)
-            | Type::Record(_) => Ok(type_.clone()),
+            | Type::Record(_)
+            | Type::Union(_) => Ok(type_.clone()),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }

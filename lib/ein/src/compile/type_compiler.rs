@@ -32,6 +32,7 @@ impl<'a> TypeCompiler<'a> {
             Type::Number(_) => Ok(ssf::types::Primitive::Float64.into()),
             Type::Record(record) => Ok(self.compile_record(record)?.into()),
             Type::Reference(reference) => self.compile_reference(reference),
+            Type::Union(_) => unimplemented!(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         }
     }

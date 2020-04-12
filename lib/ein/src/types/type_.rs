@@ -4,6 +4,7 @@ use super::none::None;
 use super::number::Number;
 use super::record::Record;
 use super::reference::Reference;
+use super::union::Union;
 use super::unknown::Unknown;
 use super::variable::Variable;
 use crate::debug::SourceInformation;
@@ -20,6 +21,7 @@ pub enum Type {
     Record(Record),
     Reference(Reference),
     Unknown(Unknown),
+    Union(Union),
     Variable(Variable),
 }
 
@@ -33,6 +35,7 @@ impl Type {
             Self::Record(record) => record.source_information(),
             Self::Reference(reference) => reference.source_information(),
             Self::Unknown(unknown) => unknown.source_information(),
+            Self::Union(union) => union.source_information(),
             Self::Variable(variable) => variable.source_information(),
         }
     }
@@ -45,6 +48,7 @@ impl Type {
         match self {
             Self::Function(function) => function.substitute_variables(substitutions).into(),
             Self::Record(record) => record.substitute_variables(substitutions).into(),
+            Self::Union(union) => union.substitute_variables(substitutions).into(),
             Self::Variable(variable) => match substitutions.get(&variable.id()) {
                 Some(type_) => type_.clone(),
                 None => self.clone(),
@@ -113,6 +117,12 @@ impl From<Reference> for Type {
 impl From<Unknown> for Type {
     fn from(unknown: Unknown) -> Self {
         Self::Unknown(unknown)
+    }
+}
+
+impl From<Union> for Type {
+    fn from(union: Union) -> Self {
+        Self::Union(union)
     }
 }
 
