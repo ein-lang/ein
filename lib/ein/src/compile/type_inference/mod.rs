@@ -1,24 +1,28 @@
-mod equation;
-mod equation_set;
+mod subsumption;
+mod subsumption_set;
 mod type_inferrer;
+mod union_type_simplifier;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::types::{self, Type};
 use type_inferrer::*;
+use union_type_simplifier::UnionTypeSimplifier;
 
 pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
 
-    TypeInferrer::new(&reference_type_resolver).infer(&module.convert_types(
-        &mut |type_| match type_ {
-            Type::Unknown(unknown) => {
-                types::Variable::new(unknown.source_information().clone()).into()
-            }
-            _ => type_.clone(),
-        },
-    ))
+    Ok(
+        UnionTypeSimplifier::new().simplify(&TypeInferrer::new(&reference_type_resolver).infer(
+            &module.convert_types(&mut |type_| match type_ {
+                Type::Unknown(unknown) => {
+                    types::Variable::new(unknown.source_information().clone()).into()
+                }
+                _ => type_.clone(),
+            }),
+        )?),
+    )
 }
 
 #[cfg(test)]

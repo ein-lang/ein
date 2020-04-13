@@ -1,30 +1,30 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::equation::*;
-use super::equation_set::EquationSet;
+use super::subsumption::Subsumption;
+use super::subsumption_set::SubsumptionSet;
 use crate::ast::*;
 use crate::types::{self, Type};
-use std::collections::*;
+use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
 #[derive(Debug)]
 pub struct TypeInferrer<'a> {
     reference_type_resolver: &'a ReferenceTypeResolver,
-    equation_set: EquationSet,
+    subsumption_set: SubsumptionSet,
 }
 
 impl<'a> TypeInferrer<'a> {
     pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
         Self {
             reference_type_resolver,
-            equation_set: EquationSet::new(),
+            subsumption_set: SubsumptionSet::new(),
         }
     }
 
     pub fn infer(&mut self, module: &Module) -> Result<Module, CompileError> {
-        self.collect_equations(module)?;
+        self.collect_subsumptions(module)?;
 
-        let substitutions = self.reduce_equations()?;
+        let substitutions = self.reduce_subsumptions()?;
 
         Ok(module.convert_types(&mut |type_| {
             if let Type::Variable(variable) = type_ {
@@ -35,7 +35,7 @@ impl<'a> TypeInferrer<'a> {
         }))
     }
 
-    fn collect_equations(&mut self, module: &Module) -> Result<(), CompileError> {
+    fn collect_subsumptions(&mut self, module: &Module) -> Result<(), CompileError> {
         let mut variables = HashMap::<String, Type>::new();
 
         for imported_module in module.imported_modules() {
@@ -104,14 +104,14 @@ impl<'a> TypeInferrer<'a> {
             let argument_type: Type = types::Variable::new(source_information.clone()).into();
             let result_type: Type = types::Variable::new(source_information.clone()).into();
 
-            self.equation_set.add(Equation::new(
-                type_,
+            self.subsumption_set.add_subsumption(
                 types::Function::new(
                     argument_type.clone(),
                     result_type.clone(),
                     source_information.clone(),
                 ),
-            ));
+                type_,
+            );
 
             variables.insert(argument_name.into(), argument_type);
 
@@ -119,7 +119,7 @@ impl<'a> TypeInferrer<'a> {
         }
 
         let body_type = self.infer_expression(function_definition.body(), &variables)?;
-        self.equation_set.add(Equation::new(body_type, type_));
+        self.subsumption_set.add_subsumption(body_type, type_);
 
         Ok(())
     }
@@ -131,8 +131,8 @@ impl<'a> TypeInferrer<'a> {
     ) -> Result<(), CompileError> {
         let type_ = self.infer_expression(value_definition.body(), &variables)?;
 
-        self.equation_set
-            .add(Equation::new(type_, value_definition.type_().clone()));
+        self.subsumption_set
+            .add_subsumption(type_, value_definition.type_().clone());
 
         Ok(())
     }
@@ -149,14 +149,14 @@ impl<'a> TypeInferrer<'a> {
                 let result: Type =
                     types::Variable::new(application.source_information().clone()).into();
 
-                self.equation_set.add(Equation::new(
+                self.subsumption_set.add_subsumption(
                     function,
                     types::Function::new(
                         argument,
                         result.clone(),
                         application.source_information().clone(),
                     ),
-                ));
+                );
 
                 Ok(result)
             }
@@ -165,17 +165,15 @@ impl<'a> TypeInferrer<'a> {
             }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
-                self.equation_set.add(Equation::new(
+                self.subsumption_set.add_subsumption(
                     condition,
                     types::Boolean::new(if_.source_information().clone()),
-                ));
+                );
 
                 let then = self.infer_expression(if_.then(), variables)?;
                 let else_ = self.infer_expression(if_.else_(), variables)?;
 
-                self.equation_set.add(Equation::new(then.clone(), else_));
-
-                Ok(then)
+                Ok(types::Union::new(vec![then, else_], if_.source_information().clone()).into())
             }
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
@@ -183,7 +181,7 @@ impl<'a> TypeInferrer<'a> {
                 // Because the language does not have let-rec
                 // expression like OCaml, we need to guess if the
                 // let expression is recursive or not to generate
-                // proper type equations.
+                // proper type subsumptions.
                 let functions_included =
                     let_.definitions()
                         .iter()
@@ -245,11 +243,11 @@ impl<'a> TypeInferrer<'a> {
                 let number_type = types::Number::new(operation.source_information().clone());
 
                 let lhs = self.infer_expression(operation.lhs(), variables)?;
-                self.equation_set
-                    .add(Equation::new(lhs, number_type.clone()));
+                self.subsumption_set
+                    .add_subsumption(lhs, number_type.clone());
                 let rhs = self.infer_expression(operation.rhs(), variables)?;
-                self.equation_set
-                    .add(Equation::new(rhs, number_type.clone()));
+                self.subsumption_set
+                    .add_subsumption(rhs, number_type.clone());
 
                 Ok(match operation.operator() {
                     Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
@@ -288,8 +286,8 @@ impl<'a> TypeInferrer<'a> {
                 for (key, expression) in record.elements() {
                     let type_ = self.infer_expression(expression, variables)?;
 
-                    self.equation_set
-                        .add(Equation::new(type_, record_type.elements()[key].clone()));
+                    self.subsumption_set
+                        .add_subsumption(type_, record_type.elements()[key].clone());
                 }
 
                 Ok(record.type_().clone().into())
@@ -302,39 +300,49 @@ impl<'a> TypeInferrer<'a> {
         }
     }
 
-    fn reduce_equations(&mut self) -> Result<HashMap<usize, Type>, CompileError> {
+    fn reduce_subsumptions(&mut self) -> Result<HashMap<usize, Type>, CompileError> {
         let mut substitutions = HashMap::<usize, Type>::new();
 
-        while let Some(equation) = self.equation_set.remove() {
-            match (equation.lhs(), equation.rhs()) {
-                (Type::Variable(variable), rhs) => {
-                    if let Type::Variable(other_variable) = rhs {
+        while let Some(subsumption) = self.subsumption_set.remove() {
+            match (subsumption.lower(), subsumption.upper()) {
+                (Type::Variable(variable), upper) => {
+                    if let Type::Variable(other_variable) = upper {
                         if variable.id() == other_variable.id() {
                             continue;
                         }
                     }
 
-                    self.substitute_variable(variable, rhs, &mut substitutions);
+                    self.substitute_variable(variable, upper, &mut substitutions);
                 }
-                (lhs, Type::Variable(variable)) => {
-                    self.substitute_variable(variable, lhs, &mut substitutions);
+                (lower, Type::Variable(variable)) => {
+                    self.substitute_variable(variable, lower, &mut substitutions);
                 }
-                (Type::Reference(reference), other) => self.equation_set.add(Equation::new(
+                (Type::Reference(reference), other) => self.subsumption_set.add_subsumption(
                     self.reference_type_resolver.resolve_reference(reference)?,
                     other.clone(),
-                )),
-                (one, Type::Reference(reference)) => self.equation_set.add(Equation::new(
+                ),
+                (one, Type::Reference(reference)) => self.subsumption_set.add_subsumption(
                     one.clone(),
                     self.reference_type_resolver.resolve_reference(reference)?,
-                )),
+                ),
                 (Type::Function(one), Type::Function(other)) => {
-                    self.equation_set.add(Equation::new(
-                        one.argument().clone(),
-                        other.argument().clone(),
-                    ));
-
-                    self.equation_set
-                        .add(Equation::new(other.result().clone(), one.result().clone()));
+                    self.subsumption_set
+                        .add_subsumption(one.argument().clone(), other.argument().clone());
+                    self.subsumption_set
+                        .add_subsumption(other.result().clone(), one.result().clone());
+                }
+                (Type::Union(union), other) => {
+                    for type_ in union.types() {
+                        self.subsumption_set
+                            .add_subsumption(type_.clone(), other.clone());
+                    }
+                }
+                (one, Type::Union(union)) => {
+                    // TODO Fix this.
+                    for type_ in union.types() {
+                        self.subsumption_set
+                            .add_subsumption(one.clone(), type_.clone());
+                    }
                 }
                 (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}
@@ -347,10 +355,10 @@ impl<'a> TypeInferrer<'a> {
                         ));
                     };
                 }
-                (lhs, rhs) => {
+                (lower, upper) => {
                     return Err(CompileError::TypesNotMatched(
-                        lhs.source_information().clone(),
-                        rhs.source_information().clone(),
+                        lower.source_information().clone(),
+                        upper.source_information().clone(),
                     ))
                 }
             }
@@ -371,10 +379,10 @@ impl<'a> TypeInferrer<'a> {
                 .substitute_variable(variable, type_);
         }
 
-        for equation in self.equation_set.iter_mut() {
-            *equation = Equation::new(
-                equation.lhs().substitute_variable(variable, type_),
-                equation.rhs().substitute_variable(variable, type_),
+        for subsumption in self.subsumption_set.iter_mut() {
+            *subsumption = Subsumption::new(
+                subsumption.lower().substitute_variable(variable, type_),
+                subsumption.upper().substitute_variable(variable, type_),
             )
         }
 

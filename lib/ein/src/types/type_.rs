@@ -76,6 +76,18 @@ impl Type {
             None
         }
     }
+
+    pub fn to_union(&self) -> Option<&Union> {
+        if let Self::Union(union) = self {
+            Some(union)
+        } else {
+            None
+        }
+    }
+
+    pub fn is_union(&self) -> bool {
+        self.to_union().is_some()
+    }
 }
 
 impl From<Boolean> for Type {
