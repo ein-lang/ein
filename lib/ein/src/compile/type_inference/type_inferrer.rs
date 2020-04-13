@@ -337,13 +337,7 @@ impl<'a> TypeInferrer<'a> {
                             .add_subsumption(type_.clone(), other.clone());
                     }
                 }
-                (one, Type::Union(union)) => {
-                    // TODO Fix this.
-                    for type_ in union.types() {
-                        self.subsumption_set
-                            .add_subsumption(one.clone(), type_.clone());
-                    }
-                }
+                (_, Type::Union(_)) => unreachable!(),
                 (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
