@@ -388,7 +388,7 @@ fn record_construction<'a>() -> impl Parser<Stream<'a>, Output = RecordConstruct
                 ))
                 .left()
             } else {
-                unexpected_any("duplicated keys in record construction").right()
+                unexpected_any("duplicate keys in record construction").right()
             }
         })
 }
@@ -423,7 +423,7 @@ fn record_update<'a>() -> impl Parser<Stream<'a>, Output = RecordUpdate> {
                     ))
                     .left()
                 } else {
-                    unexpected_any("duplicated keys in record update").right()
+                    unexpected_any("duplicate keys in record update").right()
                 }
             },
         )
