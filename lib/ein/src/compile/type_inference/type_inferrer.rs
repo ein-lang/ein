@@ -327,9 +327,9 @@ impl<'a> TypeInferrer<'a> {
                 ),
                 (Type::Function(one), Type::Function(other)) => {
                     self.subsumption_set
-                        .add_subsumption(one.argument().clone(), other.argument().clone());
+                        .add_subsumption(other.argument().clone(), one.argument().clone());
                     self.subsumption_set
-                        .add_subsumption(other.result().clone(), one.result().clone());
+                        .add_subsumption(one.result().clone(), other.result().clone());
                 }
                 (Type::Union(union), other) => {
                     for type_ in union.types() {
