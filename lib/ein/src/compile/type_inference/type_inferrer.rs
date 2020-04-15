@@ -173,7 +173,7 @@ impl<'a> TypeInferrer<'a> {
                 let then = self.infer_expression(if_.then(), variables)?;
                 let else_ = self.infer_expression(if_.else_(), variables)?;
 
-                Ok(types::Variable::with_incoming(
+                Ok(types::Variable::with_inputs(
                     vec![then, else_],
                     if_.source_information().clone(),
                 )
@@ -321,12 +321,12 @@ impl<'a> TypeInferrer<'a> {
                     // eventually.
                     self.substitute_variable(
                         variable,
-                        &variable.add_incoming(lower.clone()).into(),
+                        &variable.add_input(lower.clone()).into(),
                         &mut substitutions,
                     );
                 }
                 (Type::Variable(variable), upper) => {
-                    for type_ in variable.incoming() {
+                    for type_ in variable.inputs() {
                         self.subsumption_set
                             .add_subsumption(type_.clone(), upper.clone());
                     }
