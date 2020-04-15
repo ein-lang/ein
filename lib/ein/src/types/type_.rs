@@ -49,10 +49,7 @@ impl Type {
             Self::Function(function) => function.substitute_variables(substitutions).into(),
             Self::Record(record) => record.substitute_variables(substitutions).into(),
             Self::Union(union) => union.substitute_variables(substitutions).into(),
-            Self::Variable(variable) => match substitutions.get(&variable.id()) {
-                Some(type_) => type_.clone(),
-                None => self.clone(),
-            },
+            Self::Variable(variable) => variable.substitute_variables(substitutions),
             Self::Boolean(_)
             | Self::None(_)
             | Self::Number(_)

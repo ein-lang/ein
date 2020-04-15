@@ -11,6 +11,7 @@ impl UnionTypeSimplifier {
     pub fn simplify(&self, module: &Module) -> Module {
         module.convert_types(&mut |type_| match type_ {
             Type::Union(union) => union.simplify(),
+            Type::Variable(variable) => variable.simplify(),
             _ => type_.clone(),
         })
     }

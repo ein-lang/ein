@@ -173,7 +173,11 @@ impl<'a> TypeInferrer<'a> {
                 let then = self.infer_expression(if_.then(), variables)?;
                 let else_ = self.infer_expression(if_.else_(), variables)?;
 
-                Ok(types::Union::new(vec![then, else_], if_.source_information().clone()).into())
+                Ok(types::Variable::with_incoming(
+                    vec![then, else_],
+                    if_.source_information().clone(),
+                )
+                .into())
             }
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
@@ -305,17 +309,29 @@ impl<'a> TypeInferrer<'a> {
 
         while let Some(subsumption) = self.subsumption_set.remove() {
             match (subsumption.lower(), subsumption.upper()) {
-                (Type::Variable(variable), upper) => {
-                    if let Type::Variable(other_variable) = upper {
-                        if variable.id() == other_variable.id() {
+                (lower, Type::Variable(variable)) => {
+                    if let Type::Variable(lower) = lower {
+                        if variable.id() == lower.id() {
                             continue;
                         }
                     }
 
-                    self.substitute_variable(variable, upper, &mut substitutions);
+                    // Lower types can be variables which are expected to be
+                    // inferred into concrete types from their inputs
+                    // eventually.
+                    self.substitute_variable(
+                        variable,
+                        &variable.add_incoming(lower.clone()).into(),
+                        &mut substitutions,
+                    );
                 }
-                (lower, Type::Variable(variable)) => {
-                    self.substitute_variable(variable, lower, &mut substitutions);
+                (Type::Variable(variable), upper) => {
+                    for type_ in variable.incoming() {
+                        self.subsumption_set
+                            .add_subsumption(type_.clone(), upper.clone());
+                    }
+
+                    self.substitute_variable(variable, upper, &mut substitutions);
                 }
                 (Type::Reference(reference), other) => self.subsumption_set.add_subsumption(
                     self.reference_type_resolver.resolve_reference(reference)?,
@@ -338,10 +354,12 @@ impl<'a> TypeInferrer<'a> {
                     }
                 }
                 (one, Type::Union(union)) => {
-                    // TODO Fix this.
-                    for type_ in union.types() {
-                        self.subsumption_set
-                            .add_subsumption(one.clone(), type_.clone());
+                    // Union types are inferred already before inference.
+                    if union.types().iter().find(|type_| type_ == &one).is_none() {
+                        return Err(CompileError::TypesNotMatched(
+                            one.source_information().clone(),
+                            union.source_information().clone(),
+                        ));
                     }
                 }
                 (Type::Boolean(_), Type::Boolean(_)) => {}
