@@ -331,6 +331,7 @@ impl<'a> TypeInferrer<'a> {
                             .add_subsumption(type_.clone(), upper.clone());
                     }
 
+                    // TODO Infer principal types.
                     self.substitute_variable(variable, upper, &mut substitutions);
                 }
                 (Type::Reference(reference), other) => self.subsumption_set.add_subsumption(
