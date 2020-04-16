@@ -871,13 +871,6 @@ mod tests {
 
     #[test]
     fn infer_types_of_if_expressions_with_unmatched_branch_types_in_let_expressions() {
-        let union_type = types::Union::new(
-            vec![
-                types::None::new(SourceInformation::dummy()).into(),
-                types::Boolean::new(SourceInformation::dummy()).into(),
-            ],
-            SourceInformation::dummy(),
-        );
         let create_module = |type_: Type| {
             Module::from_definitions(vec![ValueDefinition::new(
                 "x",
@@ -894,9 +887,9 @@ mod tests {
                         SourceInformation::dummy(),
                     )
                     .into()],
-                    Variable::new("y", SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
                 ),
-                union_type.clone(),
+                types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
             .into()])
@@ -906,7 +899,16 @@ mod tests {
             infer_types(&create_module(
                 types::Unknown::new(SourceInformation::dummy()).into()
             )),
-            Ok(create_module(union_type.clone().into()))
+            Ok(create_module(
+                types::Union::new(
+                    vec![
+                        types::None::new(SourceInformation::dummy()).into(),
+                        types::Boolean::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ))
         );
     }
 
