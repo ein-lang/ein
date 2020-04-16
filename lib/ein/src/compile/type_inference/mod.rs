@@ -806,110 +806,164 @@ mod tests {
         assert_eq!(infer_types(&module), Ok(module));
     }
 
-    #[test]
-    fn infer_types_of_if_expressions() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            If::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            ),
-            types::None::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
-        assert_eq!(infer_types(&module), Ok(module));
-    }
+    mod if_ {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-    #[test]
-    fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            If::new(
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            ),
-            types::None::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
-        assert_eq!(
-            infer_types(&module),
-            Err(CompileError::TypesNotMatched(
-                SourceInformation::dummy().into(),
-                SourceInformation::dummy().into()
-            ))
-        );
-    }
-
-    #[test]
-    fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            If::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                Boolean::new(true, SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            ),
-            types::None::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
-        assert_eq!(
-            infer_types(&module),
-            Err(CompileError::TypesNotMatched(
-                SourceInformation::dummy().into(),
-                SourceInformation::dummy().into()
-            ))
-        );
-    }
-
-    #[test]
-    fn infer_types_of_if_expressions_with_unmatched_branch_types_in_let_expressions() {
-        let create_module = |type_: Type| {
-            Module::from_definitions(vec![ValueDefinition::new(
+        #[test]
+        fn infer_types_of_if_expressions() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
                 "x",
-                Let::new(
-                    vec![ValueDefinition::new(
-                        "y",
-                        If::new(
-                            Boolean::new(true, SourceInformation::dummy()),
-                            Boolean::new(true, SourceInformation::dummy()),
-                            None::new(SourceInformation::dummy()),
-                            SourceInformation::dummy(),
-                        ),
-                        type_,
-                        SourceInformation::dummy(),
-                    )
-                    .into()],
-                    Number::new(42.0, SourceInformation::dummy()),
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 ),
-                types::Number::new(SourceInformation::dummy()),
+                types::None::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
-            .into()])
-        };
+            .into()]);
+            assert_eq!(infer_types(&module), Ok(module));
+        }
 
-        assert_eq!(
-            infer_types(&create_module(
-                types::Unknown::new(SourceInformation::dummy()).into()
-            )),
-            Ok(create_module(
-                types::Union::new(
-                    vec![
-                        types::None::new(SourceInformation::dummy()).into(),
-                        types::Boolean::new(SourceInformation::dummy()).into(),
-                    ],
+        #[test]
+        fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+            assert_eq!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+            assert_eq!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn infer_types_of_if_expressions_with_unmatched_branch_types_in_let_expressions() {
+            let create_module = |type_: Type| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "y",
+                            If::new(
+                                Boolean::new(true, SourceInformation::dummy()),
+                                Boolean::new(true, SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            type_,
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
-                .into()
-            ))
-        );
+                .into()])
+            };
+
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
+
+        #[test]
+        fn infer_types_of_nested_if_expressions_with_unmatched_branch_types_in_let_expressions() {
+            let create_module = |type_: Type| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "y",
+                            If::new(
+                                Boolean::new(true, SourceInformation::dummy()),
+                                Boolean::new(true, SourceInformation::dummy()),
+                                If::new(
+                                    Boolean::new(true, SourceInformation::dummy()),
+                                    Number::new(42.0, SourceInformation::dummy()),
+                                    None::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy(),
+                                ),
+                                SourceInformation::dummy(),
+                            ),
+                            type_,
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
     }
 
     mod record {
