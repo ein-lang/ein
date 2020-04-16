@@ -1182,39 +1182,144 @@ mod tests {
         }
     }
 
-    #[test]
-    fn infer_types_of_arithmetic_operations() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            Operation::new(
-                Operator::Add,
-                Number::new(42.0, SourceInformation::dummy()),
-                Number::new(42.0, SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            ),
-            types::Number::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
+    mod operation {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert_eq!(infer_types(&module), Ok(module));
+        #[test]
+        fn infer_types_of_arithmetic_operations() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Operation::new(
+                    Operator::Add,
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_comparison_operations() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Operation::new(
+                    Operator::Equal,
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
     }
 
-    #[test]
-    fn infer_types_of_comparison_operations() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            Operation::new(
-                Operator::Equal,
-                Number::new(42.0, SourceInformation::dummy()),
-                Number::new(42.0, SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            ),
-            types::Boolean::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
-        )
-        .into()]);
+    mod union {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert_eq!(infer_types(&module), Ok(module));
+        #[test]
+        fn infer_casting_of_non_union_types_to_union_types() {
+            let module = Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Boolean::new(true, SourceInformation::dummy()),
+                types::Union::new(
+                    vec![
+                        types::Boolean::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_casting_of_lower_union_types_to_upper_union_types() {
+            let module = Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn fail_to_infer_casting_of_upper_union_types_to_lower_union_types() {
+            let module = Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]);
+
+            assert_eq!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(
+                    SourceInformation::dummy().into(),
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
     }
 }
