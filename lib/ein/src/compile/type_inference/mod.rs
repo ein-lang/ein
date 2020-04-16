@@ -33,7 +33,7 @@ mod tests {
     use crate::debug::*;
     use crate::package::Package;
     use crate::path::*;
-    use crate::types;
+    use crate::types::{self, Type};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -866,6 +866,47 @@ mod tests {
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()
             ))
+        );
+    }
+
+    #[test]
+    fn infer_types_of_if_expressions_with_unmatched_branch_types_in_let_expressions() {
+        let union_type = types::Union::new(
+            vec![
+                types::None::new(SourceInformation::dummy()).into(),
+                types::Boolean::new(SourceInformation::dummy()).into(),
+            ],
+            SourceInformation::dummy(),
+        );
+        let create_module = |type_: Type| {
+            Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "y",
+                        If::new(
+                            Boolean::new(true, SourceInformation::dummy()),
+                            Boolean::new(true, SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        type_,
+                        SourceInformation::dummy(),
+                    )
+                    .into()],
+                    Variable::new("y", SourceInformation::dummy()),
+                ),
+                union_type.clone(),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        };
+
+        assert_eq!(
+            infer_types(&create_module(
+                types::Unknown::new(SourceInformation::dummy()).into()
+            )),
+            Ok(create_module(union_type.clone().into()))
         );
     }
 
