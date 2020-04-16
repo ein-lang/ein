@@ -1,13 +1,25 @@
 use super::location::Location;
+use derivative::Derivative;
 use serde::{Deserialize, Serialize};
-use std::cmp::Ordering;
 use std::fmt::Display;
-use std::hash::{Hash, Hasher};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
+#[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SourceInformation {
+    #[derivative(Hash = "ignore")]
+    #[derivative(Ord = "ignore")]
+    #[derivative(PartialEq = "ignore")]
+    #[derivative(PartialOrd = "ignore")]
     source_name: String,
+    #[derivative(Hash = "ignore")]
+    #[derivative(Ord = "ignore")]
+    #[derivative(PartialEq = "ignore")]
+    #[derivative(PartialOrd = "ignore")]
     location: Location,
+    #[derivative(Hash = "ignore")]
+    #[derivative(Ord = "ignore")]
+    #[derivative(PartialEq = "ignore")]
+    #[derivative(PartialOrd = "ignore")]
     line: String,
 }
 
@@ -47,30 +59,6 @@ impl Display for SourceInformation {
             str::repeat(" ", line_information.len()),
             str::repeat(" ", self.location.column_number() - 1),
         )
-    }
-}
-
-impl Eq for SourceInformation {}
-
-impl Hash for SourceInformation {
-    fn hash<H: Hasher>(&self, _: &mut H) {}
-}
-
-impl Ord for SourceInformation {
-    fn cmp(&self, _: &Self) -> Ordering {
-        Ordering::Equal
-    }
-}
-
-impl PartialEq for SourceInformation {
-    fn eq(&self, _: &Self) -> bool {
-        true
-    }
-}
-
-impl PartialOrd for SourceInformation {
-    fn partial_cmp(&self, _: &Self) -> Option<Ordering> {
-        Some(Ordering::Equal)
     }
 }
 

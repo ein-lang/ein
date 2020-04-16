@@ -1,6 +1,7 @@
 use super::type_::Type;
 use super::union::Union;
 use crate::debug::SourceInformation;
+use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap};
 use std::rc::Rc;
@@ -8,9 +9,14 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 static GLOBAL_VARIABLE_ID: AtomicUsize = AtomicUsize::new(0);
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
+#[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Variable {
     id: usize,
+    #[derivative(Hash = "ignore")]
+    #[derivative(Ord = "ignore")]
+    #[derivative(PartialEq = "ignore")]
+    #[derivative(PartialOrd = "ignore")]
     inputs: BTreeSet<Type>,
     source_information: Rc<SourceInformation>,
 }
