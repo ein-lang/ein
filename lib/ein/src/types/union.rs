@@ -1,24 +1,24 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Union {
-    types: Vec<Type>,
+    types: BTreeSet<Type>,
     source_information: Rc<SourceInformation>,
 }
 
 impl Union {
     pub fn new(types: Vec<Type>, source_information: impl Into<Rc<SourceInformation>>) -> Self {
         Self {
-            types,
+            types: types.into_iter().collect(),
             source_information: source_information.into(),
         }
     }
 
-    pub fn types(&self) -> &[Type] {
+    pub fn types(&self) -> &BTreeSet<Type> {
         &self.types
     }
 
@@ -35,7 +35,7 @@ impl Union {
         let unions: Vec<Vec<Type>> = unions
             .into_iter()
             .map(|type_| match type_.to_union().unwrap().simplify() {
-                Type::Union(union) => union.types().to_vec(),
+                Type::Union(union) => union.types().iter().cloned().collect(),
                 type_ => vec![type_],
             })
             .collect();

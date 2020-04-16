@@ -2,7 +2,7 @@ use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Boolean {
     source_information: Rc<SourceInformation>,
 }

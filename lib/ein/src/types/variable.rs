@@ -8,7 +8,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 
 static GLOBAL_VARIABLE_ID: AtomicUsize = AtomicUsize::new(0);
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Variable {
     id: usize,
     inputs: Vec<Type>,
