@@ -1321,5 +1321,48 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn infer_contravariance_of_function_types() {
+            let module = Module::from_definitions(vec![
+                FunctionDefinition::new(
+                    "f",
+                    vec!["x".into()],
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Union::new(
+                            vec![
+                                types::Boolean::new(SourceInformation::dummy()).into(),
+                                types::None::new(SourceInformation::dummy()).into(),
+                            ],
+                            SourceInformation::dummy(),
+                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "g",
+                    Variable::new("f", SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        types::Union::new(
+                            vec![
+                                types::Boolean::new(SourceInformation::dummy()).into(),
+                                types::None::new(SourceInformation::dummy()).into(),
+                            ],
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
     }
 }
