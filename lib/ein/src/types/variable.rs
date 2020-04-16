@@ -2,7 +2,7 @@ use super::type_::Type;
 use super::union::Union;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -11,7 +11,7 @@ static GLOBAL_VARIABLE_ID: AtomicUsize = AtomicUsize::new(0);
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Variable {
     id: usize,
-    inputs: Vec<Type>,
+    inputs: BTreeSet<Type>,
     source_information: Rc<SourceInformation>,
 }
 
@@ -26,7 +26,7 @@ impl Variable {
     ) -> Self {
         Self {
             id: GLOBAL_VARIABLE_ID.fetch_add(1, Ordering::SeqCst),
-            inputs,
+            inputs: inputs.into_iter().collect(),
             source_information: source_information.into(),
         }
     }
@@ -35,7 +35,7 @@ impl Variable {
         self.id
     }
 
-    pub fn inputs(&self) -> &[Type] {
+    pub fn inputs(&self) -> &BTreeSet<Type> {
         &self.inputs
     }
 
