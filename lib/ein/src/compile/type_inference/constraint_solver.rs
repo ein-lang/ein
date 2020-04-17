@@ -1,8 +1,8 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::subsumption::Subsumption;
 use super::subsumption_set::SubsumptionSet;
-use crate::types::{self, Type};
+use super::variable_constraint_set::VariableConstraintSet;
+use crate::types::Type;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -21,7 +21,7 @@ impl<'a> ConstraintSolver<'a> {
         &self,
         mut subsumption_set: SubsumptionSet,
     ) -> Result<HashMap<usize, Type>, CompileError> {
-        let mut substitutions = HashMap::<usize, Type>::new();
+        let mut variable_constraint_set = VariableConstraintSet::new();
 
         while let Some(subsumption) = subsumption_set.remove() {
             match (subsumption.lower(), subsumption.upper()) {
@@ -32,28 +32,18 @@ impl<'a> ConstraintSolver<'a> {
                         }
                     }
 
-                    for type_ in variable.upper_types() {
+                    for type_ in variable_constraint_set.get_upper_types(variable.id()) {
                         subsumption_set.add_subsumption(lower.clone(), type_.clone());
                     }
 
-                    self.substitute_variable(
-                        variable,
-                        &variable.add_lower_type(lower.clone()).into(),
-                        &mut substitutions,
-                        &mut subsumption_set,
-                    );
+                    variable_constraint_set.add_lower_type(variable, lower);
                 }
                 (Type::Variable(variable), upper) => {
-                    for type_ in variable.lower_types() {
+                    for type_ in variable_constraint_set.get_lower_types(variable.id()) {
                         subsumption_set.add_subsumption(type_.clone(), upper.clone());
                     }
 
-                    self.substitute_variable(
-                        variable,
-                        &variable.add_upper_type(upper.clone()).into(),
-                        &mut substitutions,
-                        &mut subsumption_set,
-                    );
+                    variable_constraint_set.add_upper_type(variable, upper);
                 }
                 (Type::Reference(reference), other) => subsumption_set.add_subsumption(
                     self.reference_type_resolver.resolve_reference(reference)?,
@@ -102,29 +92,6 @@ impl<'a> ConstraintSolver<'a> {
             }
         }
 
-        Ok(substitutions)
-    }
-
-    fn substitute_variable(
-        &self,
-        variable: &types::Variable,
-        type_: &Type,
-        substitutions: &mut HashMap<usize, Type>,
-        subsumption_set: &mut SubsumptionSet,
-    ) {
-        for (_, substituted_type) in substitutions.iter_mut() {
-            *substituted_type = substituted_type
-                .clone()
-                .substitute_variable(variable, type_);
-        }
-
-        for subsumption in subsumption_set.iter_mut() {
-            *subsumption = Subsumption::new(
-                subsumption.lower().substitute_variable(variable, type_),
-                subsumption.upper().substitute_variable(variable, type_),
-            )
-        }
-
-        substitutions.insert(variable.id(), type_.clone());
+        Ok(variable_constraint_set.to_substitutions())
     }
 }

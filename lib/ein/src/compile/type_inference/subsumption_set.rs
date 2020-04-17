@@ -30,8 +30,4 @@ impl SubsumptionSet {
     pub fn remove(&mut self) -> Option<Subsumption> {
         self.subsumptions.pop()
     }
-
-    pub fn iter_mut(&mut self) -> impl IntoIterator<Item = &mut Subsumption> {
-        self.subsumptions.iter_mut()
-    }
 }

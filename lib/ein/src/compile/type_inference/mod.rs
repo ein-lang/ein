@@ -2,6 +2,8 @@ mod constraint_collector;
 mod constraint_solver;
 mod subsumption;
 mod subsumption_set;
+mod variable_constraint;
+mod variable_constraint_set;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;

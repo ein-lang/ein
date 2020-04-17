@@ -40,8 +40,8 @@ impl Type {
         }
     }
 
-    pub fn substitute_variable(&self, variable: &Variable, type_: &Self) -> Self {
-        self.substitute_variables(&vec![(variable.id(), type_.clone())].into_iter().collect())
+    pub fn substitute_variable(&self, id: usize, type_: &Self) -> Self {
+        self.substitute_variables(&vec![(id, type_.clone())].into_iter().collect())
     }
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
@@ -63,12 +63,12 @@ impl Type {
             Self::Function(function) => function.convert_types(convert).into(),
             Self::Record(record) => record.convert_types(convert).into(),
             Self::Union(union) => union.convert_types(convert).into(),
-            Self::Variable(variable) => variable.convert_types(convert).into(),
             Self::Boolean(_)
             | Self::None(_)
             | Self::Number(_)
             | Self::Reference(_)
-            | Self::Unknown(_) => self.clone(),
+            | Self::Unknown(_)
+            | Self::Variable(_) => self.clone(),
         };
 
         convert(&type_)
@@ -77,7 +77,6 @@ impl Type {
     pub fn simplify(&self) -> Self {
         match self {
             Self::Union(union) => union.simplify(),
-            Self::Variable(variable) => variable.simplify(),
             _ => self.clone(),
         }
     }
