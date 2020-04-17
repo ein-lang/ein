@@ -34,7 +34,7 @@ impl Union {
             .partition(|type_| type_.is_union());
         let unions: Vec<Vec<Type>> = unions
             .into_iter()
-            .map(|type_| match type_.to_union().unwrap().simplify() {
+            .map(|type_| match type_.simplify() {
                 Type::Union(union) => union.types().iter().cloned().collect(),
                 type_ => vec![type_],
             })

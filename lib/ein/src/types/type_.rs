@@ -58,6 +58,14 @@ impl Type {
         }
     }
 
+    pub fn simplify(&self) -> Self {
+        match self {
+            Self::Union(union) => union.simplify(),
+            Self::Variable(variable) => variable.simplify(),
+            _ => self.clone(),
+        }
+    }
+
     pub fn to_function(&self) -> Option<&Function> {
         if let Self::Function(function) = self {
             Some(&function)

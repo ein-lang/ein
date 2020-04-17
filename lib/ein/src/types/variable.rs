@@ -64,13 +64,7 @@ impl Variable {
 
     pub fn simplify(&self) -> Type {
         Union::new(
-            self.inputs
-                .iter()
-                .map(|type_| match type_ {
-                    Type::Variable(variable) => variable.simplify(),
-                    _ => type_.clone(),
-                })
-                .collect(),
+            self.inputs.iter().map(|type_| type_.simplify()).collect(),
             self.source_information.clone(),
         )
         .simplify()
