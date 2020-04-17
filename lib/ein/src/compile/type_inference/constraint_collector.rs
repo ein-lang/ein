@@ -163,12 +163,12 @@ impl<'a> ConstraintCollector<'a> {
 
                 let then = self.infer_expression(if_.then(), variables)?;
                 let else_ = self.infer_expression(if_.else_(), variables)?;
+                let result = types::Variable::new(if_.source_information().clone());
 
-                Ok(types::Variable::with_lower_types(
-                    vec![then, else_],
-                    if_.source_information().clone(),
-                )
-                .into())
+                self.subsumption_set.add_subsumption(then, result.clone());
+                self.subsumption_set.add_subsumption(else_, result.clone());
+
+                Ok(result.into())
             }
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
