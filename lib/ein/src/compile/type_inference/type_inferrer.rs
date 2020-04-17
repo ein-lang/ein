@@ -316,9 +316,11 @@ impl<'a> TypeInferrer<'a> {
                         }
                     }
 
-                    // Lower types can be variables which are expected to be
-                    // inferred into concrete types from their inputs
-                    // eventually.
+                    for type_ in variable.upper_types() {
+                        self.subsumption_set
+                            .add_subsumption(lower.clone(), type_.clone());
+                    }
+
                     self.substitute_variable(
                         variable,
                         &variable.add_lower_type(lower.clone()).into(),
@@ -331,8 +333,11 @@ impl<'a> TypeInferrer<'a> {
                             .add_subsumption(type_.clone(), upper.clone());
                     }
 
-                    // TODO Infer principal types.
-                    self.substitute_variable(variable, upper, &mut substitutions);
+                    self.substitute_variable(
+                        variable,
+                        &variable.add_upper_type(upper.clone()).into(),
+                        &mut substitutions,
+                    );
                 }
                 (Type::Reference(reference), other) => self.subsumption_set.add_subsumption(
                     self.reference_type_resolver.resolve_reference(reference)?,

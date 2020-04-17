@@ -18,6 +18,11 @@ pub struct Variable {
     #[derivative(PartialEq = "ignore")]
     #[derivative(PartialOrd = "ignore")]
     lower_types: BTreeSet<Type>,
+    #[derivative(Hash = "ignore")]
+    #[derivative(Ord = "ignore")]
+    #[derivative(PartialEq = "ignore")]
+    #[derivative(PartialOrd = "ignore")]
+    upper_types: BTreeSet<Type>,
     source_information: Rc<SourceInformation>,
 }
 
@@ -33,6 +38,7 @@ impl Variable {
         Self {
             id: GLOBAL_VARIABLE_ID.fetch_add(1, Ordering::SeqCst),
             lower_types: lower_types.into_iter().collect(),
+            upper_types: Default::default(),
             source_information: source_information.into(),
         }
     }
@@ -45,6 +51,10 @@ impl Variable {
         &self.lower_types
     }
 
+    pub fn upper_types(&self) -> &BTreeSet<Type> {
+        &self.upper_types
+    }
+
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         &self.source_information
     }
@@ -54,6 +64,21 @@ impl Variable {
             id: self.id,
             lower_types: self
                 .lower_types
+                .iter()
+                .cloned()
+                .chain(vec![type_.into()])
+                .collect(),
+            upper_types: self.upper_types.clone(),
+            source_information: self.source_information.clone(),
+        }
+    }
+
+    pub fn add_upper_type(&self, type_: impl Into<Type>) -> Self {
+        Self {
+            id: self.id,
+            lower_types: self.lower_types.clone(),
+            upper_types: self
+                .upper_types
                 .iter()
                 .cloned()
                 .chain(vec![type_.into()])
@@ -80,6 +105,11 @@ impl Variable {
                 id: self.id,
                 lower_types: self
                     .lower_types
+                    .iter()
+                    .map(|type_| type_.substitute_variables(substitutions))
+                    .collect(),
+                upper_types: self
+                    .upper_types
                     .iter()
                     .map(|type_| type_.substitute_variables(substitutions))
                     .collect(),
