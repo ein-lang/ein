@@ -17,22 +17,22 @@ pub struct Variable {
     #[derivative(Ord = "ignore")]
     #[derivative(PartialEq = "ignore")]
     #[derivative(PartialOrd = "ignore")]
-    inputs: BTreeSet<Type>,
+    lower_types: BTreeSet<Type>,
     source_information: Rc<SourceInformation>,
 }
 
 impl Variable {
     pub fn new(source_information: impl Into<Rc<SourceInformation>>) -> Self {
-        Self::with_inputs(vec![], source_information)
+        Self::with_lower_types(vec![], source_information)
     }
 
-    pub fn with_inputs(
-        inputs: Vec<Type>,
+    pub fn with_lower_types(
+        lower_types: Vec<Type>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
             id: GLOBAL_VARIABLE_ID.fetch_add(1, Ordering::SeqCst),
-            inputs: inputs.into_iter().collect(),
+            lower_types: lower_types.into_iter().collect(),
             source_information: source_information.into(),
         }
     }
@@ -41,19 +41,19 @@ impl Variable {
         self.id
     }
 
-    pub fn inputs(&self) -> &BTreeSet<Type> {
-        &self.inputs
+    pub fn lower_types(&self) -> &BTreeSet<Type> {
+        &self.lower_types
     }
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         &self.source_information
     }
 
-    pub fn add_input(&self, type_: impl Into<Type>) -> Self {
+    pub fn add_lower_type(&self, type_: impl Into<Type>) -> Self {
         Self {
             id: self.id,
-            inputs: self
-                .inputs
+            lower_types: self
+                .lower_types
                 .iter()
                 .cloned()
                 .chain(vec![type_.into()])
@@ -64,7 +64,10 @@ impl Variable {
 
     pub fn simplify(&self) -> Type {
         Union::new(
-            self.inputs.iter().map(|type_| type_.simplify()).collect(),
+            self.lower_types
+                .iter()
+                .map(|type_| type_.simplify())
+                .collect(),
             self.source_information.clone(),
         )
         .simplify()
@@ -75,8 +78,8 @@ impl Variable {
             Some(type_) => type_.clone(),
             None => Self {
                 id: self.id,
-                inputs: self
-                    .inputs
+                lower_types: self
+                    .lower_types
                     .iter()
                     .map(|type_| type_.substitute_variables(substitutions))
                     .collect(),

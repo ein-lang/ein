@@ -173,7 +173,7 @@ impl<'a> TypeInferrer<'a> {
                 let then = self.infer_expression(if_.then(), variables)?;
                 let else_ = self.infer_expression(if_.else_(), variables)?;
 
-                Ok(types::Variable::with_inputs(
+                Ok(types::Variable::with_lower_types(
                     vec![then, else_],
                     if_.source_information().clone(),
                 )
@@ -321,12 +321,12 @@ impl<'a> TypeInferrer<'a> {
                     // eventually.
                     self.substitute_variable(
                         variable,
-                        &variable.add_input(lower.clone()).into(),
+                        &variable.add_lower_type(lower.clone()).into(),
                         &mut substitutions,
                     );
                 }
                 (Type::Variable(variable), upper) => {
-                    for type_ in variable.inputs() {
+                    for type_ in variable.lower_types() {
                         self.subsumption_set
                             .add_subsumption(type_.clone(), upper.clone());
                     }
