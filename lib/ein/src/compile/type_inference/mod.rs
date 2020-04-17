@@ -1,23 +1,33 @@
+mod constraint_collector;
+mod constraint_solver;
 mod subsumption;
 mod subsumption_set;
-mod type_inferrer;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::types::{self, Type};
-use type_inferrer::*;
+use constraint_collector::ConstraintCollector;
+use constraint_solver::ConstraintSolver;
 
 pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
-    let reference_type_resolver = ReferenceTypeResolver::new(module);
+    let module = module.convert_types(&mut |type_| match type_ {
+        Type::Unknown(unknown) => types::Variable::new(unknown.source_information().clone()).into(),
+        _ => type_.clone(),
+    });
 
-    Ok(TypeInferrer::new(&reference_type_resolver)
-        .infer(&module.convert_types(&mut |type_| match type_ {
-            Type::Unknown(unknown) => {
-                types::Variable::new(unknown.source_information().clone()).into()
+    let reference_type_resolver = ReferenceTypeResolver::new(&module);
+    let subsumption_set = ConstraintCollector::new(&reference_type_resolver).collect(&module)?;
+    let substitutions = ConstraintSolver::new(&reference_type_resolver).solve(subsumption_set)?;
+
+    Ok(module
+        .convert_types(&mut |type_| {
+            if let Type::Variable(variable) = type_ {
+                substitutions[&variable.id()].clone()
+            } else {
+                type_.clone()
             }
-            _ => type_.clone(),
-        }))?
+        })
         .convert_types(&mut |type_| type_.simplify()))
 }
 
