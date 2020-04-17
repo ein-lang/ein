@@ -58,6 +58,22 @@ impl Type {
         }
     }
 
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Self) -> Self) -> Self {
+        let type_ = match self {
+            Self::Function(function) => function.convert_types(convert).into(),
+            Self::Record(record) => record.convert_types(convert).into(),
+            Self::Union(union) => union.convert_types(convert).into(),
+            Self::Variable(variable) => variable.convert_types(convert).into(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::Reference(_)
+            | Self::Unknown(_) => self.clone(),
+        };
+
+        convert(&type_)
+    }
+
     pub fn simplify(&self) -> Self {
         match self {
             Self::Union(union) => union.simplify(),

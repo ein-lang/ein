@@ -46,4 +46,15 @@ impl Record {
             self.source_information.clone(),
         )
     }
+
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            &self.name,
+            self.elements
+                .iter()
+                .map(|(name, type_)| (name.into(), type_.convert_types(convert)))
+                .collect(),
+            self.source_information.clone(),
+        )
+    }
 }

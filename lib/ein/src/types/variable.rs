@@ -118,4 +118,21 @@ impl Variable {
             .into(),
         }
     }
+
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self {
+            id: self.id,
+            lower_types: self
+                .lower_types
+                .iter()
+                .map(|type_| type_.convert_types(convert))
+                .collect(),
+            upper_types: self
+                .upper_types
+                .iter()
+                .map(|type_| type_.convert_types(convert))
+                .collect(),
+            source_information: self.source_information.clone(),
+        }
+    }
 }

@@ -58,7 +58,7 @@ impl ValueDefinition {
         Self::new(
             self.name.clone(),
             self.body.convert_types(convert),
-            convert(&self.type_),
+            self.type_.convert_types(convert),
             self.source_information.clone(),
         )
     }

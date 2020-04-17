@@ -63,6 +63,16 @@ impl Union {
             self.source_information.clone(),
         )
     }
+
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            self.types
+                .iter()
+                .map(|type_| type_.convert_types(convert))
+                .collect(),
+            self.source_information.clone(),
+        )
+    }
 }
 
 #[cfg(test)]

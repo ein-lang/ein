@@ -62,4 +62,12 @@ impl Function {
             self.source_information.clone(),
         )
     }
+
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
+        Self::new(
+            self.argument.convert_types(convert),
+            self.result.convert_types(convert),
+            self.source_information.clone(),
+        )
+    }
 }
