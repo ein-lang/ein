@@ -5,7 +5,6 @@ use super::variable_constraint_set::VariableConstraintSet;
 use crate::types::Type;
 use std::collections::HashMap;
 
-#[derive(Debug)]
 pub struct ConstraintSolver<'a> {
     reference_type_resolver: &'a ReferenceTypeResolver,
 }
@@ -24,48 +23,47 @@ impl<'a> ConstraintSolver<'a> {
         let mut variable_constraint_set = VariableConstraintSet::new();
 
         while let Some(subsumption) = subsumption_set.remove() {
-            match (subsumption.lower(), subsumption.upper()) {
+            match subsumption {
                 (lower, Type::Variable(variable)) => {
-                    if let Type::Variable(lower) = lower {
+                    if let Type::Variable(lower) = &lower {
                         if variable.id() == lower.id() {
                             continue;
                         }
                     }
 
                     for type_ in variable_constraint_set.get_upper_types(variable.id()) {
-                        subsumption_set.add_subsumption(lower.clone(), type_.clone());
+                        subsumption_set.add(lower.clone(), type_.clone());
                     }
 
-                    variable_constraint_set.add_lower_type(variable, lower);
+                    variable_constraint_set.add_lower_type(&variable, &lower);
                 }
                 (Type::Variable(variable), upper) => {
                     for type_ in variable_constraint_set.get_lower_types(variable.id()) {
-                        subsumption_set.add_subsumption(type_.clone(), upper.clone());
+                        subsumption_set.add(type_.clone(), upper.clone());
                     }
 
-                    variable_constraint_set.add_upper_type(variable, upper);
+                    variable_constraint_set.add_upper_type(&variable, &upper);
                 }
-                (Type::Reference(reference), other) => subsumption_set.add_subsumption(
-                    self.reference_type_resolver.resolve_reference(reference)?,
+                (Type::Reference(reference), other) => subsumption_set.add(
+                    self.reference_type_resolver.resolve_reference(&reference)?,
                     other.clone(),
                 ),
-                (one, Type::Reference(reference)) => subsumption_set.add_subsumption(
+                (one, Type::Reference(reference)) => subsumption_set.add(
                     one.clone(),
-                    self.reference_type_resolver.resolve_reference(reference)?,
+                    self.reference_type_resolver.resolve_reference(&reference)?,
                 ),
                 (Type::Function(one), Type::Function(other)) => {
-                    subsumption_set
-                        .add_subsumption(other.argument().clone(), one.argument().clone());
-                    subsumption_set.add_subsumption(one.result().clone(), other.result().clone());
+                    subsumption_set.add(other.argument().clone(), one.argument().clone());
+                    subsumption_set.add(one.result().clone(), other.result().clone());
                 }
                 (Type::Union(union), other) => {
                     for type_ in union.types() {
-                        subsumption_set.add_subsumption(type_.clone(), other.clone());
+                        subsumption_set.add(type_.clone(), other.clone());
                     }
                 }
                 (one, Type::Union(union)) => {
-                    // Union types are inferred already before inference.
-                    if union.types().iter().find(|type_| type_ == &one).is_none() {
+                    // Union types' members cannot be type variables.
+                    if !union.types().into_iter().any(|type_| type_ == &one) {
                         return Err(CompileError::TypesNotMatched(
                             one.source_information().clone(),
                             union.source_information().clone(),
@@ -83,10 +81,10 @@ impl<'a> ConstraintSolver<'a> {
                         ));
                     };
                 }
-                (lower, upper) => {
+                (one, other) => {
                     return Err(CompileError::TypesNotMatched(
-                        lower.source_information().clone(),
-                        upper.source_information().clone(),
+                        one.source_information().clone(),
+                        other.source_information().clone(),
                     ))
                 }
             }

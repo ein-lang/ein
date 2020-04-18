@@ -1,6 +1,5 @@
 mod constraint_collector;
 mod constraint_solver;
-mod subsumption;
 mod subsumption_set;
 mod variable_constraint;
 mod variable_constraint_set;

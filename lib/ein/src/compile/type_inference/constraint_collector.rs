@@ -6,7 +6,6 @@ use crate::types::{self, Type};
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
 
-#[derive(Debug)]
 pub struct ConstraintCollector<'a> {
     reference_type_resolver: &'a ReferenceTypeResolver,
     subsumption_set: SubsumptionSet,
@@ -95,7 +94,7 @@ impl<'a> ConstraintCollector<'a> {
             let argument_type: Type = types::Variable::new(source_information.clone()).into();
             let result_type: Type = types::Variable::new(source_information.clone()).into();
 
-            self.subsumption_set.add_subsumption(
+            self.subsumption_set.add(
                 types::Function::new(
                     argument_type.clone(),
                     result_type.clone(),
@@ -110,7 +109,7 @@ impl<'a> ConstraintCollector<'a> {
         }
 
         let body_type = self.infer_expression(function_definition.body(), &variables)?;
-        self.subsumption_set.add_subsumption(body_type, type_);
+        self.subsumption_set.add(body_type, type_);
 
         Ok(())
     }
@@ -123,7 +122,7 @@ impl<'a> ConstraintCollector<'a> {
         let type_ = self.infer_expression(value_definition.body(), &variables)?;
 
         self.subsumption_set
-            .add_subsumption(type_, value_definition.type_().clone());
+            .add(type_, value_definition.type_().clone());
 
         Ok(())
     }
@@ -140,7 +139,7 @@ impl<'a> ConstraintCollector<'a> {
                 let result: Type =
                     types::Variable::new(application.source_information().clone()).into();
 
-                self.subsumption_set.add_subsumption(
+                self.subsumption_set.add(
                     function,
                     types::Function::new(
                         argument,
@@ -156,7 +155,7 @@ impl<'a> ConstraintCollector<'a> {
             }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
-                self.subsumption_set.add_subsumption(
+                self.subsumption_set.add(
                     condition,
                     types::Boolean::new(if_.source_information().clone()),
                 );
@@ -165,8 +164,8 @@ impl<'a> ConstraintCollector<'a> {
                 let else_ = self.infer_expression(if_.else_(), variables)?;
                 let result = types::Variable::new(if_.source_information().clone());
 
-                self.subsumption_set.add_subsumption(then, result.clone());
-                self.subsumption_set.add_subsumption(else_, result.clone());
+                self.subsumption_set.add(then, result.clone());
+                self.subsumption_set.add(else_, result.clone());
 
                 Ok(result.into())
             }
@@ -238,11 +237,9 @@ impl<'a> ConstraintCollector<'a> {
                 let number_type = types::Number::new(operation.source_information().clone());
 
                 let lhs = self.infer_expression(operation.lhs(), variables)?;
-                self.subsumption_set
-                    .add_subsumption(lhs, number_type.clone());
+                self.subsumption_set.add(lhs, number_type.clone());
                 let rhs = self.infer_expression(operation.rhs(), variables)?;
-                self.subsumption_set
-                    .add_subsumption(rhs, number_type.clone());
+                self.subsumption_set.add(rhs, number_type.clone());
 
                 Ok(match operation.operator() {
                     Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
@@ -282,7 +279,7 @@ impl<'a> ConstraintCollector<'a> {
                     let type_ = self.infer_expression(expression, variables)?;
 
                     self.subsumption_set
-                        .add_subsumption(type_, record_type.elements()[key].clone());
+                        .add(type_, record_type.elements()[key].clone());
                 }
 
                 Ok(record.type_().clone().into())

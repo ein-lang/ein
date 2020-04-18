@@ -41,8 +41,10 @@ impl VariableConstraintSet {
         let id = variable.id();
 
         if self.constraints.get(&id).is_none() {
-            self.constraints
-                .insert(id, VariableConstraint::new(variable));
+            self.constraints.insert(
+                id,
+                VariableConstraint::new(variable.source_information().clone()),
+            );
         }
 
         self.constraints.get_mut(&id).unwrap()

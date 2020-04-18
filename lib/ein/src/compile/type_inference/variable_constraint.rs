@@ -1,18 +1,20 @@
+use crate::debug::SourceInformation;
 use crate::types::{self, Type};
 use std::collections::BTreeSet;
+use std::rc::Rc;
 
 pub struct VariableConstraint {
-    variable: types::Variable,
     lower_types: BTreeSet<Type>,
     upper_types: BTreeSet<Type>,
+    source_information: Rc<SourceInformation>,
 }
 
 impl VariableConstraint {
-    pub fn new(variable: &types::Variable) -> Self {
+    pub fn new(source_information: Rc<SourceInformation>) -> Self {
         Self {
-            variable: variable.clone(),
             lower_types: Default::default(),
             upper_types: Default::default(),
+            source_information,
         }
     }
 
@@ -35,7 +37,7 @@ impl VariableConstraint {
     pub fn to_type(&self) -> Type {
         types::Union::new(
             self.lower_types.iter().cloned().collect(),
-            self.variable.source_information().clone(),
+            self.source_information.clone(),
         )
         .into()
     }

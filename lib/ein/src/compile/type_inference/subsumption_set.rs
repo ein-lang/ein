@@ -1,11 +1,10 @@
-use super::subsumption::Subsumption;
 use crate::types::Type;
 use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct SubsumptionSet {
-    cache: HashSet<Subsumption>,
-    subsumptions: Vec<Subsumption>,
+    cache: HashSet<(Type, Type)>,
+    subsumptions: Vec<(Type, Type)>,
 }
 
 impl SubsumptionSet {
@@ -16,8 +15,8 @@ impl SubsumptionSet {
         }
     }
 
-    pub fn add_subsumption(&mut self, lower: impl Into<Type>, upper: impl Into<Type>) {
-        let subsumption = Subsumption::new(lower, upper);
+    pub fn add(&mut self, lower: impl Into<Type>, upper: impl Into<Type>) {
+        let subsumption = (lower.into(), upper.into());
 
         if self.cache.contains(&subsumption) {
             return;
@@ -27,7 +26,7 @@ impl SubsumptionSet {
         self.subsumptions.push(subsumption);
     }
 
-    pub fn remove(&mut self) -> Option<Subsumption> {
+    pub fn remove(&mut self) -> Option<(Type, Type)> {
         self.subsumptions.pop()
     }
 }
