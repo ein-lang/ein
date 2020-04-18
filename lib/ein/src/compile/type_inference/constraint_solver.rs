@@ -79,7 +79,7 @@ impl<'a> ConstraintSolver<'a> {
                             one.source_information().clone(),
                             other.source_information().clone(),
                         ));
-                    };
+                    }
                 }
                 (one, other) => {
                     return Err(CompileError::TypesNotMatched(
