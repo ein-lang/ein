@@ -27,30 +27,22 @@ impl Union {
     }
 
     pub fn simplify(&self) -> Type {
-        let (unions, non_unions): (Vec<Type>, Vec<Type>) = self
+        let types = self
             .types
             .iter()
-            .cloned()
-            .partition(|type_| type_.is_union());
-        let unions: Vec<Vec<Type>> = unions
-            .into_iter()
             .map(|type_| match type_.simplify() {
                 Type::Union(union) => union.types().iter().cloned().collect(),
                 type_ => vec![type_],
             })
-            .collect();
-        let types = vec![non_unions]
-            .into_iter()
-            .chain(unions)
             .flatten()
             .collect::<HashSet<_>>()
             .drain()
             .collect::<Vec<_>>();
 
-        if types.len() == 1 {
-            types[0].clone()
-        } else {
-            Self::new(types, self.source_information.clone()).into()
+        match types.len() {
+            0 => unreachable!(),
+            1 => types[0].clone(),
+            _ => Self::new(types, self.source_information.clone()).into(),
         }
     }
 
