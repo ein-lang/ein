@@ -232,15 +232,20 @@ fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
 }
 
 fn type_<'a>() -> impl Parser<Stream<'a>, Output = Type> {
-    lazy(|| no_partial(choice!(function_type().map(Type::from), atomic_type()))).boxed()
+    lazy(|| no_partial(choice!(function_type().map(Type::from), union_type()))).boxed()
 }
 
 fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
-    (source_information(), atomic_type(), sign("->"), type_()).map(
+    (source_information(), union_type(), sign("->"), type_()).map(
         |(source_information, argument, _, result)| {
             types::Function::new(argument, result, source_information)
         },
     )
+}
+
+fn union_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
+    (source_information(), sep_end_by1(atomic_type(), sign("|")))
+        .map(|(source_information, types)| types::Union::new(types, source_information).simplify())
 }
 
 fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -1080,6 +1085,87 @@ mod tests {
                     SourceInformation::dummy()
                 ),
                 types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            type_().parse(stream("Number | None", "")).unwrap().0,
+            types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            type_()
+                .parse(stream("Boolean | Number | None", ""))
+                .unwrap()
+                .0,
+            types::Union::new(
+                vec![
+                    types::Boolean::new(SourceInformation::dummy()).into(),
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            type_()
+                .parse(stream("Number -> Number | None", ""))
+                .unwrap()
+                .0,
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Union::new(
+                    vec![
+                        types::Number::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            type_()
+                .parse(stream("Number | None -> Number", ""))
+                .unwrap()
+                .0,
+            types::Function::new(
+                types::Union::new(
+                    vec![
+                        types::Number::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy()
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into()
+        );
+        assert_eq!(
+            type_()
+                .parse(stream("(Number -> Number) | None", ""))
+                .unwrap()
+                .0,
+            types::Union::new(
+                vec![
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
                 SourceInformation::dummy()
             )
             .into()
