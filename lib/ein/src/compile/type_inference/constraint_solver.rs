@@ -63,7 +63,7 @@ impl<'a> ConstraintSolver<'a> {
                 }
                 (one, Type::Union(union)) => {
                     // Union types' members cannot be type variables.
-                    if !union.types().into_iter().any(|type_| type_ == &one) {
+                    if !union.types().iter().any(|type_| type_ == &one) {
                         return Err(CompileError::TypesNotMatched(
                             one.source_information().clone(),
                             union.source_information().clone(),
