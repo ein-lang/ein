@@ -1,7 +1,7 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
@@ -34,17 +34,6 @@ impl Record {
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         &self.source_information
-    }
-
-    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            &self.name,
-            self.elements
-                .iter()
-                .map(|(name, type_)| (name.into(), type_.substitute_variables(substitutions)))
-                .collect(),
-            self.source_information.clone(),
-        )
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {

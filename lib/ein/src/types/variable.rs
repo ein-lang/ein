@@ -1,7 +1,5 @@
-use super::type_::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -27,16 +25,5 @@ impl Variable {
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         &self.source_information
-    }
-
-    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Type {
-        match substitutions.get(&self.id) {
-            Some(type_) => type_.clone(),
-            None => Self {
-                id: self.id,
-                source_information: self.source_information.clone(),
-            }
-            .into(),
-        }
     }
 }

@@ -1,7 +1,7 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashSet};
 use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
@@ -44,16 +44,6 @@ impl Union {
             1 => types[0].clone(),
             _ => Self::new(types, self.source_information.clone()).into(),
         }
-    }
-
-    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        Self::new(
-            self.types
-                .iter()
-                .map(|type_| type_.substitute_variables(substitutions))
-                .collect(),
-            self.source_information.clone(),
-        )
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {

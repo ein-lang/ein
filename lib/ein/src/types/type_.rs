@@ -45,17 +45,13 @@ impl Type {
     }
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        match self {
-            Self::Function(function) => function.substitute_variables(substitutions).into(),
-            Self::Record(record) => record.substitute_variables(substitutions).into(),
-            Self::Union(union) => union.substitute_variables(substitutions).into(),
-            Self::Variable(variable) => variable.substitute_variables(substitutions),
-            Self::Boolean(_)
-            | Self::None(_)
-            | Self::Number(_)
-            | Self::Reference(_)
-            | Self::Unknown(_) => self.clone(),
-        }
+        self.convert_types(&mut |type_| match type_ {
+            Self::Variable(variable) => match substitutions.get(&variable.id()) {
+                Some(type_) => type_.clone(),
+                None => type_.clone(),
+            },
+            _ => type_.clone(),
+        })
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Self) -> Self) -> Self {
