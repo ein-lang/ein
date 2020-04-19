@@ -221,10 +221,13 @@ impl<'a> TypeCoercionDesugarer<'a> {
                 )
                 .into())
             }
-            Expression::Operation(_) => {
-                // TODO Make operations generic.
-                Ok(expression.clone())
-            }
+            Expression::Operation(operation) => Ok(Operation::new(
+                operation.operator(),
+                self.desugar_expression(operation.lhs(), &variables)?,
+                self.desugar_expression(operation.rhs(), &variables)?,
+                operation.source_information().clone(),
+            )
+            .into()),
             Expression::RecordConstruction(record_construction) => {
                 let type_ = self
                     .reference_type_resolver

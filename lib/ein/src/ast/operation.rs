@@ -27,8 +27,8 @@ impl Operation {
         }
     }
 
-    pub fn operator(&self) -> &Operator {
-        &self.operator
+    pub fn operator(&self) -> Operator {
+        self.operator
     }
 
     pub fn lhs(&self) -> &Expression {
