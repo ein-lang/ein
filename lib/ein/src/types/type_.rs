@@ -101,6 +101,10 @@ impl Type {
         }
     }
 
+    pub fn is_function(&self) -> bool {
+        self.to_function().is_some()
+    }
+
     pub fn is_union(&self) -> bool {
         self.to_union().is_some()
     }

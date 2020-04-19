@@ -175,24 +175,6 @@ impl<'a> TypeCoercionDesugarer<'a> {
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
-                // Because the language does not have let-rec
-                // expression like OCaml, we need to guess if the
-                // let expression is recursive or not to generate
-                // proper type subsumptions.
-                let functions_included =
-                    let_.definitions()
-                        .iter()
-                        .any(|definition| match definition {
-                            Definition::FunctionDefinition(_) => true,
-                            Definition::ValueDefinition(value_definition) => {
-                                if let Type::Function(_) = value_definition.type_() {
-                                    true
-                                } else {
-                                    false
-                                }
-                            }
-                        });
-
                 for definition in let_.definitions() {
                     match definition {
                         Definition::FunctionDefinition(function_definition) => {
@@ -202,7 +184,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
                             );
                         }
                         Definition::ValueDefinition(value_definition) => {
-                            if functions_included {
+                            if let_.has_functions() {
                                 variables.insert(
                                     value_definition.name().into(),
                                     value_definition.type_().clone(),

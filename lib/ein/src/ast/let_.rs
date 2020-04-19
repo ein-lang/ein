@@ -25,6 +25,13 @@ impl Let {
         &self.expression
     }
 
+    pub fn has_functions(&self) -> bool {
+        self.definitions.iter().any(|definition| match definition {
+            Definition::FunctionDefinition(_) => true,
+            Definition::ValueDefinition(value_definition) => value_definition.type_().is_function(),
+        })
+    }
+
     pub fn convert_expressions<E>(
         &self,
         convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
