@@ -188,5 +188,128 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn desugar_let_value_expression() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let create_module = |expression: Expression| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "y",
+                            expression,
+                            union_type.clone(),
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
+                    Number::new(42.0, SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    TypeCoercion::new(
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
+
+        #[test]
+        fn desugar_let_function_expression() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let create_module = |body: Expression| {
+                Module::from_definitions(vec![
+                    FunctionDefinition::new(
+                        "f",
+                        vec!["x".into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Function::new(
+                            union_type.clone(),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "x",
+                        Let::new(
+                            vec![FunctionDefinition::new(
+                                "g",
+                                vec!["x".into()],
+                                body,
+                                types::Function::new(
+                                    types::Number::new(SourceInformation::dummy()),
+                                    union_type.clone(),
+                                    SourceInformation::dummy(),
+                                ),
+                                SourceInformation::dummy(),
+                            )
+                            .into()],
+                            Number::new(42.0, SourceInformation::dummy()),
+                        ),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                )),
+                Ok(create_module(
+                    TypeCoercion::new(
+                        Application::new(
+                            Variable::new("f", SourceInformation::dummy()),
+                            TypeCoercion::new(
+                                Number::new(42.0, SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                union_type.clone(),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Number::new(SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
     }
 }

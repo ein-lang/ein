@@ -194,23 +194,32 @@ impl<'a> TypeCoercionDesugarer<'a> {
                     }
                 }
 
+                let mut definitions = vec![];
+
                 for definition in let_.definitions() {
-                    match definition {
-                        Definition::FunctionDefinition(function_definition) => {
-                            self.desugar_function_definition(function_definition, &variables)?;
-                        }
+                    definitions.push(match definition {
+                        Definition::FunctionDefinition(function_definition) => self
+                            .desugar_function_definition(function_definition, &variables)?
+                            .into(),
                         Definition::ValueDefinition(value_definition) => {
-                            self.desugar_value_definition(value_definition, &variables)?;
+                            let definition =
+                                self.desugar_value_definition(value_definition, &variables)?;
 
                             variables.insert(
                                 value_definition.name().into(),
                                 value_definition.type_().clone(),
                             );
+
+                            definition.into()
                         }
-                    }
+                    })
                 }
 
-                self.desugar_expression(let_.expression(), &variables)
+                Ok(Let::new(
+                    definitions,
+                    self.desugar_expression(let_.expression(), &variables)?,
+                )
+                .into())
             }
             Expression::Operation(_) => {
                 // TODO Make operations generic.
