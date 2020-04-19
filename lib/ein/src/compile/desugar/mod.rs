@@ -311,5 +311,58 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn desugar_record_construction() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            );
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let create_module = |expression: Expression| {
+                Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new(
+                        "Foo",
+                        types::Record::new(
+                            "Foo",
+                            vec![("foo".into(), union_type.clone().into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                    )],
+                    vec![ValueDefinition::new(
+                        "x",
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            vec![("foo".into(), expression)].into_iter().collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        reference_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into()],
+                )
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
+                    Number::new(42.0, SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    TypeCoercion::new(
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
     }
 }
