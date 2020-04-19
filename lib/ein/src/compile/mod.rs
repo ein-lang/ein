@@ -2,6 +2,7 @@ mod desugar;
 mod error;
 mod expression_compiler;
 mod module_compiler;
+mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod name_qualifier;
