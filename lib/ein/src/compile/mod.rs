@@ -107,4 +107,84 @@ mod tests {
         ]))
         .is_ok());
     }
+
+    #[test]
+    fn compile_record_construction() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        assert!(compile(&Module::from_definitions_and_type_definitions(
+            vec![TypeDefinition::new(
+                "Foo",
+                types::Record::new(
+                    "Foo",
+                    vec![(
+                        "foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                ),
+            )],
+            vec![ValueDefinition::new(
+                "x",
+                RecordConstruction::new(
+                    reference_type.clone(),
+                    vec![(
+                        "foo".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                ),
+                reference_type.clone(),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        ))
+        .is_ok());
+    }
+
+    #[test]
+    fn compile_record_element_access() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        assert!(compile(&Module::from_definitions_and_type_definitions(
+            vec![TypeDefinition::new(
+                "Foo",
+                types::Record::new(
+                    "Foo",
+                    vec![(
+                        "foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                ),
+            )],
+            vec![ValueDefinition::new(
+                "x",
+                Application::new(
+                    Variable::new("Foo.foo", SourceInformation::dummy()),
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        ))
+        .is_ok());
+    }
 }

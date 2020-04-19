@@ -335,13 +335,16 @@ impl<'a> TypeCoercionDesugarer<'a> {
         source_information: Rc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
-        let from_type = self.infer_expression(expression, variables);
+        let to_type = self.reference_type_resolver.resolve(to_type)?;
+        let from_type = self
+            .reference_type_resolver
+            .resolve(&self.infer_expression(expression, variables))?;
         let expression = self.desugar_expression(expression, variables)?;
 
-        Ok(if &from_type == to_type {
+        Ok(if from_type == to_type {
             expression
         } else {
-            TypeCoercion::new(expression, from_type, to_type.clone(), source_information).into()
+            TypeCoercion::new(expression, from_type, to_type, source_information).into()
         })
     }
 }
