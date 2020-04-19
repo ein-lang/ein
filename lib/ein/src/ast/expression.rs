@@ -7,6 +7,7 @@ use super::number::Number;
 use super::operation::Operation;
 use super::record_construction::RecordConstruction;
 use super::record_update::RecordUpdate;
+use super::type_coercion::TypeCoercion;
 use super::variable::Variable;
 use crate::types::Type;
 
@@ -21,6 +22,7 @@ pub enum Expression {
     None(None),
     Number(Number),
     Operation(Operation),
+    TypeCoercion(TypeCoercion),
     Variable(Variable),
 }
 
@@ -38,6 +40,7 @@ impl Expression {
             Self::If(if_) => if_.convert_expressions(convert)?.into(),
             Self::Let(let_) => let_.convert_expressions(convert)?.into(),
             Self::Operation(operation) => operation.convert_expressions(convert)?.into(),
+            Self::TypeCoercion(coercion) => coercion.convert_expressions(convert)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         };
 
@@ -54,6 +57,7 @@ impl Expression {
             Self::If(if_) => if_.convert_types(convert).into(),
             Self::Let(let_) => let_.convert_types(convert).into(),
             Self::Operation(operation) => operation.convert_types(convert).into(),
+            Self::TypeCoercion(coercion) => coercion.convert_types(convert).into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
@@ -110,6 +114,12 @@ impl From<Number> for Expression {
 impl From<Operation> for Expression {
     fn from(operation: Operation) -> Expression {
         Self::Operation(operation)
+    }
+}
+
+impl From<TypeCoercion> for Expression {
+    fn from(coercion: TypeCoercion) -> Expression {
+        Self::TypeCoercion(coercion)
     }
 }
 

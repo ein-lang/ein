@@ -284,11 +284,11 @@ impl<'a> ConstraintCollector<'a> {
 
                 Ok(record.type_().clone().into())
             }
-            Expression::RecordUpdate(_) => unreachable!(),
             Expression::Variable(variable) => variables
                 .get(variable.name())
                 .cloned()
                 .ok_or_else(|| CompileError::VariableNotFound(variable.clone())),
+            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }
     }
 }

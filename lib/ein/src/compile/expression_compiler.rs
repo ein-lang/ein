@@ -120,10 +120,11 @@ impl<'a> ExpressionCompiler<'a> {
                 )
                 .into())
             }
-            ast::Expression::RecordUpdate(_) => unreachable!(),
+            ast::Expression::TypeCoercion(_) => unimplemented!(),
             ast::Expression::Variable(variable) => {
                 Ok(ssf::ir::Variable::new(variable.name()).into())
             }
+            ast::Expression::RecordUpdate(_) => unreachable!(),
         }
     }
 
