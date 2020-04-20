@@ -292,7 +292,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell#a937b2315383040228a16cf65b333d77d720c391"
+source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#65cd0768dda1d214e2bca7f8bde864ffcb32c413"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -306,7 +306,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell#a937b2315383040228a16cf65b333d77d720c391"
+source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#65cd0768dda1d214e2bca7f8bde864ffcb32c413"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
@@ -658,7 +658,7 @@ checksum = "05720e22615919e4734f6a99ceae50d00226c3c5aca406e102ebc33298214e0a"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#eac4a4a06a0236cfdb79437f1f0ed793104de790"
+source = "git+https://github.com/raviqqe/ssf#2c49822e4e256e56f1cb13d3744765aaa7cbd203"
 dependencies = [
  "petgraph",
  "pretty_assertions",
@@ -667,7 +667,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#eac4a4a06a0236cfdb79437f1f0ed793104de790"
+source = "git+https://github.com/raviqqe/ssf#2c49822e4e256e56f1cb13d3744765aaa7cbd203"
 dependencies = [
  "inkwell",
  "ssf",
