@@ -5,6 +5,7 @@ jobs:
   code-coverage:
     runs-on: ubuntu-18.04
     steps:
+      - run: curl -f https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 10
       - uses: actions/checkout@master
       - uses: actions-rs/toolchain@v1
         with:
