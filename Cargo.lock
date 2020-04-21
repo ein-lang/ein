@@ -60,9 +60,9 @@ dependencies = [
 
 [[package]]
 name = "backtrace-sys"
-version = "0.1.35"
+version = "0.1.36"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7de8aba10a69c8e8d7622c5710229485ec32e9d55fdad160ea559c086fdcd118"
+checksum = "78848718ee1255a2485d1309ad9cdecfc2e7d0362dd11c6829364c6b35ae1bc7"
 dependencies = [
  "cc",
  "libc",
@@ -292,7 +292,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#65cd0768dda1d214e2bca7f8bde864ffcb32c413"
+source = "git+https://github.com/TheDan64/inkwell?branch=llvm10-0#e0759ae62d19ea918d50b0ab75a2c9ae32ab627e"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -306,7 +306,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=llvm8-0#65cd0768dda1d214e2bca7f8bde864ffcb32c413"
+source = "git+https://github.com/TheDan64/inkwell?branch=llvm10-0#e0759ae62d19ea918d50b0ab75a2c9ae32ab627e"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
@@ -382,9 +382,9 @@ dependencies = [
 
 [[package]]
 name = "llvm-sys"
-version = "80.1.2"
+version = "100.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf2969773884a5701f0c255e2a14d48d4522a66db898ec1088cb21879a228377"
+checksum = "df29b4f2f4e8a5f7871ccad859aa17a171ba251da96bfd55224d53f48a96d2a2"
 dependencies = [
  "cc",
  "lazy_static",
@@ -658,7 +658,7 @@ checksum = "05720e22615919e4734f6a99ceae50d00226c3c5aca406e102ebc33298214e0a"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#2c49822e4e256e56f1cb13d3744765aaa7cbd203"
+source = "git+https://github.com/raviqqe/ssf#9e91260e11ba4791abeff68c79b3ec2fc36a72ac"
 dependencies = [
  "petgraph",
  "pretty_assertions",
@@ -667,7 +667,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#2c49822e4e256e56f1cb13d3744765aaa7cbd203"
+source = "git+https://github.com/raviqqe/ssf#9e91260e11ba4791abeff68c79b3ec2fc36a72ac"
 dependencies = [
  "inkwell",
  "ssf",
