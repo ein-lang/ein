@@ -72,7 +72,7 @@ impl<'a> TypeCompiler<'a> {
             .iter()
             .map(|(_, type_)| other.compile(type_))
             .collect::<Result<Vec<_>, _>>()?;
-        let is_boxed = elements.len() > 0;
+        let is_boxed = !elements.is_empty();
 
         Ok(ssf::types::Algebraic::new(vec![
             ssf::types::Constructor::new(elements, is_boxed),
