@@ -82,9 +82,9 @@ checksum = "130aac562c0dd69c56b3b1cc8ffd2e17be31d0b6c25b61c96b76231aa23e39e1"
 
 [[package]]
 name = "cc"
-version = "1.0.50"
+version = "1.0.52"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95e28fa049fda1c330bcf9d723be7663a899c4679724b34c81e9f5a326aab8cd"
+checksum = "c3d87b23d6a92cd03af510a5ade527033f6aa6fa92161e2d5863a907d4c5e31d"
 dependencies = [
  "jobserver",
 ]
@@ -121,9 +121,9 @@ dependencies = [
 
 [[package]]
 name = "combine"
-version = "4.0.1"
+version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c875843236b5e2eb535fd0b696387bfb623f896479b10ed626cf442b836e8032"
+checksum = "9d79eb8c0bfd05a68f8b6195b27c4f2e042f86d52da032817f89a3847e0495ed"
 dependencies = [
  "bytes",
  "memchr",
@@ -217,9 +217,9 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 
 [[package]]
 name = "git2"
-version = "0.13.2"
+version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cfb93ca10f2934069c3aaafb753fbe0663f08ee009a01b6d62e062391447b15"
+checksum = "bdfc6e264105ef4bf1f5c9a0907f285b43ed2ede987b4876556d0478359f0a0f"
 dependencies = [
  "bitflags",
  "libc",
@@ -304,7 +304,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=llvm10-0#e0759ae62d19ea918d50b0ab75a2c9ae32ab627e"
+source = "git+https://github.com/TheDan64/inkwell#4d36bd2fecc0566fd70e5ff66fcedcf1b6ecad70"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -318,7 +318,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=llvm10-0#e0759ae62d19ea918d50b0ab75a2c9ae32ab627e"
+source = "git+https://github.com/TheDan64/inkwell#4d36bd2fecc0566fd70e5ff66fcedcf1b6ecad70"
 dependencies = [
  "proc-macro2 0.4.30",
  "quote 0.6.13",
@@ -354,9 +354,9 @@ checksum = "99e85c08494b21a9054e7fe1374a732aeadaff3980b6990b94bfd3a70f690005"
 
 [[package]]
 name = "libgit2-sys"
-version = "0.12.3+1.0.0"
+version = "0.12.4+1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7637dc15e7f05a16011723e0448655081fc01a374bcd368e2c9b9c7f5c5ab3ea"
+checksum = "ef2870ecd7b50a76391b108edc2c62283ad2b62e5b1ab4d5263ef1cd04ef1c44"
 dependencies = [
  "cc",
  "libc",
@@ -481,9 +481,9 @@ dependencies = [
 
 [[package]]
 name = "parking_lot_core"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e136c1904604defe99ce5fd71a28d473fa60a12255d511aa78a9ddf11237aeb"
+checksum = "d58c7c768d4ba344e3e8d72518ac13e259d7c7ade24167003b8488e10b6740a3"
 dependencies = [
  "cfg-if",
  "cloudabi",
@@ -605,9 +605,9 @@ checksum = "4c691c0e608126e00913e33f0ccf3727d5fc84573623b8d65b2df340b5201783"
 
 [[package]]
 name = "ryu"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "535622e6be132bccd223f4bb2b8ac8d53cda3c7a6394944d3b2b33fb974f9d76"
+checksum = "ed3d612bc64430efeb3f7ee6ef26d590dce0c43249217bddc62112540c7941e1"
 
 [[package]]
 name = "scopeguard"
@@ -670,7 +670,7 @@ checksum = "05720e22615919e4734f6a99ceae50d00226c3c5aca406e102ebc33298214e0a"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#9e91260e11ba4791abeff68c79b3ec2fc36a72ac"
+source = "git+https://github.com/raviqqe/ssf#2bf7e127f9be26566aa1c180a7e59b2efd9d6817"
 dependencies = [
  "petgraph",
  "pretty_assertions",
@@ -679,7 +679,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#9e91260e11ba4791abeff68c79b3ec2fc36a72ac"
+source = "git+https://github.com/raviqqe/ssf#2bf7e127f9be26566aa1c180a7e59b2efd9d6817"
 dependencies = [
  "inkwell",
  "ssf",

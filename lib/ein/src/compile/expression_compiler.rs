@@ -207,7 +207,7 @@ impl<'a> ExpressionCompiler<'a> {
 
     fn compile_boolean(&self, value: bool) -> ssf::ir::ConstructorApplication {
         ssf::ir::ConstructorApplication::new(
-            ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), value as usize),
+            ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), value as u64),
             vec![],
         )
     }
