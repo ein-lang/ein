@@ -9,6 +9,7 @@ mod name_qualifier;
 mod reference_type_resolver;
 mod type_compiler;
 mod type_inference;
+mod union_tag_calculator;
 
 use crate::ast;
 use crate::path::ModulePath;
@@ -21,6 +22,7 @@ use name_qualifier::NameQualifier;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
+use union_tag_calculator::UnionTagCalculator;
 
 const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
 const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
@@ -39,7 +41,8 @@ pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), 
     );
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let type_compiler = TypeCompiler::new(&reference_type_resolver);
+    let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+    let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
     let expression_compiler = ExpressionCompiler::new(&type_compiler);
 
     Ok((
