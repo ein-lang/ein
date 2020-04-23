@@ -163,12 +163,12 @@ impl<'a> TypeCompiler<'a> {
         }
     }
 
-    fn calculate_constructor_tag(&self, constructor_id: &str) -> usize {
+    fn calculate_constructor_tag(&self, constructor_id: &str) -> u64 {
         let mut hasher = DefaultHasher::new();
 
         constructor_id.hash(&mut hasher);
 
-        hasher.finish() as usize
+        hasher.finish()
     }
 
     fn calculate_function_constructor_id(&self, type_: &Type) -> Result<String, CompileError> {
