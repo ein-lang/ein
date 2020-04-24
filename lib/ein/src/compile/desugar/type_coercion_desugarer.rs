@@ -298,15 +298,16 @@ impl<'a> TypeCoercionDesugarer<'a> {
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
         let to_type = self.reference_type_resolver.resolve(to_type)?;
-        let from_type = self
-            .reference_type_resolver
-            .resolve(&self.infer_expression(expression, variables))?;
         let expression = self.desugar_expression(expression, variables)?;
 
-        Ok(if from_type == to_type {
-            expression
-        } else {
+        Ok(if to_type.is_union() {
+            let from_type = self
+                .reference_type_resolver
+                .resolve(&self.infer_expression(&expression, variables))?;
+
             TypeCoercion::new(expression, from_type, to_type, source_information).into()
+        } else {
+            expression
         })
     }
 }

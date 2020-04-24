@@ -135,25 +135,35 @@ impl<'a> ExpressionCompiler<'a> {
             }
             ast::Expression::TypeCoercion(coercion) => {
                 let from_type = self.reference_type_resolver.resolve(coercion.from())?;
-                let constructor = ssf::ir::Constructor::new(
-                    self.type_compiler
-                        .compile(coercion.to())?
-                        .into_value()
-                        .unwrap()
-                        .into_algebraic()
-                        .unwrap(),
-                    self.union_tag_calculator.calculate(&from_type)?,
-                );
+                let to_type = self
+                    .type_compiler
+                    .compile(coercion.to())?
+                    .into_value()
+                    .unwrap()
+                    .into_algebraic()
+                    .unwrap();
                 let argument = self.compile(coercion.argument())?;
 
                 Ok(match &from_type {
-                    Type::None(_) => {
-                        ssf::ir::ConstructorApplication::new(constructor, vec![]).into()
-                    }
+                    Type::None(_) => ssf::ir::ConstructorApplication::new(
+                        ssf::ir::Constructor::new(
+                            to_type,
+                            self.union_tag_calculator.calculate(&from_type)?,
+                        ),
+                        vec![],
+                    )
+                    .into(),
                     Type::Boolean(_) | Type::Function(_) | Type::Number(_) | Type::Record(_) => {
-                        ssf::ir::ConstructorApplication::new(constructor, vec![argument]).into()
+                        ssf::ir::ConstructorApplication::new(
+                            ssf::ir::Constructor::new(
+                                to_type,
+                                self.union_tag_calculator.calculate(&from_type)?,
+                            ),
+                            vec![argument],
+                        )
+                        .into()
                     }
-                    Type::Union(_) => argument,
+                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
                     Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 })
             }
@@ -831,6 +841,57 @@ mod tests {
                         union_tag_calculator.calculate(&record_type.into()).unwrap()
                     ),
                     vec![ssf::ir::Variable::new("x").into()]
+                )
+                .into())
+            );
+        }
+
+        #[test]
+        fn compile_type_coercion_of_union() {
+            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+
+            let lower_union_type = types::Union::new(
+                vec![
+                    types::Boolean::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            );
+            let upper_union_type = types::Union::new(
+                vec![
+                    types::Boolean::new(SourceInformation::dummy()).into(),
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            assert_eq!(
+                ExpressionCompiler::new(
+                    &reference_type_resolver,
+                    &union_tag_calculator,
+                    &type_compiler
+                )
+                .compile(
+                    &TypeCoercion::new(
+                        Variable::new("x", SourceInformation::dummy()),
+                        lower_union_type.clone(),
+                        upper_union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                Ok(ssf::ir::Bitcast::new(
+                    ssf::ir::Variable::new("x"),
+                    type_compiler
+                        .compile(&upper_union_type.into())
+                        .unwrap()
+                        .into_value()
+                        .unwrap()
+                        .into_algebraic()
+                        .unwrap(),
                 )
                 .into())
             );
