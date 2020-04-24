@@ -86,6 +86,8 @@ impl<'a> TypeCompiler<'a> {
         &self,
         union: &types::Union,
     ) -> Result<ssf::types::Algebraic, CompileError> {
+        // Make sure that every union type has exactly 128 bits so that
+        // we can omit union-to-union type coercion.
         Ok(ssf::types::Algebraic::with_tags(
             union
                 .types()
@@ -94,25 +96,16 @@ impl<'a> TypeCompiler<'a> {
                     let type_ = self.reference_type_resolver.resolve(type_)?;
 
                     Ok(match &type_ {
-                        Type::Boolean(_) => (
-                            self.union_tag_calculator.calculate(&type_)?,
-                            ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
-                        ),
-                        Type::Function(_) => (
-                            self.union_tag_calculator.calculate(&type_)?,
-                            ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
-                        ),
                         Type::None(_) => (
                             self.union_tag_calculator.calculate(&type_)?,
                             ssf::types::Constructor::unboxed(vec![]),
                         ),
-                        Type::Number(_) => (
+                        Type::Boolean(_)
+                        | Type::Function(_)
+                        | Type::Number(_)
+                        | Type::Record(_) => (
                             self.union_tag_calculator.calculate(&type_)?,
-                            ssf::types::Constructor::unboxed(vec![self.compile_number().into()]),
-                        ),
-                        Type::Record(record) => (
-                            self.union_tag_calculator.calculate(&type_)?,
-                            self.compile_record(&record)?.unfold().constructors()[&0].clone(),
+                            ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
                         ),
                         Type::Reference(_)
                         | Type::Union(_)
@@ -120,6 +113,10 @@ impl<'a> TypeCompiler<'a> {
                         | Type::Variable(_) => unreachable!(),
                     })
                 })
+                .chain(vec![Ok((
+                    0,
+                    ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
+                ))])
                 .collect::<Result<_, CompileError>>()?,
         ))
     }
@@ -326,10 +323,25 @@ mod tests {
                 ),
                 Ok(ssf::types::Algebraic::with_tags(
                     vec![
-                        (461893210254723387, ssf::types::Constructor::unboxed(vec![])),
+                        (
+                            0,
+                            ssf::types::Constructor::unboxed(vec![
+                                ssf::types::Primitive::Integer64.into()
+                            ]),
+                        ),
+                        (
+                            461893210254723387,
+                            ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
+                                vec![ssf::types::Constructor::unboxed(vec![])]
+                            )
+                            .into()])
+                        ),
                         (
                             7277881248784541008,
-                            ssf::types::Constructor::unboxed(vec![])
+                            ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
+                                vec![ssf::types::Constructor::unboxed(vec![])]
+                            )
+                            .into()])
                         )
                     ]
                     .into_iter()
@@ -357,6 +369,12 @@ mod tests {
                 ),
                 Ok(ssf::types::Algebraic::with_tags(
                     vec![
+                        (
+                            0,
+                            ssf::types::Constructor::unboxed(vec![
+                                ssf::types::Primitive::Integer64.into()
+                            ]),
+                        ),
                         (
                             4919337809186972848,
                             ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
@@ -397,6 +415,12 @@ mod tests {
                 ),
                 Ok(ssf::types::Algebraic::with_tags(
                     vec![
+                        (
+                            0,
+                            ssf::types::Constructor::unboxed(vec![
+                                ssf::types::Primitive::Integer64.into()
+                            ]),
+                        ),
                         (
                             17146441699440925146,
                             ssf::types::Constructor::unboxed(vec![

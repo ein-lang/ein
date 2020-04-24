@@ -43,7 +43,11 @@ pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
     let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
-    let expression_compiler = ExpressionCompiler::new(&type_compiler);
+    let expression_compiler = ExpressionCompiler::new(
+        &reference_type_resolver,
+        &union_tag_calculator,
+        &type_compiler,
+    );
 
     Ok((
         ssf_llvm::compile(
