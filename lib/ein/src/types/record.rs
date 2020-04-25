@@ -6,26 +6,26 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Record {
-    name: String,
+    id: String,
     elements: BTreeMap<String, Type>,
     source_information: Rc<SourceInformation>,
 }
 
 impl Record {
     pub fn new(
-        name: impl Into<String>,
+        id: impl Into<String>,
         elements: BTreeMap<String, Type>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            name: name.into(),
+            id: id.into(),
             elements,
             source_information: source_information.into(),
         }
     }
 
-    pub fn name(&self) -> &str {
-        &self.name
+    pub fn id(&self) -> &str {
+        &self.id
     }
 
     pub fn elements(&self) -> &BTreeMap<String, Type> {
@@ -38,7 +38,7 @@ impl Record {
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         Self::new(
-            &self.name,
+            &self.id,
             self.elements
                 .iter()
                 .map(|(name, type_)| (name.into(), type_.convert_types(convert)))

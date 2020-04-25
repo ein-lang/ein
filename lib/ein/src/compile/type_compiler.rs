@@ -69,7 +69,7 @@ impl<'a> TypeCompiler<'a> {
         &self,
         record: &types::Record,
     ) -> Result<ssf::types::Algebraic, CompileError> {
-        let other = self.push_reference(record.name());
+        let other = self.push_reference(record.id());
         let elements = record
             .elements()
             .iter()

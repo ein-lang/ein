@@ -78,7 +78,7 @@ impl<'a> ModuleCompiler<'a> {
                 .iter()
                 .map(|(key, type_)| {
                     Ok(ssf::ir::FunctionDefinition::new(
-                        format!("{}.{}", record_type.name(), key),
+                        format!("{}.{}", record_type.id(), key),
                         vec![ssf::ir::Argument::new("x", algebraic_type.clone())],
                         ssf::ir::AlgebraicCase::new(
                             ssf::ir::Variable::new("x"),
