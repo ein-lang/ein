@@ -2,6 +2,7 @@ mod function_type_argument_desugarer;
 mod partial_application_desugarer;
 mod record_update_desugarer;
 mod type_coercion_desugarer;
+mod typed_meta_desugarer;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
@@ -11,6 +12,7 @@ use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
 use type_coercion_desugarer::TypeCoercionDesugarer;
+use typed_meta_desugarer::TypedMetaDesugarer;
 
 pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
     RecordUpdateDesugarer::new().desugar(module)
@@ -20,12 +22,19 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(&reference_type_resolver);
 
-    TypeCoercionDesugarer::new(&reference_type_resolver, &type_equality_checker).desugar(
-        &PartialApplicationDesugarer::new().desugar(
-            &FunctionTypeArgumentDesugarer::new(&reference_type_resolver, &type_equality_checker)
-                .desugar(module)?,
-        )?,
-    )
+    let module = TypedMetaDesugarer::new(FunctionTypeArgumentDesugarer::new(
+        &reference_type_resolver,
+        &type_equality_checker,
+    ))
+    .desugar(module)?;
+
+    let module = PartialApplicationDesugarer::new().desugar(&module)?;
+
+    TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
+        &reference_type_resolver,
+        &type_equality_checker,
+    ))
+    .desugar(&module)
 }
 
 #[cfg(test)]

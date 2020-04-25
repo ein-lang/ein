@@ -1,8 +1,8 @@
 use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
-use super::super::module_environment_creator::ModuleEnvironmentCreator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
+use super::typed_meta_desugarer::TypedDesugarer;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::Type;
@@ -25,45 +25,46 @@ impl<'a> TypeCoercionDesugarer<'a> {
         }
     }
 
-    pub fn desugar(&self, module: &Module) -> Result<Module, CompileError> {
-        let variables = ModuleEnvironmentCreator::create(module);
+    fn coerce_type(
+        &mut self,
+        expression: &Expression,
+        to_type: &Type,
+        source_information: Rc<SourceInformation>,
+        variables: &HashMap<String, Type>,
+    ) -> Result<Expression, CompileError> {
+        let from_type = self
+            .reference_type_resolver
+            .resolve(&ExpressionTypeExtractor::extract(&expression, variables))?;
+        let to_type = self.reference_type_resolver.resolve(to_type)?;
 
-        Ok(Module::new(
-            module.path().clone(),
-            module.export().clone(),
-            module.imported_modules().to_vec(),
-            module.type_definitions().to_vec(),
-            module
-                .definitions()
-                .iter()
-                .map(|definition| {
-                    Ok(match definition {
-                        Definition::FunctionDefinition(function_definition) => self
-                            .desugar_function_definition(function_definition, &variables)?
-                            .into(),
-                        Definition::ValueDefinition(value_definition) => self
-                            .desugar_value_definition(value_definition, &variables)?
-                            .into(),
-                    })
-                })
-                .collect::<Result<_, CompileError>>()?,
-        ))
+        if !to_type.is_union() && !self.type_equality_checker.equal(&from_type, &to_type)? {
+            unreachable!()
+        }
+
+        Ok(if self.type_equality_checker.equal(&from_type, &to_type)? {
+            expression.clone()
+        } else {
+            TypeCoercion::new(expression.clone(), from_type, to_type, source_information).into()
+        })
     }
+}
 
+impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
     fn desugar_function_definition(
-        &self,
+        &mut self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError> {
         let mut variables = variables.clone();
-        let mut type_ = function_definition.type_();
 
-        for argument_name in function_definition.arguments() {
-            let function_type = type_.to_function().unwrap();
-
-            variables.insert(argument_name.into(), function_type.argument().clone());
-
-            type_ = function_type.result();
+        for (name, type_) in function_definition.arguments().iter().zip(
+            function_definition
+                .type_()
+                .to_function()
+                .unwrap()
+                .arguments(),
+        ) {
+            variables.insert(name.into(), type_.clone());
         }
 
         Ok(FunctionDefinition::new(
@@ -71,7 +72,11 @@ impl<'a> TypeCoercionDesugarer<'a> {
             function_definition.arguments().to_vec(),
             self.coerce_type(
                 function_definition.body(),
-                type_,
+                function_definition
+                    .type_()
+                    .to_function()
+                    .unwrap()
+                    .last_result(),
                 function_definition.source_information().clone(),
                 &variables,
             )?,
@@ -81,7 +86,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
     }
 
     fn desugar_value_definition(
-        &self,
+        &mut self,
         value_definition: &ValueDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<ValueDefinition, CompileError> {
@@ -99,21 +104,22 @@ impl<'a> TypeCoercionDesugarer<'a> {
     }
 
     fn desugar_expression(
-        &self,
+        &mut self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
         match expression {
             Expression::Application(application) => {
                 let source_information = application.source_information();
-                let function_type =
-                    ExpressionTypeExtractor::extract(application.function(), variables);
 
                 Ok(Application::new(
-                    self.desugar_expression(application.function(), variables)?,
+                    application.function().clone(),
                     self.coerce_type(
                         application.argument(),
-                        function_type.to_function().unwrap().argument(),
+                        ExpressionTypeExtractor::extract(application.function(), variables)
+                            .to_function()
+                            .unwrap()
+                            .argument(),
                         source_information.clone(),
                         variables,
                     )?,
@@ -125,7 +131,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
                 let result_type = ExpressionTypeExtractor::extract(expression, variables);
 
                 Ok(If::new(
-                    self.desugar_expression(if_.condition(), variables)?,
+                    if_.condition().clone(),
                     self.coerce_type(
                         if_.then(),
                         &result_type,
@@ -142,62 +148,6 @@ impl<'a> TypeCoercionDesugarer<'a> {
                 )
                 .into())
             }
-            Expression::Let(let_) => {
-                let mut variables = variables.clone();
-
-                for definition in let_.definitions() {
-                    match definition {
-                        Definition::FunctionDefinition(function_definition) => {
-                            variables.insert(
-                                function_definition.name().into(),
-                                function_definition.type_().clone(),
-                            );
-                        }
-                        Definition::ValueDefinition(value_definition) => {
-                            if let_.has_functions() {
-                                variables.insert(
-                                    value_definition.name().into(),
-                                    value_definition.type_().clone(),
-                                );
-                            }
-                        }
-                    }
-                }
-
-                let mut definitions = vec![];
-
-                for definition in let_.definitions() {
-                    definitions.push(match definition {
-                        Definition::FunctionDefinition(function_definition) => self
-                            .desugar_function_definition(function_definition, &variables)?
-                            .into(),
-                        Definition::ValueDefinition(value_definition) => {
-                            let definition =
-                                self.desugar_value_definition(value_definition, &variables)?;
-
-                            variables.insert(
-                                value_definition.name().into(),
-                                value_definition.type_().clone(),
-                            );
-
-                            definition.into()
-                        }
-                    })
-                }
-
-                Ok(Let::new(
-                    definitions,
-                    self.desugar_expression(let_.expression(), &variables)?,
-                )
-                .into())
-            }
-            Expression::Operation(operation) => Ok(Operation::new(
-                operation.operator(),
-                self.desugar_expression(operation.lhs(), &variables)?,
-                self.desugar_expression(operation.rhs(), &variables)?,
-                operation.source_information().clone(),
-            )
-            .into()),
             Expression::RecordConstruction(record_construction) => {
                 let type_ = self
                     .reference_type_resolver
@@ -226,34 +176,12 @@ impl<'a> TypeCoercionDesugarer<'a> {
                 .into())
             }
             Expression::Boolean(_)
+            | Expression::Let(_)
             | Expression::None(_)
             | Expression::Number(_)
+            | Expression::Operation(_)
             | Expression::Variable(_) => Ok(expression.clone()),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }
-    }
-
-    fn coerce_type(
-        &self,
-        expression: &Expression,
-        to_type: &Type,
-        source_information: Rc<SourceInformation>,
-        variables: &HashMap<String, Type>,
-    ) -> Result<Expression, CompileError> {
-        let from_type = self
-            .reference_type_resolver
-            .resolve(&ExpressionTypeExtractor::extract(&expression, variables))?;
-        let to_type = self.reference_type_resolver.resolve(to_type)?;
-        let expression = self.desugar_expression(expression, variables)?;
-
-        if !to_type.is_union() && !self.type_equality_checker.equal(&from_type, &to_type)? {
-            unreachable!()
-        }
-
-        Ok(if self.type_equality_checker.equal(&from_type, &to_type)? {
-            expression
-        } else {
-            TypeCoercion::new(expression, from_type, to_type, source_information).into()
-        })
     }
 }
