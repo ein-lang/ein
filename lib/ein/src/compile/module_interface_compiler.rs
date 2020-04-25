@@ -1,7 +1,6 @@
 use super::error::CompileError;
 use crate::ast::Module;
 use crate::ast::ModuleInterface;
-use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct ModuleInterfaceCompiler {}
@@ -37,12 +36,12 @@ impl ModuleInterfaceCompiler {
                         type_definition.type_().clone(),
                     )
                 })
-                .collect::<HashMap<_, _>>(),
+                .collect(),
             module
                 .definitions()
                 .iter()
                 .map(|definition| (definition.name().into(), definition.type_().clone()))
-                .collect::<HashMap<_, _>>(),
+                .collect(),
         ))
     }
 }

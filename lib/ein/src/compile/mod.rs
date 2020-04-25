@@ -1,13 +1,17 @@
 mod desugar;
 mod error;
 mod expression_compiler;
+mod expression_type_extractor;
 mod module_compiler;
+mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod name_qualifier;
 mod reference_type_resolver;
 mod type_compiler;
+mod type_equality_checker;
 mod type_inference;
+mod union_tag_calculator;
 
 use crate::ast;
 use crate::path::ModulePath;
@@ -20,6 +24,7 @@ use name_qualifier::NameQualifier;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
+use union_tag_calculator::UnionTagCalculator;
 
 const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
 const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
@@ -38,8 +43,13 @@ pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), 
     );
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let type_compiler = TypeCompiler::new(&reference_type_resolver);
-    let expression_compiler = ExpressionCompiler::new(&type_compiler);
+    let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+    let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+    let expression_compiler = ExpressionCompiler::new(
+        &reference_type_resolver,
+        &union_tag_calculator,
+        &type_compiler,
+    );
 
     Ok((
         ssf_llvm::compile(
@@ -105,6 +115,86 @@ mod tests {
             )
             .into()
         ]))
+        .is_ok());
+    }
+
+    #[test]
+    fn compile_record_construction() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        assert!(compile(&Module::from_definitions_and_type_definitions(
+            vec![TypeDefinition::new(
+                "Foo",
+                types::Record::new(
+                    "Foo",
+                    vec![(
+                        "foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                ),
+            )],
+            vec![ValueDefinition::new(
+                "x",
+                RecordConstruction::new(
+                    reference_type.clone(),
+                    vec![(
+                        "foo".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                ),
+                reference_type.clone(),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        ))
+        .is_ok());
+    }
+
+    #[test]
+    fn compile_record_element_access() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        assert!(compile(&Module::from_definitions_and_type_definitions(
+            vec![TypeDefinition::new(
+                "Foo",
+                types::Record::new(
+                    "Foo",
+                    vec![(
+                        "foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy(),
+                ),
+            )],
+            vec![ValueDefinition::new(
+                "x",
+                Application::new(
+                    Variable::new("Foo.foo", SourceInformation::dummy()),
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        ))
         .is_ok());
     }
 }

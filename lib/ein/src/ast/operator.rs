@@ -12,8 +12,8 @@ pub enum Operator {
     GreaterThanOrEqual,
 }
 
-impl From<&Operator> for ssf::ir::Operator {
-    fn from(operator: &Operator) -> Self {
+impl From<Operator> for ssf::ir::Operator {
+    fn from(operator: Operator) -> Self {
         match operator {
             Operator::Add => ssf::ir::Operator::Add,
             Operator::Subtract => ssf::ir::Operator::Subtract,

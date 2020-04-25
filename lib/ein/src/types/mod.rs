@@ -5,6 +5,7 @@ mod number;
 mod record;
 mod reference;
 mod type_;
+mod union;
 mod unknown;
 mod variable;
 
@@ -15,5 +16,6 @@ pub use number::*;
 pub use record::*;
 pub use reference::*;
 pub use type_::*;
+pub use union::*;
 pub use unknown::*;
 pub use variable::*;

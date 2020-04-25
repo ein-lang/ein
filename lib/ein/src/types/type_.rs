@@ -4,6 +4,7 @@ use super::none::None;
 use super::number::Number;
 use super::record::Record;
 use super::reference::Reference;
+use super::union::Union;
 use super::unknown::Unknown;
 use super::variable::Variable;
 use crate::debug::SourceInformation;
@@ -11,7 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum Type {
     Boolean(Boolean),
     Function(Function),
@@ -20,6 +21,7 @@ pub enum Type {
     Record(Record),
     Reference(Reference),
     Unknown(Unknown),
+    Union(Union),
     Variable(Variable),
 }
 
@@ -33,27 +35,45 @@ impl Type {
             Self::Record(record) => record.source_information(),
             Self::Reference(reference) => reference.source_information(),
             Self::Unknown(unknown) => unknown.source_information(),
+            Self::Union(union) => union.source_information(),
             Self::Variable(variable) => variable.source_information(),
         }
     }
 
-    pub fn substitute_variable(&self, variable: &Variable, type_: &Self) -> Self {
-        self.substitute_variables(&vec![(variable.id(), type_.clone())].into_iter().collect())
+    pub fn substitute_variable(&self, id: usize, type_: &Self) -> Self {
+        self.substitute_variables(&vec![(id, type_.clone())].into_iter().collect())
     }
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        match self {
-            Self::Function(function) => function.substitute_variables(substitutions).into(),
-            Self::Record(record) => record.substitute_variables(substitutions).into(),
+        self.convert_types(&mut |type_| match type_ {
             Self::Variable(variable) => match substitutions.get(&variable.id()) {
                 Some(type_) => type_.clone(),
-                None => self.clone(),
+                None => type_.clone(),
             },
+            _ => type_.clone(),
+        })
+    }
+
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Self) -> Self) -> Self {
+        let type_ = match self {
+            Self::Function(function) => function.convert_types(convert).into(),
+            Self::Record(record) => record.convert_types(convert).into(),
+            Self::Union(union) => union.convert_types(convert).into(),
             Self::Boolean(_)
             | Self::None(_)
             | Self::Number(_)
             | Self::Reference(_)
-            | Self::Unknown(_) => self.clone(),
+            | Self::Unknown(_)
+            | Self::Variable(_) => self.clone(),
+        };
+
+        convert(&type_)
+    }
+
+    pub fn simplify(&self) -> Self {
+        match self {
+            Self::Union(union) => union.simplify(),
+            _ => self.clone(),
         }
     }
 
@@ -71,6 +91,22 @@ impl Type {
         } else {
             None
         }
+    }
+
+    pub fn to_union(&self) -> Option<&Union> {
+        if let Self::Union(union) = self {
+            Some(union)
+        } else {
+            None
+        }
+    }
+
+    pub fn is_function(&self) -> bool {
+        self.to_function().is_some()
+    }
+
+    pub fn is_union(&self) -> bool {
+        self.to_union().is_some()
     }
 }
 
@@ -113,6 +149,12 @@ impl From<Reference> for Type {
 impl From<Unknown> for Type {
     fn from(unknown: Unknown) -> Self {
         Self::Unknown(unknown)
+    }
+}
+
+impl From<Union> for Type {
+    fn from(union: Union) -> Self {
+        Self::Union(union)
     }
 }
 

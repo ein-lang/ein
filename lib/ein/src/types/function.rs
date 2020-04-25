@@ -1,10 +1,9 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Function {
     argument: Rc<Type>,
     result: Rc<Type>,
@@ -55,10 +54,10 @@ impl Function {
         }
     }
 
-    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         Self::new(
-            self.argument.substitute_variables(substitutions),
-            self.result.substitute_variables(substitutions),
+            self.argument.convert_types(convert),
+            self.result.convert_types(convert),
             self.source_information.clone(),
         )
     }

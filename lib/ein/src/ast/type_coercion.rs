@@ -1,42 +1,41 @@
 use super::expression::Expression;
-use super::operator::Operator;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Operation {
-    operator: Operator,
-    lhs: Rc<Expression>,
-    rhs: Rc<Expression>,
+pub struct TypeCoercion {
+    argument: Rc<Expression>,
+    from: Type,
+    to: Type,
     source_information: Rc<SourceInformation>,
 }
 
-impl Operation {
+impl TypeCoercion {
     pub fn new(
-        operator: Operator,
-        lhs: impl Into<Expression>,
-        rhs: impl Into<Expression>,
+        argument: impl Into<Expression>,
+        from: impl Into<Type>,
+        to: impl Into<Type>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            operator,
-            lhs: Rc::new(lhs.into()),
-            rhs: Rc::new(rhs.into()),
+            argument: Rc::new(argument.into()),
+            from: from.into(),
+            to: to.into(),
             source_information: source_information.into(),
         }
     }
 
-    pub fn operator(&self) -> Operator {
-        self.operator
+    pub fn argument(&self) -> &Expression {
+        &self.argument
     }
 
-    pub fn lhs(&self) -> &Expression {
-        &self.lhs
+    pub fn from(&self) -> &Type {
+        &self.from
     }
 
-    pub fn rhs(&self) -> &Expression {
-        &self.rhs
+    pub fn to(&self) -> &Type {
+        &self.to
     }
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
@@ -48,18 +47,18 @@ impl Operation {
         convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.operator,
-            self.lhs.convert_expressions(convert)?,
-            self.rhs.convert_expressions(convert)?,
+            self.argument.convert_expressions(convert)?,
+            self.from.clone(),
+            self.to.clone(),
             self.source_information.clone(),
         ))
     }
 
     pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         Self::new(
-            self.operator,
-            self.lhs.convert_types(convert),
-            self.rhs.convert_types(convert),
+            self.argument.convert_types(convert),
+            self.from.convert_types(convert),
+            self.to.convert_types(convert),
             self.source_information.clone(),
         )
     }

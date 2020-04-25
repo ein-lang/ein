@@ -117,7 +117,8 @@ impl PartialApplicationDesugarer {
             | Expression::Number(_)
             | Expression::Operation(_)
             | Expression::RecordConstruction(_)
-            | Expression::RecordUpdate(_) => unreachable!(),
+            | Expression::RecordUpdate(_)
+            | Expression::TypeCoercion(_) => unreachable!(),
         }
     }
 

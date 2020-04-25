@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
 // TODO: Consider renaming this "Alias".
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Reference {
     name: String,
     source_information: Rc<SourceInformation>,

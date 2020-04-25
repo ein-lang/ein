@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 pub struct Location {
     line_number: usize,
     column_number: usize,
@@ -28,14 +28,5 @@ impl Location {
 
     pub fn increment_column_number(&self) -> Self {
         Self::new(self.line_number, self.column_number + 1)
-    }
-}
-
-impl Default for Location {
-    fn default() -> Self {
-        Self {
-            line_number: 1,
-            column_number: 1,
-        }
     }
 }

@@ -1,10 +1,10 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Record {
     name: String,
     elements: BTreeMap<String, Type>,
@@ -36,12 +36,12 @@ impl Record {
         &self.source_information
     }
 
-    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
         Self::new(
             &self.name,
             self.elements
                 .iter()
-                .map(|(name, type_)| (name.into(), type_.substitute_variables(substitutions)))
+                .map(|(name, type_)| (name.into(), type_.convert_types(convert)))
                 .collect(),
             self.source_information.clone(),
         )
