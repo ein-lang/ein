@@ -24,3 +24,19 @@ Feature: Union types
     When I run `sh -c ./foo`
     Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Define a union type
+    Given a file named "Main.ein" with:
+    """
+    type Foo = Boolean | None
+
+    foo : Foo
+    foo = true
+
+    main : Number -> Number
+    main x = 42
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
+    And the exit status should be 0
