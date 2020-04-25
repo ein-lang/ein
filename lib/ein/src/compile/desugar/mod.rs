@@ -4,6 +4,7 @@ mod type_coercion_desugarer;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use partial_application_desugarer::PartialApplicationDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
@@ -15,8 +16,9 @@ pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
 
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
+    let type_equality_checker = TypeEqualityChecker::new(&reference_type_resolver);
 
-    TypeCoercionDesugarer::new(&reference_type_resolver)
+    TypeCoercionDesugarer::new(&reference_type_resolver, &type_equality_checker)
         .desugar(&PartialApplicationDesugarer::new().desugar(module)?)
 }
 

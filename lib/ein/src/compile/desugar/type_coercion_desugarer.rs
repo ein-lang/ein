@@ -1,6 +1,7 @@
 use super::super::error::CompileError;
 use super::super::module_environment_creator::ModuleEnvironmentCreator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
@@ -9,12 +10,17 @@ use std::rc::Rc;
 
 pub struct TypeCoercionDesugarer<'a> {
     reference_type_resolver: &'a ReferenceTypeResolver,
+    type_equality_checker: &'a TypeEqualityChecker<'a>,
 }
 
 impl<'a> TypeCoercionDesugarer<'a> {
-    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
+    pub fn new(
+        reference_type_resolver: &'a ReferenceTypeResolver,
+        type_equality_checker: &'a TypeEqualityChecker<'a>,
+    ) -> Self {
         Self {
             reference_type_resolver,
+            type_equality_checker,
         }
     }
 
@@ -297,19 +303,22 @@ impl<'a> TypeCoercionDesugarer<'a> {
         source_information: Rc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
+        let from_type = self
+            .reference_type_resolver
+            .resolve(&self.infer_expression(&expression, variables))?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
         let expression = self.desugar_expression(expression, variables)?;
 
-        Ok(if to_type.is_function() {
+        if to_type.is_function()
+            || !to_type.is_union() && !self.type_equality_checker.equal(&from_type, &to_type)?
+        {
             unreachable!()
-        } else if to_type.is_union() {
-            let from_type = self
-                .reference_type_resolver
-                .resolve(&self.infer_expression(&expression, variables))?;
+        }
 
-            TypeCoercion::new(expression, from_type, to_type, source_information).into()
-        } else {
+        Ok(if self.type_equality_checker.equal(&from_type, &to_type)? {
             expression
+        } else {
+            TypeCoercion::new(expression, from_type, to_type, source_information).into()
         })
     }
 }

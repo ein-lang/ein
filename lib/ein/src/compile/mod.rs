@@ -8,6 +8,7 @@ mod name_generator;
 mod name_qualifier;
 mod reference_type_resolver;
 mod type_compiler;
+mod type_equality_checker;
 mod type_inference;
 mod union_tag_calculator;
 
