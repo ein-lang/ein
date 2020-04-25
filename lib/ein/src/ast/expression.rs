@@ -61,6 +61,10 @@ impl Expression {
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         }
     }
+
+    pub fn is_variable(&self) -> bool {
+        matches!(self, Expression::Variable(_))
+    }
 }
 
 impl From<Application> for Expression {

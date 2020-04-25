@@ -1,6 +1,7 @@
 use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::module_environment_creator::ModuleEnvironmentCreator;
+use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
@@ -9,23 +10,25 @@ use crate::types::Type;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct TypeCoercionDesugarer<'a> {
+pub struct FunctionTypeArgumentDesugarer<'a> {
+    name_generator: NameGenerator,
     reference_type_resolver: &'a ReferenceTypeResolver,
     type_equality_checker: &'a TypeEqualityChecker<'a>,
 }
 
-impl<'a> TypeCoercionDesugarer<'a> {
+impl<'a> FunctionTypeArgumentDesugarer<'a> {
     pub fn new(
         reference_type_resolver: &'a ReferenceTypeResolver,
         type_equality_checker: &'a TypeEqualityChecker<'a>,
     ) -> Self {
-        Self {
+        FunctionTypeArgumentDesugarer {
+            name_generator: NameGenerator::new("fta_function_"),
             reference_type_resolver,
             type_equality_checker,
         }
     }
 
-    pub fn desugar(&self, module: &Module) -> Result<Module, CompileError> {
+    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
         let variables = ModuleEnvironmentCreator::create(module);
 
         Ok(Module::new(
@@ -51,7 +54,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
     }
 
     fn desugar_function_definition(
-        &self,
+        &mut self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError> {
@@ -69,37 +72,27 @@ impl<'a> TypeCoercionDesugarer<'a> {
         Ok(FunctionDefinition::new(
             function_definition.name(),
             function_definition.arguments().to_vec(),
-            self.coerce_type(
-                function_definition.body(),
-                type_,
-                function_definition.source_information().clone(),
-                &variables,
-            )?,
+            self.desugar_expression(function_definition.body(), &variables)?,
             function_definition.type_().clone(),
             function_definition.source_information().clone(),
         ))
     }
 
     fn desugar_value_definition(
-        &self,
+        &mut self,
         value_definition: &ValueDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<ValueDefinition, CompileError> {
         Ok(ValueDefinition::new(
             value_definition.name(),
-            self.coerce_type(
-                value_definition.body(),
-                value_definition.type_(),
-                value_definition.source_information().clone(),
-                &variables,
-            )?,
+            self.desugar_expression(value_definition.body(), &variables)?,
             value_definition.type_().clone(),
             value_definition.source_information().clone(),
         ))
     }
 
     fn desugar_expression(
-        &self,
+        &mut self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
@@ -111,7 +104,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
 
                 Ok(Application::new(
                     self.desugar_expression(application.function(), variables)?,
-                    self.coerce_type(
+                    self.desugar_function_type_argument(
                         application.argument(),
                         function_type.to_function().unwrap().argument(),
                         source_information.clone(),
@@ -121,27 +114,13 @@ impl<'a> TypeCoercionDesugarer<'a> {
                 )
                 .into())
             }
-            Expression::If(if_) => {
-                let result_type = ExpressionTypeExtractor::extract(expression, variables);
-
-                Ok(If::new(
-                    self.desugar_expression(if_.condition(), variables)?,
-                    self.coerce_type(
-                        if_.then(),
-                        &result_type,
-                        if_.source_information().clone(),
-                        variables,
-                    )?,
-                    self.coerce_type(
-                        if_.else_(),
-                        &result_type,
-                        if_.source_information().clone(),
-                        variables,
-                    )?,
-                    if_.source_information().clone(),
-                )
-                .into())
-            }
+            Expression::If(if_) => Ok(If::new(
+                self.desugar_expression(if_.condition(), variables)?,
+                self.desugar_expression(if_.then(), variables)?,
+                self.desugar_expression(if_.else_(), variables)?,
+                if_.source_information().clone(),
+            )
+            .into()),
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
@@ -212,7 +191,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
                         .map(|(key, expression)| {
                             Ok((
                                 key.clone(),
-                                self.coerce_type(
+                                self.desugar_function_type_argument(
                                     expression,
                                     &record_type.elements()[key],
                                     record_construction.source_information().clone(),
@@ -233,27 +212,40 @@ impl<'a> TypeCoercionDesugarer<'a> {
         }
     }
 
-    fn coerce_type(
-        &self,
+    fn desugar_function_type_argument(
+        &mut self,
         expression: &Expression,
         to_type: &Type,
         source_information: Rc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
+        let expression = self.desugar_expression(expression, variables)?;
         let from_type = self
             .reference_type_resolver
             .resolve(&ExpressionTypeExtractor::extract(&expression, variables))?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
-        let expression = self.desugar_expression(expression, variables)?;
 
-        if !to_type.is_union() && !self.type_equality_checker.equal(&from_type, &to_type)? {
-            unreachable!()
-        }
+        Ok(
+            if to_type.is_function()
+                && (!self.type_equality_checker.equal(&from_type, &to_type)?
+                    || !expression.is_variable())
+            {
+                let name = self.name_generator.generate();
 
-        Ok(if self.type_equality_checker.equal(&from_type, &to_type)? {
-            expression
-        } else {
-            TypeCoercion::new(expression, from_type, to_type, source_information).into()
-        })
+                Let::new(
+                    vec![ValueDefinition::new(
+                        &name,
+                        expression,
+                        to_type,
+                        source_information.clone(),
+                    )
+                    .into()],
+                    Variable::new(name, source_information),
+                )
+                .into()
+            } else {
+                expression
+            },
+        )
     }
 }

@@ -1,3 +1,4 @@
+mod function_type_argument_desugarer;
 mod partial_application_desugarer;
 mod record_update_desugarer;
 mod type_coercion_desugarer;
@@ -6,6 +7,7 @@ use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
+use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
 use type_coercion_desugarer::TypeCoercionDesugarer;
@@ -18,8 +20,12 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(&reference_type_resolver);
 
-    TypeCoercionDesugarer::new(&reference_type_resolver, &type_equality_checker)
-        .desugar(&PartialApplicationDesugarer::new().desugar(module)?)
+    TypeCoercionDesugarer::new(&reference_type_resolver, &type_equality_checker).desugar(
+        &PartialApplicationDesugarer::new().desugar(
+            &FunctionTypeArgumentDesugarer::new(&reference_type_resolver, &type_equality_checker)
+                .desugar(module)?,
+        )?,
+    )
 }
 
 #[cfg(test)]
@@ -503,6 +509,100 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
+
+        #[test]
+        fn desugar_function_as_argument() {
+            let lower_type = types::None::new(SourceInformation::dummy());
+            let upper_type = types::Union::new(
+                vec![
+                    types::Boolean::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let create_module = |expression: Expression| {
+                Module::from_definitions(vec![
+                    FunctionDefinition::new(
+                        "f",
+                        vec!["x".into()],
+                        ast::None::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            upper_type.clone(),
+                            lower_type.clone(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    FunctionDefinition::new(
+                        "g",
+                        vec!["x".into()],
+                        ast::None::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Function::new(
+                                lower_type.clone(),
+                                upper_type.clone(),
+                                SourceInformation::dummy(),
+                            ),
+                            lower_type.clone(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "x",
+                        Application::new(
+                            Variable::new("g", SourceInformation::dummy()),
+                            expression,
+                            SourceInformation::dummy(),
+                        ),
+                        lower_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
+                    Variable::new("f", SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    Let::new(
+                        vec![FunctionDefinition::new(
+                            "fta_function_0",
+                            vec!["pa_argument_0".into()],
+                            TypeCoercion::new(
+                                Application::new(
+                                    Variable::new("f", SourceInformation::dummy()),
+                                    TypeCoercion::new(
+                                        Variable::new("pa_argument_0", SourceInformation::dummy()),
+                                        lower_type.clone(),
+                                        upper_type.clone(),
+                                        SourceInformation::dummy(),
+                                    ),
+                                    SourceInformation::dummy()
+                                ),
+                                lower_type.clone(),
+                                upper_type.clone(),
+                                SourceInformation::dummy(),
+                            ),
+                            types::Function::new(
+                                lower_type.clone(),
+                                upper_type.clone(),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Variable::new("fta_function_0", SourceInformation::dummy())
                     )
                     .into()
                 ))

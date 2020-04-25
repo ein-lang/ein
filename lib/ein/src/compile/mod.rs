@@ -1,6 +1,7 @@
 mod desugar;
 mod error;
 mod expression_compiler;
+mod expression_type_extractor;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
