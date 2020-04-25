@@ -23,6 +23,7 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast;
     use crate::debug::SourceInformation;
     use crate::types;
 
@@ -419,6 +420,86 @@ mod tests {
                         Variable::new("x", SourceInformation::dummy()),
                         lower_union_type.clone(),
                         upper_union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
+
+        #[test]
+        fn desugar_function() {
+            let lower_type = types::None::new(SourceInformation::dummy());
+            let upper_type = types::Union::new(
+                vec![
+                    types::Boolean::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let create_module = |definition: Definition| {
+                Module::from_definitions(vec![
+                    FunctionDefinition::new(
+                        "f",
+                        vec!["x".into()],
+                        ast::None::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            upper_type.clone(),
+                            lower_type.clone(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "x",
+                        Let::new(vec![definition], ast::None::new(SourceInformation::dummy())),
+                        types::None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
+                    ValueDefinition::new(
+                        "g",
+                        Variable::new("f", SourceInformation::dummy()),
+                        types::Function::new(
+                            lower_type.clone(),
+                            upper_type.clone(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                )),
+                Ok(create_module(
+                    FunctionDefinition::new(
+                        "g",
+                        vec!["pa_argument_0".into()],
+                        TypeCoercion::new(
+                            Application::new(
+                                Variable::new("f", SourceInformation::dummy()),
+                                TypeCoercion::new(
+                                    Variable::new("pa_argument_0", SourceInformation::dummy()),
+                                    lower_type.clone(),
+                                    upper_type.clone(),
+                                    SourceInformation::dummy(),
+                                ),
+                                SourceInformation::dummy()
+                            ),
+                            lower_type.clone(),
+                            upper_type.clone(),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Function::new(
+                            lower_type.clone(),
+                            upper_type.clone(),
+                            SourceInformation::dummy(),
+                        ),
                         SourceInformation::dummy(),
                     )
                     .into()
