@@ -214,6 +214,10 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
 }
 
 fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
+    choice!(record_type_definition(), union_type_definition())
+}
+
+fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
     (
         keyword("type"),
         source_information(),
@@ -229,6 +233,11 @@ fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
                 types::Record::new(&name, elements.into_iter().collect(), source_information),
             )
         })
+}
+
+fn union_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
+    (keyword("type"), identifier(), sign("="), union_type())
+        .map(|(_, name, _, type_)| TypeDefinition::new(&name, type_))
 }
 
 fn type_<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -1018,6 +1027,21 @@ mod tests {
                                 "bar".into(),
                                 types::Number::new(SourceInformation::dummy()).into(),
                             ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+            (
+                "type Foo = Boolean | None",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
                         ]
                         .into_iter()
                         .collect(),
