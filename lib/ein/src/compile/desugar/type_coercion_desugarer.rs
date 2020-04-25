@@ -300,7 +300,9 @@ impl<'a> TypeCoercionDesugarer<'a> {
         let to_type = self.reference_type_resolver.resolve(to_type)?;
         let expression = self.desugar_expression(expression, variables)?;
 
-        Ok(if to_type.is_union() {
+        Ok(if to_type.is_function() {
+            unreachable!()
+        } else if to_type.is_union() {
             let from_type = self
                 .reference_type_resolver
                 .resolve(&self.infer_expression(&expression, variables))?;
