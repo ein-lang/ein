@@ -45,13 +45,16 @@ impl Let {
         ))
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        Self::new(
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_types(convert))
-                .collect(),
-            self.expression.convert_types(convert),
-        )
+                .collect::<Result<_, _>>()?,
+            self.expression.convert_types(convert)?,
+        ))
     }
 }

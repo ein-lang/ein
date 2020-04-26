@@ -12,16 +12,19 @@ use std::rc::Rc;
 pub struct TypeCoercionDesugarer<'a> {
     reference_type_resolver: &'a ReferenceTypeResolver,
     type_equality_checker: &'a TypeEqualityChecker<'a>,
+    expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
 }
 
 impl<'a> TypeCoercionDesugarer<'a> {
     pub fn new(
         reference_type_resolver: &'a ReferenceTypeResolver,
         type_equality_checker: &'a TypeEqualityChecker<'a>,
+        expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
+            expression_type_extractor,
         }
     }
 
@@ -32,9 +35,11 @@ impl<'a> TypeCoercionDesugarer<'a> {
         source_information: Rc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
-        let from_type = self
-            .reference_type_resolver
-            .resolve(&ExpressionTypeExtractor::extract(&expression, variables))?;
+        let from_type = self.reference_type_resolver.resolve(
+            &self
+                .expression_type_extractor
+                .extract(&expression, variables)?,
+        )?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
 
         if !to_type.is_union() && !self.type_equality_checker.equal(&from_type, &to_type)? {
@@ -116,7 +121,8 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
                     application.function().clone(),
                     self.coerce_type(
                         application.argument(),
-                        ExpressionTypeExtractor::extract(application.function(), variables)
+                        self.expression_type_extractor
+                            .extract(application.function(), variables)?
                             .to_function()
                             .unwrap()
                             .argument(),
@@ -128,7 +134,9 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
                 .into())
             }
             Expression::If(if_) => {
-                let result_type = ExpressionTypeExtractor::extract(expression, variables);
+                let result_type = self
+                    .expression_type_extractor
+                    .extract(expression, variables)?;
 
                 Ok(If::new(
                     if_.condition().clone(),

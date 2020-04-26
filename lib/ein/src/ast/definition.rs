@@ -38,15 +38,18 @@ impl Definition {
         })
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        match self {
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(match self {
             Self::FunctionDefinition(function_definition) => {
-                function_definition.convert_types(convert).into()
+                function_definition.convert_types(convert)?.into()
             }
             Self::ValueDefinition(value_definition) => {
-                value_definition.convert_types(convert).into()
+                value_definition.convert_types(convert)?.into()
             }
-        }
+        })
     }
 }
 

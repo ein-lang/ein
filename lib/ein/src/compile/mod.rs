@@ -12,6 +12,7 @@ mod type_compiler;
 mod type_equality_checker;
 mod type_inference;
 mod union_tag_calculator;
+mod union_type_simplifier;
 
 use crate::ast;
 use crate::path::ModulePath;

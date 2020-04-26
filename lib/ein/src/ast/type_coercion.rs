@@ -54,12 +54,15 @@ impl TypeCoercion {
         ))
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        Self::new(
-            self.argument.convert_types(convert),
-            self.from.convert_types(convert),
-            self.to.convert_types(convert),
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
+            self.argument.convert_types(convert)?,
+            self.from.convert_types(convert)?,
+            self.to.convert_types(convert)?,
             self.source_information.clone(),
-        )
+        ))
     }
 }

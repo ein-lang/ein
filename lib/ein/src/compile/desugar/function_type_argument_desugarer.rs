@@ -14,17 +14,20 @@ pub struct FunctionTypeArgumentDesugarer<'a> {
     name_generator: NameGenerator,
     reference_type_resolver: &'a ReferenceTypeResolver,
     type_equality_checker: &'a TypeEqualityChecker<'a>,
+    expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
 }
 
 impl<'a> FunctionTypeArgumentDesugarer<'a> {
     pub fn new(
         reference_type_resolver: &'a ReferenceTypeResolver,
         type_equality_checker: &'a TypeEqualityChecker<'a>,
+        expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
     ) -> Self {
         FunctionTypeArgumentDesugarer {
             name_generator: NameGenerator::new("fta_function_"),
             reference_type_resolver,
             type_equality_checker,
+            expression_type_extractor,
         }
     }
 
@@ -35,9 +38,11 @@ impl<'a> FunctionTypeArgumentDesugarer<'a> {
         source_information: Rc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
-        let from_type = self
-            .reference_type_resolver
-            .resolve(&ExpressionTypeExtractor::extract(&expression, variables))?;
+        let from_type = self.reference_type_resolver.resolve(
+            &self
+                .expression_type_extractor
+                .extract(&expression, variables)?,
+        )?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
 
         Ok(
@@ -90,8 +95,9 @@ impl<'a> TypedDesugarer for FunctionTypeArgumentDesugarer<'a> {
         match expression {
             Expression::Application(application) => {
                 let source_information = application.source_information();
-                let function_type =
-                    ExpressionTypeExtractor::extract(application.function(), variables);
+                let function_type = self
+                    .expression_type_extractor
+                    .extract(application.function(), variables)?;
 
                 Ok(Application::new(
                     application.function().clone(),

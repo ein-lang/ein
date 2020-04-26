@@ -1,30 +1,45 @@
+use super::error::CompileError;
+use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
 
-pub struct ExpressionTypeExtractor {}
+pub struct ExpressionTypeExtractor<'a> {
+    union_type_simplifier: &'a UnionTypeSimplifier<'a>,
+}
 
-impl<'a> ExpressionTypeExtractor {
-    pub fn extract(expression: &Expression, variables: &HashMap<String, Type>) -> Type {
-        match expression {
-            Expression::Application(application) => {
-                Self::extract(application.function(), variables)
-                    .to_function()
-                    .unwrap()
-                    .result()
-                    .clone()
-            }
+impl<'a> ExpressionTypeExtractor<'a> {
+    pub fn new(union_type_simplifier: &'a UnionTypeSimplifier<'a>) -> Self {
+        Self {
+            union_type_simplifier,
+        }
+    }
+
+    pub fn extract(
+        &self,
+        expression: &Expression,
+        variables: &HashMap<String, Type>,
+    ) -> Result<Type, CompileError> {
+        Ok(match expression {
+            Expression::Application(application) => self
+                .extract(application.function(), variables)?
+                .to_function()
+                .unwrap()
+                .result()
+                .clone(),
             Expression::Boolean(boolean) => {
                 types::Boolean::new(boolean.source_information().clone()).into()
             }
-            Expression::If(if_) => types::Union::new(
-                vec![
-                    Self::extract(if_.then(), variables),
-                    Self::extract(if_.else_(), variables),
-                ],
-                if_.source_information().clone(),
-            )
-            .simplify(),
+            Expression::If(if_) => {
+                self.union_type_simplifier
+                    .simplify_union(&types::Union::new(
+                        vec![
+                            self.extract(if_.then(), variables)?,
+                            self.extract(if_.else_(), variables)?,
+                        ],
+                        if_.source_information().clone(),
+                    ))?
+            }
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
@@ -45,7 +60,7 @@ impl<'a> ExpressionTypeExtractor {
                     }
                 }
 
-                Self::extract(let_.expression(), &variables)
+                self.extract(let_.expression(), &variables)?
             }
             Expression::None(none) => types::None::new(none.source_information().clone()).into(),
             Expression::Number(number) => {
@@ -68,6 +83,6 @@ impl<'a> ExpressionTypeExtractor {
             Expression::TypeCoercion(coercion) => coercion.to().clone(),
             Expression::Variable(variable) => variables[variable.name()].clone(),
             Expression::RecordUpdate(_) => unreachable!(),
-        }
+        })
     }
 }

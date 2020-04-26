@@ -1,7 +1,7 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeSet, HashSet};
+use std::collections::BTreeSet;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
@@ -26,77 +26,16 @@ impl Union {
         &self.source_information
     }
 
-    pub fn simplify(&self) -> Type {
-        let types = self
-            .types
-            .iter()
-            .map(|type_| match type_.simplify() {
-                Type::Union(union) => union.types().iter().cloned().collect(),
-                type_ => vec![type_],
-            })
-            .flatten()
-            .collect::<HashSet<_>>()
-            .drain()
-            .collect::<Vec<_>>();
-
-        match types.len() {
-            0 => unreachable!(),
-            1 => types[0].clone(),
-            _ => Self::new(types, self.source_information.clone()).into(),
-        }
-    }
-
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        Self::new(
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.types
                 .iter()
                 .map(|type_| type_.convert_types(convert))
-                .collect(),
+                .collect::<Result<_, _>>()?,
             self.source_information.clone(),
-        )
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::super::none::None;
-    use super::*;
-    use pretty_assertions::assert_eq;
-
-    #[test]
-    fn simplify_duplicate_types() {
-        assert_eq!(
-            Union::new(
-                vec![
-                    None::new(SourceInformation::dummy()).into(),
-                    None::new(SourceInformation::dummy()).into()
-                ],
-                SourceInformation::dummy()
-            )
-            .simplify(),
-            None::new(SourceInformation::dummy()).into()
-        );
-    }
-
-    #[test]
-    fn simplify_nested_union_types() {
-        assert_eq!(
-            Union::new(
-                vec![
-                    Union::new(
-                        vec![
-                            None::new(SourceInformation::dummy()).into(),
-                            None::new(SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    )
-                    .into(),
-                    None::new(SourceInformation::dummy()).into()
-                ],
-                SourceInformation::dummy()
-            )
-            .simplify(),
-            None::new(SourceInformation::dummy()).into()
-        );
+        ))
     }
 }

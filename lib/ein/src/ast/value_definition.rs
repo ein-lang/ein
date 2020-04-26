@@ -54,12 +54,15 @@ impl ValueDefinition {
         ))
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        Self::new(
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.name.clone(),
-            self.body.convert_types(convert),
-            self.type_.convert_types(convert),
+            self.body.convert_types(convert)?,
+            self.type_.convert_types(convert)?,
             self.source_information.clone(),
-        )
+        ))
     }
 }
