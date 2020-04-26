@@ -1,12 +1,20 @@
 use super::Type;
 use crate::debug::SourceInformation;
+use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
+#[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Record {
     id: String,
+    // Record ID's are enough to compare them and elements are not normalized
+    // possibly.
+    #[derivative(Hash = "ignore")]
+    #[derivative(Ord = "ignore")]
+    #[derivative(PartialEq = "ignore")]
+    #[derivative(PartialOrd = "ignore")]
     elements: BTreeMap<String, Type>,
     source_information: Rc<SourceInformation>,
 }
@@ -45,5 +53,47 @@ impl Record {
                 .collect(),
             self.source_information.clone(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::*;
+    use super::*;
+
+    #[test]
+    fn equal() {
+        assert_eq!(
+            Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    Reference::new("Foo", SourceInformation::dummy()).into()
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            ),
+            Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            Reference::new("Foo", SourceInformation::dummy()).into()
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            ),
+        );
     }
 }
