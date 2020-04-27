@@ -230,7 +230,7 @@ fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefiniti
             let elements: Vec<_> = elements;
             TypeDefinition::new(
                 &name,
-                types::Record::new(&name, elements.into_iter().collect(), source_information),
+                types::Record::without_id(elements.into_iter().collect(), source_information),
             )
         })
 }
@@ -960,8 +960,7 @@ mod tests {
                 "type Foo ()",
                 TypeDefinition::new(
                     "Foo",
-                    types::Record::new(
-                        "Foo",
+                    types::Record::without_id(
                         vec![].into_iter().collect(),
                         SourceInformation::dummy(),
                     ),
@@ -971,8 +970,7 @@ mod tests {
                 "type Foo ( foo : Number )",
                 TypeDefinition::new(
                     "Foo",
-                    types::Record::new(
-                        "Foo",
+                    types::Record::without_id(
                         vec![(
                             "foo".into(),
                             types::Number::new(SourceInformation::dummy()).into(),
@@ -987,8 +985,7 @@ mod tests {
                 "type Foo ( foo : Number, )",
                 TypeDefinition::new(
                     "Foo",
-                    types::Record::new(
-                        "Foo",
+                    types::Record::without_id(
                         vec![(
                             "foo".into(),
                             types::Number::new(SourceInformation::dummy()).into(),
@@ -1003,8 +1000,7 @@ mod tests {
                 "type Foo ( foo : Number, bar : Number )",
                 TypeDefinition::new(
                     "Foo",
-                    types::Record::new(
-                        "Foo",
+                    types::Record::without_id(
                         vec![
                             (
                                 "foo".into(),
@@ -1025,8 +1021,7 @@ mod tests {
                 "type Foo ( foo : Number, bar : Number, )",
                 TypeDefinition::new(
                     "Foo",
-                    types::Record::new(
-                        "Foo",
+                    types::Record::without_id(
                         vec![
                             (
                                 "foo".into(),

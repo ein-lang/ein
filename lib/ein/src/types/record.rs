@@ -10,7 +10,7 @@ use std::rc::Rc;
 pub struct Record {
     // Record ID's are enough to compare them and elements are not normalized
     // possibly.
-    id: String,
+    id: Option<String>,
     #[derivative(Hash = "ignore")]
     #[derivative(Ord = "ignore")]
     #[derivative(PartialEq = "ignore")]
@@ -26,14 +26,25 @@ impl Record {
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            id: id.into(),
+            id: Some(id.into()),
             elements,
             source_information: source_information.into(),
         }
     }
 
-    pub fn id(&self) -> &str {
-        &self.id
+    pub fn without_id(
+        elements: BTreeMap<String, Type>,
+        source_information: impl Into<Rc<SourceInformation>>,
+    ) -> Self {
+        Self {
+            id: None,
+            elements,
+            source_information: source_information.into(),
+        }
+    }
+
+    pub fn id(&self) -> Option<&str> {
+        self.id.as_deref()
     }
 
     pub fn elements(&self) -> &BTreeMap<String, Type> {
@@ -48,14 +59,15 @@ impl Record {
         &self,
         convert: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
-        Ok(Self::new(
-            &self.id,
-            self.elements
+        Ok(Self {
+            id: self.id.clone(),
+            elements: self
+                .elements
                 .iter()
                 .map(|(name, type_)| Ok((name.into(), type_.convert_types(convert)?)))
                 .collect::<Result<_, _>>()?,
-            self.source_information.clone(),
-        ))
+            source_information: self.source_information.clone(),
+        })
     }
 }
 

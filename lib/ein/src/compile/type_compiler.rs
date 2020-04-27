@@ -4,7 +4,7 @@ use super::union_tag_calculator::UnionTagCalculator;
 use crate::types::{self, Type};
 
 pub struct TypeCompiler<'a> {
-    references: Vec<String>,
+    record_ids: Vec<String>,
     reference_type_resolver: &'a ReferenceTypeResolver,
     union_tag_calculator: &'a UnionTagCalculator<'a>,
 }
@@ -15,7 +15,7 @@ impl<'a> TypeCompiler<'a> {
         union_tag_calculator: &'a UnionTagCalculator<'a>,
     ) -> Self {
         Self {
-            references: vec![],
+            record_ids: vec![],
             reference_type_resolver,
             union_tag_calculator,
         }
@@ -35,7 +35,7 @@ impl<'a> TypeCompiler<'a> {
             .into()),
             Type::None(_) => Ok(self.compile_none().into()),
             Type::Number(_) => Ok(self.compile_number().into()),
-            Type::Record(record) => Ok(self.compile_record(record)?.into()),
+            Type::Record(record) => Ok(self.compile_record_recursively(record)?.into()),
             Type::Reference(reference) => self.compile_reference(reference),
             Type::Union(union) => Ok(self.compile_union(union)?.into()),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
@@ -46,16 +46,7 @@ impl<'a> TypeCompiler<'a> {
         &self,
         reference: &types::Reference,
     ) -> Result<ssf::types::Type, CompileError> {
-        if let Some(index) = self
-            .references
-            .iter()
-            .rev()
-            .position(|name| name == reference.name())
-        {
-            Ok(ssf::types::Value::Index(index).into())
-        } else {
-            self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
-        }
+        self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
     }
 
     pub fn compile_function(
@@ -69,7 +60,7 @@ impl<'a> TypeCompiler<'a> {
         &self,
         record: &types::Record,
     ) -> Result<ssf::types::Algebraic, CompileError> {
-        let other = self.push_reference(record.id());
+        let other = self.push_record_id(record.id().unwrap());
         let elements = record
             .elements()
             .iter()
@@ -80,6 +71,24 @@ impl<'a> TypeCompiler<'a> {
         Ok(ssf::types::Algebraic::new(vec![
             ssf::types::Constructor::new(elements, is_boxed),
         ]))
+    }
+
+    fn compile_record_recursively(
+        &self,
+        record: &types::Record,
+    ) -> Result<ssf::types::Value, CompileError> {
+        Ok(
+            if let Some(index) = self
+                .record_ids
+                .iter()
+                .rev()
+                .position(|id| id == record.id().unwrap())
+            {
+                ssf::types::Value::Index(index).into()
+            } else {
+                self.compile_record(record)?.into()
+            },
+        )
     }
 
     pub fn compile_union(
@@ -140,13 +149,13 @@ impl<'a> TypeCompiler<'a> {
         ssf::types::Primitive::Float64
     }
 
-    fn push_reference(&self, reference: &str) -> Self {
+    fn push_record_id(&self, id: &str) -> Self {
         Self {
-            references: self
-                .references
+            record_ids: self
+                .record_ids
                 .clone()
                 .into_iter()
-                .chain(vec![reference.into()])
+                .chain(vec![id.into()])
                 .collect(),
             reference_type_resolver: self.reference_type_resolver,
             union_tag_calculator: self.union_tag_calculator,
@@ -203,7 +212,7 @@ mod tests {
                 vec![TypeDefinition::new(
                     "Foo",
                     types::Record::new(
-                        "Foo",
+                        "Bar",
                         vec![("foo".into(), reference_type.clone().into())]
                             .into_iter()
                             .collect(),
