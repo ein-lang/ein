@@ -8,9 +8,9 @@ use std::rc::Rc;
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Record {
-    id: String,
     // Record ID's are enough to compare them and elements are not normalized
     // possibly.
+    id: String,
     #[derivative(Hash = "ignore")]
     #[derivative(Ord = "ignore")]
     #[derivative(PartialEq = "ignore")]

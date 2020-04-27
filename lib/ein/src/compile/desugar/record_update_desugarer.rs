@@ -42,7 +42,7 @@ impl RecordUpdateDesugarer {
                                     key.clone(),
                                     Application::new(
                                         Variable::new(
-                                            format!("{}.{}", record_type.id(), key),
+                                            format!("{}.{}", record_update.type_().name(), key),
                                             source_information.clone(),
                                         ),
                                         Variable::new(&name, source_information.clone()),
