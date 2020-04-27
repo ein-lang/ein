@@ -84,7 +84,7 @@ impl<'a> TypeCompiler<'a> {
                 .rev()
                 .position(|id| id == record.id().unwrap())
             {
-                ssf::types::Value::Index(index).into()
+                ssf::types::Value::Index(index)
             } else {
                 self.compile_record(record)?.into()
             },
