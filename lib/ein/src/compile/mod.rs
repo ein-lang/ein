@@ -7,11 +7,13 @@ mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod name_qualifier;
+mod record_id_qualifier;
 mod reference_type_resolver;
 mod type_compiler;
 mod type_equality_checker;
 mod type_inference;
 mod union_tag_calculator;
+mod union_type_simplifier;
 
 use crate::ast;
 use crate::path::ModulePath;
@@ -21,6 +23,7 @@ use expression_compiler::ExpressionCompiler;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use name_qualifier::NameQualifier;
+use record_id_qualifier::RecordIdQualifier;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
@@ -31,7 +34,8 @@ const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
 const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
 pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), CompileError> {
-    let module = desugar_with_types(&infer_types(&desugar_without_types(module)?)?)?;
+    let module = RecordIdQualifier::new().qualify(module);
+    let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
     let name_qualifier = NameQualifier::new(
         &module,
         vec![(

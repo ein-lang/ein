@@ -6,30 +6,36 @@ mod variable_constraint_set;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use crate::types::{self, Type};
 use constraint_collector::ConstraintCollector;
 use constraint_solver::ConstraintSolver;
 
 pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
-    let module = module.convert_types(&mut |type_| match type_ {
-        Type::Unknown(unknown) => types::Variable::new(unknown.source_information().clone()).into(),
-        _ => type_.clone(),
-    });
+    let module = module.convert_types(&mut |type_| -> Result<_, CompileError> {
+        Ok(match type_ {
+            Type::Unknown(unknown) => {
+                types::Variable::new(unknown.source_information().clone()).into()
+            }
+            _ => type_.clone(),
+        })
+    })?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
+    let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
     let subsumption_set = ConstraintCollector::new(&reference_type_resolver).collect(&module)?;
     let substitutions = ConstraintSolver::new(&reference_type_resolver).solve(subsumption_set)?;
 
-    Ok(module
-        .convert_types(&mut |type_| {
-            if let Type::Variable(variable) = type_ {
+    module
+        .convert_types(&mut |type_| -> Result<_, CompileError> {
+            Ok(if let Type::Variable(variable) = type_ {
                 substitutions[&variable.id()].clone()
             } else {
                 type_.clone()
-            }
-        })
-        .convert_types(&mut |type_| type_.simplify()))
+            })
+        })?
+        .convert_types(&mut |type_| union_type_simplifier.simplify(type_))
 }
 
 #[cfg(test)]

@@ -138,16 +138,22 @@ impl Module {
         ))
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        Self::new(
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
             self.imported_modules.clone(),
-            self.type_definitions.clone(),
+            self.type_definitions
+                .iter()
+                .map(|type_definition| type_definition.convert_types(convert))
+                .collect::<Result<_, _>>()?,
             self.definitions
                 .iter()
                 .map(|definition| definition.convert_types(convert))
-                .collect(),
-        )
+                .collect::<Result<_, _>>()?,
+        ))
     }
 }

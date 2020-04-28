@@ -60,15 +60,18 @@ impl RecordUpdate {
         ))
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        Self::new(
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
             self.type_.clone(),
-            self.argument.convert_types(convert),
+            self.argument.convert_types(convert)?,
             self.elements
                 .iter()
-                .map(|(name, expression)| (name.into(), expression.convert_types(convert)))
-                .collect(),
+                .map(|(name, expression)| Ok((name.into(), expression.convert_types(convert)?)))
+                .collect::<Result<_, _>>()?,
             self.source_information.clone(),
-        )
+        ))
     }
 }

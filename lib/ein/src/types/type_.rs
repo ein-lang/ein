@@ -45,20 +45,26 @@ impl Type {
     }
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        self.convert_types(&mut |type_| match type_ {
-            Self::Variable(variable) => match substitutions.get(&variable.id()) {
-                Some(type_) => type_.clone(),
-                None => type_.clone(),
-            },
-            _ => type_.clone(),
+        self.convert_types(&mut |type_| -> Result<_, ()> {
+            Ok(match type_ {
+                Self::Variable(variable) => match substitutions.get(&variable.id()) {
+                    Some(type_) => type_.clone(),
+                    None => type_.clone(),
+                },
+                _ => type_.clone(),
+            })
         })
+        .unwrap()
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Self) -> Self) -> Self {
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Self) -> Result<Self, E>,
+    ) -> Result<Self, E> {
         let type_ = match self {
-            Self::Function(function) => function.convert_types(convert).into(),
-            Self::Record(record) => record.convert_types(convert).into(),
-            Self::Union(union) => union.convert_types(convert).into(),
+            Self::Function(function) => function.convert_types(convert)?.into(),
+            Self::Record(record) => record.convert_types(convert)?.into(),
+            Self::Union(union) => union.convert_types(convert)?.into(),
             Self::Boolean(_)
             | Self::None(_)
             | Self::Number(_)
@@ -68,13 +74,6 @@ impl Type {
         };
 
         convert(&type_)
-    }
-
-    pub fn simplify(&self) -> Self {
-        match self {
-            Self::Union(union) => union.simplify(),
-            _ => self.clone(),
-        }
     }
 
     pub fn to_function(&self) -> Option<&Function> {

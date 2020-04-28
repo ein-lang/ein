@@ -18,7 +18,7 @@ impl ModuleEnvironmentCreator {
             if let Type::Record(record) = type_definition.type_() {
                 for (key, type_) in record.elements() {
                     variables.insert(
-                        format!("{}.{}", record.name(), key),
+                        format!("{}.{}", type_definition.name(), key),
                         types::Function::new(
                             record.clone(),
                             type_.clone(),

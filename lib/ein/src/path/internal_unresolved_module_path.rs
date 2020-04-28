@@ -18,6 +18,6 @@ impl InternalUnresolvedModulePath {
 
 impl std::fmt::Display for InternalUnresolvedModulePath {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(formatter, "./{}", self.components.join("/"))
+        write!(formatter, "/{}", self.components.join("/"))
     }
 }

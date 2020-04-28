@@ -54,12 +54,15 @@ impl If {
         ))
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        Self::new(
-            self.condition.convert_types(convert),
-            self.then.convert_types(convert),
-            self.else_.convert_types(convert),
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(Self::new(
+            self.condition.convert_types(convert)?,
+            self.then.convert_types(convert)?,
+            self.else_.convert_types(convert)?,
             self.source_information.clone(),
-        )
+        ))
     }
 }

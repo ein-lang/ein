@@ -1,7 +1,6 @@
 use crate::ast;
 use std::collections::HashMap;
 
-#[derive(Debug)]
 pub struct NameQualifier {
     names: HashMap<String, String>,
 }

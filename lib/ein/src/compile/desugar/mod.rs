@@ -5,8 +5,10 @@ mod type_coercion_desugarer;
 mod typed_meta_desugarer;
 
 use super::error::CompileError;
+use super::expression_type_extractor::ExpressionTypeExtractor;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
+use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
@@ -21,10 +23,13 @@ pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(&reference_type_resolver);
+    let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
+    let expression_type_extractor = ExpressionTypeExtractor::new(&union_type_simplifier);
 
     let module = TypedMetaDesugarer::new(FunctionTypeArgumentDesugarer::new(
         &reference_type_resolver,
         &type_equality_checker,
+        &expression_type_extractor,
     ))
     .desugar(module)?;
 
@@ -33,6 +38,7 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
         &reference_type_resolver,
         &type_equality_checker,
+        &expression_type_extractor,
     ))
     .desugar(&module)
 }

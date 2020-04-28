@@ -47,19 +47,22 @@ impl Expression {
         convert(&expression)
     }
 
-    pub fn convert_types(&self, convert: &mut impl FnMut(&Type) -> Type) -> Self {
-        match self {
-            Self::Application(application) => application.convert_types(convert).into(),
+    pub fn convert_types<E>(
+        &self,
+        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+    ) -> Result<Self, E> {
+        Ok(match self {
+            Self::Application(application) => application.convert_types(convert)?.into(),
             Self::RecordConstruction(record_construction) => {
-                record_construction.convert_types(convert).into()
+                record_construction.convert_types(convert)?.into()
             }
-            Self::RecordUpdate(record_update) => record_update.convert_types(convert).into(),
-            Self::If(if_) => if_.convert_types(convert).into(),
-            Self::Let(let_) => let_.convert_types(convert).into(),
-            Self::Operation(operation) => operation.convert_types(convert).into(),
-            Self::TypeCoercion(coercion) => coercion.convert_types(convert).into(),
+            Self::RecordUpdate(record_update) => record_update.convert_types(convert)?.into(),
+            Self::If(if_) => if_.convert_types(convert)?.into(),
+            Self::Let(let_) => let_.convert_types(convert)?.into(),
+            Self::Operation(operation) => operation.convert_types(convert)?.into(),
+            Self::TypeCoercion(coercion) => coercion.convert_types(convert)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
-        }
+        })
     }
 
     pub fn is_variable(&self) -> bool {
