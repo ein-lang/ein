@@ -109,6 +109,7 @@ impl<'a> ConstraintCollector<'a> {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
+            Expression::Case(_) => unimplemented!(),
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.subsumption_set.add(

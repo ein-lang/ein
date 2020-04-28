@@ -1,5 +1,7 @@
+mod alternative;
 mod application;
 mod boolean;
+mod case;
 mod definition;
 mod export;
 mod expression;
@@ -21,8 +23,10 @@ mod unresolved_module;
 mod value_definition;
 mod variable;
 
+pub use alternative::*;
 pub use application::*;
 pub use boolean::*;
+pub use case::*;
 pub use definition::*;
 pub use export::*;
 pub use expression::*;

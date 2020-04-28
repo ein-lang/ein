@@ -133,6 +133,7 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
                 )
                 .into())
             }
+            Expression::Case(_) => unimplemented!(),
             Expression::If(if_) => {
                 let result_type = self
                     .expression_type_extractor

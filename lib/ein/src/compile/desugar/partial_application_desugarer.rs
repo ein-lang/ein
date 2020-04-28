@@ -97,6 +97,7 @@ impl PartialApplicationDesugarer {
             Expression::Application(application) => {
                 self.apply_arguments(expression, arguments, application.source_information())
             }
+            Expression::Case(_) => unimplemented!(),
             Expression::If(if_) => If::new(
                 if_.condition().clone(),
                 self.apply_arguments_recursively(if_.then(), arguments),

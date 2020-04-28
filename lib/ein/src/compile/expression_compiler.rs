@@ -49,6 +49,7 @@ impl<'a> ExpressionCompiler<'a> {
                 .into())
             }
             ast::Expression::Boolean(boolean) => Ok(self.compile_boolean(boolean.value()).into()),
+            ast::Expression::Case(_) => unimplemented!(),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition())?,
                 vec![

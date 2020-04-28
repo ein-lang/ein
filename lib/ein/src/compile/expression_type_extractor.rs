@@ -30,6 +30,7 @@ impl<'a> ExpressionTypeExtractor<'a> {
             Expression::Boolean(boolean) => {
                 types::Boolean::new(boolean.source_information().clone()).into()
             }
+            Expression::Case(_) => unimplemented!(),
             Expression::If(if_) => {
                 self.union_type_simplifier
                     .simplify_union(&types::Union::new(

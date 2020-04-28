@@ -119,6 +119,7 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
                 application.source_information().clone(),
             )
             .into(),
+            Expression::Case(_) => unimplemented!(),
             Expression::If(if_) => If::new(
                 self.desugar_expression(if_.condition(), variables)?,
                 self.desugar_expression(if_.then(), variables)?,

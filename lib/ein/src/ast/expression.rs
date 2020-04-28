@@ -1,5 +1,6 @@
 use super::application::Application;
 use super::boolean::Boolean;
+use super::case::Case;
 use super::if_::If;
 use super::let_::Let;
 use super::none::None;
@@ -15,6 +16,7 @@ use crate::types::Type;
 pub enum Expression {
     Application(Application),
     Boolean(Boolean),
+    Case(Case),
     RecordConstruction(RecordConstruction),
     RecordUpdate(RecordUpdate),
     If(If),
@@ -33,6 +35,7 @@ impl Expression {
     ) -> Result<Self, E> {
         let expression = match self {
             Self::Application(application) => application.convert_expressions(convert)?.into(),
+            Self::Case(case) => case.convert_expressions(convert)?.into(),
             Self::RecordConstruction(record_construction) => {
                 record_construction.convert_expressions(convert)?.into()
             }
@@ -53,6 +56,7 @@ impl Expression {
     ) -> Result<Self, E> {
         Ok(match self {
             Self::Application(application) => application.convert_types(convert)?.into(),
+            Self::Case(case) => case.convert_types(convert)?.into(),
             Self::RecordConstruction(record_construction) => {
                 record_construction.convert_types(convert)?.into()
             }
@@ -79,6 +83,12 @@ impl From<Application> for Expression {
 impl From<Boolean> for Expression {
     fn from(boolean: Boolean) -> Expression {
         Self::Boolean(boolean)
+    }
+}
+
+impl From<Case> for Expression {
+    fn from(case: Case) -> Expression {
+        Self::Case(case)
     }
 }
 

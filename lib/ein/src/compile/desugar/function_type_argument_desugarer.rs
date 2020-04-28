@@ -111,6 +111,7 @@ impl<'a> TypedDesugarer for FunctionTypeArgumentDesugarer<'a> {
                 )
                 .into())
             }
+            Expression::Case(_) => unimplemented!(),
             Expression::RecordConstruction(record_construction) => {
                 let type_ = self
                     .reference_type_resolver
