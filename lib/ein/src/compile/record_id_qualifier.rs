@@ -1,7 +1,6 @@
 use crate::ast::*;
 use crate::types::{self, Type};
 
-#[derive(Debug)]
 pub struct RecordIdQualifier {}
 
 impl RecordIdQualifier {
