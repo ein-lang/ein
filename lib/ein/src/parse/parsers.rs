@@ -18,8 +18,8 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "then",
-    "true",
+    "case", "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "of",
+    "then", "true", "type",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -329,6 +329,21 @@ fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
         })
 }
 
+fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
+    (
+        keyword("case").expected("case keyword"),
+        expression(),
+        keyword("of").expected("of keyword"),
+        many1(alternative()),
+    )
+        .map(|(_, argument, _, alternatives)| Case::new(argument, alternatives))
+}
+
+fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
+    (type_(), identifier(), sign("->"), expression())
+        .map(|(type_, name, _, expression)| Alternative::new(type_, name, expression))
+}
+
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
     (
         keyword("let").expected("let keyword"),
@@ -458,6 +473,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         record_construction().map(Expression::from),
         record_update().map(Expression::from),
         if_().map(Expression::from),
+        case().map(Expression::from),
         let_().map(Expression::from),
         atomic_expression(),
     )
@@ -1392,6 +1408,76 @@ mod tests {
                 Number::new(42.0, SourceInformation::dummy()),
                 Number::new(13.0, SourceInformation::dummy()),
                 SourceInformation::dummy(),
+            )
+        );
+    }
+
+    #[test]
+    fn parse_case() {
+        assert_eq!(
+            case()
+                .parse(stream("case true of Boolean flag -> flag", ""))
+                .unwrap()
+                .0,
+            Case::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                vec![Alternative::new(
+                    types::Boolean::new(SourceInformation::dummy()),
+                    "flag",
+                    Variable::new("flag", SourceInformation::dummy())
+                )]
+            )
+        );
+        assert_eq!(
+            case()
+                .parse(stream(
+                    indoc!(
+                        "
+                          case true of
+                            Boolean flag -> flag
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Case::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                vec![Alternative::new(
+                    types::Boolean::new(SourceInformation::dummy()),
+                    "flag",
+                    Variable::new("flag", SourceInformation::dummy())
+                )]
+            )
+        );
+        assert_eq!(
+            case()
+                .parse(stream(
+                    indoc!(
+                        "
+                          case true of
+                            Boolean foo -> true
+                            None bar -> false
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Case::new(
+                Boolean::new(true, SourceInformation::dummy()),
+                vec![
+                    Alternative::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        "foo",
+                        Boolean::new(true, SourceInformation::dummy())
+                    ),
+                    Alternative::new(
+                        types::None::new(SourceInformation::dummy()),
+                        "bar",
+                        Boolean::new(false, SourceInformation::dummy())
+                    )
+                ]
             )
         );
     }
