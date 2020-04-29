@@ -331,12 +331,15 @@ fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
 
 fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
     (
+        source_information(),
         keyword("case").expected("case keyword"),
         expression(),
         keyword("of").expected("of keyword"),
         many1(alternative()),
     )
-        .map(|(_, argument, _, alternatives)| Case::new(argument, alternatives))
+        .map(|(source_information, _, argument, _, alternatives)| {
+            Case::new(argument, alternatives, source_information)
+        })
 }
 
 fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
@@ -1425,7 +1428,8 @@ mod tests {
                     types::Boolean::new(SourceInformation::dummy()),
                     "flag",
                     Variable::new("flag", SourceInformation::dummy())
-                )]
+                )],
+                SourceInformation::dummy(),
             )
         );
         assert_eq!(
@@ -1447,7 +1451,8 @@ mod tests {
                     types::Boolean::new(SourceInformation::dummy()),
                     "flag",
                     Variable::new("flag", SourceInformation::dummy())
-                )]
+                )],
+                SourceInformation::dummy()
             )
         );
         assert_eq!(
@@ -1477,7 +1482,8 @@ mod tests {
                         "bar",
                         Boolean::new(false, SourceInformation::dummy())
                     )
-                ]
+                ],
+                SourceInformation::dummy()
             )
         );
     }

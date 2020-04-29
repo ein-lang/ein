@@ -49,7 +49,25 @@ impl<'a> ExpressionCompiler<'a> {
                 .into())
             }
             ast::Expression::Boolean(boolean) => Ok(self.compile_boolean(boolean.value()).into()),
-            ast::Expression::Case(_) => unimplemented!(),
+            ast::Expression::Case(case) => Ok(ssf::ir::AlgebraicCase::new(
+                self.compile(case.argument())?,
+                case.alternatives()
+                    .iter()
+                    .map(|alternative| {
+                        Ok(ssf::ir::AlgebraicAlternative::new(
+                            ssf::ir::Constructor::new(
+                                self.type_compiler
+                                    .compile_union(case.type_().to_union().unwrap())?,
+                                self.union_tag_calculator.calculate(alternative.type_())?,
+                            ),
+                            vec![alternative.name().into()],
+                            self.compile(alternative.expression())?,
+                        ))
+                    })
+                    .collect::<Result<_, CompileError>>()?,
+                None,
+            )
+            .into()),
             ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition())?,
                 vec![
@@ -686,6 +704,56 @@ mod tests {
                         1.0
                     )
                 ],
+                None
+            )
+            .into())
+        );
+    }
+
+    #[test]
+    fn compile_case_expressions() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+
+        let boolean_type = type_compiler.compile_boolean();
+        let union_type = types::Union::new(
+            vec![
+                types::Boolean::new(SourceInformation::dummy()).into(),
+                types::None::new(SourceInformation::dummy()).into(),
+            ],
+            SourceInformation::dummy(),
+        );
+        let algebraic_type = type_compiler.compile_union(&union_type).unwrap();
+
+        assert_eq!(
+            ExpressionCompiler::new(
+                &reference_type_resolver,
+                &union_tag_calculator,
+                &type_compiler
+            )
+            .compile(
+                &Case::with_type(
+                    union_type,
+                    Boolean::new(false, SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        "flag",
+                        Number::new(42.0, SourceInformation::dummy())
+                    )]
+                )
+                .into(),
+            ),
+            Ok(ssf::ir::AlgebraicCase::new(
+                ssf::ir::ConstructorApplication::new(
+                    ssf::ir::Constructor::new(boolean_type.clone(), 0),
+                    vec![]
+                ),
+                vec![ssf::ir::AlgebraicAlternative::new(
+                    ssf::ir::Constructor::new(algebraic_type.clone(), 4919337809186972848),
+                    vec!["flag".into()],
+                    42.0
+                )],
                 None
             )
             .into())
