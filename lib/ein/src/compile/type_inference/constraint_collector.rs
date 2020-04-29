@@ -109,7 +109,28 @@ impl<'a> ConstraintCollector<'a> {
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())
             }
-            Expression::Case(_) => unimplemented!(),
+            Expression::Case(case) => {
+                let argument = self.infer_expression(case.argument(), variables)?;
+
+                self.subsumption_set
+                    .add(argument.clone(), case.type_().clone());
+
+                let result = types::Variable::new(case.source_information().clone());
+
+                for alternative in case.alternatives() {
+                    self.subsumption_set
+                        .add(alternative.type_().clone(), argument.clone());
+
+                    let mut variables = variables.clone();
+
+                    variables.insert(alternative.name().into(), alternative.type_().clone());
+
+                    let type_ = self.infer_expression(alternative.expression(), &variables)?;
+                    self.subsumption_set.add(type_, result.clone());
+                }
+
+                Ok(result.into())
+            }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
                 self.subsumption_set.add(
