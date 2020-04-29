@@ -740,7 +740,8 @@ mod tests {
                         types::Boolean::new(SourceInformation::dummy()),
                         "flag",
                         Number::new(42.0, SourceInformation::dummy())
-                    )]
+                    )],
+                    SourceInformation::dummy()
                 )
                 .into(),
             ),

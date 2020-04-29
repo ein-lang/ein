@@ -10,18 +10,20 @@ pub struct Case {
     type_: Type,
     argument: Rc<Expression>,
     alternatives: Vec<Alternative>,
+    source_information: Rc<SourceInformation>,
 }
 
 impl Case {
     pub fn new(
         argument: impl Into<Expression>,
         alternatives: Vec<Alternative>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Rc<SourceInformation>> + Clone,
     ) -> Self {
         Self {
-            type_: types::Unknown::new(source_information).into(),
+            type_: types::Unknown::new(source_information.clone()).into(),
             argument: Rc::new(argument.into()),
             alternatives,
+            source_information: source_information.into(),
         }
     }
 
@@ -29,11 +31,13 @@ impl Case {
         type_: impl Into<Type>,
         argument: impl Into<Expression>,
         alternatives: Vec<Alternative>,
+        source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
             argument: Rc::new(argument.into()),
             alternatives,
+            source_information: source_information.into(),
         }
     }
 
@@ -49,6 +53,10 @@ impl Case {
         &self.alternatives
     }
 
+    pub fn source_information(&self) -> &Rc<SourceInformation> {
+        &self.source_information
+    }
+
     pub fn convert_expressions<E>(
         &self,
         convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
@@ -61,6 +69,7 @@ impl Case {
                 .iter()
                 .map(|alternative| alternative.convert_expressions(convert))
                 .collect::<Result<_, _>>()?,
+            source_information: self.source_information.clone(),
         })
     }
 
@@ -76,6 +85,7 @@ impl Case {
                 .iter()
                 .map(|alternative| alternative.convert_types(convert))
                 .collect::<Result<_, _>>()?,
+            source_information: self.source_information.clone(),
         })
     }
 }
