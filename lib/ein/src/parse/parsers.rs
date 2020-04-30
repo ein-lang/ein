@@ -333,18 +333,21 @@ fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
     (
         source_information(),
         keyword("case").expected("case keyword"),
+        identifier(),
+        sign("="),
         expression(),
-        keyword("of").expected("of keyword"),
         many1(alternative()),
     )
-        .map(|(source_information, _, argument, _, alternatives)| {
-            Case::new(argument, alternatives, source_information)
-        })
+        .map(
+            |(source_information, _, identifier, _, argument, alternatives)| {
+                Case::new(identifier, argument, alternatives, source_information)
+            },
+        )
 }
 
 fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
-    (type_(), identifier(), sign("->"), expression())
-        .map(|(type_, name, _, expression)| Alternative::new(type_, name, expression))
+    (type_(), sign("=>"), expression())
+        .map(|(type_, _, expression)| Alternative::new(type_, expression))
 }
 
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
@@ -1419,15 +1422,23 @@ mod tests {
     fn parse_case() {
         assert_eq!(
             case()
-                .parse(stream("case true of Boolean flag -> flag", ""))
+                .parse(stream(
+                    indoc!(
+                        "
+                          case foo = true
+                            Boolean => foo
+                        "
+                    ),
+                    ""
+                ))
                 .unwrap()
                 .0,
             Case::new(
+                "foo",
                 Boolean::new(true, SourceInformation::dummy()),
                 vec![Alternative::new(
                     types::Boolean::new(SourceInformation::dummy()),
-                    "flag",
-                    Variable::new("flag", SourceInformation::dummy())
+                    Variable::new("foo", SourceInformation::dummy())
                 )],
                 SourceInformation::dummy(),
             )
@@ -1437,8 +1448,9 @@ mod tests {
                 .parse(stream(
                     indoc!(
                         "
-                          case true of
-                            Boolean flag -> flag
+                          case foo = true
+                            Boolean => true
+                            None => false
                         "
                     ),
                     ""
@@ -1446,40 +1458,15 @@ mod tests {
                 .unwrap()
                 .0,
             Case::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                vec![Alternative::new(
-                    types::Boolean::new(SourceInformation::dummy()),
-                    "flag",
-                    Variable::new("flag", SourceInformation::dummy())
-                )],
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            case()
-                .parse(stream(
-                    indoc!(
-                        "
-                          case true of
-                            Boolean foo -> true
-                            None bar -> false
-                        "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Case::new(
+                "foo",
                 Boolean::new(true, SourceInformation::dummy()),
                 vec![
                     Alternative::new(
                         types::Boolean::new(SourceInformation::dummy()),
-                        "foo",
                         Boolean::new(true, SourceInformation::dummy())
                     ),
                     Alternative::new(
                         types::None::new(SourceInformation::dummy()),
-                        "bar",
                         Boolean::new(false, SourceInformation::dummy())
                     )
                 ],

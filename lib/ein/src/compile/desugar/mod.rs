@@ -657,16 +657,15 @@ mod tests {
             desugar_with_types(&create_module(
                 Case::with_type(
                     argument_union_type.clone(),
+                    "foo",
                     Boolean::new(false, SourceInformation::dummy()),
                     vec![
                         Alternative::new(
                             types::Boolean::new(SourceInformation::dummy()),
-                            "number",
                             Number::new(42.0, SourceInformation::dummy())
                         ),
                         Alternative::new(
                             types::None::new(SourceInformation::dummy()),
-                            "_",
                             None::new(SourceInformation::dummy())
                         )
                     ],
@@ -677,11 +676,11 @@ mod tests {
             Ok(create_module(
                 Case::with_type(
                     argument_union_type.clone(),
+                    "foo",
                     Boolean::new(false, SourceInformation::dummy()),
                     vec![
                         Alternative::new(
                             types::Boolean::new(SourceInformation::dummy()),
-                            "number",
                             TypeCoercion::new(
                                 Number::new(42.0, SourceInformation::dummy()),
                                 types::Number::new(SourceInformation::dummy()),
@@ -691,7 +690,6 @@ mod tests {
                         ),
                         Alternative::new(
                             types::None::new(SourceInformation::dummy()),
-                            "_",
                             TypeCoercion::new(
                                 None::new(SourceInformation::dummy()),
                                 types::None::new(SourceInformation::dummy()),

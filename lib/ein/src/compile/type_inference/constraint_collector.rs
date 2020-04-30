@@ -123,7 +123,7 @@ impl<'a> ConstraintCollector<'a> {
 
                     let mut variables = variables.clone();
 
-                    variables.insert(alternative.name().into(), alternative.type_().clone());
+                    variables.insert(case.name().into(), alternative.type_().clone());
 
                     let type_ = self.infer_expression(alternative.expression(), &variables)?;
                     self.subsumption_set.add(type_, result.clone());

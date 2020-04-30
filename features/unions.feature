@@ -45,9 +45,9 @@ Feature: Union types
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = case if true then 42 else none of
-      Number y -> y
-      None none -> 13
+    main x = case y = if true then 42 else none of
+      Number => y
+      None => 13
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`

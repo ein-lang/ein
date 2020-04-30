@@ -140,18 +140,17 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
 
                 Ok(Case::with_type(
                     case.type_().clone(),
+                    case.name(),
                     case.argument().clone(),
                     case.alternatives()
                         .iter()
                         .map(|alternative| {
                             let mut variables = variables.clone();
 
-                            variables
-                                .insert(alternative.name().into(), alternative.type_().clone());
+                            variables.insert(case.name().into(), alternative.type_().clone());
 
                             Ok(Alternative::new(
                                 alternative.type_().clone(),
-                                alternative.name(),
                                 self.coerce_type(
                                     alternative.expression(),
                                     &result_type,

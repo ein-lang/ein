@@ -8,6 +8,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug, PartialEq)]
 pub struct Case {
     type_: Type,
+    name: String,
     argument: Rc<Expression>,
     alternatives: Vec<Alternative>,
     source_information: Rc<SourceInformation>,
@@ -15,12 +16,14 @@ pub struct Case {
 
 impl Case {
     pub fn new(
+        name: impl Into<String>,
         argument: impl Into<Expression>,
         alternatives: Vec<Alternative>,
         source_information: impl Into<Rc<SourceInformation>> + Clone,
     ) -> Self {
         Self {
             type_: types::Unknown::new(source_information.clone()).into(),
+            name: name.into(),
             argument: Rc::new(argument.into()),
             alternatives,
             source_information: source_information.into(),
@@ -29,16 +32,22 @@ impl Case {
 
     pub fn with_type(
         type_: impl Into<Type>,
+        name: impl Into<String>,
         argument: impl Into<Expression>,
         alternatives: Vec<Alternative>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
+            name: name.into(),
             argument: Rc::new(argument.into()),
             alternatives,
             source_information: source_information.into(),
         }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     pub fn type_(&self) -> &Type {
@@ -63,6 +72,7 @@ impl Case {
     ) -> Result<Self, E> {
         Ok(Self {
             type_: self.type_.clone(),
+            name: self.name.clone(),
             argument: self.argument.convert_expressions(convert)?.into(),
             alternatives: self
                 .alternatives
@@ -79,6 +89,7 @@ impl Case {
     ) -> Result<Self, E> {
         Ok(Self {
             type_: self.type_.convert_types(convert)?,
+            name: self.name.clone(),
             argument: self.argument.convert_types(convert)?.into(),
             alternatives: self
                 .alternatives

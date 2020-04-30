@@ -990,6 +990,7 @@ mod tests {
                     "x",
                     Case::with_type(
                         type_,
+                        "x",
                         If::new(
                             Boolean::new(false, SourceInformation::dummy()),
                             Number::new(42.0, SourceInformation::dummy()),
@@ -999,12 +1000,10 @@ mod tests {
                         vec![
                             Alternative::new(
                                 types::Number::new(SourceInformation::dummy()),
-                                "x",
                                 Boolean::new(false, SourceInformation::dummy()),
                             ),
                             Alternative::new(
                                 types::None::new(SourceInformation::dummy()),
-                                "y",
                                 None::new(SourceInformation::dummy()),
                             ),
                         ],

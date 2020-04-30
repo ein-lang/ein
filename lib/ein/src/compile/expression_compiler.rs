@@ -60,7 +60,7 @@ impl<'a> ExpressionCompiler<'a> {
                                     .compile_union(case.type_().to_union().unwrap())?,
                                 self.union_tag_calculator.calculate(alternative.type_())?,
                             ),
-                            vec![alternative.name().into()],
+                            vec![case.name().into()],
                             self.compile(alternative.expression())?,
                         ))
                     })
@@ -729,10 +729,10 @@ mod tests {
             .compile(
                 &Case::with_type(
                     union_type,
+                    "flag",
                     Boolean::new(false, SourceInformation::dummy()),
                     vec![Alternative::new(
                         types::Boolean::new(SourceInformation::dummy()),
-                        "flag",
                         Number::new(42.0, SourceInformation::dummy())
                     )],
                     SourceInformation::dummy()

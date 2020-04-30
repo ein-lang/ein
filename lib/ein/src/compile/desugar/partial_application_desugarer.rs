@@ -99,13 +99,13 @@ impl PartialApplicationDesugarer {
             }
             Expression::Case(case) => Case::with_type(
                 case.type_().clone(),
+                case.name(),
                 case.argument().clone(),
                 case.alternatives()
                     .iter()
                     .map(|alternative| {
                         Alternative::new(
                             alternative.type_().clone(),
-                            alternative.name(),
                             self.apply_arguments_recursively(alternative.expression(), arguments),
                         )
                     })

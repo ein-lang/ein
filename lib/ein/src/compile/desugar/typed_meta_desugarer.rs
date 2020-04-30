@@ -121,17 +121,17 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
             .into(),
             Expression::Case(case) => Case::with_type(
                 case.type_().clone(),
+                case.name(),
                 self.desugar_expression(case.argument(), variables)?,
                 case.alternatives()
                     .iter()
                     .map(|alternative| {
                         let mut variables = variables.clone();
 
-                        variables.insert(alternative.name().into(), alternative.type_().clone());
+                        variables.insert(case.name().into(), alternative.type_().clone());
 
                         Ok(Alternative::new(
                             alternative.type_().clone(),
-                            alternative.name(),
                             self.desugar_expression(alternative.expression(), &variables)?,
                         ))
                     })

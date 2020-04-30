@@ -38,8 +38,7 @@ impl<'a> ExpressionTypeExtractor<'a> {
                             .map(|alternative| {
                                 let mut variables = variables.clone();
 
-                                variables
-                                    .insert(alternative.name().into(), alternative.type_().clone());
+                                variables.insert(case.name().into(), alternative.type_().clone());
 
                                 self.extract(alternative.expression(), &variables)
                             })
@@ -118,16 +117,15 @@ mod tests {
         assert_eq!(
             ExpressionTypeExtractor::new(&union_type_simplifier).extract(
                 &Case::new(
+                    "",
                     None::new(SourceInformation::dummy()),
                     vec![
                         Alternative::new(
                             types::Boolean::new(SourceInformation::dummy()),
-                            "",
                             Boolean::new(false, SourceInformation::dummy()),
                         ),
                         Alternative::new(
                             types::None::new(SourceInformation::dummy()),
-                            "",
                             None::new(SourceInformation::dummy()),
                         )
                     ],
