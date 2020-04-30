@@ -45,7 +45,7 @@ Feature: Union types
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = case y = if true then 42 else none of
+    main x = case y = if true then 42 else none
       Number => y
       None => 13
     """
