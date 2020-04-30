@@ -979,6 +979,66 @@ mod tests {
         }
     }
 
+    mod case {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn infer_types_of_if_expressions() {
+            let create_module = |type_: Type| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    Case::with_type(
+                        type_,
+                        "x",
+                        If::new(
+                            Boolean::new(false, SourceInformation::dummy()),
+                            Number::new(42.0, SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        vec![
+                            Alternative::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                Boolean::new(false, SourceInformation::dummy()),
+                            ),
+                            Alternative::new(
+                                types::None::new(SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    types::Union::new(
+                        vec![
+                            types::Number::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into()
+                        ],
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                ))
+            );
+        }
+    }
+
     mod record {
         use super::*;
         use pretty_assertions::assert_eq;

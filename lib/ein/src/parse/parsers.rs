@@ -18,8 +18,8 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "then",
-    "true",
+    "Boolean", "case", "else", "export", "false", "if", "import", "in", "let", "none", "None",
+    "Number", "then", "true", "type",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -329,6 +329,27 @@ fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
         })
 }
 
+fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
+    (
+        source_information(),
+        keyword("case").expected("case keyword"),
+        identifier(),
+        sign("="),
+        expression(),
+        many1(alternative()),
+    )
+        .map(
+            |(source_information, _, identifier, _, argument, alternatives)| {
+                Case::new(identifier, argument, alternatives, source_information)
+            },
+        )
+}
+
+fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
+    (type_(), sign("=>"), expression())
+        .map(|(type_, _, expression)| Alternative::new(type_, expression))
+}
+
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
     (
         keyword("let").expected("let keyword"),
@@ -458,6 +479,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         record_construction().map(Expression::from),
         record_update().map(Expression::from),
         if_().map(Expression::from),
+        case().map(Expression::from),
         let_().map(Expression::from),
         atomic_expression(),
     )
@@ -1392,6 +1414,63 @@ mod tests {
                 Number::new(42.0, SourceInformation::dummy()),
                 Number::new(13.0, SourceInformation::dummy()),
                 SourceInformation::dummy(),
+            )
+        );
+    }
+
+    #[test]
+    fn parse_case() {
+        assert_eq!(
+            case()
+                .parse(stream(
+                    indoc!(
+                        "
+                          case foo = true
+                            Boolean => foo
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Case::new(
+                "foo",
+                Boolean::new(true, SourceInformation::dummy()),
+                vec![Alternative::new(
+                    types::Boolean::new(SourceInformation::dummy()),
+                    Variable::new("foo", SourceInformation::dummy())
+                )],
+                SourceInformation::dummy(),
+            )
+        );
+        assert_eq!(
+            case()
+                .parse(stream(
+                    indoc!(
+                        "
+                          case foo = true
+                            Boolean => true
+                            None => false
+                        "
+                    ),
+                    ""
+                ))
+                .unwrap()
+                .0,
+            Case::new(
+                "foo",
+                Boolean::new(true, SourceInformation::dummy()),
+                vec![
+                    Alternative::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        Boolean::new(true, SourceInformation::dummy())
+                    ),
+                    Alternative::new(
+                        types::None::new(SourceInformation::dummy()),
+                        Boolean::new(false, SourceInformation::dummy())
+                    )
+                ],
+                SourceInformation::dummy()
             )
         );
     }

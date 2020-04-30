@@ -133,6 +133,37 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
                 )
                 .into())
             }
+            Expression::Case(case) => {
+                let result_type = self
+                    .expression_type_extractor
+                    .extract(expression, variables)?;
+
+                Ok(Case::with_type(
+                    case.type_().clone(),
+                    case.name(),
+                    case.argument().clone(),
+                    case.alternatives()
+                        .iter()
+                        .map(|alternative| {
+                            let mut variables = variables.clone();
+
+                            variables.insert(case.name().into(), alternative.type_().clone());
+
+                            Ok(Alternative::new(
+                                alternative.type_().clone(),
+                                self.coerce_type(
+                                    alternative.expression(),
+                                    &result_type,
+                                    case.source_information().clone(),
+                                    &variables,
+                                )?,
+                            ))
+                        })
+                        .collect::<Result<_, CompileError>>()?,
+                    case.source_information().clone(),
+                )
+                .into())
+            }
             Expression::If(if_) => {
                 let result_type = self
                     .expression_type_extractor

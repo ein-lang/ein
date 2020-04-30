@@ -30,6 +30,22 @@ impl<'a> ExpressionTypeExtractor<'a> {
             Expression::Boolean(boolean) => {
                 types::Boolean::new(boolean.source_information().clone()).into()
             }
+            Expression::Case(case) => {
+                self.union_type_simplifier
+                    .simplify_union(&types::Union::new(
+                        case.alternatives()
+                            .iter()
+                            .map(|alternative| {
+                                let mut variables = variables.clone();
+
+                                variables.insert(case.name().into(), alternative.type_().clone());
+
+                                self.extract(alternative.expression(), &variables)
+                            })
+                            .collect::<Result<_, _>>()?,
+                        case.source_information().clone(),
+                    ))?
+            }
             Expression::If(if_) => {
                 self.union_type_simplifier
                     .simplify_union(&types::Union::new(
@@ -84,5 +100,48 @@ impl<'a> ExpressionTypeExtractor<'a> {
             Expression::Variable(variable) => variables[variable.name()].clone(),
             Expression::RecordUpdate(_) => unreachable!(),
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::reference_type_resolver::ReferenceTypeResolver;
+    use super::*;
+    use crate::debug::SourceInformation;
+
+    #[test]
+    fn extract_type_of_case_expression() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
+
+        assert_eq!(
+            ExpressionTypeExtractor::new(&union_type_simplifier).extract(
+                &Case::new(
+                    "",
+                    None::new(SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            types::Boolean::new(SourceInformation::dummy()),
+                            Boolean::new(false, SourceInformation::dummy()),
+                        ),
+                        Alternative::new(
+                            types::None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )
+                    ],
+                    SourceInformation::dummy()
+                )
+                .into(),
+                &Default::default(),
+            ),
+            Ok(types::Union::new(
+                vec![
+                    types::Boolean::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into()
+                ],
+                SourceInformation::dummy()
+            )
+            .into())
+        );
     }
 }

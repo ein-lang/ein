@@ -139,6 +139,7 @@ impl<'a> TypedDesugarer for FunctionTypeArgumentDesugarer<'a> {
                 .into())
             }
             Expression::Boolean(_)
+            | Expression::Case(_)
             | Expression::If(_)
             | Expression::Let(_)
             | Expression::None(_)

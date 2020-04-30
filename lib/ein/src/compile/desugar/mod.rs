@@ -49,6 +49,7 @@ mod tests {
     use crate::ast;
     use crate::debug::SourceInformation;
     use crate::types;
+    use pretty_assertions::assert_eq;
 
     mod type_coercion {
         use super::*;
@@ -623,5 +624,84 @@ mod tests {
                 ))
             );
         }
+    }
+
+    #[test]
+    fn desugar_case_expression() {
+        let argument_union_type = types::Union::new(
+            vec![
+                types::Boolean::new(SourceInformation::dummy()).into(),
+                types::None::new(SourceInformation::dummy()).into(),
+            ],
+            SourceInformation::dummy(),
+        );
+        let result_union_type = types::Union::new(
+            vec![
+                types::Number::new(SourceInformation::dummy()).into(),
+                types::None::new(SourceInformation::dummy()).into(),
+            ],
+            SourceInformation::dummy(),
+        );
+
+        let create_module = |expression: Expression| {
+            Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                expression,
+                result_union_type.clone(),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        };
+
+        assert_eq!(
+            desugar_with_types(&create_module(
+                Case::with_type(
+                    argument_union_type.clone(),
+                    "foo",
+                    Boolean::new(false, SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            types::Boolean::new(SourceInformation::dummy()),
+                            Number::new(42.0, SourceInformation::dummy())
+                        ),
+                        Alternative::new(
+                            types::None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy())
+                        )
+                    ],
+                    SourceInformation::dummy()
+                )
+                .into()
+            )),
+            Ok(create_module(
+                Case::with_type(
+                    argument_union_type.clone(),
+                    "foo",
+                    Boolean::new(false, SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            types::Boolean::new(SourceInformation::dummy()),
+                            TypeCoercion::new(
+                                Number::new(42.0, SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                result_union_type.clone(),
+                                SourceInformation::dummy(),
+                            )
+                        ),
+                        Alternative::new(
+                            types::None::new(SourceInformation::dummy()),
+                            TypeCoercion::new(
+                                None::new(SourceInformation::dummy()),
+                                types::None::new(SourceInformation::dummy()),
+                                result_union_type.clone(),
+                                SourceInformation::dummy(),
+                            )
+                        )
+                    ],
+                    SourceInformation::dummy()
+                )
+                .into()
+            ))
+        );
     }
 }
