@@ -67,7 +67,6 @@ impl RecordUpdateDesugarer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast;
     use crate::debug::*;
     use crate::types;
     use pretty_assertions::assert_eq;
@@ -100,12 +99,9 @@ mod tests {
                     RecordUpdate::new(
                         reference_type.clone(),
                         Variable::new("foo", SourceInformation::dummy()),
-                        vec![(
-                            "bar".into(),
-                            ast::None::new(SourceInformation::dummy()).into()
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![("bar".into(), None::new(SourceInformation::dummy()).into())]
+                            .into_iter()
+                            .collect(),
                         SourceInformation::dummy()
                     ),
                     reference_type.clone(),
@@ -140,10 +136,7 @@ mod tests {
                                     )
                                     .into()
                                 ),
-                                (
-                                    "bar".into(),
-                                    ast::None::new(SourceInformation::dummy()).into()
-                                )
+                                ("bar".into(), None::new(SourceInformation::dummy()).into())
                             ]
                             .into_iter()
                             .collect(),

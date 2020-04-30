@@ -46,7 +46,6 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast;
     use crate::debug::SourceInformation;
     use crate::types;
     use pretty_assertions::assert_eq;
@@ -467,7 +466,7 @@ mod tests {
                     FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
-                        ast::None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
                         types::Function::new(
                             upper_type.clone(),
                             lower_type.clone(),
@@ -478,7 +477,7 @@ mod tests {
                     .into(),
                     ValueDefinition::new(
                         "x",
-                        Let::new(vec![definition], ast::None::new(SourceInformation::dummy())),
+                        Let::new(vec![definition], None::new(SourceInformation::dummy())),
                         types::None::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
@@ -547,7 +546,7 @@ mod tests {
                     FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
-                        ast::None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
                         types::Function::new(
                             upper_type.clone(),
                             lower_type.clone(),
@@ -559,7 +558,7 @@ mod tests {
                     FunctionDefinition::new(
                         "g",
                         vec!["x".into()],
-                        ast::None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
                         types::Function::new(
                             types::Function::new(
                                 lower_type.clone(),

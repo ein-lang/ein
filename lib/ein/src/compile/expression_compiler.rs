@@ -2,7 +2,7 @@ use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
-use crate::ast;
+use crate::ast::*;
 use crate::types::Type;
 
 pub struct ExpressionCompiler<'a> {
@@ -24,16 +24,13 @@ impl<'a> ExpressionCompiler<'a> {
         }
     }
 
-    pub fn compile(
-        &self,
-        expression: &ast::Expression,
-    ) -> Result<ssf::ir::Expression, CompileError> {
+    pub fn compile(&self, expression: &Expression) -> Result<ssf::ir::Expression, CompileError> {
         match expression {
-            ast::Expression::Application(application) => {
+            Expression::Application(application) => {
                 let mut function = application.function();
                 let mut arguments = vec![application.argument()];
 
-                while let ast::Expression::Application(application) = &*function {
+                while let Expression::Application(application) = &*function {
                     function = application.function();
                     arguments.push(application.argument());
                 }
@@ -48,8 +45,8 @@ impl<'a> ExpressionCompiler<'a> {
                 )
                 .into())
             }
-            ast::Expression::Boolean(boolean) => Ok(self.compile_boolean(boolean.value()).into()),
-            ast::Expression::Case(case) => Ok(ssf::ir::AlgebraicCase::new(
+            Expression::Boolean(boolean) => Ok(self.compile_boolean(boolean.value()).into()),
+            Expression::Case(case) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(case.argument())?,
                 case.alternatives()
                     .iter()
@@ -68,7 +65,7 @@ impl<'a> ExpressionCompiler<'a> {
                 None,
             )
             .into()),
-            ast::Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
+            Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition())?,
                 vec![
                     ssf::ir::AlgebraicAlternative::new(
@@ -85,21 +82,17 @@ impl<'a> ExpressionCompiler<'a> {
                 None,
             )
             .into()),
-            ast::Expression::Let(let_) => match let_.definitions()[0] {
-                ast::Definition::FunctionDefinition(_) => {
-                    Ok(self.compile_let_functions(let_)?.into())
-                }
-                ast::Definition::ValueDefinition(_) => Ok(self.compile_let_values(let_)?.into()),
+            Expression::Let(let_) => match let_.definitions()[0] {
+                Definition::FunctionDefinition(_) => Ok(self.compile_let_functions(let_)?.into()),
+                Definition::ValueDefinition(_) => Ok(self.compile_let_values(let_)?.into()),
             },
-            ast::Expression::None(_) => Ok(ssf::ir::ConstructorApplication::new(
+            Expression::None(_) => Ok(ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
                 vec![],
             )
             .into()),
-            ast::Expression::Number(number) => {
-                Ok(ssf::ir::Primitive::Float64(number.value()).into())
-            }
-            ast::Expression::Operation(operation) => {
+            Expression::Number(number) => Ok(ssf::ir::Primitive::Float64(number.value()).into()),
+            Expression::Operation(operation) => {
                 let compiled = ssf::ir::Operation::new(
                     operation.operator().into(),
                     self.compile(operation.lhs())?,
@@ -107,16 +100,15 @@ impl<'a> ExpressionCompiler<'a> {
                 );
 
                 Ok(match operation.operator() {
-                    ast::Operator::Add
-                    | ast::Operator::Subtract
-                    | ast::Operator::Multiply
-                    | ast::Operator::Divide => compiled.into(),
-                    ast::Operator::Equal
-                    | ast::Operator::NotEqual
-                    | ast::Operator::LessThan
-                    | ast::Operator::LessThanOrEqual
-                    | ast::Operator::GreaterThan
-                    | ast::Operator::GreaterThanOrEqual => ssf::ir::PrimitiveCase::new(
+                    Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
+                        compiled.into()
+                    }
+                    Operator::Equal
+                    | Operator::NotEqual
+                    | Operator::LessThan
+                    | Operator::LessThanOrEqual
+                    | Operator::GreaterThan
+                    | Operator::GreaterThanOrEqual => ssf::ir::PrimitiveCase::new(
                         compiled,
                         vec![
                             ssf::ir::PrimitiveAlternative::new(
@@ -133,26 +125,24 @@ impl<'a> ExpressionCompiler<'a> {
                     .into(),
                 })
             }
-            ast::Expression::RecordConstruction(record) => {
-                Ok(ssf::ir::ConstructorApplication::new(
-                    ssf::ir::Constructor::new(
-                        self.type_compiler
-                            .compile_reference(record.type_())?
-                            .into_value()
-                            .unwrap()
-                            .into_algebraic()
-                            .unwrap(),
-                        0,
-                    ),
-                    record
-                        .elements()
-                        .iter()
-                        .map(|(_, expression)| self.compile(expression))
-                        .collect::<Result<_, _>>()?,
-                )
-                .into())
-            }
-            ast::Expression::TypeCoercion(coercion) => {
+            Expression::RecordConstruction(record) => Ok(ssf::ir::ConstructorApplication::new(
+                ssf::ir::Constructor::new(
+                    self.type_compiler
+                        .compile_reference(record.type_())?
+                        .into_value()
+                        .unwrap()
+                        .into_algebraic()
+                        .unwrap(),
+                    0,
+                ),
+                record
+                    .elements()
+                    .iter()
+                    .map(|(_, expression)| self.compile(expression))
+                    .collect::<Result<_, _>>()?,
+            )
+            .into()),
+            Expression::TypeCoercion(coercion) => {
                 let from_type = self.reference_type_resolver.resolve(coercion.from())?;
                 let to_type = self
                     .type_compiler
@@ -180,29 +170,24 @@ impl<'a> ExpressionCompiler<'a> {
                     Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 })
             }
-            ast::Expression::Variable(variable) => {
-                Ok(ssf::ir::Variable::new(variable.name()).into())
-            }
-            ast::Expression::RecordUpdate(_) => unreachable!(),
+            Expression::Variable(variable) => Ok(ssf::ir::Variable::new(variable.name()).into()),
+            Expression::RecordUpdate(_) => unreachable!(),
         }
     }
 
-    fn compile_let_functions(
-        &self,
-        let_: &ast::Let,
-    ) -> Result<ssf::ir::LetFunctions, CompileError> {
+    fn compile_let_functions(&self, let_: &Let) -> Result<ssf::ir::LetFunctions, CompileError> {
         let function_definitions = let_
             .definitions()
             .iter()
             .map(|definition| match definition {
-                ast::Definition::FunctionDefinition(function_definition) => Ok(function_definition),
-                ast::Definition::ValueDefinition(value_definition) => {
+                Definition::FunctionDefinition(function_definition) => Ok(function_definition),
+                Definition::ValueDefinition(value_definition) => {
                     Err(CompileError::MixedDefinitionsInLet(
                         value_definition.source_information().clone(),
                     ))
                 }
             })
-            .collect::<Result<Vec<&ast::FunctionDefinition>, _>>()?;
+            .collect::<Result<Vec<&FunctionDefinition>, _>>()?;
 
         Ok(ssf::ir::LetFunctions::new(
             function_definitions
@@ -235,17 +220,17 @@ impl<'a> ExpressionCompiler<'a> {
         ))
     }
 
-    fn compile_let_values(&self, let_: &ast::Let) -> Result<ssf::ir::LetValues, CompileError> {
+    fn compile_let_values(&self, let_: &Let) -> Result<ssf::ir::LetValues, CompileError> {
         let value_definitions = let_
             .definitions()
             .iter()
             .map(|definition| match definition {
-                ast::Definition::FunctionDefinition(function_definition) => {
+                Definition::FunctionDefinition(function_definition) => {
                     Err(CompileError::MixedDefinitionsInLet(
                         function_definition.source_information().clone(),
                     ))
                 }
-                ast::Definition::ValueDefinition(value_definition) => Ok(value_definition),
+                Definition::ValueDefinition(value_definition) => Ok(value_definition),
             })
             .collect::<Result<Vec<_>, _>>()?;
 

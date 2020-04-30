@@ -1,4 +1,4 @@
-use crate::ast;
+use crate::ast::*;
 use std::collections::HashMap;
 
 pub struct NameQualifier {
@@ -8,7 +8,7 @@ pub struct NameQualifier {
 // NameQualifier is not meant to qualify names in the original modules but
 // names in their outputs on compilation.
 impl NameQualifier {
-    pub fn new(module: &ast::Module, special_names: HashMap<String, String>) -> Self {
+    pub fn new(module: &Module, special_names: HashMap<String, String>) -> Self {
         let mut names = HashMap::new();
 
         for imported_module in module.imported_modules() {
@@ -50,14 +50,14 @@ mod tests {
     fn qualify_names_in_target_module() {
         assert_eq!(
             NameQualifier::new(
-                &ast::Module::new(
+                &Module::new(
                     ModulePath::new(Package::new("M", ""), vec![]),
-                    ast::Export::new(Default::default()),
+                    Export::new(Default::default()),
                     vec![],
                     vec![],
                     vec![ast::ValueDefinition::new(
                         "x",
-                        ast::Number::new(42.0, SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
@@ -90,9 +90,9 @@ mod tests {
     fn qualify_names_in_imported_modules() {
         assert_eq!(
             NameQualifier::new(
-                &ast::Module::new(
+                &Module::new(
                     ModulePath::new(Package::new("M", ""), vec![]),
-                    ast::Export::new(Default::default()),
+                    Export::new(Default::default()),
                     vec![ast::ModuleInterface::new(
                         ModulePath::new(Package::new("A", ""), vec!["B".into()]),
                         Default::default(),
@@ -106,7 +106,7 @@ mod tests {
                     vec![],
                     vec![ast::ValueDefinition::new(
                         "x",
-                        ast::Variable::new("B.y", SourceInformation::dummy()),
+                        Variable::new("B.y", SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )

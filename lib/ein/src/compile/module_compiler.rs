@@ -1,18 +1,18 @@
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
-use crate::ast;
+use crate::ast::*;
 use crate::types::Type;
 
 pub struct ModuleCompiler<'a> {
-    module: &'a ast::Module,
+    module: &'a Module,
     expression_compiler: &'a ExpressionCompiler<'a>,
     type_compiler: &'a TypeCompiler<'a>,
 }
 
 impl<'a> ModuleCompiler<'a> {
     pub fn new(
-        module: &'a ast::Module,
+        module: &'a Module,
         expression_compiler: &'a ExpressionCompiler,
         type_compiler: &'a TypeCompiler,
     ) -> Self {
@@ -44,10 +44,10 @@ impl<'a> ModuleCompiler<'a> {
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
-                    ast::Definition::FunctionDefinition(function_definition) => Ok(self
+                    Definition::FunctionDefinition(function_definition) => Ok(self
                         .compile_function_definition(function_definition)?
                         .into()),
-                    ast::Definition::ValueDefinition(value_definition) => {
+                    Definition::ValueDefinition(value_definition) => {
                         Ok(self.compile_value_definition(value_definition)?.into())
                     }
                 })
@@ -68,7 +68,7 @@ impl<'a> ModuleCompiler<'a> {
 
     fn compile_type_definition(
         &self,
-        type_definition: &ast::TypeDefinition,
+        type_definition: &TypeDefinition,
     ) -> Result<Vec<ssf::ir::Definition>, CompileError> {
         if let Type::Record(record_type) = type_definition.type_() {
             let algebraic_type = self.type_compiler.compile_record(record_type)?;
@@ -105,7 +105,7 @@ impl<'a> ModuleCompiler<'a> {
 
     fn compile_function_definition(
         &self,
-        function_definition: &ast::FunctionDefinition,
+        function_definition: &FunctionDefinition,
     ) -> Result<ssf::ir::FunctionDefinition, CompileError> {
         let core_type = self
             .type_compiler
@@ -127,7 +127,7 @@ impl<'a> ModuleCompiler<'a> {
 
     fn compile_value_definition(
         &self,
-        value_definition: &ast::ValueDefinition,
+        value_definition: &ValueDefinition,
     ) -> Result<ssf::ir::ValueDefinition, CompileError> {
         Ok(ssf::ir::ValueDefinition::new(
             value_definition.name(),
