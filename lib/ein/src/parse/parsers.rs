@@ -18,8 +18,8 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "case", "else", "export", "false", "if", "import", "in", "let", "none", "None", "Number", "of",
-    "then", "true", "type",
+    "Boolean", "case", "else", "export", "false", "if", "import", "in", "let", "none", "None",
+    "Number", "of", "then", "true", "type",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
