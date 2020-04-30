@@ -15,7 +15,7 @@ mod type_inference;
 mod union_tag_calculator;
 mod union_type_simplifier;
 
-use crate::ast;
+use crate::ast::*;
 use crate::path::ModulePath;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
@@ -33,7 +33,7 @@ const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
 const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
 const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
-pub fn compile(module: &ast::Module) -> Result<(Vec<u8>, ast::ModuleInterface), CompileError> {
+pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = RecordIdQualifier::new().qualify(module);
     let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
     let name_qualifier = NameQualifier::new(
@@ -92,7 +92,6 @@ fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::*;
     use crate::debug::*;
     use crate::types;
 
