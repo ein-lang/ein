@@ -105,12 +105,9 @@ impl<'a> TypeCompiler<'a> {
                     let type_ = self.reference_type_resolver.resolve(type_)?;
 
                     Ok(match &type_ {
-                        Type::None(_) => (
-                            self.union_tag_calculator.calculate(&type_)?,
-                            ssf::types::Constructor::unboxed(vec![]),
-                        ),
                         Type::Boolean(_)
                         | Type::Function(_)
+                        | Type::None(_)
                         | Type::Number(_)
                         | Type::Record(_) => (
                             self.union_tag_calculator.calculate(&type_)?,
@@ -396,7 +393,10 @@ mod tests {
                         ),
                         (
                             5752548472714560345,
-                            ssf::types::Constructor::unboxed(vec![])
+                            ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
+                                vec![ssf::types::Constructor::unboxed(vec![])]
+                            )
+                            .into()])
                         )
                     ]
                     .into_iter()
@@ -438,7 +438,10 @@ mod tests {
                         ),
                         (
                             5752548472714560345,
-                            ssf::types::Constructor::unboxed(vec![])
+                            ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
+                                vec![ssf::types::Constructor::unboxed(vec![])]
+                            )
+                            .into()])
                         )
                     ]
                     .into_iter()

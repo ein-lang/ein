@@ -164,24 +164,18 @@ impl<'a> ExpressionCompiler<'a> {
                 let argument = self.compile(coercion.argument())?;
 
                 Ok(match &from_type {
-                    Type::None(_) => ssf::ir::ConstructorApplication::new(
+                    Type::Boolean(_)
+                    | Type::Function(_)
+                    | Type::None(_)
+                    | Type::Number(_)
+                    | Type::Record(_) => ssf::ir::ConstructorApplication::new(
                         ssf::ir::Constructor::new(
                             to_type,
                             self.union_tag_calculator.calculate(&from_type)?,
                         ),
-                        vec![],
+                        vec![argument],
                     )
                     .into(),
-                    Type::Boolean(_) | Type::Function(_) | Type::Number(_) | Type::Record(_) => {
-                        ssf::ir::ConstructorApplication::new(
-                            ssf::ir::Constructor::new(
-                                to_type,
-                                self.union_tag_calculator.calculate(&from_type)?,
-                            ),
-                            vec![argument],
-                        )
-                        .into()
-                    }
                     Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
                     Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 })
