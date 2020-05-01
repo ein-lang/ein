@@ -2,10 +2,11 @@ use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
+use super::super::union_type_simplifier::UnionTypeSimplifier;
 use super::typed_meta_desugarer::TypedDesugarer;
 use crate::ast::*;
 use crate::debug::SourceInformation;
-use crate::types::Type;
+use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -13,6 +14,7 @@ pub struct TypeCoercionDesugarer<'a> {
     reference_type_resolver: &'a ReferenceTypeResolver,
     type_equality_checker: &'a TypeEqualityChecker<'a>,
     expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
+    union_type_simplifier: &'a UnionTypeSimplifier<'a>,
 }
 
 impl<'a> TypeCoercionDesugarer<'a> {
@@ -20,11 +22,13 @@ impl<'a> TypeCoercionDesugarer<'a> {
         reference_type_resolver: &'a ReferenceTypeResolver,
         type_equality_checker: &'a TypeEqualityChecker<'a>,
         expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
+        union_type_simplifier: &'a UnionTypeSimplifier<'a>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
             expression_type_extractor,
+            union_type_simplifier,
         }
     }
 
@@ -187,6 +191,37 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
                 )
                 .into())
             }
+            Expression::Operation(operation) => {
+                let argument_type =
+                    self.union_type_simplifier
+                        .simplify_union(&types::Union::new(
+                            vec![
+                                self.expression_type_extractor
+                                    .extract(operation.lhs(), variables)?,
+                                self.expression_type_extractor
+                                    .extract(operation.rhs(), variables)?,
+                            ],
+                            operation.source_information().clone(),
+                        ))?;
+
+                Ok(Operation::new(
+                    operation.operator(),
+                    self.coerce_type(
+                        operation.lhs(),
+                        &argument_type,
+                        operation.source_information().clone(),
+                        variables,
+                    )?,
+                    self.coerce_type(
+                        operation.rhs(),
+                        &argument_type,
+                        operation.source_information().clone(),
+                        variables,
+                    )?,
+                    operation.source_information().clone(),
+                )
+                .into())
+            }
             Expression::RecordConstruction(record_construction) => {
                 let type_ = self
                     .reference_type_resolver
@@ -218,7 +253,6 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
             | Expression::Let(_)
             | Expression::None(_)
             | Expression::Number(_)
-            | Expression::Operation(_)
             | Expression::Variable(_) => Ok(expression.clone()),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }
