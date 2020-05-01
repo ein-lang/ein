@@ -1282,7 +1282,7 @@ mod tests {
             let module = Module::from_definitions(vec![ValueDefinition::new(
                 "x",
                 Operation::new(
-                    Operator::Equal,
+                    Operator::LessThan,
                     Number::new(42.0, SourceInformation::dummy()),
                     Number::new(42.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -1291,6 +1291,39 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn infer_types_of_equal_operation() {
+            let record_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![ValueDefinition::new(
+                    "x",
+                    Operation::new(
+                        Operator::Equal,
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            Default::default(),
+                            SourceInformation::dummy(),
+                        ),
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            Default::default(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            );
 
             assert_eq!(infer_types(&module), Ok(module));
         }
