@@ -320,74 +320,79 @@ mod tests {
         );
     }
 
-    #[test]
-    fn compile_arithmetic_operation() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+    mod operation {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
-                &Operation::new(
-                    Operator::Add,
-                    Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(2.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
+        #[test]
+        fn compile_arithmetic_operation() {
+            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+
+            assert_eq!(
+                ExpressionCompiler::new(
+                    &reference_type_resolver,
+                    &union_tag_calculator,
+                    &type_compiler
                 )
-                .into(),
-            ),
-            Ok(ssf::ir::Operation::new(ssf::ir::Operator::Add, 1.0, 2.0).into())
-        );
-    }
+                .compile(
+                    &Operation::new(
+                        Operator::Add,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(2.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                ),
+                Ok(ssf::ir::Operation::new(ssf::ir::Operator::Add, 1.0, 2.0).into())
+            );
+        }
 
-    #[test]
-    fn compile_comparison_operation() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        #[test]
+        fn compile_comparison_operation() {
+            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
 
-        assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
-                &Operation::new(
-                    Operator::Equal,
-                    Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(2.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
+            assert_eq!(
+                ExpressionCompiler::new(
+                    &reference_type_resolver,
+                    &union_tag_calculator,
+                    &type_compiler
                 )
-                .into(),
-            ),
-            Ok(ssf::ir::PrimitiveCase::new(
-                ssf::ir::Operation::new(ssf::ir::Operator::Equal, 1.0, 2.0),
-                vec![
-                    ssf::ir::PrimitiveAlternative::new(
-                        ssf::ir::Primitive::Integer8(0),
-                        ssf::ir::ConstructorApplication::new(
-                            ssf::ir::Constructor::new(type_compiler.compile_boolean(), 0),
-                            vec![],
+                .compile(
+                    &Operation::new(
+                        Operator::Equal,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(2.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                ),
+                Ok(ssf::ir::PrimitiveCase::new(
+                    ssf::ir::Operation::new(ssf::ir::Operator::Equal, 1.0, 2.0),
+                    vec![
+                        ssf::ir::PrimitiveAlternative::new(
+                            ssf::ir::Primitive::Integer8(0),
+                            ssf::ir::ConstructorApplication::new(
+                                ssf::ir::Constructor::new(type_compiler.compile_boolean(), 0),
+                                vec![],
+                            ),
                         ),
-                    ),
-                    ssf::ir::PrimitiveAlternative::new(
-                        ssf::ir::Primitive::Integer8(1),
-                        ssf::ir::ConstructorApplication::new(
-                            ssf::ir::Constructor::new(type_compiler.compile_boolean(), 1),
-                            vec![],
+                        ssf::ir::PrimitiveAlternative::new(
+                            ssf::ir::Primitive::Integer8(1),
+                            ssf::ir::ConstructorApplication::new(
+                                ssf::ir::Constructor::new(type_compiler.compile_boolean(), 1),
+                                vec![],
+                            ),
                         ),
-                    ),
-                ],
-                None,
-            )
-            .into())
-        );
+                    ],
+                    None,
+                )
+                .into())
+            );
+        }
     }
 
     #[test]
