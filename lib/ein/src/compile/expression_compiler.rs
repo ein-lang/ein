@@ -350,7 +350,7 @@ mod tests {
         }
 
         #[test]
-        fn compile_comparison_operation() {
+        fn compile_number_comparison_operation() {
             let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
             let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
             let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
@@ -363,7 +363,7 @@ mod tests {
                 )
                 .compile(
                     &Operation::new(
-                        Operator::Equal,
+                        Operator::LessThan,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(2.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
@@ -371,7 +371,7 @@ mod tests {
                     .into(),
                 ),
                 Ok(ssf::ir::PrimitiveCase::new(
-                    ssf::ir::Operation::new(ssf::ir::Operator::Equal, 1.0, 2.0),
+                    ssf::ir::Operation::new(ssf::ir::Operator::LessThan, 1.0, 2.0),
                     vec![
                         ssf::ir::PrimitiveAlternative::new(
                             ssf::ir::Primitive::Integer8(0),
