@@ -193,34 +193,43 @@ impl<'a> ConstraintCollector<'a> {
             Expression::Number(number) => {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
-            Expression::Operation(operation) => Ok(match operation.operator() {
-                Operator::Add
-                | Operator::Subtract
-                | Operator::Multiply
-                | Operator::Divide
-                | Operator::LessThan
-                | Operator::LessThanOrEqual
-                | Operator::GreaterThan
-                | Operator::GreaterThanOrEqual => {
-                    let number_type = types::Number::new(operation.source_information().clone());
+            Expression::Operation(operation) => {
+                let lhs = self.infer_expression(operation.lhs(), variables)?;
+                let rhs = self.infer_expression(operation.rhs(), variables)?;
 
-                    let lhs = self.infer_expression(operation.lhs(), variables)?;
-                    self.subsumption_set.add(lhs, number_type.clone());
-                    let rhs = self.infer_expression(operation.rhs(), variables)?;
-                    self.subsumption_set.add(rhs, number_type.clone());
+                self.subsumption_set
+                    .add(lhs.clone(), operation.type_().clone());
+                self.subsumption_set
+                    .add(rhs.clone(), operation.type_().clone());
 
-                    match operation.operator() {
-                        Operator::Add
-                        | Operator::Subtract
-                        | Operator::Multiply
-                        | Operator::Divide => number_type.into(),
-                        _ => types::Boolean::new(operation.source_information().clone()).into(),
+                Ok(match operation.operator() {
+                    Operator::Add
+                    | Operator::Subtract
+                    | Operator::Multiply
+                    | Operator::Divide
+                    | Operator::LessThan
+                    | Operator::LessThanOrEqual
+                    | Operator::GreaterThan
+                    | Operator::GreaterThanOrEqual => {
+                        let number_type =
+                            types::Number::new(operation.source_information().clone());
+
+                        self.subsumption_set.add(lhs, number_type.clone());
+                        self.subsumption_set.add(rhs, number_type.clone());
+
+                        match operation.operator() {
+                            Operator::Add
+                            | Operator::Subtract
+                            | Operator::Multiply
+                            | Operator::Divide => number_type.into(),
+                            _ => types::Boolean::new(operation.source_information().clone()).into(),
+                        }
                     }
-                }
-                Operator::Equal | Operator::NotEqual => {
-                    types::Boolean::new(operation.source_information().clone()).into()
-                }
-            }),
+                    Operator::Equal | Operator::NotEqual => {
+                        types::Boolean::new(operation.source_information().clone()).into()
+                    }
+                })
+            }
             Expression::RecordConstruction(record) => {
                 let type_ = self
                     .reference_type_resolver
