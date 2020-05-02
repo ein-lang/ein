@@ -7,7 +7,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordUpdate {
     type_: types::Reference,
-    argument: Box<Expression>,
+    argument: Rc<Expression>,
     elements: BTreeMap<String, Expression>,
     source_information: Rc<SourceInformation>,
 }
@@ -21,7 +21,7 @@ impl RecordUpdate {
     ) -> Self {
         Self {
             type_,
-            argument: Box::new(argument.into()),
+            argument: Rc::new(argument.into()),
             elements,
             source_information: source_information.into(),
         }

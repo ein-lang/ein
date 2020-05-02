@@ -3,29 +3,27 @@ use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
 use crate::ast::*;
 use crate::types::Type;
+use std::rc::Rc;
 
-pub struct ModuleCompiler<'a> {
-    module: &'a Module,
-    expression_compiler: &'a ExpressionCompiler<'a>,
-    type_compiler: &'a TypeCompiler<'a>,
+pub struct ModuleCompiler {
+    expression_compiler: Rc<ExpressionCompiler>,
+    type_compiler: Rc<TypeCompiler>,
 }
 
-impl<'a> ModuleCompiler<'a> {
+impl ModuleCompiler {
     pub fn new(
-        module: &'a Module,
-        expression_compiler: &'a ExpressionCompiler,
-        type_compiler: &'a TypeCompiler,
+        expression_compiler: Rc<ExpressionCompiler>,
+        type_compiler: Rc<TypeCompiler>,
     ) -> Self {
         Self {
-            module,
             expression_compiler,
             type_compiler,
         }
     }
 
-    pub fn compile(&self) -> Result<ssf::ir::Module, CompileError> {
+    pub fn compile(&self, module: &Module) -> Result<ssf::ir::Module, CompileError> {
         Ok(ssf::ir::Module::new(
-            self.module
+            module
                 .imported_modules()
                 .iter()
                 .flat_map(|module_interface| {
@@ -40,7 +38,7 @@ impl<'a> ModuleCompiler<'a> {
                         })
                 })
                 .collect::<Result<_, CompileError>>()?,
-            self.module
+            module
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
@@ -54,7 +52,7 @@ impl<'a> ModuleCompiler<'a> {
                 .collect::<Result<Vec<_>, CompileError>>()?
                 .into_iter()
                 .chain(
-                    self.module
+                    module
                         .type_definitions()
                         .iter()
                         .map(|type_definition| self.compile_type_definition(type_definition))

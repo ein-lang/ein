@@ -22,24 +22,24 @@ pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
 
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
-    let type_equality_checker = TypeEqualityChecker::new(&reference_type_resolver);
-    let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
-    let expression_type_extractor = ExpressionTypeExtractor::new(&union_type_simplifier);
+    let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+    let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+    let expression_type_extractor = ExpressionTypeExtractor::new(union_type_simplifier.clone());
 
     let module = TypedMetaDesugarer::new(FunctionTypeArgumentDesugarer::new(
-        &reference_type_resolver,
-        &type_equality_checker,
-        &expression_type_extractor,
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+        expression_type_extractor.clone(),
     ))
     .desugar(module)?;
 
     let module = PartialApplicationDesugarer::new().desugar(&module)?;
 
     TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
-        &reference_type_resolver,
-        &type_equality_checker,
-        &expression_type_extractor,
-        &union_type_simplifier,
+        reference_type_resolver,
+        type_equality_checker,
+        expression_type_extractor,
+        union_type_simplifier,
     ))
     .desugar(&module)
 }

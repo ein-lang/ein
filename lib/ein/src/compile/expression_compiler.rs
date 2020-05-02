@@ -1,27 +1,33 @@
+use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
 use crate::types::Type;
+use std::rc::Rc;
 
-pub struct ExpressionCompiler<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
-    union_tag_calculator: &'a UnionTagCalculator<'a>,
-    type_compiler: &'a TypeCompiler<'a>,
+pub struct ExpressionCompiler {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    union_tag_calculator: Rc<UnionTagCalculator>,
+    type_compiler: Rc<TypeCompiler>,
+    boolean_compiler: Rc<BooleanCompiler>,
 }
 
-impl<'a> ExpressionCompiler<'a> {
+impl ExpressionCompiler {
     pub fn new(
-        reference_type_resolver: &'a ReferenceTypeResolver,
-        union_tag_calculator: &'a UnionTagCalculator<'a>,
-        type_compiler: &'a TypeCompiler<'a>,
-    ) -> Self {
+        reference_type_resolver: Rc<ReferenceTypeResolver>,
+        union_tag_calculator: Rc<UnionTagCalculator>,
+        type_compiler: Rc<TypeCompiler>,
+        boolean_compiler: Rc<BooleanCompiler>,
+    ) -> Rc<Self> {
         Self {
             reference_type_resolver,
             union_tag_calculator,
             type_compiler,
+            boolean_compiler,
         }
+        .into()
     }
 
     pub fn compile(&self, expression: &Expression) -> Result<ssf::ir::Expression, CompileError> {
@@ -45,7 +51,9 @@ impl<'a> ExpressionCompiler<'a> {
                 )
                 .into())
             }
-            Expression::Boolean(boolean) => Ok(self.compile_boolean(boolean.value()).into()),
+            Expression::Boolean(boolean) => {
+                Ok(self.boolean_compiler.compile(boolean.value()).into())
+            }
             Expression::Case(case) => Ok(ssf::ir::AlgebraicCase::new(
                 self.compile(case.argument())?,
                 case.alternatives()
@@ -108,21 +116,9 @@ impl<'a> ExpressionCompiler<'a> {
                     | Operator::LessThan
                     | Operator::LessThanOrEqual
                     | Operator::GreaterThan
-                    | Operator::GreaterThanOrEqual => ssf::ir::PrimitiveCase::new(
-                        compiled,
-                        vec![
-                            ssf::ir::PrimitiveAlternative::new(
-                                ssf::ir::Primitive::Integer8(0),
-                                self.compile_boolean(false),
-                            ),
-                            ssf::ir::PrimitiveAlternative::new(
-                                ssf::ir::Primitive::Integer8(1),
-                                self.compile_boolean(true),
-                            ),
-                        ],
-                        None,
-                    )
-                    .into(),
+                    | Operator::GreaterThanOrEqual => {
+                        self.boolean_compiler.compile_conversion(compiled)
+                    }
                 })
             }
             Expression::RecordConstruction(record) => Ok(ssf::ir::ConstructorApplication::new(
@@ -248,17 +244,11 @@ impl<'a> ExpressionCompiler<'a> {
             self.compile(let_.expression())?,
         ))
     }
-
-    fn compile_boolean(&self, value: bool) -> ssf::ir::ConstructorApplication {
-        ssf::ir::ConstructorApplication::new(
-            ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), value as u64),
-            vec![],
-        )
-    }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::super::boolean_compiler::BooleanCompiler;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::type_compiler::TypeCompiler;
     use super::super::union_tag_calculator::UnionTagCalculator;
@@ -267,21 +257,42 @@ mod tests {
     use crate::debug::SourceInformation;
     use crate::types;
     use pretty_assertions::assert_eq;
+    use std::rc::Rc;
+
+    fn create_expression_compiler(
+        module: &Module,
+    ) -> (
+        Rc<ExpressionCompiler>,
+        Rc<TypeCompiler>,
+        Rc<UnionTagCalculator>,
+    ) {
+        let reference_type_resolver = ReferenceTypeResolver::new(&module);
+        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+        let type_compiler = TypeCompiler::new(
+            reference_type_resolver.clone(),
+            union_tag_calculator.clone(),
+        );
+        let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
+
+        (
+            ExpressionCompiler::new(
+                reference_type_resolver,
+                union_tag_calculator.clone(),
+                type_compiler.clone(),
+                boolean_compiler,
+            ),
+            type_compiler,
+            union_tag_calculator,
+        )
+    }
 
     #[test]
     fn compile_non_variable_function_applications() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, type_compiler, _) = create_expression_compiler(&Module::dummy());
         let boolean_type = type_compiler.compile_boolean();
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &Application::new(
                     If::new(
                         Boolean::new(true, SourceInformation::dummy()),
@@ -326,17 +337,10 @@ mod tests {
 
         #[test]
         fn compile_arithmetic_operation() {
-            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+            let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
             assert_eq!(
-                ExpressionCompiler::new(
-                    &reference_type_resolver,
-                    &union_tag_calculator,
-                    &type_compiler
-                )
-                .compile(
+                expression_compiler.compile(
                     &Operation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
@@ -351,17 +355,11 @@ mod tests {
 
         #[test]
         fn compile_number_comparison_operation() {
-            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+            let (expression_compiler, type_compiler, _) =
+                create_expression_compiler(&Module::dummy());
 
             assert_eq!(
-                ExpressionCompiler::new(
-                    &reference_type_resolver,
-                    &union_tag_calculator,
-                    &type_compiler
-                )
-                .compile(
+                expression_compiler.compile(
                     &Operation::new(
                         Operator::LessThan,
                         Number::new(1.0, SourceInformation::dummy()),
@@ -397,17 +395,10 @@ mod tests {
 
     #[test]
     fn compile_let_values() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &Let::new(
                     vec![ValueDefinition::new(
                         "x",
@@ -434,17 +425,10 @@ mod tests {
 
     #[test]
     fn compile_let_functions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -477,17 +461,10 @@ mod tests {
 
     #[test]
     fn compile_let_functions_with_recursive_functions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -527,17 +504,10 @@ mod tests {
 
     #[test]
     fn compile_nested_let_functions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
@@ -592,17 +562,10 @@ mod tests {
 
     #[test]
     fn compile_let_values_with_free_variables() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &Let::new(
                     vec![ValueDefinition::new(
                         "y",
@@ -651,18 +614,11 @@ mod tests {
 
     #[test]
     fn compile_if_expressions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, type_compiler, _) = create_expression_compiler(&Module::dummy());
         let boolean_type = type_compiler.compile_boolean();
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &If::new(
                     Boolean::new(true, SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
@@ -696,9 +652,7 @@ mod tests {
 
     #[test]
     fn compile_case_expressions() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+        let (expression_compiler, type_compiler, _) = create_expression_compiler(&Module::dummy());
 
         let boolean_type = type_compiler.compile_boolean();
         let union_type = types::Union::new(
@@ -711,12 +665,7 @@ mod tests {
         let algebraic_type = type_compiler.compile_union(&union_type).unwrap();
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &Case::with_type(
                     union_type,
                     "flag",
@@ -757,21 +706,14 @@ mod tests {
             .collect(),
             SourceInformation::dummy(),
         );
-        let reference_type_resolver =
-            ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
+        let (expression_compiler, _, _) =
+            create_expression_compiler(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", type_.clone())],
                 vec![],
             ));
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-        let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
 
         assert_eq!(
-            ExpressionCompiler::new(
-                &reference_type_resolver,
-                &union_tag_calculator,
-                &type_compiler
-            )
-            .compile(
+            expression_compiler.compile(
                 &RecordConstruction::new(
                     types::Reference::new("Foo", SourceInformation::dummy()),
                     vec![(
@@ -803,9 +745,9 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_boolean() {
-            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+            let (expression_compiler, type_compiler, union_tag_calculator) =
+                create_expression_compiler(&Module::dummy());
+
             let union_type = types::Union::new(
                 vec![
                     types::Boolean::new(SourceInformation::dummy()).into(),
@@ -815,12 +757,7 @@ mod tests {
             );
 
             assert_eq!(
-                ExpressionCompiler::new(
-                    &reference_type_resolver,
-                    &union_tag_calculator,
-                    &type_compiler
-                )
-                .compile(
+                expression_compiler.compile(
                     &TypeCoercion::new(
                         Boolean::new(true, SourceInformation::dummy()),
                         types::Boolean::new(SourceInformation::dummy()),
@@ -854,9 +791,8 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_record() {
-            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+            let (expression_compiler, type_compiler, union_tag_calculator) =
+                create_expression_compiler(&Module::dummy());
 
             let record_type =
                 types::Record::new("Foo", Default::default(), SourceInformation::dummy());
@@ -869,12 +805,7 @@ mod tests {
             );
 
             assert_eq!(
-                ExpressionCompiler::new(
-                    &reference_type_resolver,
-                    &union_tag_calculator,
-                    &type_compiler
-                )
-                .compile(
+                expression_compiler.compile(
                     &TypeCoercion::new(
                         Variable::new("x", SourceInformation::dummy()),
                         record_type.clone(),
@@ -902,9 +833,8 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_union() {
-            let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-            let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+            let (expression_compiler, type_compiler, _) =
+                create_expression_compiler(&Module::dummy());
 
             let lower_union_type = types::Union::new(
                 vec![
@@ -923,12 +853,7 @@ mod tests {
             );
 
             assert_eq!(
-                ExpressionCompiler::new(
-                    &reference_type_resolver,
-                    &union_tag_calculator,
-                    &type_compiler
-                )
-                .compile(
+                expression_compiler.compile(
                     &TypeCoercion::new(
                         Variable::new("x", SourceInformation::dummy()),
                         lower_union_type.clone(),

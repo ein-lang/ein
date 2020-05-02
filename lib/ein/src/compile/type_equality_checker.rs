@@ -1,16 +1,18 @@
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::types::Type;
+use std::rc::Rc;
 
-pub struct TypeEqualityChecker<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
+pub struct TypeEqualityChecker {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
 }
 
-impl<'a> TypeEqualityChecker<'a> {
-    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
+impl TypeEqualityChecker {
+    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Rc<Self> {
         Self {
             reference_type_resolver,
         }
+        .into()
     }
 
     pub fn equal(&self, one: &Type, other: &Type) -> Result<bool, CompileError> {
@@ -52,7 +54,7 @@ mod tests {
             vec![],
         );
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
-        let type_equality_checker = TypeEqualityChecker::new(&reference_type_resolver);
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver);
 
         for ((one, other), result) in &[
             (

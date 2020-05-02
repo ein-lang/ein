@@ -23,9 +23,10 @@ pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
     })?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
-    let subsumption_set = ConstraintCollector::new(&reference_type_resolver).collect(&module)?;
-    let substitutions = ConstraintSolver::new(&reference_type_resolver).solve(subsumption_set)?;
+    let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+    let subsumption_set =
+        ConstraintCollector::new(reference_type_resolver.clone()).collect(&module)?;
+    let substitutions = ConstraintSolver::new(reference_type_resolver).solve(subsumption_set)?;
 
     module
         .convert_types(&mut |type_| -> Result<_, CompileError> {

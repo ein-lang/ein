@@ -1,3 +1,4 @@
+mod boolean_compiler;
 mod desugar;
 mod error;
 mod expression_compiler;
@@ -17,6 +18,7 @@ mod union_type_simplifier;
 
 use crate::ast::*;
 use crate::path::ModulePath;
+use boolean_compiler::BooleanCompiler;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
@@ -47,18 +49,23 @@ pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileErr
     );
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
-    let type_compiler = TypeCompiler::new(&reference_type_resolver, &union_tag_calculator);
+    let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+    let type_compiler = TypeCompiler::new(
+        reference_type_resolver.clone(),
+        union_tag_calculator.clone(),
+    );
+    let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let expression_compiler = ExpressionCompiler::new(
-        &reference_type_resolver,
-        &union_tag_calculator,
-        &type_compiler,
+        reference_type_resolver,
+        union_tag_calculator,
+        type_compiler.clone(),
+        boolean_compiler,
     );
 
     Ok((
         ssf_llvm::compile(
             &name_qualifier.qualify_core_module(
-                &ModuleCompiler::new(&module, &expression_compiler, &type_compiler).compile()?,
+                &ModuleCompiler::new(expression_compiler, type_compiler).compile(&module)?,
             ),
             &ssf_llvm::CompileConfiguration::new(
                 if module

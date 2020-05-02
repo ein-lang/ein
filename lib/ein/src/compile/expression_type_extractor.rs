@@ -3,16 +3,18 @@ use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
+use std::rc::Rc;
 
-pub struct ExpressionTypeExtractor<'a> {
-    union_type_simplifier: &'a UnionTypeSimplifier<'a>,
+pub struct ExpressionTypeExtractor {
+    union_type_simplifier: Rc<UnionTypeSimplifier>,
 }
 
-impl<'a> ExpressionTypeExtractor<'a> {
-    pub fn new(union_type_simplifier: &'a UnionTypeSimplifier<'a>) -> Self {
+impl ExpressionTypeExtractor {
+    pub fn new(union_type_simplifier: Rc<UnionTypeSimplifier>) -> Rc<Self> {
         Self {
             union_type_simplifier,
         }
+        .into()
     }
 
     pub fn extract(
@@ -112,10 +114,10 @@ mod tests {
     #[test]
     fn extract_type_of_case_expression() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
+        let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver);
 
         assert_eq!(
-            ExpressionTypeExtractor::new(&union_type_simplifier).extract(
+            ExpressionTypeExtractor::new(union_type_simplifier).extract(
                 &Case::new(
                     "",
                     None::new(SourceInformation::dummy()),

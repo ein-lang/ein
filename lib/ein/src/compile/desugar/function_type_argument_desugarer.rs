@@ -10,18 +10,18 @@ use crate::types::Type;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct FunctionTypeArgumentDesugarer<'a> {
+pub struct FunctionTypeArgumentDesugarer {
     name_generator: NameGenerator,
-    reference_type_resolver: &'a ReferenceTypeResolver,
-    type_equality_checker: &'a TypeEqualityChecker<'a>,
-    expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    type_equality_checker: Rc<TypeEqualityChecker>,
+    expression_type_extractor: Rc<ExpressionTypeExtractor>,
 }
 
-impl<'a> FunctionTypeArgumentDesugarer<'a> {
+impl FunctionTypeArgumentDesugarer {
     pub fn new(
-        reference_type_resolver: &'a ReferenceTypeResolver,
-        type_equality_checker: &'a TypeEqualityChecker<'a>,
-        expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
+        reference_type_resolver: Rc<ReferenceTypeResolver>,
+        type_equality_checker: Rc<TypeEqualityChecker>,
+        expression_type_extractor: Rc<ExpressionTypeExtractor>,
     ) -> Self {
         FunctionTypeArgumentDesugarer {
             name_generator: NameGenerator::new("fta_function_"),
@@ -70,7 +70,7 @@ impl<'a> FunctionTypeArgumentDesugarer<'a> {
     }
 }
 
-impl<'a> TypedDesugarer for FunctionTypeArgumentDesugarer<'a> {
+impl TypedDesugarer for FunctionTypeArgumentDesugarer {
     fn desugar_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,

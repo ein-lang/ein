@@ -10,19 +10,19 @@ use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct TypeCoercionDesugarer<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
-    type_equality_checker: &'a TypeEqualityChecker<'a>,
-    expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
-    union_type_simplifier: &'a UnionTypeSimplifier<'a>,
+pub struct TypeCoercionDesugarer {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    type_equality_checker: Rc<TypeEqualityChecker>,
+    expression_type_extractor: Rc<ExpressionTypeExtractor>,
+    union_type_simplifier: Rc<UnionTypeSimplifier>,
 }
 
-impl<'a> TypeCoercionDesugarer<'a> {
+impl TypeCoercionDesugarer {
     pub fn new(
-        reference_type_resolver: &'a ReferenceTypeResolver,
-        type_equality_checker: &'a TypeEqualityChecker<'a>,
-        expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
-        union_type_simplifier: &'a UnionTypeSimplifier<'a>,
+        reference_type_resolver: Rc<ReferenceTypeResolver>,
+        type_equality_checker: Rc<TypeEqualityChecker>,
+        expression_type_extractor: Rc<ExpressionTypeExtractor>,
+        union_type_simplifier: Rc<UnionTypeSimplifier>,
     ) -> Self {
         Self {
             reference_type_resolver,
@@ -58,7 +58,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
     }
 }
 
-impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
+impl TypedDesugarer for TypeCoercionDesugarer {
     fn desugar_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,

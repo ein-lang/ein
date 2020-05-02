@@ -4,13 +4,14 @@ use super::subsumption_set::SubsumptionSet;
 use super::variable_constraint_set::VariableConstraintSet;
 use crate::types::Type;
 use std::collections::HashMap;
+use std::rc::Rc;
 
-pub struct ConstraintSolver<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
+pub struct ConstraintSolver {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
 }
 
-impl<'a> ConstraintSolver<'a> {
-    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
+impl ConstraintSolver {
+    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Self {
         Self {
             reference_type_resolver,
         }

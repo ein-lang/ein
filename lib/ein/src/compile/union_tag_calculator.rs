@@ -3,16 +3,18 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::types::Type;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::rc::Rc;
 
-pub struct UnionTagCalculator<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
+pub struct UnionTagCalculator {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
 }
 
-impl<'a> UnionTagCalculator<'a> {
-    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
+impl UnionTagCalculator {
+    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Rc<Self> {
         Self {
             reference_type_resolver,
         }
+        .into()
     }
 
     pub fn calculate(&self, type_: &Type) -> Result<u64, CompileError> {
