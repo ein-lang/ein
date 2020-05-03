@@ -10,6 +10,9 @@ use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
 
+/// TypeCoercionDesugarer desugars value-to-union and function-to-union type
+/// coercions.
+/// Note that it does not desugar function-to-function ones.
 pub struct TypeCoercionDesugarer {
     reference_type_resolver: Rc<ReferenceTypeResolver>,
     type_equality_checker: Rc<TypeEqualityChecker>,
