@@ -139,7 +139,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
                 .into())
             }
             Expression::Boolean(_)
-            | Expression::Case(_)
+            | Expression::Case(_) // TODO Desugar case expression arguments.
             | Expression::If(_)
             | Expression::Let(_)
             | Expression::None(_)
