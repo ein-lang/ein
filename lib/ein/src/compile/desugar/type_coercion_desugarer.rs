@@ -253,6 +253,7 @@ impl TypedDesugarer for TypeCoercionDesugarer {
             | Expression::Let(_)
             | Expression::None(_)
             | Expression::Number(_)
+            | Expression::RecordElementOperation(_)
             | Expression::Variable(_) => Ok(expression.clone()),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }

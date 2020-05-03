@@ -260,6 +260,21 @@ impl ConstraintCollector {
 
                 Ok(record.type_().clone().into())
             }
+            Expression::RecordElementOperation(operation) => {
+                let type_ = self.reference_type_resolver.resolve(operation.type_())?;
+                let record_type = type_.to_record().ok_or_else(|| {
+                    CompileError::TypesNotMatched(
+                        operation.source_information().clone(),
+                        type_.source_information().clone(),
+                    )
+                })?;
+
+                let argument = self.infer_expression(operation.argument(), variables)?;
+                self.subsumption_set
+                    .add(argument, operation.type_().clone());
+
+                Ok(record_type.elements()[operation.key()].clone())
+            }
             Expression::Variable(variable) => variables
                 .get(variable.name())
                 .cloned()

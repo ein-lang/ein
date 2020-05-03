@@ -208,13 +208,17 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
                     .elements()
                     .iter()
                     .map(|(key, expression)| {
-                        Ok((
-                            key.clone(),
-                            self.desugar_expression(expression, &variables)?,
-                        ))
+                        Ok((key.clone(), self.desugar_expression(expression, variables)?))
                     })
                     .collect::<Result<_, CompileError>>()?,
                 record_construction.source_information().clone(),
+            )
+            .into(),
+            Expression::RecordElementOperation(operation) => RecordElementOperation::new(
+                operation.type_().clone(),
+                operation.key(),
+                self.desugar_expression(operation.argument(), variables)?,
+                operation.source_information().clone(),
             )
             .into(),
             Expression::Boolean(_)

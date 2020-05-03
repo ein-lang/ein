@@ -24,7 +24,10 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
-    let expression_type_extractor = ExpressionTypeExtractor::new(union_type_simplifier.clone());
+    let expression_type_extractor = ExpressionTypeExtractor::new(
+        reference_type_resolver.clone(),
+        union_type_simplifier.clone(),
+    );
 
     let module = TypedMetaDesugarer::new(FunctionTypeArgumentDesugarer::new(
         reference_type_resolver.clone(),

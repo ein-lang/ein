@@ -31,7 +31,7 @@ impl ExpressionCompiler {
     }
 
     pub fn compile(&self, expression: &Expression) -> Result<ssf::ir::Expression, CompileError> {
-        match expression {
+        Ok(match expression {
             Expression::Application(application) => {
                 let mut function = application.function();
                 let mut arguments = vec![application.argument()];
@@ -41,7 +41,7 @@ impl ExpressionCompiler {
                     arguments.push(application.argument());
                 }
 
-                Ok(ssf::ir::FunctionApplication::new(
+                ssf::ir::FunctionApplication::new(
                     self.compile(function)?,
                     arguments
                         .iter()
@@ -49,12 +49,10 @@ impl ExpressionCompiler {
                         .map(|argument| self.compile(argument))
                         .collect::<Result<_, _>>()?,
                 )
-                .into())
+                .into()
             }
-            Expression::Boolean(boolean) => {
-                Ok(self.boolean_compiler.compile(boolean.value()).into())
-            }
-            Expression::Case(case) => Ok(ssf::ir::AlgebraicCase::new(
+            Expression::Boolean(boolean) => self.boolean_compiler.compile(boolean.value()).into(),
+            Expression::Case(case) => ssf::ir::AlgebraicCase::new(
                 self.compile(case.argument())?,
                 case.alternatives()
                     .iter()
@@ -72,8 +70,8 @@ impl ExpressionCompiler {
                     .collect::<Result<_, CompileError>>()?,
                 None,
             )
-            .into()),
-            Expression::If(if_) => Ok(ssf::ir::AlgebraicCase::new(
+            .into(),
+            Expression::If(if_) => ssf::ir::AlgebraicCase::new(
                 self.compile(if_.condition())?,
                 vec![
                     ssf::ir::AlgebraicAlternative::new(
@@ -89,17 +87,17 @@ impl ExpressionCompiler {
                 ],
                 None,
             )
-            .into()),
+            .into(),
             Expression::Let(let_) => match let_.definitions()[0] {
-                Definition::FunctionDefinition(_) => Ok(self.compile_let_functions(let_)?.into()),
-                Definition::ValueDefinition(_) => Ok(self.compile_let_values(let_)?.into()),
+                Definition::FunctionDefinition(_) => self.compile_let_functions(let_)?.into(),
+                Definition::ValueDefinition(_) => self.compile_let_values(let_)?.into(),
             },
-            Expression::None(_) => Ok(ssf::ir::ConstructorApplication::new(
+            Expression::None(_) => ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
                 vec![],
             )
-            .into()),
-            Expression::Number(number) => Ok(ssf::ir::Primitive::Float64(number.value()).into()),
+            .into(),
+            Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
                 let compiled = ssf::ir::Operation::new(
                     operation.operator().into(),
@@ -107,7 +105,7 @@ impl ExpressionCompiler {
                     self.compile(operation.rhs())?,
                 );
 
-                Ok(match operation.operator() {
+                match operation.operator() {
                     Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
                         compiled.into()
                     }
@@ -119,9 +117,9 @@ impl ExpressionCompiler {
                     | Operator::GreaterThanOrEqual => {
                         self.boolean_compiler.compile_conversion(compiled)
                     }
-                })
+                }
             }
-            Expression::RecordConstruction(record) => Ok(ssf::ir::ConstructorApplication::new(
+            Expression::RecordConstruction(record) => ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(
                     self.type_compiler
                         .compile_reference(record.type_())?
@@ -137,7 +135,32 @@ impl ExpressionCompiler {
                     .map(|(_, expression)| self.compile(expression))
                     .collect::<Result<_, _>>()?,
             )
-            .into()),
+            .into(),
+            Expression::RecordElementOperation(operation) => ssf::ir::AlgebraicCase::new(
+                self.compile(operation.argument())?,
+                vec![ssf::ir::AlgebraicAlternative::new(
+                    ssf::ir::Constructor::new(
+                        self.type_compiler
+                            .compile(operation.type_())?
+                            .into_value()
+                            .unwrap()
+                            .into_algebraic()
+                            .unwrap(),
+                        0,
+                    ),
+                    self.reference_type_resolver
+                        .resolve(operation.type_())?
+                        .to_record()
+                        .unwrap()
+                        .elements()
+                        .keys()
+                        .map(|key| format!("${}", key))
+                        .collect(),
+                    ssf::ir::Variable::new(format!("${}", operation.key())),
+                )],
+                None,
+            )
+            .into(),
             Expression::TypeCoercion(coercion) => {
                 let from_type = self.reference_type_resolver.resolve(coercion.from())?;
                 let to_type = self
@@ -149,7 +172,7 @@ impl ExpressionCompiler {
                     .unwrap();
                 let argument = self.compile(coercion.argument())?;
 
-                Ok(match &from_type {
+                match &from_type {
                     Type::Boolean(_)
                     | Type::Function(_)
                     | Type::None(_)
@@ -164,11 +187,11 @@ impl ExpressionCompiler {
                     .into(),
                     Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
                     Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
-                })
+                }
             }
-            Expression::Variable(variable) => Ok(ssf::ir::Variable::new(variable.name()).into()),
+            Expression::Variable(variable) => ssf::ir::Variable::new(variable.name()).into(),
             Expression::RecordUpdate(_) => unreachable!(),
-        }
+        })
     }
 
     fn compile_let_functions(&self, let_: &Let) -> Result<ssf::ir::LetFunctions, CompileError> {

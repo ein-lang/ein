@@ -125,6 +125,9 @@ impl PartialApplicationDesugarer {
                 self.apply_arguments_recursively(let_.expression(), arguments),
             )
             .into(),
+            Expression::RecordElementOperation(operation) => {
+                self.apply_arguments(expression, arguments, operation.source_information())
+            }
             Expression::Variable(variable) => {
                 self.apply_arguments(expression, arguments, variable.source_information())
             }

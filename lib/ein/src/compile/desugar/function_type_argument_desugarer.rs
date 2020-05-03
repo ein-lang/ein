@@ -145,6 +145,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Operation(_)
+            | Expression::RecordElementOperation(_)
             | Expression::Variable(_) => Ok(expression.clone()),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }
