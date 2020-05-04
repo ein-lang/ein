@@ -72,7 +72,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn desugar_record_update_() {
+    fn desugar_record_update() {
         let record_type = types::Record::new(
             "Foo",
             vec![

@@ -1,5 +1,5 @@
 use crate::ast::*;
-use crate::types::{self, Type};
+use crate::types::Type;
 use std::collections::HashMap;
 
 pub struct ModuleEnvironmentCreator {}
@@ -11,22 +11,6 @@ impl ModuleEnvironmentCreator {
         for imported_module in module.imported_modules() {
             for (name, type_) in imported_module.variables() {
                 variables.insert(imported_module.path().qualify_name(name), type_.clone());
-            }
-        }
-
-        for type_definition in module.type_definitions() {
-            if let Type::Record(record) = type_definition.type_() {
-                for (key, type_) in record.elements() {
-                    variables.insert(
-                        format!("{}.{}", type_definition.name(), key),
-                        types::Function::new(
-                            record.clone(),
-                            type_.clone(),
-                            type_.source_information().clone(),
-                        )
-                        .into(),
-                    );
-                }
             }
         }
 

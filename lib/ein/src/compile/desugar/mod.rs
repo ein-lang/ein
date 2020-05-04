@@ -1,5 +1,6 @@
 mod function_type_argument_desugarer;
 mod partial_application_desugarer;
+mod record_element_function_desugarer;
 mod record_update_desugarer;
 mod type_coercion_desugarer;
 mod typed_meta_desugarer;
@@ -12,12 +13,13 @@ use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
+use record_element_function_desugarer::RecordElementFunctionDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
 use type_coercion_desugarer::TypeCoercionDesugarer;
 use typed_meta_desugarer::TypedMetaDesugarer;
 
 pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
-    RecordUpdateDesugarer::new().desugar(module)
+    RecordUpdateDesugarer::new().desugar(&RecordElementFunctionDesugarer::new().desugar(module))
 }
 
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
