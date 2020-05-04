@@ -40,11 +40,9 @@ impl RecordUpdateDesugarer {
                             .map(|(key, _)| {
                                 (
                                     key.clone(),
-                                    Application::new(
-                                        Variable::new(
-                                            format!("{}.{}", record_update.type_().name(), key),
-                                            source_information.clone(),
-                                        ),
+                                    RecordElementOperation::new(
+                                        record_update.type_().clone(),
+                                        key,
                                         Variable::new(&name, source_information.clone()),
                                         source_information.clone(),
                                     )
@@ -126,8 +124,9 @@ mod tests {
                             vec![
                                 (
                                     "foo".into(),
-                                    Application::new(
-                                        Variable::new("Foo.foo", SourceInformation::dummy()),
+                                    RecordElementOperation::new(
+                                        reference_type.clone(),
+                                        "foo",
                                         Variable::new(
                                             "record_update_argument_0",
                                             SourceInformation::dummy()
