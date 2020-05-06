@@ -207,7 +207,8 @@ impl TypedDesugarer for TypeCoercionDesugarer {
                             operation.source_information().clone(),
                         ))?;
 
-                Ok(Operation::new(
+                Ok(Operation::with_type(
+                    operation.type_().clone(),
                     operation.operator(),
                     self.coerce_type(
                         operation.lhs(),

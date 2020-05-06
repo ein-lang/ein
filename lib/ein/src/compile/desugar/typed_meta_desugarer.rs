@@ -195,7 +195,8 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
                 )
                 .into()
             }
-            Expression::Operation(operation) => Operation::new(
+            Expression::Operation(operation) => Operation::with_type(
+                operation.type_().clone(),
                 operation.operator(),
                 self.desugar_expression(operation.lhs(), &variables)?,
                 self.desugar_expression(operation.rhs(), &variables)?,
