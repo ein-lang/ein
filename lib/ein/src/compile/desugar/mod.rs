@@ -748,14 +748,14 @@ mod tests {
             Ok(create_module(
                 Case::with_type(
                     union_type.clone(),
-                    "equal_opreation_argument_0",
+                    "equal_operation_argument_0",
                     None::new(SourceInformation::dummy()),
                     vec![
                         Alternative::new(
                             types::None::new(SourceInformation::dummy()),
                             Case::with_type(
                                 union_type.clone(),
-                                "equal_opreation_argument_1",
+                                "equal_operation_argument_1",
                                 None::new(SourceInformation::dummy()),
                                 vec![
                                     Alternative::new(
@@ -774,7 +774,7 @@ mod tests {
                             types::Number::new(SourceInformation::dummy()),
                             Case::with_type(
                                 union_type.clone(),
-                                "equal_opreation_argument_1",
+                                "equal_operation_argument_1",
                                 None::new(SourceInformation::dummy()),
                                 vec![
                                     Alternative::new(
@@ -787,11 +787,11 @@ mod tests {
                                             types::Number::new(SourceInformation::dummy()),
                                             Operator::Equal,
                                             Variable::new(
-                                                "equal_opreation_argument_0",
+                                                "equal_operation_argument_0",
                                                 SourceInformation::dummy()
                                             ),
                                             Variable::new(
-                                                "equal_opreation_argument_1",
+                                                "equal_operation_argument_1",
                                                 SourceInformation::dummy()
                                             ),
                                             SourceInformation::dummy()

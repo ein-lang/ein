@@ -19,7 +19,7 @@ impl EqualOperationDesugarer {
         type_equality_checker: Rc<TypeEqualityChecker>,
     ) -> Self {
         Self {
-            name_generator: NameGenerator::new("equal_opreation_argument_"),
+            name_generator: NameGenerator::new("equal_operation_argument_"),
             reference_type_resolver,
             type_equality_checker,
         }
