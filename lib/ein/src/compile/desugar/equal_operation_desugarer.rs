@@ -70,11 +70,11 @@ impl EqualOperationDesugarer {
                     Boolean::new(true, source_information.clone()),
                     source_information.clone(),
                 ),
-                source_information.clone(),
+                source_information,
             )
             .into(),
-            Type::Function(_) => Boolean::new(false, source_information.clone()).into(),
-            Type::None(_) => Boolean::new(true, source_information.clone()).into(),
+            Type::Function(_) => Boolean::new(false, source_information).into(),
+            Type::None(_) => Boolean::new(true, source_information).into(),
             Type::Number(_) => Operation::with_type(
                 type_.clone(),
                 Operator::Equal,
@@ -161,8 +161,7 @@ impl EqualOperationDesugarer {
                                                     Boolean::new(false, source_information.clone())
                                                         .into()
                                                 },
-                                            )
-                                            .into())
+                                            ))
                                         })
                                         .collect::<Result<_, CompileError>>()?,
                                     source_information.clone(),
