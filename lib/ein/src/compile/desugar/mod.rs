@@ -1,5 +1,6 @@
 mod equal_operation_desugarer;
 mod function_type_argument_desugarer;
+mod not_equal_operation_desugarer;
 mod partial_application_desugarer;
 mod record_element_function_desugarer;
 mod record_update_desugarer;
@@ -14,6 +15,7 @@ use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use equal_operation_desugarer::EqualOperationDesugarer;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
+use not_equal_operation_desugarer::NotEqualOperationDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
 use record_element_function_desugarer::RecordElementFunctionDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
@@ -49,6 +51,8 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
         union_type_simplifier,
     ))
     .desugar(&module)?;
+
+    let module = NotEqualOperationDesugarer::new().desugar(&module)?;
 
     EqualOperationDesugarer::new(reference_type_resolver, type_equality_checker).desugar(&module)
 }
@@ -802,6 +806,47 @@ mod tests {
                             )
                         ),
                     ],
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ))
+        );
+    }
+
+    #[test]
+    fn desugar_not_equal_operation() {
+        let create_module = |expression: Expression| {
+            Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                expression,
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        };
+
+        assert_eq!(
+            desugar_with_types(&create_module(
+                Operation::with_type(
+                    types::Number::new(SourceInformation::dummy()),
+                    Operator::NotEqual,
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            )),
+            Ok(create_module(
+                If::new(
+                    Operation::with_type(
+                        types::Number::new(SourceInformation::dummy()),
+                        Operator::Equal,
+                        Number::new(42.0, SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into(),
