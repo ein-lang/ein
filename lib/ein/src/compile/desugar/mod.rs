@@ -1,5 +1,7 @@
+mod equal_operation_desugarer;
 mod function_type_argument_desugarer;
 mod partial_application_desugarer;
+mod record_element_function_desugarer;
 mod record_update_desugarer;
 mod type_coercion_desugarer;
 mod typed_meta_desugarer;
@@ -10,37 +12,45 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
+use equal_operation_desugarer::EqualOperationDesugarer;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
+use record_element_function_desugarer::RecordElementFunctionDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
 use type_coercion_desugarer::TypeCoercionDesugarer;
 use typed_meta_desugarer::TypedMetaDesugarer;
 
 pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
-    RecordUpdateDesugarer::new().desugar(module)
+    RecordUpdateDesugarer::new().desugar(&RecordElementFunctionDesugarer::new().desugar(module))
 }
 
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
-    let type_equality_checker = TypeEqualityChecker::new(&reference_type_resolver);
-    let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
-    let expression_type_extractor = ExpressionTypeExtractor::new(&union_type_simplifier);
+    let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+    let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+    let expression_type_extractor = ExpressionTypeExtractor::new(
+        reference_type_resolver.clone(),
+        union_type_simplifier.clone(),
+    );
 
     let module = TypedMetaDesugarer::new(FunctionTypeArgumentDesugarer::new(
-        &reference_type_resolver,
-        &type_equality_checker,
-        &expression_type_extractor,
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+        expression_type_extractor.clone(),
     ))
     .desugar(module)?;
 
     let module = PartialApplicationDesugarer::new().desugar(&module)?;
 
-    TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
-        &reference_type_resolver,
-        &type_equality_checker,
-        &expression_type_extractor,
+    let module = TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+        expression_type_extractor,
+        union_type_simplifier,
     ))
-    .desugar(&module)
+    .desugar(&module)?;
+
+    EqualOperationDesugarer::new(reference_type_resolver, type_equality_checker).desugar(&module)
 }
 
 #[cfg(test)]
@@ -700,6 +710,101 @@ mod tests {
                     SourceInformation::dummy()
                 )
                 .into()
+            ))
+        );
+    }
+
+    #[test]
+    fn desugar_union_equal_operation() {
+        let union_type = types::Union::new(
+            vec![
+                types::Number::new(SourceInformation::dummy()).into(),
+                types::None::new(SourceInformation::dummy()).into(),
+            ],
+            SourceInformation::dummy(),
+        );
+
+        let create_module = |expression: Expression| {
+            Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                expression,
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        };
+
+        assert_eq!(
+            desugar_with_types(&create_module(
+                Operation::with_type(
+                    union_type.clone(),
+                    Operator::Equal,
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            )),
+            Ok(create_module(
+                Case::with_type(
+                    union_type.clone(),
+                    "equal_operation_argument_0",
+                    None::new(SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            types::None::new(SourceInformation::dummy()),
+                            Case::with_type(
+                                union_type.clone(),
+                                "equal_operation_argument_1",
+                                None::new(SourceInformation::dummy()),
+                                vec![
+                                    Alternative::new(
+                                        types::None::new(SourceInformation::dummy()),
+                                        Boolean::new(true, SourceInformation::dummy())
+                                    ),
+                                    Alternative::new(
+                                        types::Number::new(SourceInformation::dummy()),
+                                        Boolean::new(false, SourceInformation::dummy())
+                                    ),
+                                ],
+                                SourceInformation::dummy(),
+                            )
+                        ),
+                        Alternative::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            Case::with_type(
+                                union_type.clone(),
+                                "equal_operation_argument_1",
+                                None::new(SourceInformation::dummy()),
+                                vec![
+                                    Alternative::new(
+                                        types::None::new(SourceInformation::dummy()),
+                                        Boolean::new(false, SourceInformation::dummy())
+                                    ),
+                                    Alternative::new(
+                                        types::Number::new(SourceInformation::dummy()),
+                                        Operation::with_type(
+                                            types::Number::new(SourceInformation::dummy()),
+                                            Operator::Equal,
+                                            Variable::new(
+                                                "equal_operation_argument_0",
+                                                SourceInformation::dummy()
+                                            ),
+                                            Variable::new(
+                                                "equal_operation_argument_1",
+                                                SourceInformation::dummy()
+                                            ),
+                                            SourceInformation::dummy()
+                                        )
+                                    ),
+                                ],
+                                SourceInformation::dummy(),
+                            )
+                        ),
+                    ],
+                    SourceInformation::dummy(),
+                )
+                .into(),
             ))
         );
     }

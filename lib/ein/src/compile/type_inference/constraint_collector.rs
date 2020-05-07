@@ -6,14 +6,15 @@ use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
+use std::rc::Rc;
 
-pub struct ConstraintCollector<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
+pub struct ConstraintCollector {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
     subsumption_set: SubsumptionSet,
 }
 
-impl<'a> ConstraintCollector<'a> {
-    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
+impl ConstraintCollector {
+    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Self {
         Self {
             reference_type_resolver,
             subsumption_set: SubsumptionSet::new(),
@@ -194,24 +195,39 @@ impl<'a> ConstraintCollector<'a> {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
             Expression::Operation(operation) => {
-                let number_type = types::Number::new(operation.source_information().clone());
-
                 let lhs = self.infer_expression(operation.lhs(), variables)?;
-                self.subsumption_set.add(lhs, number_type.clone());
                 let rhs = self.infer_expression(operation.rhs(), variables)?;
-                self.subsumption_set.add(rhs, number_type.clone());
+
+                self.subsumption_set
+                    .add(lhs.clone(), operation.type_().clone());
+                self.subsumption_set
+                    .add(rhs.clone(), operation.type_().clone());
 
                 Ok(match operation.operator() {
-                    Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
-                        number_type.into()
-                    }
-                    Operator::Equal
-                    | Operator::NotEqual
+                    Operator::Add
+                    | Operator::Subtract
+                    | Operator::Multiply
+                    | Operator::Divide
                     | Operator::LessThan
                     | Operator::LessThanOrEqual
                     | Operator::GreaterThan
                     | Operator::GreaterThanOrEqual => {
-                        types::Boolean::new(number_type.source_information().clone()).into()
+                        let number_type =
+                            types::Number::new(operation.source_information().clone());
+
+                        self.subsumption_set.add(lhs, number_type.clone());
+                        self.subsumption_set.add(rhs, number_type.clone());
+
+                        match operation.operator() {
+                            Operator::Add
+                            | Operator::Subtract
+                            | Operator::Multiply
+                            | Operator::Divide => number_type.into(),
+                            _ => types::Boolean::new(operation.source_information().clone()).into(),
+                        }
+                    }
+                    Operator::Equal | Operator::NotEqual => {
+                        types::Boolean::new(operation.source_information().clone()).into()
                     }
                 })
             }
@@ -243,6 +259,21 @@ impl<'a> ConstraintCollector<'a> {
                 }
 
                 Ok(record.type_().clone().into())
+            }
+            Expression::RecordElementOperation(operation) => {
+                let type_ = self.reference_type_resolver.resolve(operation.type_())?;
+                let record_type = type_.to_record().ok_or_else(|| {
+                    CompileError::TypesNotMatched(
+                        operation.source_information().clone(),
+                        type_.source_information().clone(),
+                    )
+                })?;
+
+                let argument = self.infer_expression(operation.argument(), variables)?;
+                self.subsumption_set
+                    .add(argument, operation.type_().clone());
+
+                Ok(record_type.elements()[operation.key()].clone())
             }
             Expression::Variable(variable) => variables
                 .get(variable.name())

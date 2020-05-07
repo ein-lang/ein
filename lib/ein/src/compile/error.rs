@@ -14,6 +14,7 @@ pub enum CompileError {
     SsfCompile(ssf_llvm::CompileError),
     TypeNotFound(types::Reference),
     TypesNotMatched(Rc<SourceInformation>, Rc<SourceInformation>),
+    TypeNotInferred(Rc<SourceInformation>),
     VariableNotFound(ast::Variable),
 }
 
@@ -39,6 +40,9 @@ impl Display for CompileError {
                 reference.name(),
                 reference.source_information()
             ),
+            Self::TypeNotInferred(source_information) => {
+                write!(formatter, "failed to infer type\n{}", source_information)
+            }
             Self::TypesNotMatched(lhs_source_information, rhs_source_information) => write!(
                 formatter,
                 "types not matched\n{}\n{}",

@@ -2,23 +2,25 @@ use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::types::{self, Type};
+use std::rc::Rc;
 
-pub struct TypeCompiler<'a> {
+pub struct TypeCompiler {
     record_ids: Vec<String>,
-    reference_type_resolver: &'a ReferenceTypeResolver,
-    union_tag_calculator: &'a UnionTagCalculator<'a>,
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    union_tag_calculator: Rc<UnionTagCalculator>,
 }
 
-impl<'a> TypeCompiler<'a> {
+impl TypeCompiler {
     pub fn new(
-        reference_type_resolver: &'a ReferenceTypeResolver,
-        union_tag_calculator: &'a UnionTagCalculator<'a>,
-    ) -> Self {
+        reference_type_resolver: Rc<ReferenceTypeResolver>,
+        union_tag_calculator: Rc<UnionTagCalculator>,
+    ) -> Rc<Self> {
         Self {
             record_ids: vec![],
             reference_type_resolver,
             union_tag_calculator,
         }
+        .into()
     }
 
     pub fn compile(&self, type_: &Type) -> Result<ssf::types::Type, CompileError> {
@@ -154,8 +156,8 @@ impl<'a> TypeCompiler<'a> {
                 .into_iter()
                 .chain(vec![id.into()])
                 .collect(),
-            reference_type_resolver: self.reference_type_resolver,
-            union_tag_calculator: self.union_tag_calculator,
+            reference_type_resolver: self.reference_type_resolver.clone(),
+            union_tag_calculator: self.union_tag_calculator.clone(),
         }
     }
 }
@@ -170,10 +172,10 @@ mod tests {
     #[test]
     fn compile_number_type() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
 
         assert_eq!(
-            TypeCompiler::new(&reference_type_resolver, &union_tag_calculator)
+            TypeCompiler::new(reference_type_resolver, union_tag_calculator)
                 .compile(&types::Number::new(SourceInformation::dummy()).into()),
             Ok(ssf::types::Primitive::Float64.into())
         );
@@ -182,10 +184,10 @@ mod tests {
     #[test]
     fn compile_function_type() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
 
         assert_eq!(
-            TypeCompiler::new(&reference_type_resolver, &union_tag_calculator).compile(
+            TypeCompiler::new(reference_type_resolver, union_tag_calculator).compile(
                 &types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -218,10 +220,10 @@ mod tests {
                 )],
                 vec![],
             ));
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
 
         assert_eq!(
-            TypeCompiler::new(&reference_type_resolver, &union_tag_calculator)
+            TypeCompiler::new(reference_type_resolver, union_tag_calculator)
                 .compile(&reference_type.into()),
             Ok(
                 ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
@@ -265,10 +267,10 @@ mod tests {
                 ],
                 vec![],
             ));
-        let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
 
         assert_eq!(
-            TypeCompiler::new(&reference_type_resolver, &union_tag_calculator)
+            TypeCompiler::new(reference_type_resolver, union_tag_calculator)
                 .compile(&reference_type.into()),
             Ok(
                 ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
@@ -314,10 +316,10 @@ mod tests {
                     ],
                     vec![],
                 ));
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+            let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
 
             assert_eq!(
-                TypeCompiler::new(&reference_type_resolver, &union_tag_calculator).compile(
+                TypeCompiler::new(reference_type_resolver, union_tag_calculator).compile(
                     &types::Union::new(
                         vec![
                             types::Reference::new("Foo", SourceInformation::dummy()).into(),
@@ -360,10 +362,10 @@ mod tests {
         #[test]
         fn compile_union_type_including_boolean() {
             let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+            let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
 
             assert_eq!(
-                TypeCompiler::new(&reference_type_resolver, &union_tag_calculator).compile(
+                TypeCompiler::new(reference_type_resolver, union_tag_calculator).compile(
                     &types::Union::new(
                         vec![
                             types::Boolean::new(SourceInformation::dummy()).into(),
@@ -409,10 +411,10 @@ mod tests {
         #[test]
         fn compile_union_type_including_number() {
             let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-            let union_tag_calculator = UnionTagCalculator::new(&reference_type_resolver);
+            let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
 
             assert_eq!(
-                TypeCompiler::new(&reference_type_resolver, &union_tag_calculator).compile(
+                TypeCompiler::new(reference_type_resolver, union_tag_calculator).compile(
                     &types::Union::new(
                         vec![
                             types::Number::new(SourceInformation::dummy()).into(),

@@ -2,29 +2,36 @@ use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
+use super::super::union_type_simplifier::UnionTypeSimplifier;
 use super::typed_meta_desugarer::TypedDesugarer;
 use crate::ast::*;
 use crate::debug::SourceInformation;
-use crate::types::Type;
+use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct TypeCoercionDesugarer<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
-    type_equality_checker: &'a TypeEqualityChecker<'a>,
-    expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
+/// TypeCoercionDesugarer desugars value-to-union and function-to-union type
+/// coercions.
+/// Note that it does not desugar function-to-function ones.
+pub struct TypeCoercionDesugarer {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    type_equality_checker: Rc<TypeEqualityChecker>,
+    expression_type_extractor: Rc<ExpressionTypeExtractor>,
+    union_type_simplifier: Rc<UnionTypeSimplifier>,
 }
 
-impl<'a> TypeCoercionDesugarer<'a> {
+impl TypeCoercionDesugarer {
     pub fn new(
-        reference_type_resolver: &'a ReferenceTypeResolver,
-        type_equality_checker: &'a TypeEqualityChecker<'a>,
-        expression_type_extractor: &'a ExpressionTypeExtractor<'a>,
+        reference_type_resolver: Rc<ReferenceTypeResolver>,
+        type_equality_checker: Rc<TypeEqualityChecker>,
+        expression_type_extractor: Rc<ExpressionTypeExtractor>,
+        union_type_simplifier: Rc<UnionTypeSimplifier>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
             expression_type_extractor,
+            union_type_simplifier,
         }
     }
 
@@ -54,7 +61,7 @@ impl<'a> TypeCoercionDesugarer<'a> {
     }
 }
 
-impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
+impl TypedDesugarer for TypeCoercionDesugarer {
     fn desugar_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
@@ -187,6 +194,38 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
                 )
                 .into())
             }
+            Expression::Operation(operation) => {
+                let argument_type =
+                    self.union_type_simplifier
+                        .simplify_union(&types::Union::new(
+                            vec![
+                                self.expression_type_extractor
+                                    .extract(operation.lhs(), variables)?,
+                                self.expression_type_extractor
+                                    .extract(operation.rhs(), variables)?,
+                            ],
+                            operation.source_information().clone(),
+                        ))?;
+
+                Ok(Operation::with_type(
+                    operation.type_().clone(),
+                    operation.operator(),
+                    self.coerce_type(
+                        operation.lhs(),
+                        &argument_type,
+                        operation.source_information().clone(),
+                        variables,
+                    )?,
+                    self.coerce_type(
+                        operation.rhs(),
+                        &argument_type,
+                        operation.source_information().clone(),
+                        variables,
+                    )?,
+                    operation.source_information().clone(),
+                )
+                .into())
+            }
             Expression::RecordConstruction(record_construction) => {
                 let type_ = self
                     .reference_type_resolver
@@ -218,7 +257,7 @@ impl<'a> TypedDesugarer for TypeCoercionDesugarer<'a> {
             | Expression::Let(_)
             | Expression::None(_)
             | Expression::Number(_)
-            | Expression::Operation(_)
+            | Expression::RecordElementOperation(_)
             | Expression::Variable(_) => Ok(expression.clone()),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }

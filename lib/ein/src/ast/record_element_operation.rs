@@ -1,42 +1,41 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
-use crate::types::{self, Type};
-use std::collections::BTreeMap;
+use crate::types::Type;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct RecordUpdate {
-    type_: types::Reference,
+pub struct RecordElementOperation {
+    type_: Type,
+    key: String,
     argument: Rc<Expression>,
-    elements: BTreeMap<String, Expression>,
     source_information: Rc<SourceInformation>,
 }
 
-impl RecordUpdate {
+impl RecordElementOperation {
     pub fn new(
-        type_: types::Reference,
+        type_: impl Into<Type>,
+        key: impl Into<String>,
         argument: impl Into<Expression>,
-        elements: BTreeMap<String, Expression>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            type_,
+            type_: type_.into(),
+            key: key.into(),
             argument: Rc::new(argument.into()),
-            elements,
             source_information: source_information.into(),
         }
     }
 
-    pub fn type_(&self) -> &types::Reference {
+    pub fn type_(&self) -> &Type {
         &self.type_
+    }
+
+    pub fn key(&self) -> &str {
+        &self.key
     }
 
     pub fn argument(&self) -> &Expression {
         &self.argument
-    }
-
-    pub fn elements(&self) -> &BTreeMap<String, Expression> {
-        &self.elements
     }
 
     pub fn source_information(&self) -> &Rc<SourceInformation> {
@@ -49,13 +48,8 @@ impl RecordUpdate {
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.type_.clone(),
+            &self.key,
             self.argument.convert_expressions(convert)?,
-            self.elements
-                .iter()
-                .map(|(name, expression)| {
-                    Ok((name.into(), expression.convert_expressions(convert)?))
-                })
-                .collect::<Result<_, _>>()?,
             self.source_information.clone(),
         ))
     }
@@ -65,12 +59,9 @@ impl RecordUpdate {
         convert: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.type_.clone(),
+            self.type_.convert_types(convert)?,
+            &self.key,
             self.argument.convert_types(convert)?,
-            self.elements
-                .iter()
-                .map(|(name, expression)| Ok((name.into(), expression.convert_types(convert)?)))
-                .collect::<Result<_, _>>()?,
             self.source_information.clone(),
         ))
     }

@@ -62,7 +62,7 @@ Feature: Expressions
     Then stdout from "sh -c ./foo" should contain exactly "1"
     And the exit status should be 0
 
-  Scenario: Use an equality operator
+  Scenario: Use an equality operator with numbers
     Given a file named "ein.json" with:
     """
     {
@@ -77,6 +77,33 @@ Feature: Expressions
     """
     main : Number -> Number
     main x = if x == 0 then 13 else 42
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
+    And the exit status should be 0
+
+  Scenario: Use an equality operator with unions
+    Given a file named "ein.json" with:
+    """
+    {
+      "target": {
+        "type": "Command",
+        "name": "foo"
+      },
+      "dependencies": {}
+    }
+    """
+    And a file named "Main.ein" with:
+    """
+    a : Number | None
+    a = 0
+
+    b : Number | None
+    b = none
+
+    main : Number -> Number
+    main x = if a == b then 13 else 42
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`

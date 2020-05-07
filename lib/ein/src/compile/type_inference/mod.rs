@@ -23,14 +23,20 @@ pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
     })?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
-    let subsumption_set = ConstraintCollector::new(&reference_type_resolver).collect(&module)?;
-    let substitutions = ConstraintSolver::new(&reference_type_resolver).solve(subsumption_set)?;
+    let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+    let subsumption_set =
+        ConstraintCollector::new(reference_type_resolver.clone()).collect(&module)?;
+    let substitutions = ConstraintSolver::new(reference_type_resolver).solve(subsumption_set)?;
 
     module
         .convert_types(&mut |type_| -> Result<_, CompileError> {
             Ok(if let Type::Variable(variable) = type_ {
-                substitutions[&variable.id()].clone()
+                substitutions
+                    .get(&variable.id())
+                    .ok_or_else(|| {
+                        CompileError::TypeNotInferred(variable.source_information().clone())
+                    })?
+                    .clone()
             } else {
                 type_.clone()
             })
@@ -1218,7 +1224,7 @@ mod tests {
         }
 
         #[test]
-        fn infer_types_of_record_element_functions() {
+        fn infer_types_of_record_element_operations() {
             let record_type = types::Record::new(
                 "Foo",
                 vec![(
@@ -1234,8 +1240,9 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![ValueDefinition::new(
                     "x",
-                    Application::new(
-                        Variable::new("Foo.foo", SourceInformation::dummy()),
+                    RecordElementOperation::new(
+                        types::Reference::new("Foo", SourceInformation::dummy()),
+                        "foo",
                         RecordConstruction::new(
                             types::Reference::new("Foo", SourceInformation::dummy()),
                             vec![("foo".into(), None::new(SourceInformation::dummy()).into())]
@@ -1261,38 +1268,99 @@ mod tests {
 
         #[test]
         fn infer_types_of_arithmetic_operations() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                Operation::new(
-                    Operator::Add,
-                    Number::new(42.0, SourceInformation::dummy()),
-                    Number::new(42.0, SourceInformation::dummy()),
+            let create_module = |type_: Type| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        type_,
+                        Operator::Add,
+                        Number::new(42.0, SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()]);
+                )
+                .into()])
+            };
 
-            assert_eq!(infer_types(&module), Ok(module));
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    types::Number::new(SourceInformation::dummy()).into()
+                ))
+            );
         }
 
         #[test]
-        fn infer_types_of_comparison_operations() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                Operation::new(
-                    Operator::Equal,
-                    Number::new(42.0, SourceInformation::dummy()),
-                    Number::new(42.0, SourceInformation::dummy()),
+        fn infer_types_of_number_comparison_operations() {
+            let create_module = |type_: Type| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        type_,
+                        Operator::LessThan,
+                        Number::new(42.0, SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                ),
-                types::Boolean::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()]);
+                )
+                .into()])
+            };
 
-            assert_eq!(infer_types(&module), Ok(module));
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    types::Number::new(SourceInformation::dummy()).into()
+                ))
+            );
+        }
+
+        #[test]
+        fn infer_types_of_equal_operation() {
+            let record_type =
+                types::Record::new("Foo", Default::default(), SourceInformation::dummy());
+            let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+            let create_module = |type_: Type| {
+                Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new("Foo", record_type.clone())],
+                    vec![ValueDefinition::new(
+                        "x",
+                        Operation::with_type(
+                            type_,
+                            Operator::Equal,
+                            RecordConstruction::new(
+                                reference_type.clone(),
+                                Default::default(),
+                                SourceInformation::dummy(),
+                            ),
+                            RecordConstruction::new(
+                                reference_type.clone(),
+                                Default::default(),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()],
+                )
+            };
+
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(record_type.clone().into()))
+            );
         }
     }
 

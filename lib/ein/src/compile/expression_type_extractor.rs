@@ -1,18 +1,26 @@
 use super::error::CompileError;
+use super::reference_type_resolver::ReferenceTypeResolver;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
+use std::rc::Rc;
 
-pub struct ExpressionTypeExtractor<'a> {
-    union_type_simplifier: &'a UnionTypeSimplifier<'a>,
+pub struct ExpressionTypeExtractor {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    union_type_simplifier: Rc<UnionTypeSimplifier>,
 }
 
-impl<'a> ExpressionTypeExtractor<'a> {
-    pub fn new(union_type_simplifier: &'a UnionTypeSimplifier<'a>) -> Self {
+impl ExpressionTypeExtractor {
+    pub fn new(
+        reference_type_resolver: Rc<ReferenceTypeResolver>,
+        union_type_simplifier: Rc<UnionTypeSimplifier>,
+    ) -> Rc<Self> {
         Self {
+            reference_type_resolver,
             union_type_simplifier,
         }
+        .into()
     }
 
     pub fn extract(
@@ -96,6 +104,11 @@ impl<'a> ExpressionTypeExtractor<'a> {
                 }
             },
             Expression::RecordConstruction(record) => record.type_().clone().into(),
+            Expression::RecordElementOperation(operation) => {
+                let type_ = self.reference_type_resolver.resolve(operation.type_())?;
+
+                type_.to_record().unwrap().elements()[operation.key()].clone()
+            }
             Expression::TypeCoercion(coercion) => coercion.to().clone(),
             Expression::Variable(variable) => variables[variable.name()].clone(),
             Expression::RecordUpdate(_) => unreachable!(),
@@ -112,10 +125,10 @@ mod tests {
     #[test]
     fn extract_type_of_case_expression() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_type_simplifier = UnionTypeSimplifier::new(&reference_type_resolver);
+        let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
 
         assert_eq!(
-            ExpressionTypeExtractor::new(&union_type_simplifier).extract(
+            ExpressionTypeExtractor::new(reference_type_resolver, union_type_simplifier).extract(
                 &Case::new(
                     "",
                     None::new(SourceInformation::dummy()),

@@ -2,16 +2,18 @@ use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::types::{self, Type};
 use std::collections::HashSet;
+use std::rc::Rc;
 
-pub struct UnionTypeSimplifier<'a> {
-    reference_type_resolver: &'a ReferenceTypeResolver,
+pub struct UnionTypeSimplifier {
+    reference_type_resolver: Rc<ReferenceTypeResolver>,
 }
 
-impl<'a> UnionTypeSimplifier<'a> {
-    pub fn new(reference_type_resolver: &'a ReferenceTypeResolver) -> Self {
+impl UnionTypeSimplifier {
+    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Rc<Self> {
         Self {
             reference_type_resolver,
         }
+        .into()
     }
 
     pub fn simplify(&self, type_: &Type) -> Result<Type, CompileError> {
@@ -60,7 +62,7 @@ mod tests {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
 
         assert_eq!(
-            UnionTypeSimplifier::new(&reference_type_resolver).simplify_union(&types::Union::new(
+            UnionTypeSimplifier::new(reference_type_resolver).simplify_union(&types::Union::new(
                 vec![
                     types::None::new(SourceInformation::dummy()).into(),
                     types::None::new(SourceInformation::dummy()).into()
@@ -76,7 +78,7 @@ mod tests {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
 
         assert_eq!(
-            UnionTypeSimplifier::new(&reference_type_resolver).simplify_union(&types::Union::new(
+            UnionTypeSimplifier::new(reference_type_resolver).simplify_union(&types::Union::new(
                 vec![
                     types::Union::new(
                         vec![
@@ -106,7 +108,7 @@ mod tests {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
 
         assert_eq!(
-            UnionTypeSimplifier::new(&reference_type_resolver).simplify_union(&union_type),
+            UnionTypeSimplifier::new(reference_type_resolver).simplify_union(&union_type),
             Ok(union_type.into())
         );
     }
@@ -121,7 +123,7 @@ mod tests {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
 
         assert_eq!(
-            UnionTypeSimplifier::new(&reference_type_resolver).simplify_union(&union_type),
+            UnionTypeSimplifier::new(reference_type_resolver).simplify_union(&union_type),
             Ok(record_type.into())
         );
     }
@@ -138,7 +140,7 @@ mod tests {
             ));
 
         assert_eq!(
-            UnionTypeSimplifier::new(&reference_type_resolver).simplify_union(&types::Union::new(
+            UnionTypeSimplifier::new(reference_type_resolver).simplify_union(&types::Union::new(
                 vec![
                     types::Reference::new("Foo", SourceInformation::dummy()).into(),
                     types::None::new(SourceInformation::dummy()).into(),

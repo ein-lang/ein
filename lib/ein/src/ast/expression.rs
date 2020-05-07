@@ -7,6 +7,7 @@ use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
 use super::record_construction::RecordConstruction;
+use super::record_element_operation::RecordElementOperation;
 use super::record_update::RecordUpdate;
 use super::type_coercion::TypeCoercion;
 use super::variable::Variable;
@@ -18,6 +19,7 @@ pub enum Expression {
     Boolean(Boolean),
     Case(Case),
     RecordConstruction(RecordConstruction),
+    RecordElementOperation(RecordElementOperation),
     RecordUpdate(RecordUpdate),
     If(If),
     Let(Let),
@@ -38,6 +40,9 @@ impl Expression {
             Self::Case(case) => case.convert_expressions(convert)?.into(),
             Self::RecordConstruction(record_construction) => {
                 record_construction.convert_expressions(convert)?.into()
+            }
+            Self::RecordElementOperation(operation) => {
+                operation.convert_expressions(convert)?.into()
             }
             Self::RecordUpdate(record_update) => record_update.convert_expressions(convert)?.into(),
             Self::If(if_) => if_.convert_expressions(convert)?.into(),
@@ -60,6 +65,7 @@ impl Expression {
             Self::RecordConstruction(record_construction) => {
                 record_construction.convert_types(convert)?.into()
             }
+            Self::RecordElementOperation(operation) => operation.convert_types(convert)?.into(),
             Self::RecordUpdate(record_update) => record_update.convert_types(convert)?.into(),
             Self::If(if_) => if_.convert_types(convert)?.into(),
             Self::Let(let_) => let_.convert_types(convert)?.into(),
@@ -95,6 +101,12 @@ impl From<Case> for Expression {
 impl From<RecordConstruction> for Expression {
     fn from(record_construction: RecordConstruction) -> Expression {
         Self::RecordConstruction(record_construction)
+    }
+}
+
+impl From<RecordElementOperation> for Expression {
+    fn from(operation: RecordElementOperation) -> Expression {
+        Self::RecordElementOperation(operation)
     }
 }
 
