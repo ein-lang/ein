@@ -244,4 +244,55 @@ mod tests {
         .into()]))
         .is_ok());
     }
+
+    #[test]
+    fn compile_equal_operation_with_none_type() {
+        assert!(compile(&Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Operation::new(
+                Operator::Equal,
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            ),
+            types::Boolean::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]))
+        .is_ok());
+    }
+
+    #[test]
+    fn compile_equal_operation_with_boolean_type() {
+        assert!(compile(&Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Operation::new(
+                Operator::Equal,
+                Boolean::new(false, SourceInformation::dummy()),
+                Boolean::new(true, SourceInformation::dummy()),
+                SourceInformation::dummy()
+            ),
+            types::Boolean::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]))
+        .is_ok());
+    }
+
+    #[test]
+    fn compile_equal_operation_with_union_type() {
+        assert!(compile(&Module::from_definitions(vec![ValueDefinition::new(
+            "x",
+            Operation::new(
+                Operator::Equal,
+                None::new(SourceInformation::dummy()),
+                None::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            ),
+            types::Boolean::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]))
+        .is_ok());
+    }
 }
