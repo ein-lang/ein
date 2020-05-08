@@ -27,7 +27,14 @@ impl GlobalNameRenamer {
 
         Module::new(
             module.path().clone(),
-            module.export().clone(),
+            Export::new(
+                module
+                    .export()
+                    .names()
+                    .iter()
+                    .map(|name| self.names[name.as_str()].clone())
+                    .collect(),
+            ),
             module.imported_modules().to_vec(),
             module.type_definitions().to_vec(),
             module
@@ -218,5 +225,94 @@ impl GlobalNameRenamer {
 
     fn rename_name(&self, name: &str, names: &HashMap<String, String>) -> String {
         names.get(name).cloned().unwrap_or_else(|| name.into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::debug::*;
+    use crate::package::Package;
+    use crate::path::*;
+    use crate::types;
+
+    #[test]
+    fn rename_nothing() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![],
+            vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(Default::default()).rename(&module),
+            module
+        );
+    }
+
+    #[test]
+    fn rename_names_in_value_definitions() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![],
+            vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(vec![("x".into(), "y".into())].into_iter().collect())
+                .rename(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![],
+                vec![ValueDefinition::new(
+                    "y",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()]
+            )
+        );
+    }
+
+    #[test]
+    fn rename_names_in_export_statements() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(vec!["x".into()].into_iter().collect()),
+            vec![],
+            vec![],
+            vec![],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(vec![("x".into(), "y".into())].into_iter().collect())
+                .rename(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(vec!["y".into()].into_iter().collect()),
+                vec![],
+                vec![],
+                vec![],
+            )
+        );
     }
 }
