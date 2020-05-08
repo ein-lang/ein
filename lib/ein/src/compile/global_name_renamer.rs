@@ -211,6 +211,19 @@ impl GlobalNameRenamer {
                 operation.source_information().clone(),
             )
             .into(),
+            Expression::RecordUpdate(record_update) => RecordUpdate::new(
+                record_update.type_().clone(),
+                self.rename_expression(record_update.argument(), names),
+                record_update
+                    .elements()
+                    .iter()
+                    .map(|(key, expression)| {
+                        (key.clone(), self.rename_expression(expression, names))
+                    })
+                    .collect(),
+                record_update.source_information().clone(),
+            )
+            .into(),
             Expression::Variable(variable) => Variable::new(
                 self.rename_name(variable.name(), names),
                 variable.source_information().clone(),
@@ -219,7 +232,7 @@ impl GlobalNameRenamer {
             Expression::Boolean(_) | Expression::None(_) | Expression::Number(_) => {
                 expression.clone()
             }
-            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
+            Expression::TypeCoercion(_) => unreachable!(),
         }
     }
 
