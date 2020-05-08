@@ -3,11 +3,12 @@ mod desugar;
 mod error;
 mod expression_compiler;
 mod expression_type_extractor;
+mod global_name_qualifier;
+mod global_name_renamer;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
-mod name_qualifier;
 mod record_id_qualifier;
 mod reference_type_resolver;
 mod type_compiler;
@@ -22,9 +23,9 @@ use boolean_compiler::BooleanCompiler;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
+use global_name_qualifier::GlobalNameQualifier;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
-use name_qualifier::NameQualifier;
 use record_id_qualifier::RecordIdQualifier;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
@@ -36,17 +37,13 @@ const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
 const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
 pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = RecordIdQualifier::new().qualify(module);
-    let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
-    let name_qualifier = NameQualifier::new(
+    let module = GlobalNameQualifier::new(
         &module,
-        vec![(
-            SOURCE_MAIN_FUNCTION_NAME.into(),
-            OBJECT_MAIN_FUNCTION_NAME.into(),
-        )]
-        .into_iter()
-        .collect(),
-    );
+        &vec![SOURCE_MAIN_FUNCTION_NAME.into()].into_iter().collect(),
+    )
+    .qualify(module);
+    let module = RecordIdQualifier::new().qualify(&module);
+    let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
@@ -64,9 +61,16 @@ pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileErr
 
     Ok((
         ssf_llvm::compile(
-            &name_qualifier.qualify_core_module(
-                &ModuleCompiler::new(expression_compiler, type_compiler).compile(&module)?,
-            ),
+            &ModuleCompiler::new(expression_compiler, type_compiler)
+                .compile(&module)?
+                .rename_global_variables(
+                    &vec![(
+                        SOURCE_MAIN_FUNCTION_NAME.into(),
+                        OBJECT_MAIN_FUNCTION_NAME.into(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                ),
             &ssf_llvm::CompileConfiguration::new(
                 if module
                     .definitions()
