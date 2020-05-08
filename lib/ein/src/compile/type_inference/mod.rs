@@ -429,7 +429,7 @@ mod tests {
             vec![],
             vec![ValueDefinition::new(
                 "y",
-                Variable::new("m.x", SourceInformation::dummy()),
+                Variable::new("m().x", SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
@@ -765,7 +765,7 @@ mod tests {
             ModulePath::new(Package::new("", ""), vec![]),
             Export::new(Default::default()),
             vec![ModuleInterface::new(
-                ModulePath::new(Package::new("Module", ""), vec![]),
+                ModulePath::new(Package::new("P", ""), vec![]),
                 vec![(
                     "Foo".into(),
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -778,7 +778,7 @@ mod tests {
             vec![ValueDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
-                types::Reference::new("Module.Foo", SourceInformation::dummy()),
+                types::Reference::new("P().Foo", SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
             .into()],

@@ -17,7 +17,10 @@ impl ReferenceTypeResolver {
                 .iter()
                 .flat_map(|imported_module| {
                     imported_module.types().iter().map(move |(name, type_)| {
-                        (imported_module.path().qualify_name(name), type_.clone())
+                        (
+                            imported_module.path().fully_qualify_name(name),
+                            type_.clone(),
+                        )
                     })
                 })
                 .chain(module.type_definitions().iter().map(|type_definition| {
@@ -89,7 +92,7 @@ mod tests {
                 vec![],
                 vec![],
             ))
-            .resolve(&types::Reference::new("Foo.Foo", SourceInformation::dummy()).into()),
+            .resolve(&types::Reference::new("Foo().Foo", SourceInformation::dummy()).into()),
             Ok(types::Number::new(SourceInformation::dummy()).into())
         );
     }
