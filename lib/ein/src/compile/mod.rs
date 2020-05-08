@@ -9,6 +9,7 @@ mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
+mod record_function_creator;
 mod record_id_qualifier;
 mod reference_type_resolver;
 mod type_compiler;
@@ -26,6 +27,7 @@ use expression_compiler::ExpressionCompiler;
 use global_name_qualifier::GlobalNameQualifier;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
+use record_function_creator::RecordFunctionCreator;
 use record_id_qualifier::RecordIdQualifier;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
@@ -37,12 +39,14 @@ const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
 const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
 pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
+    let module = RecordIdQualifier::new().qualify(&module);
+    let module = RecordFunctionCreator::new().create(&module);
+
     let module = GlobalNameQualifier::new(
         &module,
         &vec![SOURCE_MAIN_FUNCTION_NAME.into()].into_iter().collect(),
     )
-    .qualify(module);
-    let module = RecordIdQualifier::new().qualify(&module);
+    .qualify(&module);
 
     let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
 
@@ -175,14 +179,14 @@ mod tests {
     fn compile_record_element_access() {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-        assert!(compile(&Module::from_definitions_and_type_definitions(
+        compile(&Module::from_definitions_and_type_definitions(
             vec![TypeDefinition::new(
                 "Foo",
                 types::Record::new(
                     "Foo",
                     vec![(
                         "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
+                        types::Number::new(SourceInformation::dummy()).into(),
                     )]
                     .into_iter()
                     .collect(),
@@ -197,7 +201,7 @@ mod tests {
                         reference_type.clone(),
                         vec![(
                             "foo".into(),
-                            Number::new(42.0, SourceInformation::dummy()).into()
+                            Number::new(42.0, SourceInformation::dummy()).into(),
                         )]
                         .into_iter()
                         .collect(),
@@ -210,7 +214,7 @@ mod tests {
             )
             .into()],
         ))
-        .is_ok());
+        .unwrap();
     }
 
     #[test]

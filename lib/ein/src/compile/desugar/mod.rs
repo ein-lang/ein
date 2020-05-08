@@ -2,7 +2,6 @@ mod equal_operation_desugarer;
 mod function_type_argument_desugarer;
 mod not_equal_operation_desugarer;
 mod partial_application_desugarer;
-mod record_element_function_desugarer;
 mod record_update_desugarer;
 mod type_coercion_desugarer;
 mod typed_meta_desugarer;
@@ -17,13 +16,12 @@ use equal_operation_desugarer::EqualOperationDesugarer;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use not_equal_operation_desugarer::NotEqualOperationDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
-use record_element_function_desugarer::RecordElementFunctionDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
 use type_coercion_desugarer::TypeCoercionDesugarer;
 use typed_meta_desugarer::TypedMetaDesugarer;
 
 pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
-    RecordUpdateDesugarer::new().desugar(&RecordElementFunctionDesugarer::new().desugar(module))
+    RecordUpdateDesugarer::new().desugar(module)
 }
 
 pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {

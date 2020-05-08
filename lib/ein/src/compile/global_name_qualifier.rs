@@ -50,7 +50,7 @@ mod tests {
     use crate::types;
 
     #[test]
-    fn qualify_names_in_target_module() {
+    fn qualify_names_in_value_definitions() {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
