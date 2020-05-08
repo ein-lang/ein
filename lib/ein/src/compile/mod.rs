@@ -43,6 +43,7 @@ pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileErr
     )
     .qualify(module);
     let module = RecordIdQualifier::new().qualify(&module);
+
     let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
