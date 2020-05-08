@@ -37,6 +37,7 @@ const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
 pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = RecordIdQualifier::new().qualify(module);
+
     let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
     let name_qualifier = NameQualifier::new(
         &module,
