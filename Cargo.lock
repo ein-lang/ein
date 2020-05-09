@@ -304,7 +304,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell#b288898c307daa6839e82ca9c64fe3c4df135cfd"
+source = "git+https://github.com/TheDan64/inkwell#0088ac128266b880f46c7abb8b52b2a973c014de"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -318,7 +318,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell#b288898c307daa6839e82ca9c64fe3c4df135cfd"
+source = "git+https://github.com/TheDan64/inkwell#0088ac128266b880f46c7abb8b52b2a973c014de"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -614,18 +614,18 @@ checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
 name = "serde"
-version = "1.0.106"
+version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36df6ac6412072f67cf767ebbde4133a5b2e88e76dc6187fa7104cd16f783399"
+checksum = "eba7550f2cdf88ffc23ab0f1607133486c390a8c0f89b57e589b9654ee15e04d"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.106"
+version = "1.0.107"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e549e3abf4fb8621bd1609f11dfc9f5e50320802273b12f3811a67e6716ea6c"
+checksum = "10be45e22e5597d4b88afcc71f9d7bfadcd604bf0c78a3ab4582b8d2b37f39f3"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -652,7 +652,7 @@ checksum = "c7cb5678e1615754284ec264d9bb5b4c27d2018577fd90ac0ceb578591ed5ee4"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#d85b3257459b31530a555b34604e740ba8ebfb72"
+source = "git+https://github.com/raviqqe/ssf#501527de2f94b25a866e09546990e078fa453459"
 dependencies = [
  "petgraph",
  "pretty_assertions",
@@ -661,7 +661,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#d85b3257459b31530a555b34604e740ba8ebfb72"
+source = "git+https://github.com/raviqqe/ssf#501527de2f94b25a866e09546990e078fa453459"
 dependencies = [
  "inkwell",
  "ssf",
