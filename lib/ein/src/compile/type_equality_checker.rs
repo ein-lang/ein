@@ -20,7 +20,7 @@ impl TypeEqualityChecker {
         let other = self.reference_type_resolver.resolve(&other)?;
 
         let value = match (&one, &other) {
-            (Type::Record(one), Type::Record(other)) => one.id() == other.id(),
+            (Type::Record(one), Type::Record(other)) => one.name() == other.name(),
             (Type::Union(one), Type::Union(other)) => {
                 one.types().len() == other.types().len()
                     && one

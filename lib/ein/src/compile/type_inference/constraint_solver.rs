@@ -75,7 +75,7 @@ impl ConstraintSolver {
                 (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
                 (Type::Record(one), Type::Record(other)) => {
-                    if one.id() != other.id() {
+                    if one.name() != other.name() {
                         return Err(CompileError::TypesNotMatched(
                             one.source_information().clone(),
                             other.source_information().clone(),

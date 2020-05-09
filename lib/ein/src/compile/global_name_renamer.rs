@@ -1,5 +1,6 @@
 use super::error::CompileError;
 use crate::ast::*;
+use crate::types::{self, Type};
 use std::collections::HashMap;
 
 pub struct GlobalNameRenamer {
@@ -23,6 +24,23 @@ impl GlobalNameRenamer {
                         .into(),
                 })
             })
+            .unwrap()
+            .convert_types(&mut |type_| -> Result<_, ()> {
+                Ok(match type_ {
+                    Type::Record(record) => types::Record::new(
+                        self.rename_name(record.name(), &self.names),
+                        record.elements().clone(),
+                        record.source_information().clone(),
+                    )
+                    .into(),
+                    Type::Reference(reference) => types::Reference::new(
+                        self.rename_name(reference.name(), &self.names),
+                        reference.source_information().clone(),
+                    )
+                    .into(),
+                    _ => type_.clone(),
+                })
+            })
             .unwrap();
 
         Module::new(
@@ -36,7 +54,16 @@ impl GlobalNameRenamer {
                     .collect(),
             ),
             module.imported_modules().to_vec(),
-            module.type_definitions().to_vec(),
+            module
+                .type_definitions()
+                .iter()
+                .map(|type_definition| {
+                    TypeDefinition::new(
+                        self.rename_name(type_definition.name(), &self.names),
+                        type_definition.type_().clone(),
+                    )
+                })
+                .collect(),
             module
                 .definitions()
                 .iter()
@@ -248,6 +275,7 @@ mod tests {
     use crate::package::Package;
     use crate::path::*;
     use crate::types;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn rename_nothing() {
@@ -324,6 +352,105 @@ mod tests {
                 Export::new(vec!["y".into()].into_iter().collect()),
                 vec![],
                 vec![],
+                vec![],
+            )
+        );
+    }
+
+    #[test]
+    fn rename_names_in_type_definitions() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![TypeDefinition::new(
+                "x",
+                types::None::new(SourceInformation::dummy()),
+            )],
+            vec![],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(vec![("x".into(), "y".into())].into_iter().collect())
+                .rename(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![TypeDefinition::new(
+                    "y",
+                    types::None::new(SourceInformation::dummy()),
+                )],
+                vec![],
+            )
+        );
+    }
+
+    #[test]
+    fn rename_reference_types() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![TypeDefinition::new(
+                "x",
+                types::Reference::new("z", SourceInformation::dummy()),
+            )],
+            vec![ValueDefinition::new(
+                "y",
+                None::new(SourceInformation::dummy()),
+                types::Reference::new("z", SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(vec![("z".into(), "v".into())].into_iter().collect())
+                .rename(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![TypeDefinition::new(
+                    "x",
+                    types::Reference::new("v", SourceInformation::dummy()),
+                )],
+                vec![ValueDefinition::new(
+                    "y",
+                    None::new(SourceInformation::dummy()),
+                    types::Reference::new("v", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()],
+            )
+        );
+    }
+
+    #[test]
+    fn rename_record_types() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![TypeDefinition::new(
+                "x",
+                types::Record::new("y", Default::default(), SourceInformation::dummy()),
+            )],
+            vec![],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(vec![("y".into(), "z".into())].into_iter().collect())
+                .rename(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![TypeDefinition::new(
+                    "x",
+                    types::Record::new("z", Default::default(), SourceInformation::dummy()),
+                )],
                 vec![],
             )
         );

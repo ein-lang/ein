@@ -10,7 +10,6 @@ mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod record_function_creator;
-mod record_id_qualifier;
 mod reference_type_resolver;
 mod type_compiler;
 mod type_equality_checker;
@@ -28,7 +27,6 @@ use global_name_qualifier::GlobalNameQualifier;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use record_function_creator::RecordFunctionCreator;
-use record_id_qualifier::RecordIdQualifier;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
@@ -39,7 +37,6 @@ const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
 const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
 pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = RecordIdQualifier::new().qualify(&module);
     let module = RecordFunctionCreator::new().create(&module);
 
     let module = GlobalNameQualifier::new(
