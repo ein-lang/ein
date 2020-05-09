@@ -27,7 +27,7 @@ impl ModuleInterfaceCompiler {
                         .any(|definition| definition.name() == name)
             })
         {
-            Err(CompileError::ExportedNameNotFound { name: name.into() })
+            Err(CompileError::ExportedNameNotFound { name })
         } else {
             Ok(ModuleInterface::new(
                 module.path().clone(),
