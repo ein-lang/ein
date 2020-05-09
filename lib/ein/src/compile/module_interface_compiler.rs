@@ -11,23 +11,19 @@ impl ModuleInterfaceCompiler {
     }
 
     pub fn compile(&self, module: &Module) -> Result<ModuleInterface, CompileError> {
-        if let Some(name) = module
-            .export()
-            .names()
-            .iter()
-            .map(|name| module.path().fully_qualify_name(name))
-            .find(|name| {
-                !module
-                    .type_definitions()
+        if let Some(name) = module.export().names().iter().find(|name| {
+            let name = module.path().fully_qualify_name(name);
+
+            !module
+                .type_definitions()
+                .iter()
+                .any(|definition| definition.name() == name)
+                && !module
+                    .definitions()
                     .iter()
                     .any(|definition| definition.name() == name)
-                    && !module
-                        .definitions()
-                        .iter()
-                        .any(|definition| definition.name() == name)
-            })
-        {
-            Err(CompileError::ExportedNameNotFound { name })
+        }) {
+            Err(CompileError::ExportedNameNotFound { name: name.into() })
         } else {
             Ok(ModuleInterface::new(
                 module.path().clone(),
