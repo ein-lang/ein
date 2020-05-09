@@ -10,10 +10,12 @@ use std::rc::Rc;
 pub struct Record {
     // Record ID's are enough to compare them because they are unique among packages.
     id: Option<String>,
-    #[derivative(Hash = "ignore")]
-    #[derivative(Ord = "ignore")]
-    #[derivative(PartialEq = "ignore")]
-    #[derivative(PartialOrd = "ignore")]
+    #[derivative(
+        Hash = "ignore",
+        Ord = "ignore",
+        PartialEq = "ignore",
+        PartialOrd = "ignore"
+    )]
     elements: BTreeMap<String, Type>,
     source_information: Rc<SourceInformation>,
 }
