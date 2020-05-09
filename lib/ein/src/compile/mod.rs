@@ -37,7 +37,6 @@ const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
 const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
 
 pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let exported_names = module.export().names().iter().cloned().collect();
     let module = RecordFunctionCreator::new().create(&module);
 
     let module = GlobalNameQualifier::new(
@@ -95,7 +94,7 @@ pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileErr
                 None,
             ),
         )?,
-        ModuleInterfaceCompiler::new().compile(&module, &exported_names)?,
+        ModuleInterfaceCompiler::new().compile(&module)?,
     ))
 }
 

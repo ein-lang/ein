@@ -45,14 +45,7 @@ impl GlobalNameRenamer {
 
         Module::new(
             module.path().clone(),
-            Export::new(
-                module
-                    .export()
-                    .names()
-                    .iter()
-                    .map(|name| self.names[name.as_str()].clone())
-                    .collect(),
-            ),
+            module.export().clone(),
             module.imported_modules().to_vec(),
             module
                 .type_definitions()
@@ -335,7 +328,7 @@ mod tests {
     }
 
     #[test]
-    fn rename_names_in_export_statements() {
+    fn do_not_rename_names_in_export_statements() {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(vec!["x".into()].into_iter().collect()),
@@ -349,7 +342,7 @@ mod tests {
                 .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
-                Export::new(vec!["y".into()].into_iter().collect()),
+                Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
                 vec![],
                 vec![],
