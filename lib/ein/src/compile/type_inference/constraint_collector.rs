@@ -256,7 +256,7 @@ impl ConstraintCollector {
                         .add(type_, record_type.elements()[key].clone());
                 }
 
-                Ok(record.type_().clone().into())
+                Ok(record.type_().clone())
             }
             Expression::RecordElementOperation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;
