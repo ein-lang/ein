@@ -8,8 +8,7 @@ use std::rc::Rc;
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Record {
-    // Record ID's are enough to compare them and elements are not normalized
-    // possibly.
+    // Record ID's are enough to compare them because they are unique among packages.
     id: Option<String>,
     #[derivative(Hash = "ignore")]
     #[derivative(Ord = "ignore")]
