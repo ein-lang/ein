@@ -19,6 +19,13 @@ impl GlobalNameQualifier {
             }
         }
 
+        for type_definition in module.type_definitions() {
+            names.insert(
+                type_definition.name().into(),
+                module.path().fully_qualify_name(type_definition.name()),
+            );
+        }
+
         for definition in module.definitions() {
             names.insert(
                 definition.name().into(),
@@ -48,6 +55,7 @@ mod tests {
     use crate::package::Package;
     use crate::path::ModulePath;
     use crate::types;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn qualify_names_in_value_definitions() {
@@ -166,6 +174,34 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()]
+            )
+        );
+    }
+
+    #[test]
+    fn qualify_names_in_type_definitions() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![TypeDefinition::new(
+                "x",
+                types::None::new(SourceInformation::dummy()),
+            )],
+            vec![],
+        );
+
+        assert_eq!(
+            GlobalNameQualifier::new(&module, &Default::default()).qualify(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![TypeDefinition::new(
+                    "M().x",
+                    types::None::new(SourceInformation::dummy()),
+                )],
+                vec![],
             )
         );
     }

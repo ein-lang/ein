@@ -138,14 +138,14 @@ mod tests {
     fn compile_record_construction() {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-        assert!(compile(&Module::from_definitions_and_type_definitions(
+        compile(&Module::from_definitions_and_type_definitions(
             vec![TypeDefinition::new(
                 "Foo",
                 types::Record::new(
                     "Foo",
                     vec![(
                         "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
+                        types::Number::new(SourceInformation::dummy()).into(),
                     )]
                     .into_iter()
                     .collect(),
@@ -158,7 +158,7 @@ mod tests {
                     reference_type.clone(),
                     vec![(
                         "foo".into(),
-                        Number::new(42.0, SourceInformation::dummy()).into()
+                        Number::new(42.0, SourceInformation::dummy()).into(),
                     )]
                     .into_iter()
                     .collect(),
@@ -169,7 +169,7 @@ mod tests {
             )
             .into()],
         ))
-        .is_ok());
+        .unwrap();
     }
 
     #[test]

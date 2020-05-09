@@ -232,9 +232,7 @@ impl ConstraintCollector {
                 })
             }
             Expression::RecordConstruction(record) => {
-                let type_ = self
-                    .reference_type_resolver
-                    .resolve_reference(record.type_())?;
+                let type_ = self.reference_type_resolver.resolve(record.type_())?;
                 let record_type = type_.to_record().ok_or_else(|| {
                     CompileError::TypesNotMatched(
                         record.source_information().clone(),

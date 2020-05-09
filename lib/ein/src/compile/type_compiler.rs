@@ -44,7 +44,7 @@ impl TypeCompiler {
         }
     }
 
-    pub fn compile_reference(
+    fn compile_reference(
         &self,
         reference: &types::Reference,
     ) -> Result<ssf::types::Type, CompileError> {

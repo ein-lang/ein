@@ -1,12 +1,12 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
-use crate::types::{self, Type};
+use crate::types::Type;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordUpdate {
-    type_: types::Reference,
+    type_: Type,
     argument: Rc<Expression>,
     elements: BTreeMap<String, Expression>,
     source_information: Rc<SourceInformation>,
@@ -14,20 +14,20 @@ pub struct RecordUpdate {
 
 impl RecordUpdate {
     pub fn new(
-        type_: types::Reference,
+        type_: impl Into<Type>,
         argument: impl Into<Expression>,
         elements: BTreeMap<String, Expression>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            type_,
+            type_: type_.into(),
             argument: Rc::new(argument.into()),
             elements,
             source_information: source_information.into(),
         }
     }
 
-    pub fn type_(&self) -> &types::Reference {
+    pub fn type_(&self) -> &Type {
         &self.type_
     }
 
@@ -65,7 +65,7 @@ impl RecordUpdate {
         convert: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.type_.clone(),
+            self.type_.convert_types(convert)?,
             self.argument.convert_types(convert)?,
             self.elements
                 .iter()
