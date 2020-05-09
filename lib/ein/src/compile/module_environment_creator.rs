@@ -10,10 +10,7 @@ impl ModuleEnvironmentCreator {
 
         for imported_module in module.imported_modules() {
             for (name, type_) in imported_module.variables() {
-                variables.insert(
-                    imported_module.path().fully_qualify_name(name),
-                    type_.clone(),
-                );
+                variables.insert(name.into(), type_.clone());
             }
         }
 

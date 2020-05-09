@@ -1,6 +1,7 @@
 use super::error::CompileError;
 use crate::ast::Module;
 use crate::ast::ModuleInterface;
+use std::collections::BTreeSet;
 
 #[derive(Debug)]
 pub struct ModuleInterfaceCompiler {}
@@ -10,7 +11,11 @@ impl ModuleInterfaceCompiler {
         Self {}
     }
 
-    pub fn compile(&self, module: &Module) -> Result<ModuleInterface, CompileError> {
+    pub fn compile(
+        &self,
+        module: &Module,
+        exported_names: &BTreeSet<String>,
+    ) -> Result<ModuleInterface, CompileError> {
         for name in module.export().names() {
             if !module
                 .type_definitions()
@@ -27,6 +32,7 @@ impl ModuleInterfaceCompiler {
 
         Ok(ModuleInterface::new(
             module.path().clone(),
+            exported_names.clone(),
             module
                 .type_definitions()
                 .iter()
@@ -58,9 +64,11 @@ mod tests {
     #[test]
     fn compile_empty_module_interface() {
         assert_eq!(
-            ModuleInterfaceCompiler::new().compile(&Module::from_definitions(vec![])),
+            ModuleInterfaceCompiler::new()
+                .compile(&Module::from_definitions(vec![]), &Default::default()),
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("", ""), vec![]),
+                Default::default(),
                 Default::default(),
                 Default::default()
             ))
@@ -70,21 +78,25 @@ mod tests {
     #[test]
     fn compile_module_interface_with_definition() {
         assert_eq!(
-            ModuleInterfaceCompiler::new().compile(&Module::new(
-                ModulePath::new(Package::new("", ""), vec![]),
-                Export::new(vec!["x".into()].into_iter().collect()),
-                vec![],
-                vec![],
-                vec![ValueDefinition::new(
-                    "x",
-                    Number::new(42.0, SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()],
-            )),
+            ModuleInterfaceCompiler::new().compile(
+                &Module::new(
+                    ModulePath::new(Package::new("", ""), vec![]),
+                    Export::new(vec!["x".into()].into_iter().collect()),
+                    vec![],
+                    vec![],
+                    vec![ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()],
+                ),
+                &Default::default()
+            ),
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("", ""), vec![]),
+                Default::default(),
                 Default::default(),
                 vec![(
                     "x".into(),
@@ -99,13 +111,16 @@ mod tests {
     #[test]
     fn fail_to_compile_module_interface_due_to_missing_exported_name() {
         assert_eq!(
-            ModuleInterfaceCompiler::new().compile(&Module::new(
-                ModulePath::new(Package::new("", ""), vec![]),
-                Export::new(vec!["x".into()].into_iter().collect()),
-                vec![],
-                vec![],
-                vec![],
-            )),
+            ModuleInterfaceCompiler::new().compile(
+                &Module::new(
+                    ModulePath::new(Package::new("", ""), vec![]),
+                    Export::new(vec!["x".into()].into_iter().collect()),
+                    vec![],
+                    vec![],
+                    vec![],
+                ),
+                &Default::default()
+            ),
             Err(CompileError::ExportedNameNotFound { name: "x".into() })
         );
     }

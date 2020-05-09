@@ -11,7 +11,7 @@ impl GlobalNameQualifier {
         let mut names = HashMap::new();
 
         for imported_module in module.imported_modules() {
-            for name in imported_module.variables().keys() {
+            for name in imported_module.exported_names() {
                 names.insert(
                     imported_module.path().qualify_name(name),
                     imported_module.path().fully_qualify_name(name),
@@ -50,7 +50,6 @@ impl GlobalNameQualifier {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast;
     use crate::debug::SourceInformation;
     use crate::package::Package;
     use crate::path::ModulePath;
@@ -64,7 +63,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
-            vec![ast::ValueDefinition::new(
+            vec![ValueDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -80,7 +79,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![],
-                vec![ast::ValueDefinition::new(
+                vec![ValueDefinition::new(
                     "M().x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -96,18 +95,14 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
-            vec![ast::ModuleInterface::new(
+            vec![ModuleInterface::new(
                 ModulePath::new(Package::new("A", ""), vec!["B".into()]),
+                vec!["y".into()].into_iter().collect(),
                 Default::default(),
-                vec![(
-                    "y".into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
+                Default::default(),
             )],
             vec![],
-            vec![ast::ValueDefinition::new(
+            vec![ValueDefinition::new(
                 "x",
                 Variable::new("B.y", SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -121,18 +116,14 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
-                vec![ast::ModuleInterface::new(
+                vec![ModuleInterface::new(
                     ModulePath::new(Package::new("A", ""), vec!["B".into()]),
+                    vec!["y".into()].into_iter().collect(),
                     Default::default(),
-                    vec![(
-                        "y".into(),
-                        types::Number::new(SourceInformation::dummy()).into(),
-                    )]
-                    .into_iter()
-                    .collect(),
+                    Default::default(),
                 )],
                 vec![],
-                vec![ast::ValueDefinition::new(
+                vec![ValueDefinition::new(
                     "M().x",
                     Variable::new("A().B.y", SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -150,7 +141,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
-            vec![ast::ValueDefinition::new(
+            vec![ValueDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -167,7 +158,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![],
-                vec![ast::ValueDefinition::new(
+                vec![ValueDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),

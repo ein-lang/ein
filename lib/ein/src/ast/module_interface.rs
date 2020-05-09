@@ -1,11 +1,12 @@
 use crate::path::ModulePath;
 use crate::types::Type;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Clone, Debug, Deserialize, Hash, PartialEq, Serialize)]
 pub struct ModuleInterface {
     path: ModulePath,
+    exported_names: BTreeSet<String>,
     types: BTreeMap<String, Type>,
     variables: BTreeMap<String, Type>,
 }
@@ -13,11 +14,13 @@ pub struct ModuleInterface {
 impl ModuleInterface {
     pub fn new(
         path: ModulePath,
+        exported_names: BTreeSet<String>,
         types: BTreeMap<String, Type>,
         variables: BTreeMap<String, Type>,
     ) -> Self {
         Self {
             path,
+            exported_names,
             types,
             variables,
         }
@@ -25,6 +28,10 @@ impl ModuleInterface {
 
     pub fn path(&self) -> &ModulePath {
         &self.path
+    }
+
+    pub fn exported_names(&self) -> &BTreeSet<String> {
+        &self.exported_names
     }
 
     pub fn types(&self) -> &BTreeMap<String, Type> {
