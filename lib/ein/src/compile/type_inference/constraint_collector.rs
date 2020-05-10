@@ -229,6 +229,15 @@ impl ConstraintCollector {
                     Operator::Equal | Operator::NotEqual => {
                         types::Boolean::new(operation.source_information().clone()).into()
                     }
+                    Operator::And | Operator::Or => {
+                        let boolean_type =
+                            types::Boolean::new(operation.source_information().clone());
+
+                        self.subsumption_set.add(lhs, boolean_type.clone());
+                        self.subsumption_set.add(rhs, boolean_type.clone());
+
+                        boolean_type.into()
+                    }
                 })
             }
             Expression::RecordConstruction(record) => {

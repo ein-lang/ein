@@ -492,7 +492,7 @@ fn operation<'a>() -> impl Parser<Stream<'a>, Output = Operation> {
             |(source_information, operator, expression)| (operator, expression, source_information),
         )),
     )
-        .map(|(expression, pairs)| utilities::reduce_operations(expression, pairs))
+        .map(|(expression, pairs): (_, Vec<_>)| utilities::reduce_operations(expression, &pairs))
 }
 
 fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
@@ -507,6 +507,8 @@ fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
         concrete_operator("<=", Operator::LessThanOrEqual),
         concrete_operator(">", Operator::GreaterThan),
         concrete_operator(">=", Operator::GreaterThanOrEqual),
+        concrete_operator("&&", Operator::And),
+        concrete_operator("||", Operator::Or),
     )
 }
 
@@ -1789,108 +1791,159 @@ mod tests {
     #[test]
     fn parse_operation() {
         assert!(application().parse(stream("1", "")).is_err());
-        assert_eq!(
-            operation().parse(stream("1 + 1", "")).unwrap().0,
-            Operation::new(
-                Operator::Add,
-                Number::new(1.0, SourceInformation::dummy()),
-                Number::new(1.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            operation().parse(stream("1 + 1 then", "")).unwrap().0,
-            Operation::new(
-                Operator::Add,
-                Number::new(1.0, SourceInformation::dummy()),
-                Number::new(1.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            operation().parse(stream("1 + 1 + 1", "")).unwrap().0,
-            Operation::new(
-                Operator::Add,
+
+        for (source, target) in vec![
+            (
+                "1 + 1",
                 Operation::new(
                     Operator::Add,
                     Number::new(1.0, SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
+                    SourceInformation::dummy(),
                 ),
-                Number::new(1.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            operation().parse(stream("1 + (1 + 1)", "")).unwrap().0,
-            Operation::new(
-                Operator::Add,
-                Number::new(1.0, SourceInformation::dummy()),
+            ),
+            (
+                "1 + 1 then",
                 Operation::new(
                     Operator::Add,
                     Number::new(1.0, SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
+                    SourceInformation::dummy(),
                 ),
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            operation().parse(stream("1 * 2 - 3", "")).unwrap().0,
-            Operation::new(
-                Operator::Subtract,
+            ),
+            (
+                "1 + 1 + 1",
                 Operation::new(
-                    Operator::Multiply,
+                    Operator::Add,
+                    Operation::new(
+                        Operator::Add,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(1.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
                     Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(2.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
+                    SourceInformation::dummy(),
                 ),
-                Number::new(3.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            operation().parse(stream("1 + 2 * 3", "")).unwrap().0,
-            Operation::new(
-                Operator::Add,
-                Number::new(1.0, SourceInformation::dummy()),
+            ),
+            (
+                "1 + (1 + 1)",
                 Operation::new(
-                    Operator::Multiply,
-                    Number::new(2.0, SourceInformation::dummy()),
-                    Number::new(3.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                ),
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            operation().parse(stream("1 * 2 - 3 / 4", "")).unwrap().0,
-            Operation::new(
-                Operator::Subtract,
-                Operation::new(
-                    Operator::Multiply,
+                    Operator::Add,
                     Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(2.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
+                    Operation::new(
+                        Operator::Add,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(1.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
                 ),
+            ),
+            (
+                "1 * 2 - 3",
                 Operation::new(
-                    Operator::Divide,
+                    Operator::Subtract,
+                    Operation::new(
+                        Operator::Multiply,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(2.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
                     Number::new(3.0, SourceInformation::dummy()),
-                    Number::new(4.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
+                    SourceInformation::dummy(),
                 ),
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            operation().parse(stream("1 == 1", "")).unwrap().0,
-            Operation::new(
-                Operator::Equal,
-                Number::new(1.0, SourceInformation::dummy()),
-                Number::new(1.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-        );
+            ),
+            (
+                "1 + 2 * 3",
+                Operation::new(
+                    Operator::Add,
+                    Number::new(1.0, SourceInformation::dummy()),
+                    Operation::new(
+                        Operator::Multiply,
+                        Number::new(2.0, SourceInformation::dummy()),
+                        Number::new(3.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            (
+                "1 * 2 - 3 / 4",
+                Operation::new(
+                    Operator::Subtract,
+                    Operation::new(
+                        Operator::Multiply,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(2.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    Operation::new(
+                        Operator::Divide,
+                        Number::new(3.0, SourceInformation::dummy()),
+                        Number::new(4.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            (
+                "1 == 1",
+                Operation::new(
+                    Operator::Equal,
+                    Number::new(1.0, SourceInformation::dummy()),
+                    Number::new(1.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            (
+                "true && true",
+                Operation::new(
+                    Operator::And,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            (
+                "true || true",
+                Operation::new(
+                    Operator::Or,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            (
+                "true && 1 < 2",
+                Operation::new(
+                    Operator::And,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Operation::new(
+                        Operator::LessThan,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(2.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                ),
+            ),
+            (
+                "true || true && true",
+                Operation::new(
+                    Operator::Or,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Operation::new(
+                        Operator::And,
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Boolean::new(true, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                ),
+            ),
+        ] {
+            assert_eq!(operation().parse(stream(source, "")).unwrap().0, target);
+        }
     }
 
     #[test]

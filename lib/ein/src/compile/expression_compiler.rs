@@ -5,6 +5,7 @@ use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
 use crate::types::Type;
+use std::convert::TryInto;
 use std::rc::Rc;
 
 pub struct ExpressionCompiler {
@@ -100,7 +101,7 @@ impl ExpressionCompiler {
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
                 let compiled = ssf::ir::Operation::new(
-                    operation.operator().into(),
+                    operation.operator().try_into().unwrap(),
                     self.compile(operation.lhs())?,
                     self.compile(operation.rhs())?,
                 );
@@ -117,6 +118,7 @@ impl ExpressionCompiler {
                     | Operator::GreaterThanOrEqual => {
                         self.boolean_compiler.compile_conversion(compiled)
                     }
+                    Operator::And | Operator::Or => unreachable!(),
                 }
             }
             Expression::RecordConstruction(record) => ssf::ir::ConstructorApplication::new(

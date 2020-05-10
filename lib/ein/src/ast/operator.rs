@@ -1,3 +1,5 @@
+use std::convert::TryFrom;
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Operator {
     Add,
@@ -10,11 +12,15 @@ pub enum Operator {
     LessThanOrEqual,
     GreaterThan,
     GreaterThanOrEqual,
+    And,
+    Or,
 }
 
-impl From<Operator> for ssf::ir::Operator {
-    fn from(operator: Operator) -> Self {
-        match operator {
+impl TryFrom<Operator> for ssf::ir::Operator {
+    type Error = ();
+
+    fn try_from(operator: Operator) -> Result<Self, ()> {
+        Ok(match operator {
             Operator::Add => ssf::ir::Operator::Add,
             Operator::Subtract => ssf::ir::Operator::Subtract,
             Operator::Multiply => ssf::ir::Operator::Multiply,
@@ -25,6 +31,7 @@ impl From<Operator> for ssf::ir::Operator {
             Operator::LessThanOrEqual => ssf::ir::Operator::LessThanOrEqual,
             Operator::GreaterThan => ssf::ir::Operator::GreaterThan,
             Operator::GreaterThanOrEqual => ssf::ir::Operator::GreaterThanOrEqual,
-        }
+            Operator::And | Operator::Or => return Err(()),
+        })
     }
 }
