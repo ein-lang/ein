@@ -62,7 +62,7 @@ impl TypeCompiler {
         &self,
         record: &types::Record,
     ) -> Result<ssf::types::Algebraic, CompileError> {
-        let other = self.push_record_id(record.name());
+        let other = self.push_record_name(record.name());
         let elements = record
             .elements()
             .iter()
@@ -84,7 +84,7 @@ impl TypeCompiler {
                 .record_names
                 .iter()
                 .rev()
-                .position(|id| id == record.name())
+                .position(|name| name == record.name())
             {
                 ssf::types::Value::Index(index)
             } else {
@@ -148,13 +148,13 @@ impl TypeCompiler {
         ssf::types::Primitive::Float64
     }
 
-    fn push_record_id(&self, id: &str) -> Self {
+    fn push_record_name(&self, name: &str) -> Self {
         Self {
             record_names: self
                 .record_names
                 .clone()
                 .into_iter()
-                .chain(vec![id.into()])
+                .chain(vec![name.into()])
                 .collect(),
             reference_type_resolver: self.reference_type_resolver.clone(),
             union_tag_calculator: self.union_tag_calculator.clone(),
