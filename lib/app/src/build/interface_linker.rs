@@ -21,7 +21,7 @@ impl<'a, S: FileStorage> InterfaceLinker<'a, S> {
                 &interface_file_paths
                     .into_iter()
                     .map(|file_path| {
-                        Ok(ein::deserialize_module_interface(
+                        Ok(serde_json::from_slice(
                             &self.file_storage.read_to_vec(&file_path)?,
                         )?)
                     })

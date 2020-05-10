@@ -70,7 +70,7 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
         self.file_storage.write(&object_file_path, &bitcode)?;
         self.file_storage.write(
             &interface_file_path,
-            &ein::serialize_module_interface(&module_interface)?,
+            &serde_json::to_string(&module_interface)?.as_bytes(),
         )?;
 
         Ok((object_file_path, interface_file_path))

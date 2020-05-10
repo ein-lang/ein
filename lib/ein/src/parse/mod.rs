@@ -9,10 +9,7 @@ use combine::Parser;
 pub use error::ParseError;
 use parsers::{module, stream};
 
-pub fn parse_module(
-    source_content: &str,
-    source_name: &str,
-) -> Result<ast::UnresolvedModule, ParseError> {
+pub fn parse(source_content: &str, source_name: &str) -> Result<ast::UnresolvedModule, ParseError> {
     Ok(module()
         .parse(stream(source_content, source_name))
         .map(|(module, _)| module)?)
@@ -28,7 +25,7 @@ mod tests {
     use indoc::indoc;
 
     #[test]
-    fn parse_module_() {
+    fn parse_() {
         for (source, expected_module) in vec![
             (
                 "foo : Number -> Number -> Number\nfoo x y = 42",
@@ -119,14 +116,14 @@ mod tests {
                 .into()]),
             ),
         ] {
-            assert_eq!(parse_module(source, ""), Ok(expected_module));
+            assert_eq!(parse(source, ""), Ok(expected_module));
         }
     }
 
     #[test]
-    fn parse_module_with_import_statement() {
+    fn parse_with_import_statement() {
         assert_eq!(
-            parse_module(
+            parse(
                 indoc!(
                     "
                     import \"package/Module\"
@@ -161,9 +158,9 @@ mod tests {
     }
 
     #[test]
-    fn parse_module_with_comment() {
+    fn parse_with_comment() {
         assert_eq!(
-            parse_module(
+            parse(
                 indoc!(
                     "
                     # foo is good
