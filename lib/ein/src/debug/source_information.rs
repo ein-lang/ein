@@ -6,20 +6,26 @@ use std::fmt::Display;
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SourceInformation {
-    #[derivative(Hash = "ignore")]
-    #[derivative(Ord = "ignore")]
-    #[derivative(PartialEq = "ignore")]
-    #[derivative(PartialOrd = "ignore")]
+    #[derivative(
+        Hash = "ignore",
+        Ord = "ignore",
+        PartialEq = "ignore",
+        PartialOrd = "ignore"
+    )]
     source_name: String,
-    #[derivative(Hash = "ignore")]
-    #[derivative(Ord = "ignore")]
-    #[derivative(PartialEq = "ignore")]
-    #[derivative(PartialOrd = "ignore")]
+    #[derivative(
+        Hash = "ignore",
+        Ord = "ignore",
+        PartialEq = "ignore",
+        PartialOrd = "ignore"
+    )]
     location: Location,
-    #[derivative(Hash = "ignore")]
-    #[derivative(Ord = "ignore")]
-    #[derivative(PartialEq = "ignore")]
-    #[derivative(PartialOrd = "ignore")]
+    #[derivative(
+        Hash = "ignore",
+        Ord = "ignore",
+        PartialEq = "ignore",
+        PartialOrd = "ignore"
+    )]
     line: String,
 }
 

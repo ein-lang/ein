@@ -8,13 +8,13 @@ use std::rc::Rc;
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Record {
-    // Record names are enough to compare them and elements are not normalized
-    // possibly.
     name: String,
-    #[derivative(Hash = "ignore")]
-    #[derivative(Ord = "ignore")]
-    #[derivative(PartialEq = "ignore")]
-    #[derivative(PartialOrd = "ignore")]
+    #[derivative(
+        Hash = "ignore",
+        Ord = "ignore",
+        PartialEq = "ignore",
+        PartialOrd = "ignore"
+    )]
     elements: BTreeMap<String, Type>,
     source_information: Rc<SourceInformation>,
 }

@@ -1,0 +1,974 @@
+---
+source: lib/ein/src/compile/desugar/mod.rs
+expression: "desugar_with_types(&Module::from_definitions_and_type_definitions(vec![TypeDefinition\n                                                                       :: new\n                                                                       (\"Foo\",\n                                                                        types\n                                                                        ::\n                                                                        Record\n                                                                        :: new\n                                                                        (\"Foo\",\n                                                                         vec !\n                                                                         [(\"foo\"\n                                                                           .\n                                                                           into\n                                                                           (),\n                                                                           union_type\n                                                                           .\n                                                                           clone\n                                                                           ()\n                                                                           .\n                                                                           into\n                                                                           ())]\n                                                                         .\n                                                                         into_iter\n                                                                         () .\n                                                                         collect\n                                                                         (),\n                                                                         SourceInformation\n                                                                         ::\n                                                                         dummy\n                                                                         (),))],\n                                                                  vec![ValueDefinition\n                                                                       :: new\n                                                                       (\"x\",\n                                                                        RecordConstruction\n                                                                        :: new\n                                                                        (reference_type\n                                                                         .\n                                                                         clone\n                                                                         (),\n                                                                         vec !\n                                                                         [(\"foo\"\n                                                                           .\n                                                                           into\n                                                                           (),\n                                                                           Number\n                                                                           ::\n                                                                           new\n                                                                           (42.0,\n                                                                            SourceInformation\n                                                                            ::\n                                                                            dummy\n                                                                            ())\n                                                                           .\n                                                                           into\n                                                                           ())]\n                                                                         .\n                                                                         into_iter\n                                                                         () .\n                                                                         collect\n                                                                         (),\n                                                                         SourceInformation\n                                                                         ::\n                                                                         dummy\n                                                                         (),),\n                                                                        reference_type\n                                                                        .\n                                                                        clone\n                                                                        (),\n                                                                        SourceInformation\n                                                                        ::\n                                                                        dummy\n                                                                        (),) .\n                                                                       into\n                                                                       ()]))"
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [
+            TypeDefinition {
+                name: "Foo",
+                type_: Record(
+                    Record {
+                        name: "Foo",
+                        elements: {
+                            "foo": Union(
+                                Union {
+                                    types: {
+                                        None(
+                                            None {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        Number(
+                                            Number {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                        },
+                        source_information: SourceInformation {
+                            source_name: "",
+                            location: Location {
+                                line_number: 0,
+                                column_number: 0,
+                            },
+                            line: "",
+                        },
+                    },
+                ),
+            },
+        ],
+        definitions: [
+            ValueDefinition(
+                ValueDefinition {
+                    name: "x",
+                    body: RecordConstruction(
+                        RecordConstruction {
+                            type_: Reference(
+                                Reference {
+                                    name: "Foo",
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            elements: {
+                                "foo": TypeCoercion(
+                                    TypeCoercion {
+                                        argument: Number(
+                                            Number {
+                                                value: 42.0,
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        from: Number(
+                                            Number {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        to: Union(
+                                            Union {
+                                                types: {
+                                                    None(
+                                                        None {
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                    Number(
+                                                        Number {
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                },
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                            },
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Reference(
+                        Reference {
+                            name: "Foo",
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+            FunctionDefinition(
+                FunctionDefinition {
+                    name: "Foo.$equal",
+                    arguments: [
+                        "lhs",
+                        "rhs",
+                    ],
+                    body: If(
+                        If {
+                            condition: Boolean(
+                                Boolean {
+                                    value: true,
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            then: Case(
+                                Case {
+                                    type_: Union(
+                                        Union {
+                                            types: {
+                                                None(
+                                                    None {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                Number(
+                                                    Number {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                            },
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    name: "equal_operation_argument_0",
+                                    argument: RecordElementOperation(
+                                        RecordElementOperation {
+                                            type_: Record(
+                                                Record {
+                                                    name: "Foo",
+                                                    elements: {
+                                                        "foo": Union(
+                                                            Union {
+                                                                types: {
+                                                                    None(
+                                                                        None {
+                                                                            source_information: SourceInformation {
+                                                                                source_name: "",
+                                                                                location: Location {
+                                                                                    line_number: 0,
+                                                                                    column_number: 0,
+                                                                                },
+                                                                                line: "",
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    Number(
+                                                                        Number {
+                                                                            source_information: SourceInformation {
+                                                                                source_name: "",
+                                                                                location: Location {
+                                                                                    line_number: 0,
+                                                                                    column_number: 0,
+                                                                                },
+                                                                                line: "",
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                },
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
+                                                                },
+                                                            },
+                                                        ),
+                                                    },
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
+                                                    },
+                                                },
+                                            ),
+                                            key: "foo",
+                                            argument: Variable(
+                                                Variable {
+                                                    name: "lhs",
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
+                                                    },
+                                                },
+                                            ),
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    alternatives: [
+                                        Alternative {
+                                            type_: None(
+                                                None {
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
+                                                    },
+                                                },
+                                            ),
+                                            expression: Case(
+                                                Case {
+                                                    type_: Union(
+                                                        Union {
+                                                            types: {
+                                                                None(
+                                                                    None {
+                                                                        source_information: SourceInformation {
+                                                                            source_name: "",
+                                                                            location: Location {
+                                                                                line_number: 0,
+                                                                                column_number: 0,
+                                                                            },
+                                                                            line: "",
+                                                                        },
+                                                                    },
+                                                                ),
+                                                                Number(
+                                                                    Number {
+                                                                        source_information: SourceInformation {
+                                                                            source_name: "",
+                                                                            location: Location {
+                                                                                line_number: 0,
+                                                                                column_number: 0,
+                                                                            },
+                                                                            line: "",
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            },
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                    name: "equal_operation_argument_1",
+                                                    argument: RecordElementOperation(
+                                                        RecordElementOperation {
+                                                            type_: Record(
+                                                                Record {
+                                                                    name: "Foo",
+                                                                    elements: {
+                                                                        "foo": Union(
+                                                                            Union {
+                                                                                types: {
+                                                                                    None(
+                                                                                        None {
+                                                                                            source_information: SourceInformation {
+                                                                                                source_name: "",
+                                                                                                location: Location {
+                                                                                                    line_number: 0,
+                                                                                                    column_number: 0,
+                                                                                                },
+                                                                                                line: "",
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                    Number(
+                                                                                        Number {
+                                                                                            source_information: SourceInformation {
+                                                                                                source_name: "",
+                                                                                                location: Location {
+                                                                                                    line_number: 0,
+                                                                                                    column_number: 0,
+                                                                                                },
+                                                                                                line: "",
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                },
+                                                                                source_information: SourceInformation {
+                                                                                    source_name: "",
+                                                                                    location: Location {
+                                                                                        line_number: 0,
+                                                                                        column_number: 0,
+                                                                                    },
+                                                                                    line: "",
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            key: "foo",
+                                                            argument: Variable(
+                                                                Variable {
+                                                                    name: "rhs",
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                    alternatives: [
+                                                        Alternative {
+                                                            type_: None(
+                                                                None {
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            expression: Boolean(
+                                                                Boolean {
+                                                                    value: true,
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                        },
+                                                        Alternative {
+                                                            type_: Number(
+                                                                Number {
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            expression: Boolean(
+                                                                Boolean {
+                                                                    value: false,
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                        },
+                                                    ],
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                        Alternative {
+                                            type_: Number(
+                                                Number {
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
+                                                    },
+                                                },
+                                            ),
+                                            expression: Case(
+                                                Case {
+                                                    type_: Union(
+                                                        Union {
+                                                            types: {
+                                                                None(
+                                                                    None {
+                                                                        source_information: SourceInformation {
+                                                                            source_name: "",
+                                                                            location: Location {
+                                                                                line_number: 0,
+                                                                                column_number: 0,
+                                                                            },
+                                                                            line: "",
+                                                                        },
+                                                                    },
+                                                                ),
+                                                                Number(
+                                                                    Number {
+                                                                        source_information: SourceInformation {
+                                                                            source_name: "",
+                                                                            location: Location {
+                                                                                line_number: 0,
+                                                                                column_number: 0,
+                                                                            },
+                                                                            line: "",
+                                                                        },
+                                                                    },
+                                                                ),
+                                                            },
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                    name: "equal_operation_argument_1",
+                                                    argument: RecordElementOperation(
+                                                        RecordElementOperation {
+                                                            type_: Record(
+                                                                Record {
+                                                                    name: "Foo",
+                                                                    elements: {
+                                                                        "foo": Union(
+                                                                            Union {
+                                                                                types: {
+                                                                                    None(
+                                                                                        None {
+                                                                                            source_information: SourceInformation {
+                                                                                                source_name: "",
+                                                                                                location: Location {
+                                                                                                    line_number: 0,
+                                                                                                    column_number: 0,
+                                                                                                },
+                                                                                                line: "",
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                    Number(
+                                                                                        Number {
+                                                                                            source_information: SourceInformation {
+                                                                                                source_name: "",
+                                                                                                location: Location {
+                                                                                                    line_number: 0,
+                                                                                                    column_number: 0,
+                                                                                                },
+                                                                                                line: "",
+                                                                                            },
+                                                                                        },
+                                                                                    ),
+                                                                                },
+                                                                                source_information: SourceInformation {
+                                                                                    source_name: "",
+                                                                                    location: Location {
+                                                                                        line_number: 0,
+                                                                                        column_number: 0,
+                                                                                    },
+                                                                                    line: "",
+                                                                                },
+                                                                            },
+                                                                        ),
+                                                                    },
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            key: "foo",
+                                                            argument: Variable(
+                                                                Variable {
+                                                                    name: "rhs",
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                    alternatives: [
+                                                        Alternative {
+                                                            type_: None(
+                                                                None {
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            expression: Boolean(
+                                                                Boolean {
+                                                                    value: false,
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                        },
+                                                        Alternative {
+                                                            type_: Number(
+                                                                Number {
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            expression: Operation(
+                                                                Operation {
+                                                                    type_: Number(
+                                                                        Number {
+                                                                            source_information: SourceInformation {
+                                                                                source_name: "",
+                                                                                location: Location {
+                                                                                    line_number: 0,
+                                                                                    column_number: 0,
+                                                                                },
+                                                                                line: "",
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    operator: Equal,
+                                                                    lhs: Variable(
+                                                                        Variable {
+                                                                            name: "equal_operation_argument_0",
+                                                                            source_information: SourceInformation {
+                                                                                source_name: "",
+                                                                                location: Location {
+                                                                                    line_number: 0,
+                                                                                    column_number: 0,
+                                                                                },
+                                                                                line: "",
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    rhs: Variable(
+                                                                        Variable {
+                                                                            name: "equal_operation_argument_1",
+                                                                            source_information: SourceInformation {
+                                                                                source_name: "",
+                                                                                location: Location {
+                                                                                    line_number: 0,
+                                                                                    column_number: 0,
+                                                                                },
+                                                                                line: "",
+                                                                            },
+                                                                        },
+                                                                    ),
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                        },
+                                                    ],
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
+                                                    },
+                                                },
+                                            ),
+                                        },
+                                    ],
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            else_: Boolean(
+                                Boolean {
+                                    value: false,
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Function(
+                        Function {
+                            argument: Record(
+                                Record {
+                                    name: "Foo",
+                                    elements: {
+                                        "foo": Union(
+                                            Union {
+                                                types: {
+                                                    None(
+                                                        None {
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                    Number(
+                                                        Number {
+                                                            source_information: SourceInformation {
+                                                                source_name: "",
+                                                                location: Location {
+                                                                    line_number: 0,
+                                                                    column_number: 0,
+                                                                },
+                                                                line: "",
+                                                            },
+                                                        },
+                                                    ),
+                                                },
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            result: Function(
+                                Function {
+                                    argument: Record(
+                                        Record {
+                                            name: "Foo",
+                                            elements: {
+                                                "foo": Union(
+                                                    Union {
+                                                        types: {
+                                                            None(
+                                                                None {
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                            Number(
+                                                                Number {
+                                                                    source_information: SourceInformation {
+                                                                        source_name: "",
+                                                                        location: Location {
+                                                                            line_number: 0,
+                                                                            column_number: 0,
+                                                                        },
+                                                                        line: "",
+                                                                    },
+                                                                },
+                                                            ),
+                                                        },
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                            },
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    result: Boolean(
+                                        Boolean {
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+        ],
+        export: Export {
+            names: {},
+        },
+        imported_modules: [],
+    },
+)
