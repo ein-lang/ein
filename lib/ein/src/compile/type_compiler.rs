@@ -2,10 +2,18 @@ use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::types::{self, Type};
+use lazy_static::lazy_static;
 use std::rc::Rc;
 
+lazy_static! {
+    static ref UNION_PADDING_ENTRY: (u64, ssf::types::Constructor) = (
+        0,
+        ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
+    );
+}
+
 pub struct TypeCompiler {
-    record_names: Vec<String>,
+    record_names: Vec<Option<String>>,
     reference_type_resolver: Rc<ReferenceTypeResolver>,
     union_tag_calculator: Rc<UnionTagCalculator>,
 }
@@ -62,7 +70,7 @@ impl TypeCompiler {
         &self,
         record: &types::Record,
     ) -> Result<ssf::types::Algebraic, CompileError> {
-        let other = self.push_record_name(record.name());
+        let other = self.push_record_name(Some(record.name().into()));
         let elements = record
             .elements()
             .iter()
@@ -84,7 +92,7 @@ impl TypeCompiler {
                 .record_names
                 .iter()
                 .rev()
-                .position(|name| name == record.name())
+                .position(|name| name.as_deref() == Some(record.name()))
             {
                 ssf::types::Value::Index(index)
             } else {
@@ -97,6 +105,8 @@ impl TypeCompiler {
         &self,
         union: &types::Union,
     ) -> Result<ssf::types::Algebraic, CompileError> {
+        let other = self.push_record_name(None);
+
         // Make sure that every union type has exactly 128 bits so that
         // we can omit union-to-union type coercion.
         Ok(ssf::types::Algebraic::with_tags(
@@ -104,7 +114,7 @@ impl TypeCompiler {
                 .types()
                 .iter()
                 .map(|type_| {
-                    let type_ = self.reference_type_resolver.resolve(type_)?;
+                    let type_ = other.reference_type_resolver.resolve(type_)?;
 
                     Ok(match &type_ {
                         Type::Boolean(_)
@@ -112,8 +122,8 @@ impl TypeCompiler {
                         | Type::None(_)
                         | Type::Number(_)
                         | Type::Record(_) => (
-                            self.union_tag_calculator.calculate(&type_)?,
-                            ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
+                            other.union_tag_calculator.calculate(&type_)?,
+                            ssf::types::Constructor::unboxed(vec![other.compile(&type_)?]),
                         ),
                         Type::Reference(_)
                         | Type::Union(_)
@@ -121,10 +131,7 @@ impl TypeCompiler {
                         | Type::Variable(_) => unreachable!(),
                     })
                 })
-                .chain(vec![Ok((
-                    0,
-                    ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
-                ))])
+                .chain(vec![Ok(UNION_PADDING_ENTRY.clone())])
                 .collect::<Result<_, CompileError>>()?,
         ))
     }
@@ -148,13 +155,13 @@ impl TypeCompiler {
         ssf::types::Primitive::Float64
     }
 
-    fn push_record_name(&self, name: &str) -> Self {
+    fn push_record_name(&self, name: Option<String>) -> Self {
         Self {
             record_names: self
                 .record_names
                 .clone()
                 .into_iter()
-                .chain(vec![name.into()])
+                .chain(vec![name])
                 .collect(),
             reference_type_resolver: self.reference_type_resolver.clone(),
             union_tag_calculator: self.union_tag_calculator.clone(),
@@ -288,6 +295,95 @@ mod tests {
         );
     }
 
+    #[test]
+    fn compile_nested_recursive_record_type_with_union_field() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        let reference_type_resolver =
+            ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
+                vec![
+                    TypeDefinition::new(
+                        "Foo",
+                        types::Record::new(
+                            "Foo",
+                            vec![(
+                                "foo".into(),
+                                types::Reference::new("Bar", SourceInformation::dummy()).into(),
+                            )]
+                            .into_iter()
+                            .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                    ),
+                    TypeDefinition::new(
+                        "Bar",
+                        types::Record::new(
+                            "Bar",
+                            vec![(
+                                "bar".into(),
+                                types::Union::new(
+                                    vec![
+                                        reference_type.clone().into(),
+                                        types::None::new(SourceInformation::dummy()).into(),
+                                    ],
+                                    SourceInformation::dummy(),
+                                )
+                                .into(),
+                            )]
+                            .into_iter()
+                            .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                    ),
+                ],
+                vec![],
+            ));
+
+        assert_eq!(
+            TypeCompiler::new(
+                reference_type_resolver.clone(),
+                UnionTagCalculator::new(reference_type_resolver.clone())
+            )
+            .compile(&reference_type.into()),
+            Ok(
+                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                    vec![
+                        ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                            vec![ssf::types::Algebraic::with_tags(
+                                vec![
+                                    UNION_PADDING_ENTRY.clone(),
+                                    (
+                                        5752548472714560345,
+                                        ssf::types::Constructor::unboxed(vec![
+                                            ssf::types::Algebraic::new(vec![
+                                                ssf::types::Constructor::unboxed(vec![])
+                                            ])
+                                            .into()
+                                        ])
+                                    ),
+                                    (
+                                        461893210254723387,
+                                        ssf::types::Constructor::new(
+                                            vec![ssf::types::Value::Index(2).into()],
+                                            false
+                                        )
+                                    )
+                                ]
+                                .into_iter()
+                                .collect()
+                            )
+                            .into()],
+                            true
+                        )])
+                        .into()
+                    ],
+                    true
+                )])
+                .into()
+            )
+        );
+    }
+
     mod union {
         use super::*;
         use pretty_assertions::assert_eq;
@@ -331,12 +427,7 @@ mod tests {
                 ),
                 Ok(ssf::types::Algebraic::with_tags(
                     vec![
-                        (
-                            0,
-                            ssf::types::Constructor::unboxed(vec![
-                                ssf::types::Primitive::Integer64.into()
-                            ]),
-                        ),
+                        UNION_PADDING_ENTRY.clone(),
                         (
                             461893210254723387,
                             ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
@@ -377,12 +468,7 @@ mod tests {
                 ),
                 Ok(ssf::types::Algebraic::with_tags(
                     vec![
-                        (
-                            0,
-                            ssf::types::Constructor::unboxed(vec![
-                                ssf::types::Primitive::Integer64.into()
-                            ]),
-                        ),
+                        UNION_PADDING_ENTRY.clone(),
                         (
                             4919337809186972848,
                             ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
@@ -426,12 +512,7 @@ mod tests {
                 ),
                 Ok(ssf::types::Algebraic::with_tags(
                     vec![
-                        (
-                            0,
-                            ssf::types::Constructor::unboxed(vec![
-                                ssf::types::Primitive::Integer64.into()
-                            ]),
-                        ),
+                        UNION_PADDING_ENTRY.clone(),
                         (
                             17146441699440925146,
                             ssf::types::Constructor::unboxed(vec![
