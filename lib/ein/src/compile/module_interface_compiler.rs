@@ -1,6 +1,5 @@
 use super::error::CompileError;
-use crate::ast::Module;
-use crate::ast::ModuleInterface;
+use crate::ast::*;
 
 #[derive(Debug)]
 pub struct ModuleInterfaceCompiler {}
@@ -12,16 +11,14 @@ impl ModuleInterfaceCompiler {
 
     pub fn compile(&self, module: &Module) -> Result<ModuleInterface, CompileError> {
         if let Some(name) = module.export().names().iter().find(|name| {
-            let name = module.path().fully_qualify_name(name);
+            let exported_name = module.path().fully_qualify_name(name);
 
             !module
                 .type_definitions()
                 .iter()
-                .any(|definition| definition.name() == name)
-                && !module
-                    .definitions()
-                    .iter()
-                    .any(|definition| definition.name() == name)
+                .map(TypeDefinition::name)
+                .chain(module.definitions().iter().map(Definition::name))
+                .any(|name| name == exported_name)
         }) {
             Err(CompileError::ExportedNameNotFound { name: name.into() })
         } else {
@@ -111,9 +108,7 @@ mod tests {
                 vec![],
                 vec![],
             ),),
-            Err(CompileError::ExportedNameNotFound {
-                name: "P().M.x".into()
-            })
+            Err(CompileError::ExportedNameNotFound { name: "x".into() })
         );
     }
 }
