@@ -50,8 +50,8 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     let module = PartialApplicationDesugarer::new().desugar(&module)?;
 
     TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
-        reference_type_resolver.clone(),
-        type_equality_checker.clone(),
+        reference_type_resolver,
+        type_equality_checker,
         expression_type_extractor,
         union_type_simplifier,
     ))
