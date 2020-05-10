@@ -6,6 +6,7 @@ mod variable_constraint_set;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use crate::types::{self, Type};
@@ -23,10 +24,13 @@ pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
     })?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
+    let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+
     let subsumption_set =
         ConstraintCollector::new(reference_type_resolver.clone()).collect(&module)?;
-    let substitutions = ConstraintSolver::new(reference_type_resolver).solve(subsumption_set)?;
+    let substitutions = ConstraintSolver::new(reference_type_resolver, type_equality_checker)
+        .solve(subsumption_set)?;
 
     module
         .convert_types(&mut |type_| -> Result<_, CompileError> {
