@@ -31,7 +31,7 @@ impl TryFrom<Operator> for ssf::ir::Operator {
             Operator::LessThanOrEqual => ssf::ir::Operator::LessThanOrEqual,
             Operator::GreaterThan => ssf::ir::Operator::GreaterThan,
             Operator::GreaterThanOrEqual => ssf::ir::Operator::GreaterThanOrEqual,
-            Operator::And | Operator::Or => Err(())?,
+            Operator::And | Operator::Or => return Err(()),
         })
     }
 }
