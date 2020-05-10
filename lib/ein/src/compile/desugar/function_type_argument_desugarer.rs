@@ -114,7 +114,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
             Expression::RecordConstruction(record_construction) => {
                 let type_ = self
                     .reference_type_resolver
-                    .resolve_reference(record_construction.type_())?;
+                    .resolve(record_construction.type_())?;
                 let record_type = type_.to_record().unwrap();
 
                 Ok(RecordConstruction::new(

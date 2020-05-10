@@ -5,7 +5,7 @@ use crate::types::{self, Type};
 use std::rc::Rc;
 
 pub struct TypeCompiler {
-    record_ids: Vec<String>,
+    record_names: Vec<String>,
     reference_type_resolver: Rc<ReferenceTypeResolver>,
     union_tag_calculator: Rc<UnionTagCalculator>,
 }
@@ -16,7 +16,7 @@ impl TypeCompiler {
         union_tag_calculator: Rc<UnionTagCalculator>,
     ) -> Rc<Self> {
         Self {
-            record_ids: vec![],
+            record_names: vec![],
             reference_type_resolver,
             union_tag_calculator,
         }
@@ -44,7 +44,7 @@ impl TypeCompiler {
         }
     }
 
-    pub fn compile_reference(
+    fn compile_reference(
         &self,
         reference: &types::Reference,
     ) -> Result<ssf::types::Type, CompileError> {
@@ -62,7 +62,7 @@ impl TypeCompiler {
         &self,
         record: &types::Record,
     ) -> Result<ssf::types::Algebraic, CompileError> {
-        let other = self.push_record_id(record.id().unwrap());
+        let other = self.push_record_id(record.name());
         let elements = record
             .elements()
             .iter()
@@ -81,10 +81,10 @@ impl TypeCompiler {
     ) -> Result<ssf::types::Value, CompileError> {
         Ok(
             if let Some(index) = self
-                .record_ids
+                .record_names
                 .iter()
                 .rev()
-                .position(|id| id == record.id().unwrap())
+                .position(|id| id == record.name())
             {
                 ssf::types::Value::Index(index)
             } else {
@@ -150,8 +150,8 @@ impl TypeCompiler {
 
     fn push_record_id(&self, id: &str) -> Self {
         Self {
-            record_ids: self
-                .record_ids
+            record_names: self
+                .record_names
                 .clone()
                 .into_iter()
                 .chain(vec![id.into()])

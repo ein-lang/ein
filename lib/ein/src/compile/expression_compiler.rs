@@ -122,7 +122,7 @@ impl ExpressionCompiler {
             Expression::RecordConstruction(record) => ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(
                     self.type_compiler
-                        .compile_reference(record.type_())?
+                        .compile(record.type_())?
                         .into_value()
                         .unwrap()
                         .into_algebraic()

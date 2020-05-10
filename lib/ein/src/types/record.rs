@@ -8,9 +8,9 @@ use std::rc::Rc;
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Record {
-    // Record ID's are enough to compare them and elements are not normalized
+    // Record names are enough to compare them and elements are not normalized
     // possibly.
-    id: Option<String>,
+    name: String,
     #[derivative(Hash = "ignore")]
     #[derivative(Ord = "ignore")]
     #[derivative(PartialEq = "ignore")]
@@ -21,30 +21,19 @@ pub struct Record {
 
 impl Record {
     pub fn new(
-        id: impl Into<String>,
+        name: impl Into<String>,
         elements: BTreeMap<String, Type>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
         Self {
-            id: Some(id.into()),
+            name: name.into(),
             elements,
             source_information: source_information.into(),
         }
     }
 
-    pub fn without_id(
-        elements: BTreeMap<String, Type>,
-        source_information: impl Into<Rc<SourceInformation>>,
-    ) -> Self {
-        Self {
-            id: None,
-            elements,
-            source_information: source_information.into(),
-        }
-    }
-
-    pub fn id(&self) -> Option<&str> {
-        self.id.as_deref()
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     pub fn elements(&self) -> &BTreeMap<String, Type> {
@@ -60,7 +49,7 @@ impl Record {
         convert: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self {
-            id: self.id.clone(),
+            name: self.name.clone(),
             elements: self
                 .elements
                 .iter()

@@ -1,14 +1,14 @@
 use crate::ast::*;
 use crate::types::{self, Type};
 
-pub struct RecordElementFunctionDesugarer {}
+pub struct RecordFunctionCreator {}
 
-impl RecordElementFunctionDesugarer {
+impl RecordFunctionCreator {
     pub fn new() -> Self {
         Self {}
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Module {
+    pub fn create(&mut self, module: &Module) -> Module {
         Module::new(
             module.path().clone(),
             module.export().clone(),
@@ -68,7 +68,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn desugar_record_element_functions() {
+    fn create_record_element_functions() {
         let record_type = types::Record::new(
             "Foo",
             vec![(
@@ -81,12 +81,10 @@ mod tests {
         );
 
         assert_eq!(
-            RecordElementFunctionDesugarer::new().desugar(
-                &Module::from_definitions_and_type_definitions(
-                    vec![TypeDefinition::new("Foo", record_type.clone())],
-                    vec![]
-                )
-            ),
+            RecordFunctionCreator::new().create(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![]
+            )),
             Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![FunctionDefinition::new(

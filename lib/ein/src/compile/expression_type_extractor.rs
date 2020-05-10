@@ -103,7 +103,7 @@ impl ExpressionTypeExtractor {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
             },
-            Expression::RecordConstruction(record) => record.type_().clone().into(),
+            Expression::RecordConstruction(record) => record.type_().clone(),
             Expression::RecordElementOperation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;
 
