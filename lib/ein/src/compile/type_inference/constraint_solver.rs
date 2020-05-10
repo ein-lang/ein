@@ -1,5 +1,6 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::super::type_equality_checker::TypeEqualityChecker;
 use super::subsumption_set::SubsumptionSet;
 use super::variable_constraint_set::VariableConstraintSet;
 use crate::types::Type;
@@ -8,12 +9,17 @@ use std::rc::Rc;
 
 pub struct ConstraintSolver {
     reference_type_resolver: Rc<ReferenceTypeResolver>,
+    type_equality_checker: Rc<TypeEqualityChecker>,
 }
 
 impl ConstraintSolver {
-    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Self {
+    pub fn new(
+        reference_type_resolver: Rc<ReferenceTypeResolver>,
+        type_equality_checker: Rc<TypeEqualityChecker>,
+    ) -> Self {
         Self {
             reference_type_resolver,
+            type_equality_checker,
         }
     }
 
@@ -64,7 +70,14 @@ impl ConstraintSolver {
                 }
                 (one, Type::Union(union)) => {
                     // Union types' members cannot be type variables.
-                    if !union.types().iter().any(|type_| type_ == &one) {
+                    if !union
+                        .types()
+                        .iter()
+                        .map(|type_| self.type_equality_checker.equal(&one, type_))
+                        .collect::<Result<Vec<_>, _>>()?
+                        .into_iter()
+                        .any(|value| value)
+                    {
                         return Err(CompileError::TypesNotMatched(
                             one.source_information().clone(),
                             union.source_information().clone(),
@@ -86,7 +99,7 @@ impl ConstraintSolver {
                     return Err(CompileError::TypesNotMatched(
                         one.source_information().clone(),
                         other.source_information().clone(),
-                    ))
+                    ));
                 }
             }
         }

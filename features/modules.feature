@@ -89,3 +89,30 @@ Feature: Modules
     And I run `sh -c ./foo`
     Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Use mutually recursive types only one of which is exported
+    Given a file named "Main.ein" with:
+    """
+    import "/Foo"
+
+    foo : Foo.Foo
+    foo = Foo.foo
+
+    main : Number -> Number
+    main x = x
+    """
+    And a file named "Foo.ein" with:
+    """
+    export { Foo, foo }
+
+    type Foo ( bar : Bar | None )
+
+    type Bar ( foo : Foo | None )
+
+    foo : Foo
+    foo = Foo ( bar = none )
+    """
+    When I successfully run `ein build`
+    And I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
+    And the exit status should be 0

@@ -33,26 +33,29 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
         union_type_simplifier.clone(),
     );
 
+    let module = NotEqualOperationDesugarer::new().desugar(&module)?;
+    let module = EqualOperationDesugarer::new(
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+    )
+    .desugar(&module)?;
+
     let module = TypedMetaDesugarer::new(FunctionTypeArgumentDesugarer::new(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
         expression_type_extractor.clone(),
     ))
-    .desugar(module)?;
+    .desugar(&module)?;
 
     let module = PartialApplicationDesugarer::new().desugar(&module)?;
 
-    let module = TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
-        reference_type_resolver.clone(),
-        type_equality_checker.clone(),
+    TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
+        reference_type_resolver,
+        type_equality_checker,
         expression_type_extractor,
         union_type_simplifier,
     ))
-    .desugar(&module)?;
-
-    let module = NotEqualOperationDesugarer::new().desugar(&module)?;
-
-    EqualOperationDesugarer::new(reference_type_resolver, type_equality_checker).desugar(&module)
+    .desugar(&module)
 }
 
 #[cfg(test)]
