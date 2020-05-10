@@ -4,7 +4,7 @@ use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use crate::debug::SourceInformation;
-use crate::types::Type;
+use crate::types::{self, Type};
 use std::rc::Rc;
 
 pub struct EqualOperationDesugarer {
@@ -26,9 +26,89 @@ impl EqualOperationDesugarer {
     }
 
     pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
-        module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            self.desugar_expression(expression)
-        })
+        let module =
+            module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
+                self.desugar_expression(expression)
+            })?;
+
+        Ok(Module::new(
+            module.path().clone(),
+            module.export().clone(),
+            module.imported_modules().to_vec(),
+            module.type_definitions().to_vec(),
+            module
+                .definitions()
+                .iter()
+                .cloned()
+                .chain(
+                    module
+                        .type_definitions()
+                        .iter()
+                        .filter_map(|type_definition| {
+                            if let Type::Record(record_type) = type_definition.type_() {
+                                Some(
+                                    self.create_record_equal_function(record_type)
+                                        .map(Definition::from),
+                                )
+                            } else {
+                                None
+                            }
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                )
+                .collect(),
+        ))
+    }
+
+    fn create_record_equal_function(
+        &mut self,
+        record_type: &types::Record,
+    ) -> Result<FunctionDefinition, CompileError> {
+        let source_information = record_type.source_information();
+        let mut expression: Expression = Boolean::new(true, source_information.clone()).into();
+
+        for (key, element_type) in record_type.elements() {
+            expression = If::new(
+                expression,
+                self.desugar_equal_operation(
+                    element_type,
+                    &RecordElementOperation::new(
+                        record_type.clone(),
+                        key,
+                        Variable::new("lhs", source_information.clone()),
+                        source_information.clone(),
+                    )
+                    .into(),
+                    &RecordElementOperation::new(
+                        record_type.clone(),
+                        key,
+                        Variable::new("rhs", source_information.clone()),
+                        source_information.clone(),
+                    )
+                    .into(),
+                    source_information.clone(),
+                )?,
+                Boolean::new(false, source_information.clone()),
+                source_information.clone(),
+            )
+            .into();
+        }
+
+        Ok(FunctionDefinition::new(
+            self.get_record_equal_function_name(record_type),
+            vec!["lhs".into(), "rhs".into()],
+            expression,
+            types::Function::new(
+                record_type.clone(),
+                types::Function::new(
+                    record_type.clone(),
+                    types::Boolean::new(source_information.clone()),
+                    source_information.clone(),
+                ),
+                source_information.clone(),
+            ),
+            source_information.clone(),
+        ))
     }
 
     fn desugar_expression(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
@@ -83,38 +163,19 @@ impl EqualOperationDesugarer {
                 source_information,
             )
             .into(),
-            Type::Record(record) => {
-                let mut expression = Boolean::new(true, source_information.clone()).into();
-
-                for (key, element_type) in record.elements() {
-                    expression = If::new(
-                        expression,
-                        self.desugar_equal_operation(
-                            element_type,
-                            &RecordElementOperation::new(
-                                record.clone(),
-                                key,
-                                lhs.clone(),
-                                source_information.clone(),
-                            )
-                            .into(),
-                            &RecordElementOperation::new(
-                                record.clone(),
-                                key,
-                                rhs.clone(),
-                                source_information.clone(),
-                            )
-                            .into(),
-                            source_information.clone(),
-                        )?,
-                        Boolean::new(false, source_information.clone()),
+            Type::Record(record) => Application::new(
+                Application::new(
+                    Variable::new(
+                        self.get_record_equal_function_name(&record),
                         source_information.clone(),
-                    )
-                    .into();
-                }
-
-                expression
-            }
+                    ),
+                    lhs.clone(),
+                    source_information.clone(),
+                ),
+                rhs.clone(),
+                source_information,
+            )
+            .into(),
             Type::Union(union) => {
                 let lhs_name = self.name_generator.generate();
                 let rhs_name = self.name_generator.generate();
@@ -175,5 +236,9 @@ impl EqualOperationDesugarer {
             }
             Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
+    }
+
+    fn get_record_equal_function_name(&self, record_type: &types::Record) -> String {
+        format!("{}.$equal", record_type.name())
     }
 }

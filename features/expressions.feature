@@ -83,6 +83,32 @@ Feature: Expressions
     Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
 
+  Scenario: Use an equal operator with records
+    Given a file named "ein.json" with:
+    """
+    {
+      "target": {
+        "type": "Command",
+        "name": "foo"
+      },
+      "dependencies": {}
+    }
+    """
+    And a file named "Main.ein" with:
+    """
+    type Foo ( foo : Number, bar : Boolean )
+
+    main : Number -> Number
+    main x =
+      if Foo ( foo = 42, bar = true ) == Foo ( foo = 42, bar = true )
+      then 42
+      else 13
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
+    And the exit status should be 0
+
   Scenario: Use an equal operator with unions
     Given a file named "ein.json" with:
     """

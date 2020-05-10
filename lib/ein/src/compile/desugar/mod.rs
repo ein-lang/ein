@@ -60,6 +60,7 @@ mod tests {
     use super::*;
     use crate::debug::SourceInformation;
     use crate::types;
+    use insta::assert_debug_snapshot;
     use pretty_assertions::assert_eq;
 
     mod type_coercion {
@@ -359,8 +360,8 @@ mod tests {
             );
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let create_module = |expression: Expression| {
-                Module::from_definitions_and_type_definitions(
+            assert_debug_snapshot!(desugar_with_types(
+                &Module::from_definitions_and_type_definitions(
                     vec![TypeDefinition::new(
                         "Foo",
                         types::Record::new(
@@ -369,13 +370,18 @@ mod tests {
                                 .into_iter()
                                 .collect(),
                             SourceInformation::dummy(),
-                        ),
+                        )
                     )],
                     vec![ValueDefinition::new(
                         "x",
                         RecordConstruction::new(
                             reference_type.clone(),
-                            vec![("foo".into(), expression)].into_iter().collect(),
+                            vec![(
+                                "foo".into(),
+                                Number::new(42.0, SourceInformation::dummy()).into()
+                            )]
+                            .into_iter()
+                            .collect(),
                             SourceInformation::dummy(),
                         ),
                         reference_type.clone(),
@@ -383,22 +389,7 @@ mod tests {
                     )
                     .into()],
                 )
-            };
-
-            assert_eq!(
-                desugar_with_types(&create_module(
-                    Number::new(42.0, SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(
-                    TypeCoercion::new(
-                        Number::new(42.0, SourceInformation::dummy()),
-                        types::Number::new(SourceInformation::dummy()),
-                        union_type.clone(),
-                        SourceInformation::dummy(),
-                    )
-                    .into()
-                ))
-            );
+            ));
         }
 
         #[test]
