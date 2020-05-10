@@ -382,6 +382,48 @@ mod tests {
                 .into()
             )
         );
+
+        assert_eq!(
+            TypeCompiler::new(
+                reference_type_resolver.clone(),
+                UnionTagCalculator::new(reference_type_resolver.clone())
+            )
+            .compile(&types::Reference::new("Bar", SourceInformation::dummy()).into()),
+            Ok(
+                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                    vec![ssf::types::Algebraic::with_tags(
+                        vec![
+                            UNION_PADDING_ENTRY.clone(),
+                            (
+                                5752548472714560345,
+                                ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
+                                    vec![ssf::types::Constructor::unboxed(vec![])]
+                                )
+                                .into()])
+                            ),
+                            (
+                                461893210254723387,
+                                ssf::types::Constructor::new(
+                                    vec![ssf::types::Algebraic::new(vec![
+                                        ssf::types::Constructor::new(
+                                            vec![ssf::types::Value::Index(2).into()],
+                                            true
+                                        )
+                                    ])
+                                    .into()],
+                                    false
+                                )
+                            )
+                        ]
+                        .into_iter()
+                        .collect()
+                    )
+                    .into()],
+                    true
+                )])
+                .into()
+            )
+        );
     }
 
     mod union {
