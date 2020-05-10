@@ -1368,6 +1368,34 @@ mod tests {
                 Ok(create_module(record_type.clone().into()))
             );
         }
+
+        #[test]
+        fn infer_types_of_boolean_operation() {
+            let create_module = |type_: Type| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        type_,
+                        Operator::And,
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Boolean::new(true, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    types::Boolean::new(SourceInformation::dummy()).into()
+                ))
+            );
+        }
     }
 
     mod union {

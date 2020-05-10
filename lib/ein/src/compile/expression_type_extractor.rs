@@ -99,7 +99,9 @@ impl ExpressionTypeExtractor {
                 | Operator::LessThan
                 | Operator::LessThanOrEqual
                 | Operator::GreaterThan
-                | Operator::GreaterThanOrEqual => {
+                | Operator::GreaterThanOrEqual
+                | Operator::And
+                | Operator::Or => {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
             },
