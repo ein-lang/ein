@@ -28,6 +28,7 @@
     "fsub",
     "hasher",
     "indoc",
+    "insta",
     "intrinsic",
     "intrinsics",
     "libruntime",
