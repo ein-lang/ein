@@ -1,3 +1,4 @@
+mod boolean_operation_desugarer;
 mod equal_operation_desugarer;
 mod function_type_argument_desugarer;
 mod not_equal_operation_desugarer;
@@ -12,6 +13,7 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
+use boolean_operation_desugarer::BooleanOperationDesugarer;
 use equal_operation_desugarer::EqualOperationDesugarer;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use not_equal_operation_desugarer::NotEqualOperationDesugarer;
@@ -32,6 +34,8 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
         reference_type_resolver.clone(),
         union_type_simplifier.clone(),
     );
+
+    let module = BooleanOperationDesugarer::new().desugar(&module)?;
 
     let module = NotEqualOperationDesugarer::new().desugar(&module)?;
     let module = EqualOperationDesugarer::new(
@@ -839,6 +843,76 @@ mod tests {
                     ),
                     Boolean::new(false, SourceInformation::dummy()),
                     Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ))
+        );
+    }
+
+    #[test]
+    fn desugar_and_operation() {
+        let create_module = |expression: Expression| {
+            Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                expression,
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        };
+
+        assert_eq!(
+            desugar_with_types(&create_module(
+                Operation::with_type(
+                    types::Boolean::new(SourceInformation::dummy()),
+                    Operator::And,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            )),
+            Ok(create_module(
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(false, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ))
+        );
+    }
+
+    #[test]
+    fn desugar_or_operation() {
+        let create_module = |expression: Expression| {
+            Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                expression,
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()])
+        };
+
+        assert_eq!(
+            desugar_with_types(&create_module(
+                Operation::with_type(
+                    types::Boolean::new(SourceInformation::dummy()),
+                    Operator::Or,
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Boolean::new(false, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            )),
+            Ok(create_module(
+                If::new(
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(false, SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into(),
