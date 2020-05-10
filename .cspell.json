@@ -42,6 +42,7 @@
     "parenthesesed",
     "petgraph",
     "ppcfp",
+    "renamer",
     "semver",
     "subcommand",
     "submodule",

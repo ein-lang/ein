@@ -1,30 +1,30 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
-use crate::types::{self, Type};
+use crate::types::Type;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordConstruction {
-    type_: types::Reference,
+    type_: Type,
     elements: BTreeMap<String, Expression>,
     source_information: Rc<SourceInformation>,
 }
 
 impl RecordConstruction {
     pub fn new(
-        type_: types::Reference,
+        type_: impl Into<Type>,
         elements: BTreeMap<String, Expression>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
-        RecordConstruction {
-            type_,
+        Self {
+            type_: type_.into(),
             elements,
             source_information: source_information.into(),
         }
     }
 
-    pub fn type_(&self) -> &types::Reference {
+    pub fn type_(&self) -> &Type {
         &self.type_
     }
 
@@ -57,7 +57,7 @@ impl RecordConstruction {
         convert: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.type_.clone(),
+            self.type_.convert_types(convert)?,
             self.elements
                 .iter()
                 .map(|(name, expression)| Ok((name.into(), expression.convert_types(convert)?)))

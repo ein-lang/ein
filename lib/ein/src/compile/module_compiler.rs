@@ -31,7 +31,7 @@ impl ModuleCompiler {
                         .iter()
                         .map(move |(name, type_)| {
                             Ok(ssf::ir::Declaration::new(
-                                module_interface.path().qualify_name(name),
+                                name,
                                 self.type_compiler.compile(type_)?,
                             ))
                         })
