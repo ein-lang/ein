@@ -27,14 +27,15 @@ pub fn reduce_operations(
 
 fn operator_priority(operator: Operator) -> u8 {
     match operator {
-        Operator::And | Operator::Or => 0,
+        Operator::Or => 0,
+        Operator::And => 1,
         Operator::Equal
         | Operator::NotEqual
         | Operator::LessThan
         | Operator::LessThanOrEqual
         | Operator::GreaterThan
-        | Operator::GreaterThanOrEqual => 1,
-        Operator::Add | Operator::Subtract => 2,
-        Operator::Multiply | Operator::Divide => 3,
+        | Operator::GreaterThanOrEqual => 2,
+        Operator::Add | Operator::Subtract => 3,
+        Operator::Multiply | Operator::Divide => 4,
     }
 }

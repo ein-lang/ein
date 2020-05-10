@@ -1925,6 +1925,23 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+        assert_eq!(
+            operation()
+                .parse(stream("true || true && true", ""))
+                .unwrap()
+                .0,
+            Operation::new(
+                Operator::Or,
+                Boolean::new(true, SourceInformation::dummy()),
+                Operation::new(
+                    Operator::And,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+        );
     }
 
     #[test]
