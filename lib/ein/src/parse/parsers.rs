@@ -507,6 +507,8 @@ fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
         concrete_operator("<=", Operator::LessThanOrEqual),
         concrete_operator(">", Operator::GreaterThan),
         concrete_operator(">=", Operator::GreaterThanOrEqual),
+        concrete_operator("&&", Operator::And),
+        concrete_operator("||", Operator::Or),
     )
 }
 
@@ -1888,6 +1890,38 @@ mod tests {
                 Operator::Equal,
                 Number::new(1.0, SourceInformation::dummy()),
                 Number::new(1.0, SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
+            operation().parse(stream("true && true", "")).unwrap().0,
+            Operation::new(
+                Operator::And,
+                Boolean::new(true, SourceInformation::dummy()),
+                Boolean::new(true, SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
+            operation().parse(stream("true || true", "")).unwrap().0,
+            Operation::new(
+                Operator::Or,
+                Boolean::new(true, SourceInformation::dummy()),
+                Boolean::new(true, SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+        );
+        assert_eq!(
+            operation().parse(stream("true && 1 < 2", "")).unwrap().0,
+            Operation::new(
+                Operator::And,
+                Boolean::new(true, SourceInformation::dummy()),
+                Operation::new(
+                    Operator::LessThan,
+                    Number::new(1.0, SourceInformation::dummy()),
+                    Number::new(2.0, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
                 SourceInformation::dummy()
             )
         );
