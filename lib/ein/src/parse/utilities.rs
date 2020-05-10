@@ -10,8 +10,8 @@ pub fn reduce_operations(
         [(operator, rhs, source_information)] => {
             Operation::new(*operator, lhs, rhs.clone(), source_information.clone())
         }
-        [(operator, rhs, source_information), (next_opeartor, _, _), ..] => {
-            if operator_priority(*operator) >= operator_priority(*next_opeartor) {
+        [(operator, rhs, source_information), (next_operator, _, _), ..] => {
+            if operator_priority(*operator) >= operator_priority(*next_operator) {
                 reduce_operations(
                     Operation::new(*operator, lhs, rhs.clone(), source_information.clone()).into(),
                     &pairs[1..],
