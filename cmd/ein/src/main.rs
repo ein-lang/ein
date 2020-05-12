@@ -37,8 +37,13 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let object_linker = infra::ObjectLinker::new();
     let module_parser = app::ModuleParser::new(&file_path_displayer);
-    let module_compiler =
-        app::ModuleCompiler::new(&module_parser, &file_path_manager, &file_storage);
+    let compile_configuration = app::CompileConfiguration::new("main", "ein_main", "ein_init");
+    let module_compiler = app::ModuleCompiler::new(
+        &module_parser,
+        &file_path_manager,
+        &file_storage,
+        &compile_configuration,
+    );
     let module_builder = app::ModuleBuilder::new(
         &module_parser,
         &module_compiler,

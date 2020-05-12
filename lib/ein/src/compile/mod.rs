@@ -1,4 +1,5 @@
 mod boolean_compiler;
+mod compile_configuration;
 mod desugar;
 mod error;
 mod expression_compiler;
@@ -20,6 +21,7 @@ mod union_type_simplifier;
 use crate::ast::*;
 use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
+pub use compile_configuration::CompileConfiguration;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
@@ -32,16 +34,17 @@ use type_compiler::TypeCompiler;
 use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
 
-const SOURCE_MAIN_FUNCTION_NAME: &str = "main";
-const OBJECT_MAIN_FUNCTION_NAME: &str = "ein_main";
-const OBJECT_INIT_FUNCTION_NAME: &str = "ein_init";
-
-pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
+pub fn compile(
+    module: &Module,
+    configuration: &CompileConfiguration,
+) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = RecordFunctionCreator::new().create(&module);
 
     let module = GlobalNameQualifier::new(
         &module,
-        &vec![SOURCE_MAIN_FUNCTION_NAME.into()].into_iter().collect(),
+        &vec![configuration.source_main_function_name().into()]
+            .into_iter()
+            .collect(),
     )
     .qualify(&module);
 
@@ -67,19 +70,17 @@ pub fn compile(module: &Module) -> Result<(Vec<u8>, ModuleInterface), CompileErr
                 .compile(&module)?
                 .rename_global_variables(
                     &vec![(
-                        SOURCE_MAIN_FUNCTION_NAME.into(),
-                        OBJECT_MAIN_FUNCTION_NAME.into(),
+                        configuration.source_main_function_name().into(),
+                        configuration.object_main_function_name().into(),
                     )]
                     .into_iter()
                     .collect(),
                 ),
             &ssf_llvm::CompileConfiguration::new(
-                if module
-                    .definitions()
-                    .iter()
-                    .any(|definition| definition.name() == SOURCE_MAIN_FUNCTION_NAME)
-                {
-                    OBJECT_INIT_FUNCTION_NAME.into()
+                if module.definitions().iter().any(|definition| {
+                    definition.name() == configuration.source_main_function_name()
+                }) {
+                    configuration.object_main_function_name().into()
                 } else {
                     convert_path_to_initializer_name(module.path())
                 },
@@ -107,30 +108,39 @@ mod tests {
     use super::*;
     use crate::debug::*;
     use crate::types;
+    use lazy_static::lazy_static;
+
+    lazy_static! {
+        static ref COMPILE_CONFIGURATION: CompileConfiguration =
+            CompileConfiguration::new("main", "ein_main", "ein_init");
+    }
 
     #[test]
     fn compile_constant_initialized_with_operation() {
-        assert!(compile(&Module::from_definitions(vec![
-            ValueDefinition::new(
-                "x",
-                Number::new(42.0, SourceInformation::dummy()),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into(),
-            ValueDefinition::new(
-                "y",
-                Operation::new(
-                    Operator::Add,
-                    Variable::new("x", SourceInformation::dummy()),
+        assert!(compile(
+            &Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
                     Number::new(42.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()
-        ]))
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Operation::new(
+                        Operator::Add,
+                        Variable::new("x", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ]),
+            &COMPILE_CONFIGURATION
+        )
         .is_ok());
     }
 
@@ -138,62 +148,23 @@ mod tests {
     fn compile_record_construction() {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-        compile(&Module::from_definitions_and_type_definitions(
-            vec![TypeDefinition::new(
-                "Foo",
-                types::Record::new(
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
                     "Foo",
-                    vec![(
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into(),
-                    )]
-                    .into_iter()
-                    .collect(),
-                    SourceInformation::dummy(),
-                ),
-            )],
-            vec![ValueDefinition::new(
-                "x",
-                RecordConstruction::new(
-                    reference_type.clone(),
-                    vec![(
-                        "foo".into(),
-                        Number::new(42.0, SourceInformation::dummy()).into(),
-                    )]
-                    .into_iter()
-                    .collect(),
-                    SourceInformation::dummy(),
-                ),
-                reference_type.clone(),
-                SourceInformation::dummy(),
-            )
-            .into()],
-        ))
-        .unwrap();
-    }
-
-    #[test]
-    fn compile_record_element_access() {
-        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
-
-        compile(&Module::from_definitions_and_type_definitions(
-            vec![TypeDefinition::new(
-                "Foo",
-                types::Record::new(
-                    "Foo",
-                    vec![(
-                        "foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into(),
-                    )]
-                    .into_iter()
-                    .collect(),
-                    SourceInformation::dummy(),
-                ),
-            )],
-            vec![ValueDefinition::new(
-                "x",
-                Application::new(
-                    Variable::new("Foo.foo", SourceInformation::dummy()),
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![ValueDefinition::new(
+                    "x",
                     RecordConstruction::new(
                         reference_type.clone(),
                         vec![(
@@ -204,101 +175,158 @@ mod tests {
                         .collect(),
                         SourceInformation::dummy(),
                     ),
+                    reference_type.clone(),
                     SourceInformation::dummy(),
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()],
-        ))
+                )
+                .into()],
+            ),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn compile_record_element_access() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Number::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![ValueDefinition::new(
+                    "x",
+                    Application::new(
+                        Variable::new("Foo.foo", SourceInformation::dummy()),
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            vec![(
+                                "foo".into(),
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            )]
+                            .into_iter()
+                            .collect(),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            ),
+            &COMPILE_CONFIGURATION,
+        )
         .unwrap();
     }
 
     #[test]
     fn compile_case_expression() {
-        assert!(compile(&Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            Case::new(
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
                 "x",
-                If::new(
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Number::new(42.0, SourceInformation::dummy()),
-                    None::new(SourceInformation::dummy()),
+                Case::new(
+                    "x",
+                    If::new(
+                        Boolean::new(false, SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    vec![
+                        Alternative::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            Boolean::new(false, SourceInformation::dummy()),
+                        ),
+                        Alternative::new(
+                            types::None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        ),
+                    ],
                     SourceInformation::dummy(),
                 ),
-                vec![
-                    Alternative::new(
-                        types::Number::new(SourceInformation::dummy()),
-                        Boolean::new(false, SourceInformation::dummy()),
-                    ),
-                    Alternative::new(
-                        types::None::new(SourceInformation::dummy()),
-                        None::new(SourceInformation::dummy()),
-                    ),
-                ],
+                types::Union::new(
+                    vec![
+                        types::Boolean::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy(),
+                ),
                 SourceInformation::dummy(),
-            ),
-            types::Union::new(
-                vec![
-                    types::Boolean::new(SourceInformation::dummy()).into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ],
-                SourceInformation::dummy(),
-            ),
-            SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
         )
-        .into()]))
-        .is_ok());
+        .unwrap();
     }
 
     #[test]
     fn compile_equal_operation_with_none_type() {
-        assert!(compile(&Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            Operation::new(
-                Operator::Equal,
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                SourceInformation::dummy()
-            ),
-            types::Boolean::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Operation::new(
+                    Operator::Equal,
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
         )
-        .into()]))
-        .is_ok());
+        .unwrap();
     }
 
     #[test]
     fn compile_equal_operation_with_boolean_type() {
-        assert!(compile(&Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            Operation::new(
-                Operator::Equal,
-                Boolean::new(false, SourceInformation::dummy()),
-                Boolean::new(true, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            ),
-            types::Boolean::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Operation::new(
+                    Operator::Equal,
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
         )
-        .into()]))
-        .is_ok());
+        .unwrap();
     }
 
     #[test]
     fn compile_equal_operation_with_union_type() {
-        assert!(compile(&Module::from_definitions(vec![ValueDefinition::new(
-            "x",
-            Operation::new(
-                Operator::Equal,
-                None::new(SourceInformation::dummy()),
-                None::new(SourceInformation::dummy()),
-                SourceInformation::dummy()
-            ),
-            types::Boolean::new(SourceInformation::dummy()),
-            SourceInformation::dummy(),
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Operation::new(
+                    Operator::Equal,
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
         )
-        .into()]))
-        .is_ok());
+        .unwrap();
     }
 }
