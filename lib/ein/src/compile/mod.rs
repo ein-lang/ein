@@ -64,6 +64,9 @@ pub fn compile(
         boolean_compiler,
     );
 
+    let is_main_function =
+        |definition: &Definition| definition.name() == configuration.source_main_function_name();
+
     Ok((
         ssf_llvm::compile(
             &ModuleCompiler::new(expression_compiler, type_compiler)
@@ -77,9 +80,7 @@ pub fn compile(
                     .collect(),
                 ),
             &ssf_llvm::CompileConfiguration::new(
-                if module.definitions().iter().any(|definition| {
-                    definition.name() == configuration.source_main_function_name()
-                }) {
+                if module.definitions().iter().any(is_main_function) {
                     configuration.object_main_function_name().into()
                 } else {
                     convert_path_to_initializer_name(module.path())
