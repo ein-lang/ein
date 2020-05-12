@@ -81,7 +81,7 @@ pub fn compile(
                 ),
             &ssf_llvm::CompileConfiguration::new(
                 if module.definitions().iter().any(is_main_function) {
-                    configuration.object_main_function_name().into()
+                    configuration.object_init_function_name().into()
                 } else {
                     convert_path_to_initializer_name(module.path())
                 },
