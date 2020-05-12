@@ -10,6 +10,7 @@ pub struct ModuleCompiler<'a, D: FilePathDisplayer, S: FileStorage> {
     module_parser: &'a ModuleParser<'a, D>,
     file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a S,
+    compile_configuration: &'a ein::CompileConfiguration,
 }
 
 impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
@@ -17,11 +18,13 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
         module_parser: &'a ModuleParser<'a, D>,
         file_path_manager: &'a FilePathManager<'a>,
         file_storage: &'a S,
+        compile_configuration: &'a ein::CompileConfiguration,
     ) -> Self {
         Self {
             module_parser,
             file_path_manager,
             file_storage,
+            compile_configuration,
         }
     }
 
@@ -65,12 +68,13 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
                     .convert_to_module_path(source_file_path, package),
                 imported_module_interfaces,
             ),
+            &self.compile_configuration,
         )?;
 
         self.file_storage.write(&object_file_path, &bitcode)?;
         self.file_storage.write(
             &interface_file_path,
-            &ein::serialize_module_interface(&module_interface)?,
+            &serde_json::to_string(&module_interface)?.as_bytes(),
         )?;
 
         Ok((object_file_path, interface_file_path))
