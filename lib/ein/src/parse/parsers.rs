@@ -77,8 +77,10 @@ fn export<'a>() -> impl Parser<Stream<'a>, Output = Export> {
         .map(Export::new)
 }
 
-fn import<'a>() -> impl Parser<Stream<'a>, Output = Import> {
-    keyword("import").with(module_path()).map(Import::new)
+fn import<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedImport> {
+    keyword("import")
+        .with(module_path())
+        .map(UnresolvedImport::new)
 }
 
 fn module_path<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModulePath> {
@@ -683,10 +685,9 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(vec!["foo".into()].drain(..).collect()),
-                vec![Import::new(ExternalUnresolvedModulePath::new(vec![
-                    "Foo".into(),
-                    "Bar".into()
-                ]))],
+                vec![UnresolvedImport::new(ExternalUnresolvedModulePath::new(
+                    vec!["Foo".into(), "Bar".into()]
+                ))],
                 vec![],
                 vec![]
             )
@@ -790,11 +791,11 @@ mod tests {
     fn parse_import() {
         assert_eq!(
             import().parse(stream("import \"/Foo\"", "")).unwrap().0,
-            Import::new(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
+            UnresolvedImport::new(InternalUnresolvedModulePath::new(vec!["Foo".into()])),
         );
         assert_eq!(
             import().parse(stream("import \"Foo/Bar\"", "")).unwrap().0,
-            Import::new(ExternalUnresolvedModulePath::new(vec![
+            UnresolvedImport::new(ExternalUnresolvedModulePath::new(vec![
                 "Foo".into(),
                 "Bar".into()
             ])),
