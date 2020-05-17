@@ -133,9 +133,9 @@ dependencies = [
 
 [[package]]
 name = "combine"
-version = "4.1.0"
+version = "4.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d79eb8c0bfd05a68f8b6195b27c4f2e042f86d52da032817f89a3847e0495ed"
+checksum = "fb2185c5a43af8aedbece9007c6496ac559531690846f12c7b024d48950f8dde"
 dependencies = [
  "bytes",
  "memchr",
