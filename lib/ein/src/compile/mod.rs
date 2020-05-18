@@ -86,10 +86,10 @@ pub fn compile(
                     convert_path_to_initializer_name(module.path())
                 },
                 module
-                    .imported_modules()
+                    .imports()
                     .iter()
-                    .map(|module_interface| {
-                        convert_path_to_initializer_name(module_interface.path())
+                    .map(|import| {
+                        convert_path_to_initializer_name(import.module_interface().path())
                     })
                     .collect(),
                 None,

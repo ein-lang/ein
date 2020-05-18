@@ -969,6 +969,6 @@ Ok(
         export: Export {
             names: {},
         },
-        imported_modules: [],
+        imports: [],
     },
 )

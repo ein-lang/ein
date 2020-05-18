@@ -10,11 +10,15 @@ impl GlobalNameQualifier {
     pub fn new(module: &Module, excluded_names: &HashSet<String>) -> Self {
         let mut names = HashMap::new();
 
-        for imported_module in module.imported_modules() {
-            for name in imported_module.exported_names() {
+        for import in module.imports() {
+            for name in import.module_interface().exported_names() {
                 names.insert(
-                    imported_module.path().qualify_name(name),
-                    imported_module.path().fully_qualify_name(name),
+                    if import.qualified() {
+                        import.module_interface().path().qualify_name(name)
+                    } else {
+                        name.into()
+                    },
+                    import.module_interface().path().fully_qualify_name(name),
                 );
             }
         }
@@ -91,15 +95,18 @@ mod tests {
     }
 
     #[test]
-    fn qualify_names_in_imported_modules() {
+    fn qualify_names_in_qualified_imports() {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
-            vec![ModuleInterface::new(
-                ModulePath::new(Package::new("A", ""), vec!["B".into()]),
-                vec!["y".into()].into_iter().collect(),
-                Default::default(),
-                Default::default(),
+            vec![Import::new(
+                ModuleInterface::new(
+                    ModulePath::new(Package::new("A", ""), vec!["B".into()]),
+                    vec!["y".into()].into_iter().collect(),
+                    Default::default(),
+                    Default::default(),
+                ),
+                true,
             )],
             vec![],
             vec![ValueDefinition::new(
@@ -116,11 +123,64 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
-                vec![ModuleInterface::new(
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("A", ""), vec!["B".into()]),
+                        vec!["y".into()].into_iter().collect(),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    true
+                )],
+                vec![],
+                vec![ValueDefinition::new(
+                    "M().x",
+                    Variable::new("A().B.y", SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            )
+        );
+    }
+
+    #[test]
+    fn qualify_names_in_unqualified_imports() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![Import::new(
+                ModuleInterface::new(
                     ModulePath::new(Package::new("A", ""), vec!["B".into()]),
                     vec!["y".into()].into_iter().collect(),
                     Default::default(),
                     Default::default(),
+                ),
+                false,
+            )],
+            vec![],
+            vec![ValueDefinition::new(
+                "x",
+                Variable::new("y", SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+
+        assert_eq!(
+            GlobalNameQualifier::new(&module, &Default::default()).qualify(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(Default::default()),
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("A", ""), vec!["B".into()]),
+                        vec!["y".into()].into_iter().collect(),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    false
                 )],
                 vec![],
                 vec![ValueDefinition::new(

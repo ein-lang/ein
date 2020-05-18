@@ -6,7 +6,7 @@ mod parse;
 mod path;
 mod types;
 
-pub use ast::{ModuleInterface, UnresolvedModule};
+pub use ast::{Import, ModuleInterface, UnresolvedModule};
 pub use compile::{compile, CompileConfiguration};
 pub use package::Package;
 pub use parse::{parse, ParseError};

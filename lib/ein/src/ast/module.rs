@@ -1,8 +1,8 @@
 use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
+use super::import::Import;
 use super::let_::Let;
-use super::module_interface::ModuleInterface;
 use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
 use crate::types::Type;
@@ -13,14 +13,14 @@ pub struct Module {
     type_definitions: Vec<TypeDefinition>,
     definitions: Vec<Definition>,
     export: Export,
-    imported_modules: Vec<ModuleInterface>,
+    imports: Vec<Import>,
 }
 
 impl Module {
     pub fn new(
         path: ModulePath,
         export: Export,
-        imported_modules: Vec<ModuleInterface>,
+        imports: Vec<Import>,
         type_definitions: Vec<TypeDefinition>,
         definitions: Vec<Definition>,
     ) -> Self {
@@ -29,7 +29,7 @@ impl Module {
             type_definitions,
             definitions,
             export,
-            imported_modules,
+            imports,
         }
     }
 
@@ -85,8 +85,8 @@ impl Module {
         &self.export
     }
 
-    pub fn imported_modules(&self) -> &[ModuleInterface] {
-        &self.imported_modules
+    pub fn imports(&self) -> &[Import] {
+        &self.imports
     }
 
     pub fn convert_definitions<E>(
@@ -96,7 +96,7 @@ impl Module {
         Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
-            self.imported_modules.clone(),
+            self.imports.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
@@ -129,7 +129,7 @@ impl Module {
         Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
-            self.imported_modules.clone(),
+            self.imports.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
@@ -145,7 +145,7 @@ impl Module {
         Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
-            self.imported_modules.clone(),
+            self.imports.clone(),
             self.type_definitions
                 .iter()
                 .map(|type_definition| type_definition.convert_types(convert))
