@@ -447,6 +447,37 @@ mod tests {
     }
 
     #[test]
+    fn infer_types_of_variables_with_unqualified_imports() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![Import::new(
+                ModuleInterface::new(
+                    ModulePath::new(Package::new("P", ""), vec!["M".into()]),
+                    Default::default(),
+                    Default::default(),
+                    vec![(
+                        "x".into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                ),
+                false,
+            )],
+            vec![],
+            vec![ValueDefinition::new(
+                "y",
+                Variable::new("x", SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
     fn infer_types_of_let_values_with_recursive_functions_and_the_latter_typed() {
         assert_eq!(
             infer_types(&Module::from_definitions(vec![ValueDefinition::new(
