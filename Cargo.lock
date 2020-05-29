@@ -344,7 +344,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell#fcf77420536b7900ac52679b8da574f6d2f030ba"
+source = "git+https://github.com/TheDan64/inkwell#fdf895777e937c974204e879cf1102cf7a727c42"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -358,7 +358,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.2.0"
-source = "git+https://github.com/TheDan64/inkwell#fcf77420536b7900ac52679b8da574f6d2f030ba"
+source = "git+https://github.com/TheDan64/inkwell#fdf895777e937c974204e879cf1102cf7a727c42"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -620,9 +620,9 @@ checksum = "2439c63f3f6139d1b57529d16bc3b8bb855230c8efcc5d3a896c8bea7c3b1e84"
 
 [[package]]
 name = "regex"
-version = "1.3.7"
+version = "1.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6020f034922e3194c711b82a627453881bc4682166cabb07134a10c26ba7692"
+checksum = "9c3780fcf44b193bc4d09f36d2a3c87b251da4a046c87795a0d35f4f927ad8e6"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -632,9 +632,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.17"
+version = "0.6.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7fe5bd57d1d7414c6b5ed48563a2c855d995ff777729dcd91c369ec7fea395ae"
+checksum = "26412eb97c6b088a6997e05f69403a802a92d520de2f8e63c2b65f9e0f47c4e8"
 
 [[package]]
 name = "runtime"
@@ -725,7 +725,7 @@ checksum = "c7cb5678e1615754284ec264d9bb5b4c27d2018577fd90ac0ceb578591ed5ee4"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#b1ef8d4c939fd6e7687b181d1ac4c9657a108603"
+source = "git+https://github.com/raviqqe/ssf#6eb98f06fcba10d9212fde6c651a58fdc54359a7"
 dependencies = [
  "petgraph",
  "pretty_assertions",
@@ -734,7 +734,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf#b1ef8d4c939fd6e7687b181d1ac4c9657a108603"
+source = "git+https://github.com/raviqqe/ssf#6eb98f06fcba10d9212fde6c651a58fdc54359a7"
 dependencies = [
  "inkwell",
  "ssf",
