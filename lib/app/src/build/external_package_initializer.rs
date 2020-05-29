@@ -135,8 +135,15 @@ mod tests {
 
     #[test]
     fn new() {
-        let file_path_configuration =
-            FilePathConfiguration::new("", "", "", "", "", FilePath::new(&["target"]));
+        let file_path_configuration = FilePathConfiguration::new(
+            "",
+            "",
+            "",
+            "",
+            "",
+            FilePath::new(&["target"]),
+            FilePath::new(&["target", "packages"]),
+        );
         let file_storage = FileStorageFake::new(Default::default());
 
         ExternalPackageInitializer::new(
@@ -149,8 +156,15 @@ mod tests {
 
     #[test]
     fn initialize_external_package() {
-        let file_path_configuration =
-            FilePathConfiguration::new("ein.json", "", "", "", "", FilePath::new(&["target"]));
+        let file_path_configuration = FilePathConfiguration::new(
+            "ein.json",
+            "",
+            "",
+            "",
+            "",
+            FilePath::new(&["target"]),
+            FilePath::new(&["target", "packages"]),
+        );
         let file_storage = FileStorageFake::new(Default::default());
 
         ExternalPackageInitializer::new(
@@ -183,8 +197,15 @@ mod tests {
 
     #[test]
     fn fail_to_initialize_external_package_without_package_configuration_file() {
-        let file_path_configuration =
-            FilePathConfiguration::new("ein.json", "", "", "", "", FilePath::new(&["target"]));
+        let file_path_configuration = FilePathConfiguration::new(
+            "ein.json",
+            "",
+            "",
+            "",
+            "",
+            FilePath::new(&["target"]),
+            FilePath::new(&["target", "packages"]),
+        );
         let file_storage = FileStorageFake::new(Default::default());
 
         let result = ExternalPackageInitializer::new(
