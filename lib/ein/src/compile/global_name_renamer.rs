@@ -46,7 +46,7 @@ impl GlobalNameRenamer {
         Module::new(
             module.path().clone(),
             module.export().clone(),
-            module.imported_modules().to_vec(),
+            module.imports().to_vec(),
             module
                 .type_definitions()
                 .iter()

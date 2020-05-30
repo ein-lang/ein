@@ -136,10 +136,9 @@ mod tests {
             ),
             Ok(UnresolvedModule::new(
                 Export::new(Default::default()),
-                vec![Import::new(ExternalUnresolvedModulePath::new(vec![
-                    "package".into(),
-                    "Module".into()
-                ]))],
+                vec![UnresolvedImport::new(ExternalUnresolvedModulePath::new(
+                    vec!["package".into(), "Module".into()]
+                ))],
                 vec![],
                 vec![FunctionDefinition::new(
                     "main",

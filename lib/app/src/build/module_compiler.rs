@@ -66,7 +66,10 @@ impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
             &module.resolve(
                 self.file_path_manager
                     .convert_to_module_path(source_file_path, package),
-                imported_module_interfaces,
+                imported_module_interfaces
+                    .into_iter()
+                    .map(|module_interface| ein::Import::new(module_interface, true))
+                    .collect(),
             ),
             &self.compile_configuration,
         )?;

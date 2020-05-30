@@ -8,8 +8,8 @@ impl ModuleEnvironmentCreator {
     pub fn create(module: &Module) -> HashMap<String, Type> {
         let mut variables = HashMap::<String, Type>::new();
 
-        for imported_module in module.imported_modules() {
-            for (name, type_) in imported_module.variables() {
+        for import in module.imports() {
+            for (name, type_) in import.module_interface().variables() {
                 variables.insert(name.into(), type_.clone());
             }
         }

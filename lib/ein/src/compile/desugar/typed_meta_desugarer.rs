@@ -39,7 +39,7 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
         Ok(Module::new(
             module.path().clone(),
             module.export().clone(),
-            module.imported_modules().to_vec(),
+            module.imports().to_vec(),
             module.type_definitions().to_vec(),
             module
                 .definitions()

@@ -416,20 +416,23 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_variables_with_imported_modules() {
+    fn infer_types_of_variables_with_imports() {
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
             Export::new(Default::default()),
-            vec![ModuleInterface::new(
-                ModulePath::new(Package::new("m", ""), vec![]),
-                Default::default(),
-                Default::default(),
-                vec![(
-                    "x".into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
+            vec![Import::new(
+                ModuleInterface::new(
+                    ModulePath::new(Package::new("m", ""), vec![]),
+                    Default::default(),
+                    Default::default(),
+                    vec![(
+                        "x".into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                ),
+                true,
             )],
             vec![],
             vec![ValueDefinition::new(
@@ -769,16 +772,19 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
             Export::new(Default::default()),
-            vec![ModuleInterface::new(
-                ModulePath::new(Package::new("P", ""), vec![]),
-                Default::default(),
-                vec![(
-                    "Foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
-                Default::default(),
+            vec![Import::new(
+                ModuleInterface::new(
+                    ModulePath::new(Package::new("P", ""), vec![]),
+                    Default::default(),
+                    vec![(
+                        "Foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                    Default::default(),
+                ),
+                true,
             )],
             vec![],
             vec![ValueDefinition::new(

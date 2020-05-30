@@ -13,10 +13,11 @@ impl ReferenceTypeResolver {
     pub fn new(module: &Module) -> Rc<Self> {
         Self {
             environment: module
-                .imported_modules()
+                .imports()
                 .iter()
-                .flat_map(|imported_module| {
-                    imported_module
+                .flat_map(|import| {
+                    import
+                        .module_interface()
                         .types()
                         .iter()
                         .map(|(name, type_)| (name.into(), type_.clone()))
@@ -77,16 +78,19 @@ mod tests {
             ReferenceTypeResolver::new(&Module::new(
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
-                vec![ModuleInterface::new(
-                    ModulePath::new(Package::new("Foo", ""), vec![]),
-                    Default::default(),
-                    vec![(
-                        "Foo".into(),
-                        types::Number::new(SourceInformation::dummy()).into()
-                    )]
-                    .drain(..)
-                    .collect(),
-                    Default::default()
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("Foo", ""), vec![]),
+                        Default::default(),
+                        vec![(
+                            "Foo".into(),
+                            types::Number::new(SourceInformation::dummy()).into()
+                        )]
+                        .drain(..)
+                        .collect(),
+                        Default::default()
+                    ),
+                    true
                 )],
                 vec![],
                 vec![],

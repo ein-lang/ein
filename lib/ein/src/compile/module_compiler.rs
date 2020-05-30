@@ -23,10 +23,11 @@ impl ModuleCompiler {
     pub fn compile(&self, module: &Module) -> Result<ssf::ir::Module, CompileError> {
         Ok(ssf::ir::Module::new(
             module
-                .imported_modules()
+                .imports()
                 .iter()
-                .flat_map(|module_interface| {
-                    module_interface
+                .flat_map(|import| {
+                    import
+                        .module_interface()
                         .variables()
                         .iter()
                         .map(move |(name, type_)| {
