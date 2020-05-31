@@ -1,11 +1,11 @@
 use crate::infra::{FilePath, FilePathDisplayer};
 
-pub struct ModuleParser<'a, D: FilePathDisplayer> {
-    file_path_displayer: &'a D,
+pub struct ModuleParser<'a> {
+    file_path_displayer: &'a dyn FilePathDisplayer,
 }
 
-impl<'a, D: FilePathDisplayer> ModuleParser<'a, D> {
-    pub fn new(file_path_displayer: &'a D) -> Self {
+impl<'a> ModuleParser<'a> {
+    pub fn new(file_path_displayer: &'a dyn FilePathDisplayer) -> Self {
         Self {
             file_path_displayer,
         }

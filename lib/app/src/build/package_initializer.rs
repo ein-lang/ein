@@ -2,16 +2,16 @@ use super::package_configuration::PackageConfiguration;
 use super::path::FilePathConfiguration;
 use crate::infra::{FilePath, FileStorage, Repository};
 
-pub struct PackageInitializer<'a, R: Repository, S: FileStorage> {
-    repository: &'a R,
-    file_storage: &'a S,
+pub struct PackageInitializer<'a> {
+    repository: &'a dyn Repository,
+    file_storage: &'a dyn FileStorage,
     file_path_configuration: &'a FilePathConfiguration,
 }
 
-impl<'a, R: Repository, S: FileStorage> PackageInitializer<'a, R, S> {
+impl<'a> PackageInitializer<'a> {
     pub fn new(
-        repository: &'a R,
-        file_storage: &'a S,
+        repository: &'a dyn Repository,
+        file_storage: &'a dyn FileStorage,
         file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {

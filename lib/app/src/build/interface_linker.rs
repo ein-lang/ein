@@ -1,12 +1,12 @@
 use super::package_interface::PackageInterface;
 use crate::infra::{FilePath, FileStorage};
 
-pub struct InterfaceLinker<'a, S: FileStorage> {
-    file_storage: &'a S,
+pub struct InterfaceLinker<'a> {
+    file_storage: &'a dyn FileStorage,
 }
 
-impl<'a, S: FileStorage> InterfaceLinker<'a, S> {
-    pub fn new(file_storage: &'a S) -> Self {
+impl<'a> InterfaceLinker<'a> {
+    pub fn new(file_storage: &'a dyn FileStorage) -> Self {
         Self { file_storage }
     }
 

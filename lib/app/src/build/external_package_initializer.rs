@@ -9,32 +9,25 @@ use std::hash::{Hash, Hasher};
 
 type ExternalModuleInterfaces = HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>;
 
-pub struct ExternalPackageInitializer<
-    'a,
-    S: FileStorage,
-    D: ExternalPackageDownloader,
-    B: ExternalPackageBuilder,
-> {
-    external_package_downloader: &'a D,
-    external_package_builder: &'a B,
+pub struct ExternalPackageInitializer<'a> {
+    external_package_downloader: &'a dyn ExternalPackageDownloader,
+    external_package_builder: &'a dyn ExternalPackageBuilder,
+    file_storage: &'a dyn FileStorage,
     file_path_manager: &'a FilePathManager<'a>,
-    file_storage: &'a S,
 }
 
-impl<'a, S: FileStorage, D: ExternalPackageDownloader, B: ExternalPackageBuilder>
-    ExternalPackageInitializer<'a, S, D, B>
-{
+impl<'a> ExternalPackageInitializer<'a> {
     pub fn new(
-        external_package_downloader: &'a D,
-        external_package_builder: &'a B,
-        file_path_manager: &'a FilePathManager,
-        file_storage: &'a S,
+        external_package_downloader: &'a dyn ExternalPackageDownloader,
+        external_package_builder: &'a dyn ExternalPackageBuilder,
+        file_storage: &'a dyn FileStorage,
+        file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
             external_package_downloader,
             external_package_builder,
-            file_path_manager,
             file_storage,
+            file_path_manager,
         }
     }
 
@@ -149,8 +142,8 @@ mod tests {
         ExternalPackageInitializer::new(
             &ExternalPackageDownloaderFake::new(Default::default(), &file_storage),
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
-            &FilePathManager::new(&file_path_configuration),
             &file_storage,
+            &FilePathManager::new(&file_path_configuration),
         );
     }
 
@@ -183,8 +176,8 @@ mod tests {
                 &file_storage,
             ),
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
-            &FilePathManager::new(&file_path_configuration),
             &file_storage,
+            &FilePathManager::new(&file_path_configuration),
         )
         .initialize(&PackageConfiguration::new(
             Target::Library,
@@ -216,8 +209,8 @@ mod tests {
                 &file_storage,
             ),
             &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
-            &FilePathManager::new(&file_path_configuration),
             &file_storage,
+            &FilePathManager::new(&file_path_configuration),
         )
         .initialize(&PackageConfiguration::new(
             Target::Library,

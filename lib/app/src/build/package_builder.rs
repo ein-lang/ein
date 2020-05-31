@@ -4,56 +4,32 @@ use super::package_configuration::Target;
 use super::package_initializer::PackageInitializer;
 use super::package_linker::PackageLinker;
 use super::path::FilePathManager;
-use crate::infra::{
-    CommandLinker, ExternalPackageBuilder, ExternalPackageDownloader, FilePathDisplayer,
-    FileStorage, LibraryArchiver, ObjectLinker, Repository,
-};
+use crate::infra::{CommandLinker, LibraryArchiver};
 
-pub struct PackageBuilder<
-    'a,
-    R: Repository,
-    S: FileStorage,
-    FD: FilePathDisplayer,
-    OL: ObjectLinker,
-    CL: CommandLinker,
-    A: LibraryArchiver,
-    D: ExternalPackageDownloader,
-    B: ExternalPackageBuilder,
-> {
-    module_builder: &'a ModuleBuilder<'a, FD, S>,
-    package_linker: &'a PackageLinker<'a, S, OL>,
-    archiver: &'a A,
-    command_linker: &'a CL,
+pub struct PackageBuilder<'a> {
+    module_builder: &'a ModuleBuilder<'a>,
+    package_linker: &'a PackageLinker<'a>,
+    library_archiver: &'a dyn LibraryArchiver,
+    command_linker: &'a dyn CommandLinker,
     file_path_manager: &'a FilePathManager<'a>,
-    package_initializer: &'a PackageInitializer<'a, R, S>,
-    external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
+    package_initializer: &'a PackageInitializer<'a>,
+    external_package_initializer: &'a ExternalPackageInitializer<'a>,
 }
 
-impl<
-        'a,
-        R: Repository,
-        S: FileStorage,
-        FD: FilePathDisplayer,
-        OL: ObjectLinker,
-        CL: CommandLinker,
-        A: LibraryArchiver,
-        D: ExternalPackageDownloader,
-        B: ExternalPackageBuilder,
-    > PackageBuilder<'a, R, S, FD, OL, CL, A, D, B>
-{
+impl<'a> PackageBuilder<'a> {
     pub fn new(
-        module_builder: &'a ModuleBuilder<'a, FD, S>,
-        package_linker: &'a PackageLinker<'a, S, OL>,
-        archiver: &'a A,
-        command_linker: &'a CL,
+        module_builder: &'a ModuleBuilder<'a>,
+        package_linker: &'a PackageLinker<'a>,
+        library_archiver: &'a dyn LibraryArchiver,
+        command_linker: &'a dyn CommandLinker,
         file_path_manager: &'a FilePathManager<'a>,
-        package_initializer: &'a PackageInitializer<'a, R, S>,
-        external_package_initializer: &'a ExternalPackageInitializer<'a, S, D, B>,
+        package_initializer: &'a PackageInitializer<'a>,
+        external_package_initializer: &'a ExternalPackageInitializer<'a>,
     ) -> Self {
         Self {
             module_builder,
             package_linker,
-            archiver,
+            library_archiver,
             command_linker,
             file_path_manager,
             package_initializer,
@@ -84,7 +60,7 @@ impl<
                     .link(&package_object_file_path, command_target.name())?;
             }
             Target::Library => {
-                self.archiver.archive(
+                self.library_archiver.archive(
                     &package_object_file_path,
                     self.file_path_manager
                         .configuration()

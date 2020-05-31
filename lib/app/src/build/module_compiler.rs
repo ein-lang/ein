@@ -1,23 +1,23 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FilePathDisplayer, FileStorage};
+use crate::infra::{FilePath, FileStorage};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-pub struct ModuleCompiler<'a, D: FilePathDisplayer, S: FileStorage> {
-    module_parser: &'a ModuleParser<'a, D>,
+pub struct ModuleCompiler<'a> {
+    module_parser: &'a ModuleParser<'a>,
     file_path_manager: &'a FilePathManager<'a>,
-    file_storage: &'a S,
+    file_storage: &'a dyn FileStorage,
     compile_configuration: &'a ein::CompileConfiguration,
 }
 
-impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleCompiler<'a, D, S> {
+impl<'a> ModuleCompiler<'a> {
     pub fn new(
-        module_parser: &'a ModuleParser<'a, D>,
+        module_parser: &'a ModuleParser<'a>,
         file_path_manager: &'a FilePathManager<'a>,
-        file_storage: &'a S,
+        file_storage: &'a dyn FileStorage,
         compile_configuration: &'a ein::CompileConfiguration,
     ) -> Self {
         Self {
