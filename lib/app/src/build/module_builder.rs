@@ -2,23 +2,23 @@ use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FilePathDisplayer, FileStorage};
+use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
 
-pub struct ModuleBuilder<'a, D: FilePathDisplayer, S: FileStorage> {
-    module_parser: &'a ModuleParser<'a, D>,
-    module_compiler: &'a ModuleCompiler<'a, D, S>,
-    file_storage: &'a S,
+pub struct ModuleBuilder<'a> {
+    module_parser: &'a ModuleParser<'a>,
+    module_compiler: &'a ModuleCompiler<'a>,
+    file_storage: &'a dyn FileStorage,
     file_path_manager: &'a FilePathManager<'a>,
 }
 
-impl<'a, D: FilePathDisplayer, S: FileStorage> ModuleBuilder<'a, D, S> {
+impl<'a> ModuleBuilder<'a> {
     pub fn new(
-        module_parser: &'a ModuleParser<'a, D>,
-        module_compiler: &'a ModuleCompiler<'a, D, S>,
-        file_storage: &'a S,
+        module_parser: &'a ModuleParser<'a>,
+        module_compiler: &'a ModuleCompiler<'a>,
+        file_storage: &'a dyn FileStorage,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {

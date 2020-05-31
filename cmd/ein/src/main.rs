@@ -69,8 +69,8 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &app::ExternalPackageInitializer::new(
             &infra::ExternalPackageDownloader::new(),
             &infra::ExternalPackageBuilder::new(),
-            &file_path_manager,
             &file_storage,
+            &file_path_manager,
         ),
     )
     .build()

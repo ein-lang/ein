@@ -12,9 +12,9 @@ impl ObjectLinker {
 }
 
 impl app::ObjectLinker for ObjectLinker {
-    fn link<'a>(
+    fn link(
         &self,
-        object_file_paths: impl IntoIterator<Item = &'a app::FilePath>,
+        object_file_paths: &[app::FilePath],
         package_object_file_path: &app::FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
         CommandRunner::run(
@@ -27,11 +27,7 @@ impl app::ObjectLinker for ObjectLinker {
             )
             .arg("-o")
             .arg(utilities::convert_to_os_path(package_object_file_path))
-            .args(
-                object_file_paths
-                    .into_iter()
-                    .map(utilities::convert_to_os_path),
-            ),
+            .args(object_file_paths.iter().map(utilities::convert_to_os_path)),
         )?;
 
         Ok(())

@@ -1,17 +1,17 @@
 use super::interface_linker::InterfaceLinker;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage, ObjectLinker};
+use crate::infra::{FilePath, ObjectLinker};
 
-pub struct PackageLinker<'a, S: FileStorage, OL: ObjectLinker> {
-    object_linker: &'a OL,
-    interface_linker: &'a InterfaceLinker<'a, S>,
+pub struct PackageLinker<'a> {
+    object_linker: &'a dyn ObjectLinker,
+    interface_linker: &'a InterfaceLinker<'a>,
     file_path_manager: &'a FilePathManager<'a>,
 }
 
-impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
+impl<'a> PackageLinker<'a> {
     pub fn new(
-        object_linker: &'a OL,
-        interface_linker: &'a InterfaceLinker<'a, S>,
+        object_linker: &'a dyn ObjectLinker,
+        interface_linker: &'a InterfaceLinker<'a>,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
@@ -33,9 +33,11 @@ impl<'a, S: FileStorage, OL: ObjectLinker> PackageLinker<'a, S, OL> {
             .package_object_file_path();
 
         self.object_linker.link(
-            object_file_paths
+            &object_file_paths
                 .iter()
-                .chain(external_package_object_file_paths),
+                .chain(external_package_object_file_paths)
+                .cloned()
+                .collect::<Vec<_>>(),
             &package_object_file_path,
         )?;
 
