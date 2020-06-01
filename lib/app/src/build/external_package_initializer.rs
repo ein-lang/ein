@@ -88,10 +88,11 @@ impl<'a> ExternalPackageInitializer<'a> {
         )?;
 
         if !self.file_storage.exists(
-            &directory_path.join(&FilePath::new(&[self
-                .file_path_manager
-                .configuration()
-                .package_configuration_filename()])),
+            &directory_path.join(
+                self.file_path_manager
+                    .configuration()
+                    .build_configuration_file_path(),
+            ),
         ) {
             return Err(BuildError::ExternalPackageConfigurationFileNotFound {
                 package_name: name.into(),
@@ -119,7 +120,9 @@ impl<'a> ExternalPackageInitializer<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::package_configuration::{ExternalPackage, PackageConfiguration, Target};
+    use super::super::package_configuration::{
+        BuildConfiguration, ExternalPackage, PackageConfiguration, Target,
+    };
     use super::super::{ExternalPackageInitializer, FilePathConfiguration};
     use super::*;
     use crate::infra::{
@@ -180,10 +183,14 @@ mod tests {
             &FilePathManager::new(&file_path_configuration),
         )
         .initialize(&PackageConfiguration::new(
-            Target::Library,
-            vec![("package".into(), ExternalPackage::new("version"))]
-                .drain(..)
-                .collect(),
+            "",
+            "",
+            BuildConfiguration::new(
+                Target::Library,
+                vec![("package".into(), ExternalPackage::new("version"))]
+                    .drain(..)
+                    .collect(),
+            ),
         ))
         .unwrap();
     }
@@ -213,10 +220,14 @@ mod tests {
             &FilePathManager::new(&file_path_configuration),
         )
         .initialize(&PackageConfiguration::new(
-            Target::Library,
-            vec![("package".into(), ExternalPackage::new("version"))]
-                .drain(..)
-                .collect(),
+            "",
+            "",
+            BuildConfiguration::new(
+                Target::Library,
+                vec![("package".into(), ExternalPackage::new("version"))]
+                    .drain(..)
+                    .collect(),
+            ),
         ));
 
         assert_eq!(

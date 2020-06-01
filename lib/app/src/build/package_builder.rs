@@ -4,7 +4,7 @@ use super::package_configuration::Target;
 use super::package_initializer::PackageInitializer;
 use super::package_linker::PackageLinker;
 use super::path::FilePathManager;
-use crate::infra::{CommandLinker, LibraryArchiver};
+use crate::infra::{CommandLinker, FilePath, LibraryArchiver};
 
 pub struct PackageBuilder<'a> {
     module_builder: &'a ModuleBuilder<'a>,
@@ -38,7 +38,7 @@ impl<'a> PackageBuilder<'a> {
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let (package, package_configuration) = self.package_initializer.initialize()?;
+        let package_configuration = self.package_initializer.initialize(&FilePath::empty())?;
 
         let (external_package_object_file_paths, external_module_interfaces) = self
             .external_package_initializer
@@ -46,7 +46,7 @@ impl<'a> PackageBuilder<'a> {
 
         let (object_file_paths, interface_file_paths) = self
             .module_builder
-            .build(&package, &external_module_interfaces)?;
+            .build(&package_configuration, &external_module_interfaces)?;
 
         let (package_object_file_path, package_interface_file_path) = self.package_linker.link(
             &object_file_paths,

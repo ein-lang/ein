@@ -7,7 +7,6 @@ mod file_path_displayer;
 mod file_storage;
 mod library_archiver;
 mod object_linker;
-mod repository;
 mod utilities;
 
 pub use command_linker::*;
@@ -18,4 +17,3 @@ pub use file_path_displayer::*;
 pub use file_storage::*;
 pub use library_archiver::*;
 pub use object_linker::*;
-pub use repository::*;

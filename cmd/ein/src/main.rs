@@ -61,11 +61,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &infra::LibraryArchiver::new(),
         &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
         &file_path_manager,
-        &app::PackageInitializer::new(
-            &infra::Repository::new(),
-            &file_storage,
-            &file_path_configuration,
-        ),
+        &app::PackageInitializer::new(&file_storage, &file_path_configuration),
         &app::ExternalPackageInitializer::new(
             &infra::ExternalPackageDownloader::new(),
             &infra::ExternalPackageBuilder::new(),

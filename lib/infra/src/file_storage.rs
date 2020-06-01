@@ -1,3 +1,4 @@
+use super::error::InfrastructureError;
 use super::utilities;
 
 #[derive(Default)]
@@ -30,6 +31,24 @@ impl app::FileStorage for FileStorage {
                     .any(|directory| file_path.has_prefix(directory))
             })
             .collect())
+    }
+
+    fn read_repository(
+        &self,
+        directory_path: &app::FilePath,
+    ) -> Result<app::Repository, Box<dyn std::error::Error>> {
+        let repository = git2::Repository::discover(utilities::convert_to_os_path(directory_path))?;
+        let url = url::Url::parse(
+            repository
+                .find_remote("origin")?
+                .url()
+                .ok_or(InfrastructureError::OriginUrlNotFound)?,
+        )?;
+
+        Ok(app::Repository::new(
+            url,
+            format!("{}", repository.head()?.peel(git2::ObjectType::Any)?.id()),
+        ))
     }
 
     fn read_to_vec(

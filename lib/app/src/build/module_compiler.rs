@@ -1,5 +1,6 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
+use super::package_configuration::PackageConfiguration;
 use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
 use std::collections::hash_map::DefaultHasher;
@@ -30,7 +31,7 @@ impl<'a> ModuleCompiler<'a> {
 
     pub fn compile(
         &self,
-        package: &ein::Package,
+        package_configuration: &PackageConfiguration,
         module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>,
         source_file_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
@@ -65,7 +66,7 @@ impl<'a> ModuleCompiler<'a> {
         let (bitcode, module_interface) = ein::compile(
             &module.resolve(
                 self.file_path_manager
-                    .convert_to_module_path(source_file_path, package),
+                    .convert_to_module_path(source_file_path, package_configuration.as_package()),
                 imported_module_interfaces
                     .into_iter()
                     .map(|module_interface| ein::Import::new(module_interface, true))

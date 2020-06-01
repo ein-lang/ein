@@ -3,12 +3,12 @@ use crate::infra::FilePath;
 const OBJECT_DIRECTORY: &str = "objects";
 
 pub struct FilePathConfiguration {
-    package_configuration_filename: String,
     package_object_filename: String,
     package_interface_filename: String,
     source_file_extension: String,
     object_file_extension: String,
     interface_file_extension: String,
+    build_configuration_file_path: FilePath,
     output_directory: FilePath,
     object_directory: FilePath,
     package_object_file_path: FilePath,
@@ -20,7 +20,7 @@ pub struct FilePathConfiguration {
 
 impl FilePathConfiguration {
     pub fn new(
-        package_configuration_filename: impl Into<String>,
+        build_configuration_file_path: impl Into<String>,
         package_artifact_basename: impl Into<String> + std::fmt::Display,
         source_file_extension: impl Into<String> + std::fmt::Display,
         object_file_extension: impl Into<String> + std::fmt::Display,
@@ -34,7 +34,6 @@ impl FilePathConfiguration {
             format!("{}.{}", package_artifact_basename, interface_file_extension,);
 
         Self {
-            package_configuration_filename: package_configuration_filename.into(),
             interface_file_extension: interface_file_extension.into(),
             package_object_file_path: output_directory
                 .join(&FilePath::new(&[&package_object_filename])),
@@ -49,11 +48,12 @@ impl FilePathConfiguration {
             package_object_filename,
             package_interface_filename,
             output_directory,
+            build_configuration_file_path: FilePath::new(&[build_configuration_file_path.into()]),
         }
     }
 
-    pub fn package_configuration_filename(&self) -> &str {
-        &self.package_configuration_filename
+    pub fn build_configuration_file_path(&self) -> &FilePath {
+        &self.build_configuration_file_path
     }
 
     pub fn package_object_filename(&self) -> &str {
