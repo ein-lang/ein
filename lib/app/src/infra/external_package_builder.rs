@@ -5,13 +5,13 @@ pub trait ExternalPackageBuilder {
 }
 
 #[cfg(test)]
-pub struct ExternalPackageBuilderFake<'a, S: crate::infra::FileStorage> {
+pub struct FakeExternalPackageBuilder<'a, S: crate::infra::FileStorage> {
     file_path_configuration: &'a crate::FilePathConfiguration,
     file_storage: &'a S,
 }
 
 #[cfg(test)]
-impl<'a, S: crate::infra::FileStorage> ExternalPackageBuilderFake<'a, S> {
+impl<'a, S: crate::infra::FileStorage> FakeExternalPackageBuilder<'a, S> {
     pub fn new(
         file_path_configuration: &'a crate::FilePathConfiguration,
         file_storage: &'a S,
@@ -25,7 +25,7 @@ impl<'a, S: crate::infra::FileStorage> ExternalPackageBuilderFake<'a, S> {
 
 #[cfg(test)]
 impl<'a, S: crate::infra::FileStorage> ExternalPackageBuilder
-    for ExternalPackageBuilderFake<'a, S>
+    for FakeExternalPackageBuilder<'a, S>
 {
     fn build(&self, directory_path: &FilePath) -> Result<(), Box<dyn std::error::Error>> {
         self.file_storage.write(

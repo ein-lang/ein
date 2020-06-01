@@ -126,7 +126,7 @@ mod tests {
     use super::super::{ExternalPackageInitializer, FilePathConfiguration};
     use super::*;
     use crate::infra::{
-        ExternalPackageBuilderFake, ExternalPackageDownloaderFake, FilePath, FileStorageFake,
+        FakeExternalPackageBuilder, FakeExternalPackageDownloader, FakeFileStorage, FilePath,
     };
 
     #[test]
@@ -140,11 +140,11 @@ mod tests {
             FilePath::new(&["target"]),
             FilePath::new(&["target", "packages"]),
         );
-        let file_storage = FileStorageFake::new(Default::default());
+        let file_storage = FakeFileStorage::new(Default::default());
 
         ExternalPackageInitializer::new(
-            &ExternalPackageDownloaderFake::new(Default::default(), &file_storage),
-            &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
+            &FakeExternalPackageDownloader::new(Default::default(), &file_storage),
+            &FakeExternalPackageBuilder::new(&file_path_configuration, &file_storage),
             &file_storage,
             &FilePathManager::new(&file_path_configuration),
         );
@@ -161,10 +161,10 @@ mod tests {
             FilePath::new(&["target"]),
             FilePath::new(&["target", "packages"]),
         );
-        let file_storage = FileStorageFake::new(Default::default());
+        let file_storage = FakeFileStorage::new(Default::default());
 
         ExternalPackageInitializer::new(
-            &ExternalPackageDownloaderFake::new(
+            &FakeExternalPackageDownloader::new(
                 vec![(
                     "package".into(),
                     vec![(
@@ -178,7 +178,7 @@ mod tests {
                 .collect(),
                 &file_storage,
             ),
-            &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
+            &FakeExternalPackageBuilder::new(&file_path_configuration, &file_storage),
             &file_storage,
             &FilePathManager::new(&file_path_configuration),
         )
@@ -206,16 +206,16 @@ mod tests {
             FilePath::new(&["target"]),
             FilePath::new(&["target", "packages"]),
         );
-        let file_storage = FileStorageFake::new(Default::default());
+        let file_storage = FakeFileStorage::new(Default::default());
 
         let result = ExternalPackageInitializer::new(
-            &ExternalPackageDownloaderFake::new(
+            &FakeExternalPackageDownloader::new(
                 vec![("package".into(), Default::default())]
                     .drain(..)
                     .collect(),
                 &file_storage,
             ),
-            &ExternalPackageBuilderFake::new(&file_path_configuration, &file_storage),
+            &FakeExternalPackageBuilder::new(&file_path_configuration, &file_storage),
             &file_storage,
             &FilePathManager::new(&file_path_configuration),
         )

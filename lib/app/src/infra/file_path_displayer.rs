@@ -5,17 +5,17 @@ pub trait FilePathDisplayer {
 }
 
 #[cfg(test)]
-pub struct FilePathDisplayerFake {}
+pub struct FakeFilePathDisplayer {}
 
 #[cfg(test)]
-impl FilePathDisplayerFake {
+impl FakeFilePathDisplayer {
     pub fn new() -> Self {
         Self {}
     }
 }
 
 #[cfg(test)]
-impl FilePathDisplayer for FilePathDisplayerFake {
+impl FilePathDisplayer for FakeFilePathDisplayer {
     fn display(&self, file_path: &FilePath) -> String {
         format!("{}", file_path)
     }
