@@ -39,7 +39,7 @@ impl ModulePath {
 
     pub fn fully_qualify_name(&self, name: &str) -> String {
         vec![&format!(
-            "{}({})",
+            "{}@{}",
             self.package.name(),
             self.package.version()
         )]
@@ -89,9 +89,12 @@ mod tests {
     #[test]
     fn fully_qualify_name() {
         assert_eq!(
-            ModulePath::new(Package::new("foo", ""), vec!["bar".into(), "baz".into()])
-                .fully_qualify_name("blah"),
-            "foo().bar.baz.blah"
+            ModulePath::new(
+                Package::new("foo", "version"),
+                vec!["bar".into(), "baz".into()]
+            )
+            .fully_qualify_name("blah"),
+            "foo@version.bar.baz.blah"
         );
     }
 }

@@ -84,7 +84,7 @@ mod tests {
                 vec![],
                 vec![],
                 vec![ValueDefinition::new(
-                    "M().x",
+                    "M@.x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -134,8 +134,8 @@ mod tests {
                 )],
                 vec![],
                 vec![ValueDefinition::new(
-                    "M().x",
-                    Variable::new("A().B.y", SourceInformation::dummy()),
+                    "M@.x",
+                    Variable::new("A@.B.y", SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
@@ -184,8 +184,8 @@ mod tests {
                 )],
                 vec![],
                 vec![ValueDefinition::new(
-                    "M().x",
-                    Variable::new("A().B.y", SourceInformation::dummy()),
+                    "M@.x",
+                    Variable::new("A@.B.y", SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
@@ -249,7 +249,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![TypeDefinition::new(
-                    "M().x",
+                    "M@.x",
                     types::None::new(SourceInformation::dummy()),
                 )],
                 vec![],
