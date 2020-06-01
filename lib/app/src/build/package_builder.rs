@@ -64,11 +64,11 @@ impl<'a> PackageBuilder<'a> {
                     &package_object_file_path,
                     self.file_path_manager
                         .configuration()
-                        .archive_package_object_file_path(),
+                        .package_object_file_path(),
                     &package_interface_file_path,
                     self.file_path_manager
                         .configuration()
-                        .archive_package_interface_file_path(),
+                        .package_interface_file_path(),
                 )?;
             }
         }

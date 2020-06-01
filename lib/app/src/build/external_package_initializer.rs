@@ -46,19 +46,21 @@ impl<'a> ExternalPackageInitializer<'a> {
             }
 
             object_file_paths.push(
-                directory_path.join(&FilePath::new(&[self
-                    .file_path_manager
-                    .configuration()
-                    .package_object_filename()])),
+                directory_path.join(
+                    self.file_path_manager
+                        .configuration()
+                        .package_object_file_path(),
+                ),
             );
 
             module_interfaces.extend(
                 serde_json::from_str::<PackageInterface>(
                     &self.file_storage.read_to_string(
-                        &directory_path.join(&FilePath::new(&[self
-                            .file_path_manager
-                            .configuration()
-                            .package_interface_filename()])),
+                        &directory_path.join(
+                            self.file_path_manager
+                                .configuration()
+                                .package_interface_file_path(),
+                        ),
                     )?,
                 )?
                 .modules()

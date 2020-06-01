@@ -30,7 +30,7 @@ impl<'a> PackageLinker<'a> {
         let package_object_file_path = self
             .file_path_manager
             .configuration()
-            .package_object_file_path();
+            .main_package_object_file_path();
 
         self.object_linker.link(
             &object_file_paths
@@ -44,7 +44,7 @@ impl<'a> PackageLinker<'a> {
         let package_interface_file_path = self
             .file_path_manager
             .configuration()
-            .package_interface_file_path();
+            .main_package_interface_file_path();
 
         self.interface_linker
             .link(interface_file_paths, &package_interface_file_path)?;
