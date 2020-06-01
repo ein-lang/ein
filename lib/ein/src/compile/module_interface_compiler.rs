@@ -77,7 +77,7 @@ mod tests {
                 vec![],
                 vec![],
                 vec![ValueDefinition::new(
-                    "P@.M.x",
+                    "P().M.x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -89,7 +89,7 @@ mod tests {
                 vec!["x".into()].into_iter().collect(),
                 Default::default(),
                 vec![(
-                    "P@.M.x".into(),
+                    "P().M.x".into(),
                     types::Number::new(SourceInformation::dummy()).into()
                 )]
                 .into_iter()
