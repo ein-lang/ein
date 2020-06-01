@@ -115,7 +115,7 @@ impl<'a> ExternalPackageInitializer<'a> {
 
         self.file_path_manager
             .configuration()
-            .external_package_directory()
+            .external_package_directory_path()
             .join(&FilePath::new(&[&format!("{:x}", hasher.finish())]))
     }
 }

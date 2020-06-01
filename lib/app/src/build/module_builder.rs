@@ -51,7 +51,10 @@ impl<'a> ModuleBuilder<'a> {
                 self.file_path_manager
                     .configuration()
                     .source_file_extension(),
-                &[self.file_path_manager.configuration().output_directory()],
+                &[self
+                    .file_path_manager
+                    .configuration()
+                    .output_directory_path()],
             )?,
         )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(

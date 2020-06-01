@@ -29,15 +29,11 @@ impl<'a, S: crate::infra::FileStorage> ExternalPackageBuilder
 {
     fn build(&self, directory_path: &FilePath) -> Result<(), Box<dyn std::error::Error>> {
         self.file_storage.write(
-            &directory_path.join(&FilePath::new(&[self
-                .file_path_configuration
-                .package_object_filename()])),
+            &directory_path.join(self.file_path_configuration.package_object_file_path()),
             &[],
         )?;
         self.file_storage.write(
-            &directory_path.join(&FilePath::new(&[self
-                .file_path_configuration
-                .package_interface_filename()])),
+            &directory_path.join(self.file_path_configuration.package_interface_file_path()),
             serde_json::to_string(&crate::PackageInterface::new(&[]))?.as_bytes(),
         )?;
 

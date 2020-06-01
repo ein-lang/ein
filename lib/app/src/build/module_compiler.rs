@@ -101,7 +101,7 @@ impl<'a> ModuleCompiler<'a> {
 
         self.file_path_manager
             .configuration()
-            .object_directory()
+            .object_directory_path()
             .join(&FilePath::new(&[&format!("{:x}", hasher.finish())]))
             .with_extension(
                 self.file_path_manager
