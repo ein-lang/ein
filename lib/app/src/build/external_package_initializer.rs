@@ -38,7 +38,7 @@ impl<'a> ExternalPackageInitializer<'a> {
         let mut object_file_paths = vec![];
         let mut module_interfaces = HashMap::new();
 
-        for (name, external_package) in package_configuration.dependencies() {
+        for (name, external_package) in package_configuration.build_configuration().dependencies() {
             let directory_path = self.generate_directory_path(name, external_package);
 
             if !self.file_storage.exists(&directory_path) {
@@ -171,8 +171,7 @@ mod tests {
             &FilePathManager::new(&file_path_configuration),
         )
         .initialize(&PackageConfiguration::new(
-            "",
-            "",
+            ein::Package::new("", ""),
             BuildConfiguration::new(
                 Target::Library,
                 vec![("package".into(), ExternalPackage::new("version"))]
@@ -201,8 +200,7 @@ mod tests {
             &FilePathManager::new(&file_path_configuration),
         )
         .initialize(&PackageConfiguration::new(
-            "",
-            "",
+            ein::Package::new("", ""),
             BuildConfiguration::new(
                 Target::Library,
                 vec![("package".into(), ExternalPackage::new("version"))]

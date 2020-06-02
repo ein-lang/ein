@@ -28,16 +28,16 @@ impl<'a> PackageInitializer<'a> {
             repository
                 .as_ref()
                 .map(|repository| {
-                    if let Some(host) = repository.url().host_str() {
-                        [host, repository.url().path()].concat()
-                    } else {
-                        repository.url().path().into()
-                    }
+                    ein::Package::new(
+                        if let Some(host) = repository.url().host_str() {
+                            [host, repository.url().path()].concat()
+                        } else {
+                            repository.url().path().into()
+                        },
+                        repository.version(),
+                    )
                 })
-                .unwrap_or_else(|_| format!("{}", directory_path)),
-            repository
-                .map(|repository| String::from(repository.version()))
-                .unwrap_or_else(|_| "master".into()),
+                .unwrap_or_else(|_| ein::Package::new(format!("{}", directory_path), "master")),
             serde_json::from_str(
                 &self
                     .file_storage

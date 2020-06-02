@@ -7,7 +7,6 @@ mod target_type;
 pub use build_configuration::BuildConfiguration;
 pub use command_target::CommandTarget;
 pub use external_package::ExternalPackage;
-use std::collections::HashMap;
 pub use target::Target;
 
 pub struct PackageConfiguration {
@@ -16,26 +15,18 @@ pub struct PackageConfiguration {
 }
 
 impl PackageConfiguration {
-    pub fn new(
-        name: impl Into<String>,
-        version: impl Into<String>,
-        build_configuration: BuildConfiguration,
-    ) -> Self {
+    pub fn new(package: ein::Package, build_configuration: BuildConfiguration) -> Self {
         Self {
-            package: ein::Package::new(name, version),
+            package,
             build_configuration,
         }
     }
 
-    pub fn target(&self) -> &Target {
-        &self.build_configuration.target()
-    }
-
-    pub fn dependencies(&self) -> &HashMap<String, ExternalPackage> {
-        &self.build_configuration.dependencies()
-    }
-
-    pub fn as_package(&self) -> &ein::Package {
+    pub fn package(&self) -> &ein::Package {
         &self.package
+    }
+
+    pub fn build_configuration(&self) -> &BuildConfiguration {
+        &self.build_configuration
     }
 }

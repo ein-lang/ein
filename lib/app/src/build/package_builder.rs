@@ -54,7 +54,7 @@ impl<'a> PackageBuilder<'a> {
             &interface_file_paths,
         )?;
 
-        match package_configuration.target() {
+        match package_configuration.build_configuration().target() {
             Target::Command(command_target) => {
                 self.command_linker
                     .link(&package_object_file_path, command_target.name())?;

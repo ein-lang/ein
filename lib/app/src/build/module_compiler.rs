@@ -66,7 +66,7 @@ impl<'a> ModuleCompiler<'a> {
         let (bitcode, module_interface) = ein::compile(
             &module.resolve(
                 self.file_path_manager
-                    .convert_to_module_path(source_file_path, package_configuration.as_package()),
+                    .convert_to_module_path(source_file_path, package_configuration.package()),
                 imported_module_interfaces
                     .into_iter()
                     .map(|module_interface| ein::Import::new(module_interface, true))
