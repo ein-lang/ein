@@ -5,7 +5,7 @@ use super::package_initializer::PackageInitializer;
 use super::package_linker::PackageLinker;
 use crate::infra::{CommandLinker, FilePath};
 
-pub struct PackageBuilder<'a> {
+pub struct MainPackageBuilder<'a> {
     module_builder: &'a ModuleBuilder<'a>,
     package_linker: &'a PackageLinker<'a>,
     command_linker: &'a dyn CommandLinker,
@@ -13,7 +13,7 @@ pub struct PackageBuilder<'a> {
     external_package_initializer: &'a ExternalPackageInitializer<'a>,
 }
 
-impl<'a> PackageBuilder<'a> {
+impl<'a> MainPackageBuilder<'a> {
     pub fn new(
         module_builder: &'a ModuleBuilder<'a>,
         package_linker: &'a PackageLinker<'a>,

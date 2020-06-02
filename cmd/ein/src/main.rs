@@ -54,7 +54,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let package_linker =
         app::PackageLinker::new(&object_linker, &interface_linker, &file_path_manager);
 
-    app::PackageBuilder::new(
+    app::MainPackageBuilder::new(
         &module_builder,
         &package_linker,
         &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
