@@ -50,9 +50,11 @@ impl<'a> ModuleBuilder<'a> {
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
 
-        for source_file_path in
-            self.sort_source_file_paths(&self.source_file_paths_finder.find(&FilePath::empty())?)?
-        {
+        for source_file_path in self.sort_source_file_paths(
+            &self
+                .source_file_paths_finder
+                .find(package_configuration.directory_path())?,
+        )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
                 package_configuration,
                 &module_interfaces,

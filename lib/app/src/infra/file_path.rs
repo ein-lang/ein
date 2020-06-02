@@ -47,7 +47,7 @@ impl FilePath {
     }
 
     pub fn join(&self, file_path: &Self) -> Self {
-        FilePath::new(self.components().chain(file_path.components()))
+        Self::new(self.components().chain(file_path.components()))
     }
 
     pub fn has_prefix(&self, directory_path: &Self) -> bool {
@@ -63,6 +63,10 @@ impl FilePath {
         } else {
             element == file_extension
         }
+    }
+
+    pub fn relative_to(&self, path: &Self) -> Self {
+        Self::new(path.components().skip(self.components().count()))
     }
 }
 

@@ -43,6 +43,7 @@ impl<'a> PackageInitializer<'a> {
                     .file_storage
                     .read_to_string(self.file_path_configuration.build_configuration_file_path())?,
             )?,
+            directory_path.clone(),
         ))
     }
 }

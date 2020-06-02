@@ -36,7 +36,10 @@ impl<'a> ModuleCompiler<'a> {
         source_file_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
-        let module = self.module_parser.parse(&source, source_file_path)?;
+        let module = self.module_parser.parse(
+            &source,
+            &source_file_path.relative_to(package_configuration.directory_path()),
+        )?;
 
         let imported_module_interfaces = module
             .imports()
