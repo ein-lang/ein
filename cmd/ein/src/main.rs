@@ -29,7 +29,6 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         "bc",
         "json",
         app::FilePath::new(&[".ein"]),
-        app::FilePath::new(&[".ein", "packages"]),
     );
 
     let file_storage = infra::FileStorage::new();
