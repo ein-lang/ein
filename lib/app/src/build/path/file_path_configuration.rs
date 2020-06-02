@@ -10,8 +10,6 @@ pub struct FilePathConfiguration {
     build_configuration_file_path: FilePath,
     output_directory_path: FilePath,
     object_directory_path: FilePath,
-    main_package_object_file_path: FilePath,
-    main_package_interface_file_path: FilePath,
     package_object_file_path: FilePath,
     package_interface_file_path: FilePath,
     external_packages_directory_path: FilePath,
@@ -33,12 +31,10 @@ impl FilePathConfiguration {
 
         Self {
             interface_file_extension: interface_file_extension.into(),
-            main_package_object_file_path: output_directory_path
+            package_object_file_path: output_directory_path
                 .join(&FilePath::new(&[&package_object_filename])),
-            main_package_interface_file_path: output_directory_path
+            package_interface_file_path: output_directory_path
                 .join(&FilePath::new(&[&package_interface_filename])),
-            package_object_file_path: FilePath::new(&[&package_object_filename]),
-            package_interface_file_path: FilePath::new(&[&package_interface_filename]),
             external_packages_directory_path: output_directory_path
                 .join(&FilePath::new(&[EXTERNAL_PACKAGES_DIRECTORY])),
             object_directory_path: output_directory_path.join(&FilePath::new(&[OBJECT_DIRECTORY])),
@@ -71,14 +67,6 @@ impl FilePathConfiguration {
 
     pub fn object_directory_path(&self) -> &FilePath {
         &self.object_directory_path
-    }
-
-    pub fn main_package_object_file_path(&self) -> &FilePath {
-        &self.main_package_object_file_path
-    }
-
-    pub fn main_package_interface_file_path(&self) -> &FilePath {
-        &self.main_package_interface_file_path
     }
 
     pub fn package_object_file_path(&self) -> &FilePath {
