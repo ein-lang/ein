@@ -42,7 +42,10 @@ impl<'a> ExternalPackageInitializer<'a> {
                 .configuration()
                 .external_packages_directory_path()
                 .join(
-                    &FilePath::from_str(name).join(&FilePath::new(&[external_package.version()])),
+                    &name
+                        .parse::<FilePath>()
+                        .unwrap()
+                        .join(&FilePath::new(&[external_package.version()])),
                 );
 
             if !self.file_storage.exists(&directory_path) {
