@@ -15,6 +15,10 @@ impl FilePath {
         }
     }
 
+    pub fn from_str(path: &str) -> Self {
+        Self::new(path.split("/"))
+    }
+
     pub fn empty() -> Self {
         Self { components: vec![] }
     }

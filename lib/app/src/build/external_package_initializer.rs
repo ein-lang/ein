@@ -41,7 +41,9 @@ impl<'a> ExternalPackageInitializer<'a> {
                 .file_path_manager
                 .configuration()
                 .external_packages_directory_path()
-                .join(&FilePath::new(&[name, external_package.version()]));
+                .join(
+                    &FilePath::from_str(name).join(&FilePath::new(&[external_package.version()])),
+                );
 
             if !self.file_storage.exists(&directory_path) {
                 self.initialize_external_package(name, external_package, &directory_path)?;
