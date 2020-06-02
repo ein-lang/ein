@@ -29,7 +29,6 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         "bc",
         "json",
         app::FilePath::new(&[".ein"]),
-        app::FilePath::new(&[".ein", "packages"]),
     );
 
     let file_storage = infra::FileStorage::new();
@@ -58,14 +57,8 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     app::PackageBuilder::new(
         &module_builder,
         &package_linker,
-        &infra::LibraryArchiver::new(),
         &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
-        &file_path_manager,
-        &app::PackageInitializer::new(
-            &infra::Repository::new(),
-            &file_storage,
-            &file_path_configuration,
-        ),
+        &app::PackageInitializer::new(&file_storage, &file_path_configuration),
         &app::ExternalPackageInitializer::new(
             &infra::ExternalPackageDownloader::new(),
             &infra::ExternalPackageBuilder::new(),

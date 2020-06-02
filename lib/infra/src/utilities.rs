@@ -1,5 +1,9 @@
 pub fn convert_to_os_path(file_path: &app::FilePath) -> std::path::PathBuf {
-    file_path.components().collect::<std::path::PathBuf>()
+    if file_path.components().count() == 0 {
+        std::path::PathBuf::from(".")
+    } else {
+        file_path.components().collect::<std::path::PathBuf>()
+    }
 }
 
 pub fn convert_to_file_path(path: impl AsRef<std::path::Path>) -> app::FilePath {

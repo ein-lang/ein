@@ -18,6 +18,7 @@ pub use module_builder::*;
 pub use module_compiler::*;
 pub use module_parser::*;
 pub use package_builder::*;
+pub use package_configuration::*;
 pub use package_initializer::*;
 pub use package_interface::*;
 pub use package_linker::*;

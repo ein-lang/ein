@@ -10,13 +10,13 @@ pub trait ExternalPackageDownloader {
 }
 
 #[cfg(test)]
-pub struct ExternalPackageDownloaderFake<'a, S: crate::infra::FileStorage> {
+pub struct FakeExternalPackageDownloader<'a, S: crate::infra::FileStorage> {
     packages: std::collections::HashMap<String, std::collections::HashMap<FilePath, Vec<u8>>>,
     file_storage: &'a S,
 }
 
 #[cfg(test)]
-impl<'a, S: crate::infra::FileStorage> ExternalPackageDownloaderFake<'a, S> {
+impl<'a, S: crate::infra::FileStorage> FakeExternalPackageDownloader<'a, S> {
     pub fn new(
         packages: std::collections::HashMap<String, std::collections::HashMap<FilePath, Vec<u8>>>,
         file_storage: &'a S,
@@ -30,7 +30,7 @@ impl<'a, S: crate::infra::FileStorage> ExternalPackageDownloaderFake<'a, S> {
 
 #[cfg(test)]
 impl<'a, S: crate::infra::FileStorage> ExternalPackageDownloader
-    for ExternalPackageDownloaderFake<'a, S>
+    for FakeExternalPackageDownloader<'a, S>
 {
     fn download(
         &self,

@@ -1,35 +1,32 @@
+mod build_configuration;
 mod command_target;
-mod error;
 mod external_package;
 mod target;
 mod target_type;
 
+pub use build_configuration::BuildConfiguration;
 pub use command_target::CommandTarget;
 pub use external_package::ExternalPackage;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 pub use target::Target;
 
-#[derive(Deserialize, Serialize)]
 pub struct PackageConfiguration {
-    target: Target,
-    dependencies: HashMap<String, ExternalPackage>,
+    package: ein::Package,
+    build_configuration: BuildConfiguration,
 }
 
 impl PackageConfiguration {
-    #[cfg(test)]
-    pub fn new(target: Target, dependencies: HashMap<String, ExternalPackage>) -> Self {
+    pub fn new(package: ein::Package, build_configuration: BuildConfiguration) -> Self {
         Self {
-            target,
-            dependencies,
+            package,
+            build_configuration,
         }
     }
 
-    pub fn target(&self) -> &Target {
-        &self.target
+    pub fn package(&self) -> &ein::Package {
+        &self.package
     }
 
-    pub fn dependencies(&self) -> &HashMap<String, ExternalPackage> {
-        &self.dependencies
+    pub fn build_configuration(&self) -> &BuildConfiguration {
+        &self.build_configuration
     }
 }

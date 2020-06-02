@@ -1,6 +1,7 @@
 use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
+use super::package_configuration::PackageConfiguration;
 use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
@@ -31,7 +32,7 @@ impl<'a> ModuleBuilder<'a> {
 
     pub fn build(
         &self,
-        package: &ein::Package,
+        package_configuration: &PackageConfiguration,
         external_module_interfaces: &HashMap<
             ein::ExternalUnresolvedModulePath,
             ein::ModuleInterface,
@@ -50,12 +51,17 @@ impl<'a> ModuleBuilder<'a> {
                 self.file_path_manager
                     .configuration()
                     .source_file_extension(),
-                &[self.file_path_manager.configuration().output_directory()],
+                &[self
+                    .file_path_manager
+                    .configuration()
+                    .output_directory_path()],
             )?,
         )? {
-            let (object_file_path, interface_file_path) =
-                self.module_compiler
-                    .compile(package, &module_interfaces, &source_file_path)?;
+            let (object_file_path, interface_file_path) = self.module_compiler.compile(
+                package_configuration,
+                &module_interfaces,
+                &source_file_path,
+            )?;
 
             let module_interface = serde_json::from_str::<ein::ModuleInterface>(
                 &self.file_storage.read_to_string(&interface_file_path)?,

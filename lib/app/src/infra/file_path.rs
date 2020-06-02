@@ -15,6 +15,10 @@ impl FilePath {
         }
     }
 
+    pub fn empty() -> Self {
+        Self { components: vec![] }
+    }
+
     pub fn components(&self) -> impl Iterator<Item = &str> {
         self.components.iter().map(Deref::deref)
     }
