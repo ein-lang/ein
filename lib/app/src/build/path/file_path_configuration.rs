@@ -18,7 +18,7 @@ pub struct FilePathConfiguration {
 
 impl FilePathConfiguration {
     pub fn new(
-        build_configuration_file_path: impl Into<String>,
+        build_configuration_filename: impl Into<String>,
         package_artifact_basename: impl Into<String> + std::fmt::Display,
         source_file_extension: impl Into<String> + std::fmt::Display,
         object_file_extension: impl Into<String> + std::fmt::Display,
@@ -44,7 +44,7 @@ impl FilePathConfiguration {
             source_file_extension: source_file_extension.into(),
             object_file_extension: object_file_extension.into(),
             output_directory_path,
-            build_configuration_file_path: FilePath::new(&[build_configuration_file_path.into()]),
+            build_configuration_file_path: FilePath::new(&[build_configuration_filename.into()]),
         }
     }
 
