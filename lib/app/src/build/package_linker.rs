@@ -26,7 +26,7 @@ impl<'a> PackageLinker<'a> {
         object_file_paths: &[FilePath],
         external_package_object_file_paths: &[FilePath],
         interface_file_paths: &[FilePath],
-    ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
+    ) -> Result<FilePath, Box<dyn std::error::Error>> {
         let package_object_file_path = self
             .file_path_manager
             .configuration()
@@ -41,17 +41,13 @@ impl<'a> PackageLinker<'a> {
             &package_object_file_path,
         )?;
 
-        let package_interface_file_path = self
-            .file_path_manager
-            .configuration()
-            .main_package_interface_file_path();
+        self.interface_linker.link(
+            interface_file_paths,
+            self.file_path_manager
+                .configuration()
+                .main_package_interface_file_path(),
+        )?;
 
-        self.interface_linker
-            .link(interface_file_paths, &package_interface_file_path)?;
-
-        Ok((
-            package_object_file_path.clone(),
-            package_interface_file_path.clone(),
-        ))
+        Ok(package_object_file_path.clone())
     }
 }

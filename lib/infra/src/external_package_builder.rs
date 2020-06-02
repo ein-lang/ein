@@ -20,9 +20,6 @@ impl app::ExternalPackageBuilder for ExternalPackageBuilder {
                 .current_dir(&directory_path),
         )?;
 
-        tar::Archive::new(std::fs::File::open(directory_path.join("library.tar"))?)
-            .unpack(&directory_path)?;
-
         Ok(())
     }
 }

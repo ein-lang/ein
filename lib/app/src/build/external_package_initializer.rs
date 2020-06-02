@@ -49,7 +49,7 @@ impl<'a> ExternalPackageInitializer<'a> {
                 directory_path.join(
                     self.file_path_manager
                         .configuration()
-                        .package_object_file_path(),
+                        .main_package_object_file_path(),
                 ),
             );
 
@@ -59,7 +59,7 @@ impl<'a> ExternalPackageInitializer<'a> {
                         &directory_path.join(
                             self.file_path_manager
                                 .configuration()
-                                .package_interface_file_path(),
+                                .main_package_interface_file_path(),
                         ),
                     )?,
                 )?

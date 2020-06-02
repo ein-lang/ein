@@ -3,15 +3,12 @@ use super::module_builder::ModuleBuilder;
 use super::package_configuration::Target;
 use super::package_initializer::PackageInitializer;
 use super::package_linker::PackageLinker;
-use super::path::FilePathManager;
-use crate::infra::{CommandLinker, FilePath, LibraryArchiver};
+use crate::infra::{CommandLinker, FilePath};
 
 pub struct PackageBuilder<'a> {
     module_builder: &'a ModuleBuilder<'a>,
     package_linker: &'a PackageLinker<'a>,
-    library_archiver: &'a dyn LibraryArchiver,
     command_linker: &'a dyn CommandLinker,
-    file_path_manager: &'a FilePathManager<'a>,
     package_initializer: &'a PackageInitializer<'a>,
     external_package_initializer: &'a ExternalPackageInitializer<'a>,
 }
@@ -20,18 +17,14 @@ impl<'a> PackageBuilder<'a> {
     pub fn new(
         module_builder: &'a ModuleBuilder<'a>,
         package_linker: &'a PackageLinker<'a>,
-        library_archiver: &'a dyn LibraryArchiver,
         command_linker: &'a dyn CommandLinker,
-        file_path_manager: &'a FilePathManager<'a>,
         package_initializer: &'a PackageInitializer<'a>,
         external_package_initializer: &'a ExternalPackageInitializer<'a>,
     ) -> Self {
         Self {
             module_builder,
             package_linker,
-            library_archiver,
             command_linker,
-            file_path_manager,
             package_initializer,
             external_package_initializer,
         }
@@ -48,7 +41,7 @@ impl<'a> PackageBuilder<'a> {
             .module_builder
             .build(&package_configuration, &external_module_interfaces)?;
 
-        let (package_object_file_path, package_interface_file_path) = self.package_linker.link(
+        let package_object_file_path = self.package_linker.link(
             &object_file_paths,
             &external_package_object_file_paths,
             &interface_file_paths,
@@ -59,18 +52,7 @@ impl<'a> PackageBuilder<'a> {
                 self.command_linker
                     .link(&package_object_file_path, command_target.name())?;
             }
-            Target::Library => {
-                self.library_archiver.archive(
-                    &package_object_file_path,
-                    self.file_path_manager
-                        .configuration()
-                        .package_object_file_path(),
-                    &package_interface_file_path,
-                    self.file_path_manager
-                        .configuration()
-                        .package_interface_file_path(),
-                )?;
-            }
+            Target::Library => {}
         }
 
         Ok(())
