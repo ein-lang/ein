@@ -10,6 +10,7 @@ mod package_initializer;
 mod package_interface;
 mod package_linker;
 mod path;
+mod source_file_paths_finder;
 
 pub use error::*;
 pub use external_package_initializer::*;
@@ -23,3 +24,4 @@ pub use package_initializer::*;
 pub use package_interface::*;
 pub use package_linker::*;
 pub use path::*;
+pub use source_file_paths_finder::*;

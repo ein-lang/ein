@@ -44,9 +44,12 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_storage,
         &compile_configuration,
     );
+    let source_file_paths_finder =
+        app::SourceFilePathsFinder::new(&file_path_manager, &file_storage);
     let module_builder = app::ModuleBuilder::new(
         &module_parser,
         &module_compiler,
+        &source_file_paths_finder,
         &file_storage,
         &file_path_manager,
     );

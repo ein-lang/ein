@@ -3,11 +3,8 @@ use super::repository::Repository;
 
 pub trait FileStorage {
     fn exists(&self, path: &FilePath) -> bool;
-    fn glob(
-        &self,
-        file_extension: &str,
-        excluded_directories: &[&FilePath],
-    ) -> Result<Vec<FilePath>, Box<dyn std::error::Error>>;
+    fn is_directory(&self, path: &FilePath) -> bool;
+    fn read_directory(&self, path: &FilePath) -> Result<Vec<FilePath>, Box<dyn std::error::Error>>;
     fn read_repository(
         &self,
         directory_path: &FilePath,
@@ -37,28 +34,12 @@ impl FileStorage for FakeFileStorage {
         self.files.lock().unwrap().contains_key(path)
     }
 
-    fn glob(
-        &self,
-        file_extension: &str,
-        excluded_directories: &[&FilePath],
-    ) -> Result<Vec<FilePath>, Box<dyn std::error::Error>> {
-        let mut paths = self
-            .files
-            .lock()
-            .unwrap()
-            .keys()
-            .filter(|path| {
-                path.has_extension(file_extension)
-                    && !excluded_directories
-                        .iter()
-                        .any(|directory| path.has_prefix(&directory))
-            })
-            .cloned()
-            .collect::<Vec<FilePath>>();
+    fn is_directory(&self, _: &FilePath) -> bool {
+        unimplemented!()
+    }
 
-        paths.sort();
-
-        Ok(paths)
+    fn read_directory(&self, _: &FilePath) -> Result<Vec<FilePath>, Box<dyn std::error::Error>> {
+        unimplemented!()
     }
 
     fn read_repository(
@@ -109,77 +90,6 @@ mod tests {
                 .exists(&FilePath::new(&["foo"]))
         );
         assert!(!FakeFileStorage::new(Default::default()).exists(&FilePath::new(&["foo"])));
-    }
-
-    #[test]
-    fn glob() {
-        assert_eq!(
-            FakeFileStorage::new(Default::default())
-                .glob("c", &[])
-                .unwrap(),
-            vec![]
-        );
-        assert_eq!(
-            FakeFileStorage::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .glob("c", &[])
-                .unwrap(),
-            vec![]
-        );
-        assert_eq!(
-            FakeFileStorage::new(
-                vec![(FilePath::new(&["foo.c"]), vec![])]
-                    .drain(..)
-                    .collect()
-            )
-            .glob("c", &[])
-            .unwrap(),
-            vec![FilePath::new(&["foo.c"])]
-        );
-        assert_eq!(
-            FakeFileStorage::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .glob("", &[])
-                .unwrap(),
-            vec![FilePath::new(&["foo"])]
-        );
-        assert_eq!(
-            FakeFileStorage::new(
-                vec![
-                    (FilePath::new(&["foo.bar"]), vec![]),
-                    (FilePath::new(&["foo.baz"]), vec![])
-                ]
-                .drain(..)
-                .collect()
-            )
-            .glob("bar", &[])
-            .unwrap(),
-            vec![FilePath::new(&["foo.bar"])]
-        );
-        assert_eq!(
-            FakeFileStorage::new(
-                vec![
-                    (FilePath::new(&["foo.bar"]), vec![]),
-                    (FilePath::new(&["baz", "blah.bar"]), vec![])
-                ]
-                .drain(..)
-                .collect()
-            )
-            .glob("bar", &[])
-            .unwrap(),
-            vec![
-                FilePath::new(&["baz", "blah.bar"]),
-                FilePath::new(&["foo.bar"]),
-            ]
-        );
-        assert_eq!(
-            FakeFileStorage::new(
-                vec![(FilePath::new(&["foo", "bar.baz"]), vec![])]
-                    .drain(..)
-                    .collect()
-            )
-            .glob("baz", &[&FilePath::new(&["foo"])])
-            .unwrap(),
-            vec![]
-        );
     }
 
     #[test]

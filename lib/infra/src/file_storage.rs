@@ -15,22 +15,18 @@ impl app::FileStorage for FileStorage {
         utilities::convert_to_os_path(file_path).exists()
     }
 
-    fn glob(
+    fn is_directory(&self, file_path: &app::FilePath) -> bool {
+        utilities::convert_to_os_path(file_path).is_dir()
+    }
+
+    fn read_directory(
         &self,
-        file_extension: &str,
-        excluded_directories: &[&app::FilePath],
+        file_path: &app::FilePath,
     ) -> Result<Vec<app::FilePath>, Box<dyn std::error::Error>> {
-        Ok(glob::glob(&format!("**/*.{}", file_extension))?
-            .map(|path| Ok(path?))
-            .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?
-            .drain(..)
-            .map(utilities::convert_to_file_path)
-            .filter(|file_path| {
-                !excluded_directories
-                    .iter()
-                    .any(|directory| file_path.has_prefix(directory))
-            })
-            .collect())
+        Ok(utilities::convert_to_os_path(file_path)
+            .read_dir()?
+            .map(|entry| Ok(utilities::convert_to_file_path(entry?.path())))
+            .collect::<Result<_, std::io::Error>>()?)
     }
 
     fn read_repository(
@@ -81,26 +77,5 @@ impl app::FileStorage for FileStorage {
         std::fs::write(path, data)?;
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use app::FileStorage as FileStorageTrait;
-
-    #[test]
-    fn glob() {
-        assert!(FileStorage::new()
-            .glob("rs", &[&app::FilePath::new(&["target"])])
-            .unwrap()
-            .iter()
-            .any(|file_path| file_path == &app::FilePath::new(&["src", "file_storage.rs"])));
-        assert_eq!(
-            FileStorage::new()
-                .glob("rs", &[&app::FilePath::new(&["src"])])
-                .unwrap(),
-            vec![]
-        );
     }
 }

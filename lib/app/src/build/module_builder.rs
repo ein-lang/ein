@@ -3,6 +3,7 @@ use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
 use super::package_configuration::PackageConfiguration;
 use super::path::FilePathManager;
+use super::source_file_paths_finder::SourceFilePathsFinder;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
@@ -11,6 +12,7 @@ use std::collections::HashMap;
 pub struct ModuleBuilder<'a> {
     module_parser: &'a ModuleParser<'a>,
     module_compiler: &'a ModuleCompiler<'a>,
+    source_file_paths_finder: &'a SourceFilePathsFinder<'a>,
     file_storage: &'a dyn FileStorage,
     file_path_manager: &'a FilePathManager<'a>,
 }
@@ -19,12 +21,14 @@ impl<'a> ModuleBuilder<'a> {
     pub fn new(
         module_parser: &'a ModuleParser<'a>,
         module_compiler: &'a ModuleCompiler<'a>,
+        source_file_paths_finder: &'a SourceFilePathsFinder<'a>,
         file_storage: &'a dyn FileStorage,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
             module_parser,
             module_compiler,
+            source_file_paths_finder,
             file_storage,
             file_path_manager,
         }
@@ -46,17 +50,9 @@ impl<'a> ModuleBuilder<'a> {
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
 
-        for source_file_path in self.sort_source_file_paths(
-            &self.file_storage.glob(
-                self.file_path_manager
-                    .configuration()
-                    .source_file_extension(),
-                &[self
-                    .file_path_manager
-                    .configuration()
-                    .output_directory_path()],
-            )?,
-        )? {
+        for source_file_path in
+            self.sort_source_file_paths(&self.source_file_paths_finder.find(&FilePath::empty())?)?
+        {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
                 package_configuration,
                 &module_interfaces,
