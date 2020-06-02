@@ -1,4 +1,6 @@
+use std::fmt::Display;
 use std::ops::Deref;
+use std::str::FromStr;
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FilePath {
@@ -64,13 +66,21 @@ impl FilePath {
     }
 }
 
-impl std::fmt::Display for FilePath {
+impl Display for FilePath {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             formatter,
             "{}",
             self.components().collect::<Vec<_>>().join(&"/")
         )
+    }
+}
+
+impl FromStr for FilePath {
+    type Err = ();
+
+    fn from_str(path: &str) -> Result<Self, ()> {
+        Ok(Self::new(path.split('/')))
     }
 }
 
