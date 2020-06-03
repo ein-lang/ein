@@ -9,6 +9,9 @@ use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
 
+type ExternalModuleInterfaces =
+    HashMap<ExternalPackageId, HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>>;
+
 pub struct ExternalPackagesBuilder<'a> {
     file_storage: &'a dyn FileStorage,
     package_builder: &'a PackageBuilder<'a>,
@@ -31,16 +34,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
     pub fn build(
         &self,
         package_configurations: &HashMap<ExternalPackageId, PackageConfiguration>,
-    ) -> Result<
-        (
-            Vec<FilePath>,
-            HashMap<
-                ExternalPackageId,
-                HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
-            >,
-        ),
-        Box<dyn std::error::Error>,
-    > {
+    ) -> Result<(Vec<FilePath>, ExternalModuleInterfaces), Box<dyn std::error::Error>> {
         let mut object_file_paths = vec![];
         let mut module_interfaces = HashMap::new();
 
@@ -91,7 +85,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
         let mut graph = Graph::<ExternalPackageId, ()>::new();
         let mut indices = HashMap::<ExternalPackageId, _>::new();
 
-        for (external_package_id, _) in package_configurations {
+        for external_package_id in package_configurations.keys() {
             indices.insert(
                 external_package_id.clone(),
                 graph.add_node(external_package_id.clone()),

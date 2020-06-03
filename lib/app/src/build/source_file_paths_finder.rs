@@ -29,7 +29,7 @@ impl<'a> SourceFilePathsFinder<'a> {
                 .components()
                 .next()
                 .unwrap()
-                .starts_with(".")
+                .starts_with('.')
             {
             } else if self.file_storage.is_directory(&path) {
                 source_file_paths.extend(self.find(&path)?);

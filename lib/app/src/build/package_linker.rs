@@ -45,6 +45,6 @@ impl<'a> PackageLinker<'a> {
             ),
         )?;
 
-        Ok(package_object_file_path.clone())
+        Ok(package_object_file_path)
     }
 }
