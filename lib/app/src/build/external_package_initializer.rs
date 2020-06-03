@@ -173,6 +173,7 @@ mod tests {
                     .drain(..)
                     .collect(),
             ),
+            FilePath::empty(),
         ))
         .unwrap();
     }
@@ -202,6 +203,7 @@ mod tests {
                     .drain(..)
                     .collect(),
             ),
+            FilePath::empty(),
         ));
 
         assert_eq!(
