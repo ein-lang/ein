@@ -1,7 +1,7 @@
 use super::external_package::ExternalPackage;
 use super::modules_builder::ModulesBuilder;
-use super::package_configuration::PackageConfiguration;
 use super::modules_linker::ModulesLinker;
+use super::package_configuration::PackageConfiguration;
 use crate::infra::FilePath;
 use std::collections::HashMap;
 
