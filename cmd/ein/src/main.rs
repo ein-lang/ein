@@ -46,7 +46,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     );
     let source_file_paths_finder =
         app::SourceFilePathsFinder::new(&file_path_manager, &file_storage);
-    let module_builder = app::ModuleBuilder::new(
+    let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
         &source_file_paths_finder,
@@ -54,11 +54,10 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_manager,
     );
     let interface_linker = app::InterfaceLinker::new(&file_storage);
-    let package_linker =
-        app::PackageLinker::new(&object_linker, &interface_linker, &file_path_manager);
+    let modules_linker =
+        app::ModulesLinker::new(&object_linker, &interface_linker, &file_path_manager);
     let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
-    let package_builder =
-        app::PackageBuilder::new(&module_builder, &package_linker, &package_initializer);
+    let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker);
 
     app::MainPackageBuilder::new(
         &package_initializer,

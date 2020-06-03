@@ -1,10 +1,10 @@
 use super::file_path::FilePath;
-use crate::build::ExternalPackageId;
+use crate::build::ExternalPackage;
 
 pub trait ExternalPackageDownloader {
     fn download(
         &self,
-        external_package_id: &ExternalPackageId,
+        external_package: &ExternalPackage,
         directory_path: &FilePath,
     ) -> Result<(), Box<dyn std::error::Error>>;
 }
@@ -34,10 +34,10 @@ impl<'a, S: crate::infra::FileStorage> ExternalPackageDownloader
 {
     fn download(
         &self,
-        external_package_id: &ExternalPackageId,
+        external_package: &ExternalPackage,
         directory_path: &FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        for (path, data) in &self.packages[external_package_id.name()] {
+        for (path, data) in &self.packages[external_package.name()] {
             self.file_storage.write(&directory_path.join(&path), data)?;
         }
 

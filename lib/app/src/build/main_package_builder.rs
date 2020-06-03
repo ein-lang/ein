@@ -44,7 +44,7 @@ impl<'a> MainPackageBuilder<'a> {
 
         let (package_object_file_path, _) = self
             .package_builder
-            .build(&directory_path, &external_module_interfaces)?;
+            .build(&package_configuration, &external_module_interfaces)?;
 
         match package_configuration.build_configuration().target() {
             Target::Command(command_target) => {

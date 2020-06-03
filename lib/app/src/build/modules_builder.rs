@@ -9,7 +9,7 @@ use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
 
-pub struct ModuleBuilder<'a> {
+pub struct ModulesBuilder<'a> {
     module_parser: &'a ModuleParser<'a>,
     module_compiler: &'a ModuleCompiler<'a>,
     source_file_paths_finder: &'a SourceFilePathsFinder<'a>,
@@ -17,7 +17,7 @@ pub struct ModuleBuilder<'a> {
     file_path_manager: &'a FilePathManager<'a>,
 }
 
-impl<'a> ModuleBuilder<'a> {
+impl<'a> ModulesBuilder<'a> {
     pub fn new(
         module_parser: &'a ModuleParser<'a>,
         module_compiler: &'a ModuleCompiler<'a>,
@@ -56,9 +56,9 @@ impl<'a> ModuleBuilder<'a> {
                 .find(package_configuration.directory_path())?,
         )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
-                package_configuration,
-                &module_interfaces,
                 &source_file_path,
+                &module_interfaces,
+                package_configuration,
             )?;
 
             let module_interface = serde_json::from_str::<ein::ModuleInterface>(

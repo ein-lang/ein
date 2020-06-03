@@ -2,13 +2,13 @@ use super::interface_linker::InterfaceLinker;
 use super::path::FilePathManager;
 use crate::infra::{FilePath, ObjectLinker};
 
-pub struct PackageLinker<'a> {
+pub struct ModulesLinker<'a> {
     object_linker: &'a dyn ObjectLinker,
     interface_linker: &'a InterfaceLinker<'a>,
     file_path_manager: &'a FilePathManager<'a>,
 }
 
-impl<'a> PackageLinker<'a> {
+impl<'a> ModulesLinker<'a> {
     pub fn new(
         object_linker: &'a dyn ObjectLinker,
         interface_linker: &'a InterfaceLinker<'a>,

@@ -31,9 +31,9 @@ impl<'a> ModuleCompiler<'a> {
 
     pub fn compile(
         &self,
-        package_configuration: &PackageConfiguration,
-        module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>,
         source_file_path: &FilePath,
+        module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>,
+        package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
         let module = self.module_parser.parse(&source, &source_file_path)?;

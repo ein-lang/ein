@@ -1,45 +1,40 @@
-use super::external_package_id::ExternalPackageId;
-use super::module_builder::ModuleBuilder;
-use super::package_initializer::PackageInitializer;
-use super::package_linker::PackageLinker;
+use super::external_package::ExternalPackage;
+use super::modules_builder::ModulesBuilder;
+use super::package_configuration::PackageConfiguration;
+use super::modules_linker::ModulesLinker;
 use crate::infra::FilePath;
 use std::collections::HashMap;
 
 pub struct PackageBuilder<'a> {
-    module_builder: &'a ModuleBuilder<'a>,
-    package_linker: &'a PackageLinker<'a>,
-    package_initializer: &'a PackageInitializer<'a>,
+    modules_builder: &'a ModulesBuilder<'a>,
+    modules_linker: &'a ModulesLinker<'a>,
 }
 
 impl<'a> PackageBuilder<'a> {
     pub fn new(
-        module_builder: &'a ModuleBuilder<'a>,
-        package_linker: &'a PackageLinker<'a>,
-        package_initializer: &'a PackageInitializer<'a>,
+        modules_builder: &'a ModulesBuilder<'a>,
+        modules_linker: &'a ModulesLinker<'a>,
     ) -> Self {
         Self {
-            module_builder,
-            package_linker,
-            package_initializer,
+            modules_builder,
+            modules_linker,
         }
     }
 
     pub fn build(
         &self,
-        directory_path: &FilePath,
+        package_configuration: &PackageConfiguration,
         external_module_interfaces: &HashMap<
-            ExternalPackageId,
+            ExternalPackage,
             HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
         >,
     ) -> Result<(FilePath, Vec<FilePath>), Box<dyn std::error::Error>> {
-        let package_configuration = self.package_initializer.initialize(directory_path)?;
-
         let external_module_interfaces = package_configuration
             .build_configuration()
             .dependencies()
             .iter()
             .map(|(name, configuration)| {
-                external_module_interfaces[&ExternalPackageId::new(name, configuration.version())]
+                external_module_interfaces[&ExternalPackage::new(name, configuration.version())]
                     .iter()
                     .map(|(module_path, module_interface)| {
                         (module_path.clone(), module_interface.clone())
@@ -49,12 +44,15 @@ impl<'a> PackageBuilder<'a> {
             .collect();
 
         let (object_file_paths, interface_file_paths) = self
-            .module_builder
+            .modules_builder
             .build(&package_configuration, &external_module_interfaces)?;
 
         Ok((
-            self.package_linker
-                .link(&object_file_paths, &interface_file_paths, &directory_path)?,
+            self.modules_linker.link(
+                &object_file_paths,
+                &interface_file_paths,
+                package_configuration.directory_path(),
+            )?,
             interface_file_paths,
         ))
     }

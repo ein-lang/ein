@@ -33,7 +33,7 @@ impl<'a> SourceFilePathsFinder<'a> {
             {
             } else if self.file_storage.is_directory(&path) {
                 source_file_paths.extend(self.find(&path)?);
-            } else if path.components().last().unwrap().ends_with(
+            } else if path.has_extension(
                 self.file_path_manager
                     .configuration()
                     .source_file_extension(),

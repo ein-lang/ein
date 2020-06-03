@@ -1,5 +1,5 @@
 use super::error::BuildError;
-use super::external_package_id::ExternalPackageId;
+use super::external_package::ExternalPackage;
 use super::package_builder::PackageBuilder;
 use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
@@ -10,7 +10,7 @@ use petgraph::graph::Graph;
 use std::collections::HashMap;
 
 type ExternalModuleInterfaces =
-    HashMap<ExternalPackageId, HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>>;
+    HashMap<ExternalPackage, HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>>;
 
 pub struct ExternalPackagesBuilder<'a> {
     file_storage: &'a dyn FileStorage,
@@ -33,19 +33,19 @@ impl<'a> ExternalPackagesBuilder<'a> {
 
     pub fn build(
         &self,
-        package_configurations: &HashMap<ExternalPackageId, PackageConfiguration>,
+        package_configurations: &HashMap<ExternalPackage, PackageConfiguration>,
     ) -> Result<(Vec<FilePath>, ExternalModuleInterfaces), Box<dyn std::error::Error>> {
         let mut object_file_paths = vec![];
         let mut module_interfaces = HashMap::new();
 
-        for external_package_id in self.sort_external_packages(package_configurations)? {
-            let directory_path = package_configurations[&external_package_id].directory_path();
+        for external_package in self.sort_external_packages(package_configurations)? {
+            let package_configuration = &package_configurations[&external_package];
 
             self.package_builder
-                .build(directory_path, &module_interfaces)?;
+                .build(package_configuration, &module_interfaces)?;
 
             object_file_paths.push(
-                directory_path.join(
+                package_configuration.directory_path().join(
                     self.file_path_manager
                         .configuration()
                         .package_object_file_path(),
@@ -53,10 +53,10 @@ impl<'a> ExternalPackagesBuilder<'a> {
             );
 
             module_interfaces.insert(
-                external_package_id.clone(),
+                external_package.clone(),
                 serde_json::from_str::<PackageInterface>(
                     &self.file_storage.read_to_string(
-                        &directory_path.join(
+                        &package_configuration.directory_path().join(
                             self.file_path_manager
                                 .configuration()
                                 .package_interface_file_path(),
@@ -80,24 +80,24 @@ impl<'a> ExternalPackagesBuilder<'a> {
 
     fn sort_external_packages(
         &self,
-        package_configurations: &HashMap<ExternalPackageId, PackageConfiguration>,
-    ) -> Result<Vec<ExternalPackageId>, Box<dyn std::error::Error>> {
-        let mut graph = Graph::<ExternalPackageId, ()>::new();
-        let mut indices = HashMap::<ExternalPackageId, _>::new();
+        package_configurations: &HashMap<ExternalPackage, PackageConfiguration>,
+    ) -> Result<Vec<ExternalPackage>, Box<dyn std::error::Error>> {
+        let mut graph = Graph::<ExternalPackage, ()>::new();
+        let mut indices = HashMap::<ExternalPackage, _>::new();
 
-        for external_package_id in package_configurations.keys() {
+        for external_package in package_configurations.keys() {
             indices.insert(
-                external_package_id.clone(),
-                graph.add_node(external_package_id.clone()),
+                external_package.clone(),
+                graph.add_node(external_package.clone()),
             );
         }
 
-        for (external_package_id, package_configuration) in package_configurations {
+        for (external_package, package_configuration) in package_configurations {
             for (name, configuration) in package_configuration.build_configuration().dependencies()
             {
                 graph.add_edge(
-                    indices[&ExternalPackageId::new(name, configuration.version())],
-                    indices[external_package_id],
+                    indices[&ExternalPackage::new(name, configuration.version())],
+                    indices[external_package],
                     (),
                 );
             }
