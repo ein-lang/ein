@@ -24,17 +24,21 @@ impl<'a> SourceFilePathsFinder<'a> {
         let mut source_file_paths = vec![];
 
         for path in self.file_storage.read_directory(directory_path)? {
-            let full_path = directory_path.join(&path);
-
-            if path.components().next().unwrap().starts_with('.') {
-            } else if self.file_storage.is_directory(&full_path) {
-                source_file_paths.extend(self.find(&full_path)?);
+            if path
+                .relative_to(&directory_path)
+                .components()
+                .next()
+                .unwrap()
+                .starts_with(".")
+            {
+            } else if self.file_storage.is_directory(&path) {
+                source_file_paths.extend(self.find(&path)?);
             } else if path.components().last().unwrap().ends_with(
                 self.file_path_manager
                     .configuration()
                     .source_file_extension(),
             ) {
-                source_file_paths.push(full_path);
+                source_file_paths.push(path);
             }
         }
 

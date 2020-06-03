@@ -66,7 +66,7 @@ impl FilePath {
     }
 
     pub fn relative_to(&self, path: &Self) -> Self {
-        Self::new(path.components().skip(self.components().count()))
+        Self::new(self.components().skip(path.components().count()))
     }
 }
 

@@ -10,6 +10,7 @@ pub use command_target::CommandTarget;
 pub use external_package::ExternalPackage;
 pub use target::Target;
 
+#[derive(Clone, Debug)]
 pub struct PackageConfiguration {
     package: ein::Package,
     build_configuration: BuildConfiguration,

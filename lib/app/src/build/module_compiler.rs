@@ -36,10 +36,7 @@ impl<'a> ModuleCompiler<'a> {
         source_file_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
-        let module = self.module_parser.parse(
-            &source,
-            &source_file_path.relative_to(package_configuration.directory_path()),
-        )?;
+        let module = self.module_parser.parse(&source, &source_file_path)?;
 
         let imported_module_interfaces = module
             .imports()
@@ -55,7 +52,13 @@ impl<'a> ModuleCompiler<'a> {
             .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
 
         let object_file_path =
-            self.generate_object_file_path(source_file_path, &source, &imported_module_interfaces);
+            package_configuration
+                .directory_path()
+                .join(&self.generate_object_file_path(
+                    source_file_path,
+                    &source,
+                    &imported_module_interfaces,
+                ));
         let interface_file_path = object_file_path.with_extension(
             self.file_path_manager
                 .configuration()
@@ -68,8 +71,10 @@ impl<'a> ModuleCompiler<'a> {
 
         let (bitcode, module_interface) = ein::compile(
             &module.resolve(
-                self.file_path_manager
-                    .convert_to_module_path(source_file_path, package_configuration.package()),
+                self.file_path_manager.convert_to_module_path(
+                    &source_file_path.relative_to(package_configuration.directory_path()),
+                    package_configuration.package(),
+                ),
                 imported_module_interfaces
                     .into_iter()
                     .map(|module_interface| ein::Import::new(module_interface, true))

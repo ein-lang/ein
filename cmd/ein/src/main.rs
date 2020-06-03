@@ -56,18 +56,21 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let interface_linker = app::InterfaceLinker::new(&file_storage);
     let package_linker =
         app::PackageLinker::new(&object_linker, &interface_linker, &file_path_manager);
+    let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
+    let package_builder =
+        app::PackageBuilder::new(&module_builder, &package_linker, &package_initializer);
 
     app::MainPackageBuilder::new(
-        &module_builder,
-        &package_linker,
+        &package_initializer,
+        &package_builder,
         &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
-        &app::PackageInitializer::new(&file_storage, &file_path_configuration),
-        &app::ExternalPackageInitializer::new(
+        &app::ExternalPackagesDownloader::new(
+            &package_initializer,
             &infra::ExternalPackageDownloader::new(),
-            &infra::ExternalPackageBuilder::new(),
             &file_storage,
             &file_path_manager,
         ),
+        &app::ExternalPackagesBuilder::new(&file_storage, &package_builder, &file_path_manager),
     )
     .build()
 }

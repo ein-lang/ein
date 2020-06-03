@@ -3,7 +3,7 @@ use super::target::Target;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct BuildConfiguration {
     target: Target,
     dependencies: HashMap<String, ExternalPackage>,

@@ -1,56 +1,60 @@
-use super::external_package_initializer::ExternalPackageInitializer;
-use super::module_builder::ModuleBuilder;
+use super::external_packages_builder::ExternalPackagesBuilder;
+use super::external_packages_downloader::ExternalPackagesDownloader;
+use super::package_builder::PackageBuilder;
 use super::package_configuration::Target;
 use super::package_initializer::PackageInitializer;
-use super::package_linker::PackageLinker;
 use crate::infra::{CommandLinker, FilePath};
 
 pub struct MainPackageBuilder<'a> {
-    module_builder: &'a ModuleBuilder<'a>,
-    package_linker: &'a PackageLinker<'a>,
-    command_linker: &'a dyn CommandLinker,
     package_initializer: &'a PackageInitializer<'a>,
-    external_package_initializer: &'a ExternalPackageInitializer<'a>,
+    package_builder: &'a PackageBuilder<'a>,
+    command_linker: &'a dyn CommandLinker,
+    external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
+    external_packages_builder: &'a ExternalPackagesBuilder<'a>,
 }
 
 impl<'a> MainPackageBuilder<'a> {
     pub fn new(
-        module_builder: &'a ModuleBuilder<'a>,
-        package_linker: &'a PackageLinker<'a>,
-        command_linker: &'a dyn CommandLinker,
         package_initializer: &'a PackageInitializer<'a>,
-        external_package_initializer: &'a ExternalPackageInitializer<'a>,
+        package_builder: &'a PackageBuilder<'a>,
+        command_linker: &'a dyn CommandLinker,
+        external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
+        external_packages_builder: &'a ExternalPackagesBuilder<'a>,
     ) -> Self {
         Self {
-            module_builder,
-            package_linker,
-            command_linker,
             package_initializer,
-            external_package_initializer,
+            package_builder,
+            command_linker,
+            external_packages_downloader,
+            external_packages_builder,
         }
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let package_configuration = self.package_initializer.initialize(&FilePath::empty())?;
+        let directory_path = FilePath::empty();
+        let package_configuration = self.package_initializer.initialize(&directory_path)?;
+
+        let external_package_configurations = self
+            .external_packages_downloader
+            .download(&package_configuration)?;
 
         let (external_package_object_file_paths, external_module_interfaces) = self
-            .external_package_initializer
-            .initialize(&package_configuration)?;
+            .external_packages_builder
+            .build(&external_package_configurations)?;
 
-        let (object_file_paths, interface_file_paths) = self
-            .module_builder
-            .build(&package_configuration, &external_module_interfaces)?;
-
-        let package_object_file_path = self.package_linker.link(
-            &object_file_paths,
-            &external_package_object_file_paths,
-            &interface_file_paths,
-        )?;
+        let (package_object_file_path, _) = self
+            .package_builder
+            .build(&directory_path, &external_module_interfaces)?;
 
         match package_configuration.build_configuration().target() {
             Target::Command(command_target) => {
-                self.command_linker
-                    .link(&package_object_file_path, command_target.name())?;
+                self.command_linker.link(
+                    &vec![package_object_file_path]
+                        .into_iter()
+                        .chain(external_package_object_file_paths)
+                        .collect::<Vec<_>>(),
+                    command_target.name(),
+                )?;
             }
             Target::Library => {}
         }

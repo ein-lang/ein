@@ -1,7 +1,7 @@
 use super::command_target::CommandTarget;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "type")]
 pub enum Target {
     Command(CommandTarget),

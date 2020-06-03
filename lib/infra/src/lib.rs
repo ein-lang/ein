@@ -1,7 +1,6 @@
 mod command_linker;
 mod command_runner;
 mod error;
-mod external_package_builder;
 mod external_package_downloader;
 mod file_path_displayer;
 mod file_storage;
@@ -10,7 +9,6 @@ mod utilities;
 
 pub use command_linker::*;
 pub use error::*;
-pub use external_package_builder::*;
 pub use external_package_downloader::*;
 pub use file_path_displayer::*;
 pub use file_storage::*;
