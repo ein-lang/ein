@@ -3,7 +3,6 @@ use super::external_package::ExternalPackage;
 use super::package_builder::PackageBuilder;
 use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
@@ -13,21 +12,15 @@ type ExternalModuleInterfaces =
     HashMap<ExternalPackage, HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>>;
 
 pub struct ExternalPackagesBuilder<'a> {
-    file_storage: &'a dyn FileStorage,
     package_builder: &'a PackageBuilder<'a>,
-    file_path_manager: &'a FilePathManager<'a>,
+    file_storage: &'a dyn FileStorage,
 }
 
 impl<'a> ExternalPackagesBuilder<'a> {
-    pub fn new(
-        file_storage: &'a dyn FileStorage,
-        package_builder: &'a PackageBuilder<'a>,
-        file_path_manager: &'a FilePathManager<'a>,
-    ) -> Self {
+    pub fn new(package_builder: &'a PackageBuilder<'a>, file_storage: &'a dyn FileStorage) -> Self {
         Self {
-            file_storage,
             package_builder,
-            file_path_manager,
+            file_storage,
         }
     }
 
@@ -41,27 +34,16 @@ impl<'a> ExternalPackagesBuilder<'a> {
         for external_package in self.sort_external_packages(package_configurations)? {
             let package_configuration = &package_configurations[&external_package];
 
-            self.package_builder
+            let (object_file_path, interface_file_path) = self
+                .package_builder
                 .build(package_configuration, &module_interfaces)?;
 
-            object_file_paths.push(
-                package_configuration.directory_path().join(
-                    self.file_path_manager
-                        .configuration()
-                        .package_object_file_path(),
-                ),
-            );
+            object_file_paths.push(object_file_path);
 
             module_interfaces.insert(
                 external_package.clone(),
                 serde_json::from_str::<PackageInterface>(
-                    &self.file_storage.read_to_string(
-                        &package_configuration.directory_path().join(
-                            self.file_path_manager
-                                .configuration()
-                                .package_interface_file_path(),
-                        ),
-                    )?,
+                    &self.file_storage.read_to_string(&interface_file_path)?,
                 )?
                 .modules()
                 .iter()

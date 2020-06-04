@@ -28,7 +28,7 @@ impl<'a> PackageBuilder<'a> {
             ExternalPackage,
             HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
         >,
-    ) -> Result<(FilePath, Vec<FilePath>), Box<dyn std::error::Error>> {
+    ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let external_module_interfaces = package_configuration
             .build_configuration()
             .dependencies()
@@ -47,13 +47,10 @@ impl<'a> PackageBuilder<'a> {
             .modules_builder
             .build(&package_configuration, &external_module_interfaces)?;
 
-        Ok((
-            self.modules_linker.link(
-                &object_file_paths,
-                &interface_file_paths,
-                package_configuration.directory_path(),
-            )?,
-            interface_file_paths,
-        ))
+        self.modules_linker.link(
+            &object_file_paths,
+            &interface_file_paths,
+            package_configuration.directory_path(),
+        )
     }
 }

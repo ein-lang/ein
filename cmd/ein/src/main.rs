@@ -75,7 +75,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             &file_storage,
             &file_path_manager,
         ),
-        &app::ExternalPackagesBuilder::new(&file_storage, &package_builder, &file_path_manager),
+        &app::ExternalPackagesBuilder::new(&package_builder, &file_storage),
     )
     .build()
 }
