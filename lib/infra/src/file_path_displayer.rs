@@ -1,19 +1,23 @@
-use super::utilities;
+use super::file_path_converter::FilePathConverter;
 
-#[derive(Default)]
-pub struct FilePathDisplayer;
+pub struct FilePathDisplayer<'a> {
+    file_path_converter: &'a FilePathConverter,
+}
 
-impl FilePathDisplayer {
-    pub fn new() -> Self {
-        Self
+impl<'a> FilePathDisplayer<'a> {
+    pub fn new(file_path_converter: &'a FilePathConverter) -> Self {
+        Self {
+            file_path_converter,
+        }
     }
 }
 
-impl app::FilePathDisplayer for FilePathDisplayer {
+impl<'a> app::FilePathDisplayer for FilePathDisplayer<'a> {
     fn display(&self, file_path: &app::FilePath) -> String {
         format!(
             "{}",
-            utilities::convert_to_os_path(file_path)
+            self.file_path_converter
+                .convert_to_os_path(file_path)
                 .canonicalize()
                 .expect("valid os file path")
                 .display()

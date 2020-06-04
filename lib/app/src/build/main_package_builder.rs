@@ -31,8 +31,7 @@ impl<'a> MainPackageBuilder<'a> {
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let directory_path = FilePath::empty();
-        let package_configuration = self.package_initializer.initialize(&directory_path)?;
+        let package_configuration = self.package_initializer.initialize(&FilePath::empty())?;
 
         let external_package_configurations = self
             .external_packages_downloader

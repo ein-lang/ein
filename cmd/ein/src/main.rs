@@ -31,11 +31,12 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         app::FilePath::new(&[".ein"]),
     );
 
-    let file_storage = infra::FileStorage::new();
+    let file_path_converter = infra::FilePathConverter::new(std::env::current_dir()?);
+    let file_storage = infra::FileStorage::new(&file_path_converter);
     let file_path_manager = app::FilePathManager::new(&file_path_configuration);
-    let file_path_displayer = infra::FilePathDisplayer::new();
+    let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
-    let object_linker = infra::ObjectLinker::new();
+    let object_linker = infra::ObjectLinker::new(&file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let compile_configuration = app::CompileConfiguration::new("main", "ein_main", "ein_init");
     let module_compiler = app::ModuleCompiler::new(
@@ -58,11 +59,16 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         app::ModulesLinker::new(&object_linker, &interface_linker, &file_path_manager);
     let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
     let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker);
+    let root_directory_string = std::env::var("EIN_ROOT")?;
+    let root_directory = std::path::Path::new(&root_directory_string);
 
     app::MainPackageBuilder::new(
         &package_initializer,
         &package_builder,
-        &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
+        &infra::CommandLinker::new(
+            &file_path_converter,
+            root_directory.join("target/release/libruntime.a"),
+        ),
         &app::ExternalPackagesDownloader::new(
             &package_initializer,
             &infra::ExternalPackageDownloader::new(),
