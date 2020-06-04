@@ -20,7 +20,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn build() -> Result<(), Box<dyn std::error::Error>> {
-    move_to_package_directory()?;
+    let package_directory = find_package_directory()?;
 
     let file_path_configuration = app::FilePathConfiguration::new(
         PACKAGE_CONFIGURATION_FILENAME,
@@ -31,7 +31,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         app::FilePath::new(&[".ein"]),
     );
 
-    let file_path_converter = infra::FilePathConverter::new(std::env::current_dir()?);
+    let file_path_converter = infra::FilePathConverter::new(package_directory);
     let file_storage = infra::FileStorage::new(&file_path_converter);
     let file_path_manager = app::FilePathManager::new(&file_path_configuration);
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
@@ -80,7 +80,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     .build()
 }
 
-fn move_to_package_directory() -> Result<(), Box<dyn std::error::Error>> {
+fn find_package_directory() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     let mut directory: &std::path::Path = &std::env::current_dir()?;
 
     while !directory.join(PACKAGE_CONFIGURATION_FILENAME).exists() {
@@ -95,7 +95,5 @@ fn move_to_package_directory() -> Result<(), Box<dyn std::error::Error>> {
         })?
     }
 
-    std::env::set_current_dir(directory)?;
-
-    Ok(())
+    Ok(directory.into())
 }
