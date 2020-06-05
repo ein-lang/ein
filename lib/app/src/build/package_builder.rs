@@ -2,22 +2,25 @@ use super::external_package::ExternalPackage;
 use super::modules_builder::ModulesBuilder;
 use super::modules_linker::ModulesLinker;
 use super::package_configuration::PackageConfiguration;
-use crate::infra::FilePath;
+use crate::infra::{FilePath, Logger};
 use std::collections::HashMap;
 
 pub struct PackageBuilder<'a> {
     modules_builder: &'a ModulesBuilder<'a>,
     modules_linker: &'a ModulesLinker<'a>,
+    logger: &'a dyn Logger,
 }
 
 impl<'a> PackageBuilder<'a> {
     pub fn new(
         modules_builder: &'a ModulesBuilder<'a>,
         modules_linker: &'a ModulesLinker<'a>,
+        logger: &'a dyn Logger,
     ) -> Self {
         Self {
             modules_builder,
             modules_linker,
+            logger,
         }
     }
 
@@ -29,6 +32,12 @@ impl<'a> PackageBuilder<'a> {
             HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
         >,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
+        self.logger.log(&format!(
+            "Compiling package {}@{}",
+            package_configuration.package().name(),
+            package_configuration.package().version()
+        ));
+
         let external_module_interfaces = package_configuration
             .build_configuration()
             .dependencies()

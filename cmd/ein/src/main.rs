@@ -22,6 +22,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 fn build() -> Result<(), Box<dyn std::error::Error>> {
     let package_directory = find_package_directory()?;
 
+    let logger = infra::Logger::new();
+
     let file_path_configuration = app::FilePathConfiguration::new(
         PACKAGE_CONFIGURATION_FILENAME,
         "package",
@@ -43,6 +45,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &module_parser,
         &file_path_manager,
         &file_storage,
+        &logger,
         &compile_configuration,
     );
     let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_storage);
@@ -59,8 +62,10 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &module_interfaces_linker,
         &file_path_manager,
     );
+
     let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
-    let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker);
+    let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker, &logger);
+
     let root_directory_string = std::env::var("EIN_ROOT")?;
     let root_directory = std::path::Path::new(&root_directory_string);
 
@@ -76,6 +81,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             &infra::ExternalPackageDownloader::new(),
             &file_storage,
             &file_path_manager,
+            &logger,
         ),
         &app::ExternalPackagesBuilder::new(&package_builder, &file_storage),
     )
