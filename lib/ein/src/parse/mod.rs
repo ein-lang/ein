@@ -25,11 +25,11 @@ mod tests {
     use indoc::indoc;
 
     #[test]
-    fn parse_() {
-        for (source, expected_module) in vec![
-            (
-                "foo : Number -> Number -> Number\nfoo x y = 42",
-                UnresolvedModule::from_definitions(vec![FunctionDefinition::new(
+    fn parse_function_definition() {
+        assert_eq!(
+            parse("foo : Number -> Number -> Number\nfoo x y = 42", ""),
+            Ok(UnresolvedModule::from_definitions(vec![
+                FunctionDefinition::new(
                     "foo",
                     vec!["x".into(), "y".into()],
                     Number::new(42.0, SourceInformation::dummy()),
@@ -44,8 +44,14 @@ mod tests {
                     ),
                     SourceInformation::dummy(),
                 )
-                .into()]),
-            ),
+                .into()
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_let_expressions() {
+        for (source, expected_module) in vec![
             (
                 "x : Number\nx = (let x = 42\nin x)",
                 UnresolvedModule::from_definitions(vec![ValueDefinition::new(
