@@ -1,6 +1,6 @@
+#[derive(Default)]
 pub struct Logger {}
 
-#[derive(Default)]
 impl Logger {
     pub fn new() -> Self {
         Self {}
