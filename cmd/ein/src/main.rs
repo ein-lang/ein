@@ -36,7 +36,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let file_path_manager = app::FilePathManager::new(&file_path_configuration);
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
-    let object_linker = infra::ObjectLinker::new(&file_path_converter);
+    let module_objects_linker = infra::ModuleObjectsLinker::new(&file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let compile_configuration = app::CompileConfiguration::new("main", "ein_main", "ein_init");
     let module_compiler = app::ModuleCompiler::new(
@@ -45,18 +45,18 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_storage,
         &compile_configuration,
     );
-    let source_file_paths_finder =
-        app::SourceFilePathsFinder::new(&file_path_manager, &file_storage);
+    let modules_finder =
+        app::ModulesFinder::new(&file_path_manager, &file_storage);
     let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
-        &source_file_paths_finder,
+        &modules_finder,
         &file_storage,
         &file_path_manager,
     );
-    let interface_linker = app::InterfaceLinker::new(&file_storage);
+    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_storage);
     let modules_linker =
-        app::ModulesLinker::new(&object_linker, &interface_linker, &file_path_manager);
+        app::ModulesLinker::new(&module_objects_linker, &module_interfaces_linker, &file_path_manager);
     let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
     let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker);
     let root_directory_string = std::env::var("EIN_ROOT")?;

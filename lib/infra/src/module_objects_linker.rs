@@ -2,11 +2,11 @@ use super::command_runner::CommandRunner;
 use super::error::InfrastructureError;
 use super::file_path_converter::FilePathConverter;
 
-pub struct ObjectLinker<'a> {
+pub struct ModuleObjectsLinker<'a> {
     file_path_converter: &'a FilePathConverter,
 }
 
-impl<'a> ObjectLinker<'a> {
+impl<'a> ModuleObjectsLinker<'a> {
     pub fn new(file_path_converter: &'a FilePathConverter) -> Self {
         Self {
             file_path_converter,
@@ -14,7 +14,7 @@ impl<'a> ObjectLinker<'a> {
     }
 }
 
-impl<'a> app::ObjectLinker for ObjectLinker<'a> {
+impl<'a> app::ModuleObjectsLinker for ModuleObjectsLinker<'a> {
     fn link(
         &self,
         object_file_paths: &[app::FilePath],

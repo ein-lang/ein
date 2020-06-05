@@ -1,6 +1,6 @@
 use super::file_path::FilePath;
 
-pub trait ObjectLinker {
+pub trait ModuleObjectsLinker {
     fn link(
         &self,
         object_file_paths: &[FilePath],

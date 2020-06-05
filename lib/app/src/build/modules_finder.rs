@@ -1,12 +1,12 @@
 use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
 
-pub struct SourceFilePathsFinder<'a> {
+pub struct ModulesFinder<'a> {
     file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a dyn FileStorage,
 }
 
-impl<'a> SourceFilePathsFinder<'a> {
+impl<'a> ModulesFinder<'a> {
     pub fn new(
         file_path_manager: &'a FilePathManager<'a>,
         file_storage: &'a dyn FileStorage,

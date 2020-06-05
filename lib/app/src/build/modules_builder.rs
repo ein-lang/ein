@@ -3,7 +3,7 @@ use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
 use super::package_configuration::PackageConfiguration;
 use super::path::FilePathManager;
-use super::source_file_paths_finder::SourceFilePathsFinder;
+use super::modules_finder::ModulesFinder;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
@@ -12,7 +12,7 @@ use std::collections::HashMap;
 pub struct ModulesBuilder<'a> {
     module_parser: &'a ModuleParser<'a>,
     module_compiler: &'a ModuleCompiler<'a>,
-    source_file_paths_finder: &'a SourceFilePathsFinder<'a>,
+    modules_finder: &'a ModulesFinder<'a>,
     file_storage: &'a dyn FileStorage,
     file_path_manager: &'a FilePathManager<'a>,
 }
@@ -21,14 +21,14 @@ impl<'a> ModulesBuilder<'a> {
     pub fn new(
         module_parser: &'a ModuleParser<'a>,
         module_compiler: &'a ModuleCompiler<'a>,
-        source_file_paths_finder: &'a SourceFilePathsFinder<'a>,
+        modules_finder: &'a ModulesFinder<'a>,
         file_storage: &'a dyn FileStorage,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
             module_parser,
             module_compiler,
-            source_file_paths_finder,
+            modules_finder,
             file_storage,
             file_path_manager,
         }
@@ -52,7 +52,7 @@ impl<'a> ModulesBuilder<'a> {
 
         for source_file_path in self.sort_source_file_paths(
             &self
-                .source_file_paths_finder
+                .modules_finder
                 .find(package_configuration.directory_path())?,
         )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(

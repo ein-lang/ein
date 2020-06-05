@@ -1,22 +1,22 @@
-use super::interface_linker::InterfaceLinker;
+use super::module_interfaces_linker::ModuleInterfacesLinker;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, ObjectLinker};
+use crate::infra::{FilePath, ModuleObjectsLinker};
 
 pub struct ModulesLinker<'a> {
-    object_linker: &'a dyn ObjectLinker,
-    interface_linker: &'a InterfaceLinker<'a>,
+    module_objects_linker: &'a dyn ModuleObjectsLinker,
+    module_interfaces_linker: &'a ModuleInterfacesLinker<'a>,
     file_path_manager: &'a FilePathManager<'a>,
 }
 
 impl<'a> ModulesLinker<'a> {
     pub fn new(
-        object_linker: &'a dyn ObjectLinker,
-        interface_linker: &'a InterfaceLinker<'a>,
+        module_objects_linker: &'a dyn ModuleObjectsLinker,
+        module_interfaces_linker: &'a ModuleInterfacesLinker<'a>,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
-            object_linker,
-            interface_linker,
+            module_objects_linker,
+            module_interfaces_linker,
             file_path_manager,
         }
     }
@@ -33,7 +33,7 @@ impl<'a> ModulesLinker<'a> {
                 .package_object_file_path(),
         );
 
-        self.object_linker
+        self.module_objects_linker
             .link(&object_file_paths, &package_object_file_path)?;
 
         let package_interface_file_path = directory_path.join(
@@ -42,7 +42,7 @@ impl<'a> ModulesLinker<'a> {
                 .package_interface_file_path(),
         );
 
-        self.interface_linker
+        self.module_interfaces_linker
             .link(interface_file_paths, &package_interface_file_path)?;
 
         Ok((package_object_file_path, package_interface_file_path))
