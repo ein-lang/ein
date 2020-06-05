@@ -33,7 +33,7 @@ impl<'a> PackageBuilder<'a> {
         >,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         self.logger.log(&format!(
-            "Compiling package {}@{}",
+            "Compiling package {} {}",
             package_configuration.package().name(),
             package_configuration.package().version()
         ));
