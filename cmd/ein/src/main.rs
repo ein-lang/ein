@@ -20,7 +20,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn build() -> Result<(), Box<dyn std::error::Error>> {
-    move_to_package_directory()?;
+    let package_directory = find_package_directory()?;
 
     let file_path_configuration = app::FilePathConfiguration::new(
         PACKAGE_CONFIGURATION_FILENAME,
@@ -31,11 +31,12 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         app::FilePath::new(&[".ein"]),
     );
 
-    let file_storage = infra::FileStorage::new();
+    let file_path_converter = infra::FilePathConverter::new(package_directory);
+    let file_storage = infra::FileStorage::new(&file_path_converter);
     let file_path_manager = app::FilePathManager::new(&file_path_configuration);
-    let file_path_displayer = infra::FilePathDisplayer::new();
+    let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
-    let object_linker = infra::ObjectLinker::new();
+    let module_objects_linker = infra::ModuleObjectsLinker::new(&file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let compile_configuration = app::CompileConfiguration::new("main", "ein_main", "ein_init");
     let module_compiler = app::ModuleCompiler::new(
@@ -44,32 +45,44 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_storage,
         &compile_configuration,
     );
-    let module_builder = app::ModuleBuilder::new(
+    let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_storage);
+    let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
+        &modules_finder,
         &file_storage,
         &file_path_manager,
     );
-    let interface_linker = app::InterfaceLinker::new(&file_storage);
-    let package_linker =
-        app::PackageLinker::new(&object_linker, &interface_linker, &file_path_manager);
+    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_storage);
+    let modules_linker = app::ModulesLinker::new(
+        &module_objects_linker,
+        &module_interfaces_linker,
+        &file_path_manager,
+    );
+    let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
+    let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker);
+    let root_directory_string = std::env::var("EIN_ROOT")?;
+    let root_directory = std::path::Path::new(&root_directory_string);
 
-    app::PackageBuilder::new(
-        &module_builder,
-        &package_linker,
-        &infra::CommandLinker::new(std::env::var("EIN_ROOT")?),
-        &app::PackageInitializer::new(&file_storage, &file_path_configuration),
-        &app::ExternalPackageInitializer::new(
+    app::MainPackageBuilder::new(
+        &package_initializer,
+        &package_builder,
+        &infra::CommandLinker::new(
+            &file_path_converter,
+            root_directory.join("target/release/libruntime.a"),
+        ),
+        &app::ExternalPackagesDownloader::new(
+            &package_initializer,
             &infra::ExternalPackageDownloader::new(),
-            &infra::ExternalPackageBuilder::new(),
             &file_storage,
             &file_path_manager,
         ),
+        &app::ExternalPackagesBuilder::new(&package_builder, &file_storage),
     )
     .build()
 }
 
-fn move_to_package_directory() -> Result<(), Box<dyn std::error::Error>> {
+fn find_package_directory() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     let mut directory: &std::path::Path = &std::env::current_dir()?;
 
     while !directory.join(PACKAGE_CONFIGURATION_FILENAME).exists() {
@@ -84,7 +97,5 @@ fn move_to_package_directory() -> Result<(), Box<dyn std::error::Error>> {
         })?
     }
 
-    std::env::set_current_dir(directory)?;
-
-    Ok(())
+    Ok(directory.into())
 }

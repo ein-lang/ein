@@ -1,4 +1,4 @@
-use crate::build::FilePathConfiguration;
+use crate::build::{ExternalPackage, FilePathConfiguration};
 use crate::infra::FilePath;
 
 pub struct FilePathManager<'a> {
@@ -37,5 +37,20 @@ impl<'a> FilePathManager<'a> {
                 .map(String::from)
                 .collect(),
         )
+    }
+
+    pub fn resolve_to_external_package_directory_path(
+        &self,
+        external_package: &ExternalPackage,
+    ) -> FilePath {
+        self.file_path_configuration
+            .external_packages_directory_path()
+            .join(
+                &external_package
+                    .name()
+                    .parse::<FilePath>()
+                    .unwrap()
+                    .join(&FilePath::new(&[external_package.version()])),
+            )
     }
 }

@@ -38,11 +38,10 @@ impl<'a> PackageInitializer<'a> {
                     )
                 })
                 .unwrap_or_else(|_| ein::Package::new(format!("{}", directory_path), "master")),
-            serde_json::from_str(
-                &self
-                    .file_storage
-                    .read_to_string(self.file_path_configuration.build_configuration_file_path())?,
-            )?,
+            serde_json::from_str(&self.file_storage.read_to_string(
+                &directory_path.join(&self.file_path_configuration.build_configuration_file_path()),
+            )?)?,
+            directory_path.clone(),
         ))
     }
 }

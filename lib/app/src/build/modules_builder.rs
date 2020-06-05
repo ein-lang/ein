@@ -1,6 +1,7 @@
 use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
+use super::modules_finder::ModulesFinder;
 use super::package_configuration::PackageConfiguration;
 use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
@@ -8,23 +9,26 @@ use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
 
-pub struct ModuleBuilder<'a> {
+pub struct ModulesBuilder<'a> {
     module_parser: &'a ModuleParser<'a>,
     module_compiler: &'a ModuleCompiler<'a>,
+    modules_finder: &'a ModulesFinder<'a>,
     file_storage: &'a dyn FileStorage,
     file_path_manager: &'a FilePathManager<'a>,
 }
 
-impl<'a> ModuleBuilder<'a> {
+impl<'a> ModulesBuilder<'a> {
     pub fn new(
         module_parser: &'a ModuleParser<'a>,
         module_compiler: &'a ModuleCompiler<'a>,
+        modules_finder: &'a ModulesFinder<'a>,
         file_storage: &'a dyn FileStorage,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
             module_parser,
             module_compiler,
+            modules_finder,
             file_storage,
             file_path_manager,
         }
@@ -47,20 +51,14 @@ impl<'a> ModuleBuilder<'a> {
         let mut interface_file_paths = vec![];
 
         for source_file_path in self.sort_source_file_paths(
-            &self.file_storage.glob(
-                self.file_path_manager
-                    .configuration()
-                    .source_file_extension(),
-                &[self
-                    .file_path_manager
-                    .configuration()
-                    .output_directory_path()],
-            )?,
+            &self
+                .modules_finder
+                .find(package_configuration.directory_path())?,
         )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
-                package_configuration,
-                &module_interfaces,
                 &source_file_path,
+                &module_interfaces,
+                package_configuration,
             )?;
 
             let module_interface = serde_json::from_str::<ein::ModuleInterface>(

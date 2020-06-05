@@ -47,22 +47,26 @@ impl FilePath {
     }
 
     pub fn join(&self, file_path: &Self) -> Self {
-        FilePath::new(self.components().chain(file_path.components()))
-    }
-
-    pub fn has_prefix(&self, directory_path: &Self) -> bool {
-        &self.components[..directory_path.components.len()] == directory_path.components.as_slice()
+        Self::new(self.components().chain(file_path.components()))
     }
 
     pub fn has_extension(&self, file_extension: &str) -> bool {
-        let component = self.components.last().unwrap();
-        let element = component.split('.').last().unwrap();
+        let has_extension = || {
+            let component = self.components.last()?;
+            let element = component.split('.').last()?;
 
-        if element == component {
-            file_extension == ""
-        } else {
-            element == file_extension
-        }
+            Some(if element == component {
+                file_extension == ""
+            } else {
+                element == file_extension
+            })
+        };
+
+        has_extension().unwrap_or(false)
+    }
+
+    pub fn relative_to(&self, path: &Self) -> Self {
+        Self::new(self.components().skip(path.components().count()))
     }
 }
 
@@ -124,13 +128,6 @@ mod tests {
             FilePath::new(&["foo", "bar"]).join(&FilePath::new(&["baz"])),
             FilePath::new(&["foo", "bar", "baz"])
         );
-    }
-
-    #[test]
-    fn has_prefix() {
-        assert!(FilePath::new(&["foo"]).has_prefix(&FilePath::new(&["foo"])));
-        assert!(FilePath::new(&["foo", "bar"]).has_prefix(&FilePath::new(&["foo"])));
-        assert!(!FilePath::new(&["bar", "baz"]).has_prefix(&FilePath::new(&["foo"])));
     }
 
     #[test]

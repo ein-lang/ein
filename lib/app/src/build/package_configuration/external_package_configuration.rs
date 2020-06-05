@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Hash, Serialize)]
-pub struct ExternalPackage {
+#[derive(Clone, Debug, Deserialize, Hash, Serialize)]
+pub struct ExternalPackageConfiguration {
     version: String,
 }
 
-impl ExternalPackage {
+impl ExternalPackageConfiguration {
     #[cfg(test)]
     pub fn new(version: impl Into<String>) -> Self {
         Self {

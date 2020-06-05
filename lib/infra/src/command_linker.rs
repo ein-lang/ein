@@ -1,22 +1,27 @@
 use super::command_runner::CommandRunner;
-use super::utilities;
+use super::file_path_converter::FilePathConverter;
 
-pub struct CommandLinker {
-    root_directory: Box<std::path::Path>,
+pub struct CommandLinker<'a> {
+    file_path_converter: &'a FilePathConverter,
+    runtime_library_path: std::path::PathBuf,
 }
 
-impl CommandLinker {
-    pub fn new(root_directory: impl AsRef<std::path::Path>) -> Self {
+impl<'a> CommandLinker<'a> {
+    pub fn new(
+        file_path_converter: &'a FilePathConverter,
+        runtime_library_path: impl AsRef<std::path::Path>,
+    ) -> Self {
         Self {
-            root_directory: root_directory.as_ref().into(),
+            file_path_converter,
+            runtime_library_path: runtime_library_path.as_ref().into(),
         }
     }
 }
 
-impl app::CommandLinker for CommandLinker {
+impl<'a> app::CommandLinker for CommandLinker<'a> {
     fn link(
         &self,
-        object_file_path: &app::FilePath,
+        object_file_paths: &[app::FilePath],
         command_name: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         CommandRunner::run(
@@ -27,8 +32,12 @@ impl app::CommandLinker for CommandLinker {
                 .arg("-flto")
                 .arg("-ldl")
                 .arg("-lpthread")
-                .arg(utilities::convert_to_os_path(object_file_path))
-                .arg(self.root_directory.join("target/release/libruntime.a")),
+                .args(
+                    object_file_paths
+                        .iter()
+                        .map(|path| self.file_path_converter.convert_to_os_path(path)),
+                )
+                .arg(&self.runtime_library_path),
         )
     }
 }

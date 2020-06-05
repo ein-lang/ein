@@ -1,43 +1,54 @@
 use super::error::InfrastructureError;
-use super::utilities;
+use super::file_path_converter::FilePathConverter;
 
-#[derive(Default)]
-pub struct FileStorage;
+pub struct FileStorage<'a> {
+    file_path_converter: &'a FilePathConverter,
+}
 
-impl FileStorage {
-    pub fn new() -> Self {
-        Self
+impl<'a> FileStorage<'a> {
+    pub fn new(file_path_converter: &'a FilePathConverter) -> Self {
+        Self {
+            file_path_converter,
+        }
     }
 }
 
-impl app::FileStorage for FileStorage {
+impl<'a> app::FileStorage for FileStorage<'a> {
     fn exists(&self, file_path: &app::FilePath) -> bool {
-        utilities::convert_to_os_path(file_path).exists()
+        self.file_path_converter
+            .convert_to_os_path(file_path)
+            .exists()
     }
 
-    fn glob(
+    fn is_directory(&self, file_path: &app::FilePath) -> bool {
+        self.file_path_converter
+            .convert_to_os_path(file_path)
+            .is_dir()
+    }
+
+    fn read_directory(
         &self,
-        file_extension: &str,
-        excluded_directories: &[&app::FilePath],
+        file_path: &app::FilePath,
     ) -> Result<Vec<app::FilePath>, Box<dyn std::error::Error>> {
-        Ok(glob::glob(&format!("**/*.{}", file_extension))?
-            .map(|path| Ok(path?))
-            .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?
-            .drain(..)
-            .map(utilities::convert_to_file_path)
-            .filter(|file_path| {
-                !excluded_directories
-                    .iter()
-                    .any(|directory| file_path.has_prefix(directory))
+        Ok(self
+            .file_path_converter
+            .convert_to_os_path(file_path)
+            .read_dir()?
+            .map(|entry| {
+                Ok(self
+                    .file_path_converter
+                    .convert_to_file_path(entry?.path())?)
             })
-            .collect())
+            .collect::<Result<_, Box<dyn std::error::Error>>>()?)
     }
 
     fn read_repository(
         &self,
         directory_path: &app::FilePath,
     ) -> Result<app::Repository, Box<dyn std::error::Error>> {
-        let repository = git2::Repository::discover(utilities::convert_to_os_path(directory_path))?;
+        let repository = git2::Repository::discover(
+            self.file_path_converter.convert_to_os_path(directory_path),
+        )?;
         let url = url::Url::parse(
             repository
                 .find_remote("origin")?
@@ -55,16 +66,18 @@ impl app::FileStorage for FileStorage {
         &self,
         file_path: &app::FilePath,
     ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        Ok(std::fs::read(utilities::convert_to_os_path(file_path))?)
+        Ok(std::fs::read(
+            self.file_path_converter.convert_to_os_path(file_path),
+        )?)
     }
 
     fn read_to_string(
         &self,
         file_path: &app::FilePath,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        Ok(std::fs::read_to_string(utilities::convert_to_os_path(
-            file_path,
-        ))?)
+        Ok(std::fs::read_to_string(
+            self.file_path_converter.convert_to_os_path(file_path),
+        )?)
     }
 
     fn write(
@@ -72,7 +85,7 @@ impl app::FileStorage for FileStorage {
         file_path: &app::FilePath,
         data: &[u8],
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let path = utilities::convert_to_os_path(file_path);
+        let path = self.file_path_converter.convert_to_os_path(file_path);
 
         if let Some(directory) = path.parent() {
             std::fs::create_dir_all(directory)?;
@@ -81,26 +94,5 @@ impl app::FileStorage for FileStorage {
         std::fs::write(path, data)?;
 
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use app::FileStorage as FileStorageTrait;
-
-    #[test]
-    fn glob() {
-        assert!(FileStorage::new()
-            .glob("rs", &[&app::FilePath::new(&["target"])])
-            .unwrap()
-            .iter()
-            .any(|file_path| file_path == &app::FilePath::new(&["src", "file_storage.rs"])));
-        assert_eq!(
-            FileStorage::new()
-                .glob("rs", &[&app::FilePath::new(&["src"])])
-                .unwrap(),
-            vec![]
-        );
     }
 }
