@@ -45,8 +45,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_storage,
         &compile_configuration,
     );
-    let modules_finder =
-        app::ModulesFinder::new(&file_path_manager, &file_storage);
+    let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_storage);
     let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
@@ -55,8 +54,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_manager,
     );
     let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_storage);
-    let modules_linker =
-        app::ModulesLinker::new(&module_objects_linker, &module_interfaces_linker, &file_path_manager);
+    let modules_linker = app::ModulesLinker::new(
+        &module_objects_linker,
+        &module_interfaces_linker,
+        &file_path_manager,
+    );
     let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
     let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker);
     let root_directory_string = std::env::var("EIN_ROOT")?;

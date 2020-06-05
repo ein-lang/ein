@@ -1,9 +1,9 @@
 use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
+use super::modules_finder::ModulesFinder;
 use super::package_configuration::PackageConfiguration;
 use super::path::FilePathManager;
-use super::modules_finder::ModulesFinder;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
