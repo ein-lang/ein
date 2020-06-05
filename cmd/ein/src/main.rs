@@ -26,11 +26,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let file_path_configuration = app::FilePathConfiguration::new(
         PACKAGE_CONFIGURATION_FILENAME,
+        ".ein",
         "package",
         "ein",
         "bc",
         "json",
-        app::FilePath::new(&[".ein"]),
     );
 
     let file_path_converter = infra::FilePathConverter::new(package_directory);
