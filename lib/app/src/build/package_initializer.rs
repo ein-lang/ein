@@ -41,10 +41,7 @@ impl<'a> PackageInitializer<'a> {
                     )
                 })
                 .unwrap_or_else(|_| {
-                    ein::Package::new(
-                        format!("{}", self.file_path_displayer.display(directory_path)),
-                        "",
-                    )
+                    ein::Package::new(self.file_path_displayer.display(directory_path), "")
                 }),
             serde_json::from_str(&self.file_storage.read_to_string(
                 &directory_path.join(&self.file_path_configuration.build_configuration_file_path()),
