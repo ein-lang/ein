@@ -63,7 +63,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_manager,
     );
 
-    let package_initializer = app::PackageInitializer::new(&file_storage, &file_path_configuration);
+    let package_initializer = app::PackageInitializer::new(
+        &file_storage,
+        &file_path_displayer,
+        &file_path_configuration,
+    );
     let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker, &logger);
 
     let root_directory_string = std::env::var("EIN_ROOT")?;
