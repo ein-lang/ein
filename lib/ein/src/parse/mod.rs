@@ -50,11 +50,11 @@ mod tests {
     }
 
     #[test]
-    fn parse_let_expressions() {
-        for (source, expected_module) in vec![
-            (
-                "x : Number\nx = (let x = 42\nin x)",
-                UnresolvedModule::from_definitions(vec![ValueDefinition::new(
+    fn parse_let_expression_with_single_definition() {
+        assert_eq!(
+            parse("x : Number\nx = (let x = 42\nin x)", ""),
+            Ok(UnresolvedModule::from_definitions(vec![
+                ValueDefinition::new(
                     "x",
                     Let::new(
                         vec![ValueDefinition::new(
@@ -69,23 +69,32 @@ mod tests {
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
-                .into()]),
-            ),
-            (
+                .into()
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_let_expression_with_multiple_definitions() {
+        assert_eq!(
+            parse(
                 indoc!(
                     "
                     main : Number -> Number
-                    main x = (
-                        let
-                            f x = x
-                            y =
-                              f x
-                        in
-                            y
-                    )
-                    "
+                        main x = (
+                            let
+                                f x = x
+                                y =
+                                f x
+                            in
+                                y
+                        )
+                        "
                 ),
-                UnresolvedModule::from_definitions(vec![FunctionDefinition::new(
+                ""
+            ),
+            Ok(UnresolvedModule::from_definitions(vec![
+                FunctionDefinition::new(
                     "main",
                     vec!["x".into()],
                     Let::new(
@@ -119,11 +128,9 @@ mod tests {
                     ),
                     SourceInformation::dummy(),
                 )
-                .into()]),
-            ),
-        ] {
-            assert_eq!(parse(source, ""), Ok(expected_module));
-        }
+                .into()
+            ]))
+        );
     }
 
     #[test]
