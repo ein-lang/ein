@@ -12,7 +12,8 @@ use parsers::{module, stream};
 pub fn parse(source_content: &str, source_name: &str) -> Result<ast::UnresolvedModule, ParseError> {
     Ok(module()
         .parse(stream(source_content, source_name))
-        .map(|(module, _)| module)?)
+        .map(|(module, _)| module)
+        .map_err(|error| ParseError::new(source_name, &error))?)
 }
 
 #[cfg(test)]
