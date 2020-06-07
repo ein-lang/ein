@@ -47,7 +47,7 @@ impl<'a> ExternalPackagesDownloader<'a> {
 
             if !self.file_storage.exists(&directory_path) {
                 self.logger.log(&format!(
-                    "Downloading package {} {}",
+                    "downloading package {} {}",
                     external_package.name(),
                     external_package.version()
                 ))?;

@@ -78,7 +78,7 @@ impl<'a> ModuleCompiler<'a> {
         );
 
         self.logger.log(&format!(
-            "Compiling module {}",
+            "compiling module {}",
             &module_path.external_unresolved()
         ))?;
 
