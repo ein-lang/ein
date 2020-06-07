@@ -10,7 +10,6 @@ pub enum InfrastructureError {
         path: std::path::PathBuf,
         source: std::io::Error,
     },
-    HostNotFound,
     LlvmLinkNotFound,
     ReadDirectory {
         path: std::path::PathBuf,
@@ -35,7 +34,6 @@ impl Error for InfrastructureError {
         match self {
             Self::CommandExit { status_code: _ } => None,
             Self::CreateDirectory { path: _, source } => Some(source),
-            Self::HostNotFound => None,
             Self::LlvmLinkNotFound => None,
             Self::ReadDirectory { path: _, source } => Some(source),
             Self::ReadRepository { path: _, source } => Some(source.as_ref()),
@@ -59,7 +57,6 @@ impl Display for InfrastructureError {
                 "failed to create directory {}",
                 path.to_string_lossy()
             ),
-            Self::HostNotFound => write!(formatter, "host name for package name not defined"),
             Self::LlvmLinkNotFound => write!(formatter, "llvm-link not found"),
             Self::ReadDirectory { path, source: _ } => write!(
                 formatter,
