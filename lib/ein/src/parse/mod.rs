@@ -12,7 +12,8 @@ use parsers::{module, stream};
 pub fn parse(source_content: &str, source_name: &str) -> Result<ast::UnresolvedModule, ParseError> {
     Ok(module()
         .parse(stream(source_content, source_name))
-        .map(|(module, _)| module)?)
+        .map(|(module, _)| module)
+        .map_err(|error| ParseError::new(source_name, &error))?)
 }
 
 #[cfg(test)]
@@ -25,11 +26,11 @@ mod tests {
     use indoc::indoc;
 
     #[test]
-    fn parse_() {
-        for (source, expected_module) in vec![
-            (
-                "foo : Number -> Number -> Number\nfoo x y = 42",
-                UnresolvedModule::from_definitions(vec![FunctionDefinition::new(
+    fn parse_function_definition() {
+        assert_eq!(
+            parse("foo : Number -> Number -> Number\nfoo x y = 42", ""),
+            Ok(UnresolvedModule::from_definitions(vec![
+                FunctionDefinition::new(
                     "foo",
                     vec!["x".into(), "y".into()],
                     Number::new(42.0, SourceInformation::dummy()),
@@ -44,11 +45,17 @@ mod tests {
                     ),
                     SourceInformation::dummy(),
                 )
-                .into()]),
-            ),
-            (
-                "x : Number\nx = (let x = 42\nin x)",
-                UnresolvedModule::from_definitions(vec![ValueDefinition::new(
+                .into()
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_let_expression_with_single_definition() {
+        assert_eq!(
+            parse("x : Number\nx = (let x = 42\nin x)", ""),
+            Ok(UnresolvedModule::from_definitions(vec![
+                ValueDefinition::new(
                     "x",
                     Let::new(
                         vec![ValueDefinition::new(
@@ -63,23 +70,32 @@ mod tests {
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
-                .into()]),
-            ),
-            (
+                .into()
+            ]))
+        );
+    }
+
+    #[test]
+    fn parse_let_expression_with_multiple_definitions() {
+        assert_eq!(
+            parse(
                 indoc!(
                     "
                     main : Number -> Number
-                    main x = (
-                        let
-                            f x = x
-                            y =
-                              f x
-                        in
-                            y
-                    )
-                    "
+                        main x = (
+                            let
+                                f x = x
+                                y =
+                                f x
+                            in
+                                y
+                        )
+                        "
                 ),
-                UnresolvedModule::from_definitions(vec![FunctionDefinition::new(
+                ""
+            ),
+            Ok(UnresolvedModule::from_definitions(vec![
+                FunctionDefinition::new(
                     "main",
                     vec!["x".into()],
                     Let::new(
@@ -113,11 +129,9 @@ mod tests {
                     ),
                     SourceInformation::dummy(),
                 )
-                .into()]),
-            ),
-        ] {
-            assert_eq!(parse(source, ""), Ok(expected_module));
-        }
+                .into()
+            ]))
+        );
     }
 
     #[test]

@@ -18,12 +18,13 @@ pub struct FilePathConfiguration {
 impl FilePathConfiguration {
     pub fn new(
         build_configuration_filename: impl Into<String>,
+        output_directory_name: impl Into<String>,
         package_artifact_basename: impl Into<String> + std::fmt::Display,
         source_file_extension: impl Into<String> + std::fmt::Display,
         object_file_extension: impl Into<String> + std::fmt::Display,
         interface_file_extension: impl Into<String> + std::fmt::Display,
-        output_directory_path: FilePath,
     ) -> Self {
+        let output_directory_path = FilePath::new(&[output_directory_name.into()]);
         let package_object_filename =
             format!("{}.{}", package_artifact_basename, object_file_extension,);
         let package_interface_filename =

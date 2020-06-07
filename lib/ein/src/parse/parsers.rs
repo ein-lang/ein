@@ -75,12 +75,14 @@ fn export<'a>() -> impl Parser<Stream<'a>, Output = Export> {
             sep_end_by1(identifier(), sign(",")),
         ))
         .map(Export::new)
+        .expected("export statement")
 }
 
 fn import<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedImport> {
     keyword("import")
         .with(module_path())
         .map(UnresolvedImport::new)
+        .expected("import statement")
 }
 
 fn module_path<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModulePath> {
@@ -92,6 +94,7 @@ fn module_path<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModulePath> {
             external_module_path().map(UnresolvedModulePath::from),
         ),
     ))
+    .expected("module path")
 }
 
 fn internal_module_path<'a>() -> impl Parser<Stream<'a>, Output = InternalUnresolvedModulePath> {
@@ -216,7 +219,7 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
 }
 
 fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
-    choice!(record_type_definition(), union_type_definition())
+    choice!(record_type_definition(), union_type_definition()).expected("type definition")
 }
 
 fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
@@ -235,28 +238,32 @@ fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefiniti
                 types::Record::new(&name, elements.into_iter().collect(), source_information),
             )
         })
+        .expected("record type definition")
 }
 
 fn union_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
     (keyword("type"), identifier(), sign("="), union_type())
         .map(|(_, name, _, type_)| TypeDefinition::new(&name, type_))
+        .expected("union type definition")
 }
 
 fn type_<'a>() -> impl Parser<Stream<'a>, Output = Type> {
-    lazy(|| no_partial(choice!(function_type().map(Type::from), union_type()))).boxed()
+    lazy(|| no_partial(choice!(function_type().map(Type::from), union_type())))
+        .boxed()
+        .expected("type")
 }
 
 fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
-    (source_information(), union_type(), sign("->"), type_()).map(
-        |(source_information, argument, _, result)| {
+    (source_information(), union_type(), sign("->"), type_())
+        .map(|(source_information, argument, _, result)| {
             types::Function::new(argument, result, source_information)
-        },
-    )
+        })
+        .expected("function type")
 }
 
 fn union_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
-    (source_information(), sep_end_by1(atomic_type(), sign("|"))).map(
-        |(source_information, types)| {
+    (source_information(), sep_end_by1(atomic_type(), sign("|")))
+        .map(|(source_information, types)| {
             let types: Vec<_> = types;
 
             if types.len() == 1 {
@@ -264,8 +271,8 @@ fn union_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
             } else {
                 types::Union::new(types, source_information).into()
             }
-        },
-    )
+        })
+        .expected("union type")
 }
 
 fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -282,28 +289,35 @@ fn boolean_type<'a>() -> impl Parser<Stream<'a>, Output = types::Boolean> {
     source_information()
         .skip(keyword("Boolean"))
         .map(types::Boolean::new)
+        .expected("boolean type")
 }
 
 fn none_type<'a>() -> impl Parser<Stream<'a>, Output = types::None> {
     source_information()
         .skip(keyword("None"))
         .map(types::None::new)
+        .expected("none type")
 }
 
 fn number_type<'a>() -> impl Parser<Stream<'a>, Output = types::Number> {
     source_information()
         .skip(keyword("Number"))
         .map(types::Number::new)
+        .expected("number type")
 }
 
 fn reference_type<'a>() -> impl Parser<Stream<'a>, Output = types::Reference> {
-    (source_information(), qualified_identifier()).map(|(source_information, identifier)| {
-        types::Reference::new(identifier, source_information)
-    })
+    (source_information(), qualified_identifier())
+        .map(|(source_information, identifier)| {
+            types::Reference::new(identifier, source_information)
+        })
+        .expected("reference type")
 }
 
 fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
-    lazy(|| no_partial(choice!(operation().map(Expression::from), term()))).boxed()
+    lazy(|| no_partial(choice!(operation().map(Expression::from), term())))
+        .boxed()
+        .expected("expression")
 }
 
 fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -329,6 +343,7 @@ fn if_<'a>() -> impl Parser<Stream<'a>, Output = If> {
         .map(|(source_information, _, condition, _, then, _, else_)| {
             If::new(condition, then, else_, source_information)
         })
+        .expected("if expression")
 }
 
 fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
@@ -345,6 +360,7 @@ fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
                 Case::new(identifier, argument, alternatives, source_information)
             },
         )
+        .expected("case expression")
 }
 
 fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
@@ -360,6 +376,7 @@ fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
         expression(),
     )
         .map(|(_, definitions, _, expression)| Let::new(definitions, expression))
+        .expected("let expression")
 }
 
 fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
@@ -396,6 +413,7 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
                 )
             },
         )
+        .expected("application")
 }
 
 fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str> {
@@ -437,6 +455,7 @@ fn record_construction<'a>() -> impl Parser<Stream<'a>, Output = RecordConstruct
                 unexpected_any("duplicate keys in record construction").right()
             }
         })
+        .expected("record construction")
 }
 
 fn record_update<'a>() -> impl Parser<Stream<'a>, Output = RecordUpdate> {
@@ -512,6 +531,7 @@ fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
         concrete_operator("&&", Operator::And),
         concrete_operator("||", Operator::Or),
     )
+    .expected("operator")
 }
 
 fn concrete_operator<'a>(
@@ -538,21 +558,27 @@ fn boolean_literal<'a>() -> impl Parser<Stream<'a>, Output = Boolean> {
             .skip(keyword("true"))
             .map(|source_information| Boolean::new(true, source_information)),
     ))
+    .expected("boolean literal")
 }
 
 fn none_literal<'a>() -> impl Parser<Stream<'a>, Output = None> {
-    token(source_information().skip(keyword("none"))).map(None::new)
+    token(source_information().skip(keyword("none")))
+        .map(None::new)
+        .expected("none literal")
 }
 
 fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
     let regex: &'static regex::Regex = &NUMBER_REGEX;
+
     token((source_information(), from_str(find(regex))))
         .map(|(source_information, number)| Number::new(number, source_information))
+        .expected("number literal")
 }
 
 fn variable<'a>() -> impl Parser<Stream<'a>, Output = Variable> {
     token((source_information(), qualified_identifier()))
         .map(|(source_information, identifier)| Variable::new(identifier, source_information))
+        .expected("variable")
 }
 
 fn qualified_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
@@ -564,7 +590,7 @@ fn qualified_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 }
 
 fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
-    token(raw_identifier())
+    token(raw_identifier()).expected("identifier")
 }
 
 fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
@@ -582,7 +608,9 @@ fn unchecked_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 }
 
 fn keyword<'a>(name: &'static str) -> impl Parser<Stream<'a>, Output = ()> {
-    token(string(name).skip(not_followed_by(alpha_num()))).with(value(()))
+    token(string(name).skip(not_followed_by(alpha_num())))
+        .with(value(()))
+        .expected("keyword")
 }
 
 fn any_keyword<'a>() -> impl Parser<Stream<'a>, Output = ()> {
@@ -596,7 +624,7 @@ fn any_keyword<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 }
 
 fn sign<'a>(sign: &'static str) -> impl Parser<Stream<'a>, Output = ()> {
-    token(string(sign)).with(value(()))
+    token(string(sign)).with(value(())).expected(sign)
 }
 
 fn token<'a, O, P: Parser<Stream<'a>, Output = O>>(p: P) -> impl Parser<Stream<'a>, Output = O> {
@@ -604,14 +632,16 @@ fn token<'a, O, P: Parser<Stream<'a>, Output = O>>(p: P) -> impl Parser<Stream<'
 }
 
 fn source_information<'a>() -> impl Parser<Stream<'a>, Output = SourceInformation> {
-    blank().map_input(|_, stream: &mut Stream<'a>| {
-        let position = stream.position();
-        SourceInformation::new(
-            stream.0.state.source_name,
-            Location::new(position.line as usize, position.column as usize),
-            stream.0.state.lines[position.line as usize - 1],
-        )
-    })
+    blank()
+        .map_input(|_, stream: &mut Stream<'a>| {
+            let position = stream.position();
+            SourceInformation::new(
+                stream.0.state.source_name,
+                Location::new(position.line as usize, position.column as usize),
+                stream.0.state.lines[position.line as usize - 1],
+            )
+        })
+        .expected("source information")
 }
 
 fn blank<'a>() -> impl Parser<Stream<'a>, Output = ()> {
@@ -632,14 +662,18 @@ fn newlines1<'a>() -> impl Parser<Stream<'a>, Output = ()> {
 }
 
 fn newline<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    optional(spaces1()).with(choice!(
-        combine::parser::char::newline().with(value(())),
-        comment(),
-    ))
+    optional(spaces1())
+        .with(choice!(
+            combine::parser::char::newline().with(value(())),
+            comment(),
+        ))
+        .expected("newline")
 }
 
 fn eof<'a>() -> impl Parser<Stream<'a>, Output = ()> {
-    optional(spaces1()).with(combine::eof())
+    optional(spaces1())
+        .with(combine::eof())
+        .expected("end of file")
 }
 
 fn comment<'a>() -> impl Parser<Stream<'a>, Output = ()> {
@@ -647,6 +681,7 @@ fn comment<'a>() -> impl Parser<Stream<'a>, Output = ()> {
         .with(many::<Vec<_>, _, _>(none_of("\n".chars())))
         .with(combine::parser::char::newline())
         .with(value(()))
+        .expected("comment")
 }
 
 #[cfg(test)]
@@ -1316,6 +1351,14 @@ mod tests {
             )
             .into()
         );
+    }
+
+    #[test]
+    fn parse_deeply_nested_expression() {
+        assert_eq!(
+            expression().parse(stream("((((((42))))))", "")).unwrap().0,
+            Number::new(42.0, SourceInformation::dummy()).into()
+        )
     }
 
     #[test]

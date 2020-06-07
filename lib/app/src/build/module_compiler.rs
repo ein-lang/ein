@@ -2,7 +2,7 @@ use super::error::BuildError;
 use super::module_parser::ModuleParser;
 use super::package_configuration::PackageConfiguration;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage};
+use crate::infra::{FilePath, FileStorage, Logger};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -11,6 +11,7 @@ pub struct ModuleCompiler<'a> {
     module_parser: &'a ModuleParser<'a>,
     file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a dyn FileStorage,
+    logger: &'a dyn Logger,
     compile_configuration: &'a ein::CompileConfiguration,
 }
 
@@ -19,12 +20,14 @@ impl<'a> ModuleCompiler<'a> {
         module_parser: &'a ModuleParser<'a>,
         file_path_manager: &'a FilePathManager<'a>,
         file_storage: &'a dyn FileStorage,
+        logger: &'a dyn Logger,
         compile_configuration: &'a ein::CompileConfiguration,
     ) -> Self {
         Self {
             module_parser,
             file_path_manager,
             file_storage,
+            logger,
             compile_configuration,
         }
     }
@@ -69,12 +72,19 @@ impl<'a> ModuleCompiler<'a> {
             return Ok((object_file_path, interface_file_path));
         }
 
+        let module_path = self.file_path_manager.convert_to_module_path(
+            &source_file_path.relative_to(package_configuration.directory_path()),
+            package_configuration.package(),
+        );
+
+        self.logger.log(&format!(
+            "compiling module {}",
+            &module_path.external_unresolved()
+        ))?;
+
         let (bitcode, module_interface) = ein::compile(
             &module.resolve(
-                self.file_path_manager.convert_to_module_path(
-                    &source_file_path.relative_to(package_configuration.directory_path()),
-                    package_configuration.package(),
-                ),
+                module_path,
                 imported_module_interfaces
                     .into_iter()
                     .map(|module_interface| ein::Import::new(module_interface, true))

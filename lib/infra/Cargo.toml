@@ -8,5 +8,6 @@ edition = "2018"
 app = { path = "../app" }
 ein = { path = "../ein" }
 git2 = "0.13"
+termcolor = "1"
 url = "2"
 which = "4"

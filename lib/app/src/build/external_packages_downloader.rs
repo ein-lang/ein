@@ -2,7 +2,7 @@ use super::external_package::ExternalPackage;
 use super::package_configuration::PackageConfiguration;
 use super::package_initializer::PackageInitializer;
 use super::path::FilePathManager;
-use crate::infra::{ExternalPackageDownloader, FileStorage};
+use crate::infra::{ExternalPackageDownloader, FileStorage, Logger};
 use std::collections::HashMap;
 
 pub struct ExternalPackagesDownloader<'a> {
@@ -10,6 +10,7 @@ pub struct ExternalPackagesDownloader<'a> {
     external_package_downloader: &'a dyn ExternalPackageDownloader,
     file_storage: &'a dyn FileStorage,
     file_path_manager: &'a FilePathManager<'a>,
+    logger: &'a dyn Logger,
 }
 
 impl<'a> ExternalPackagesDownloader<'a> {
@@ -18,12 +19,14 @@ impl<'a> ExternalPackagesDownloader<'a> {
         external_package_downloader: &'a dyn ExternalPackageDownloader,
         file_storage: &'a dyn FileStorage,
         file_path_manager: &'a FilePathManager<'a>,
+        logger: &'a dyn Logger,
     ) -> Self {
         Self {
             package_initializer,
             external_package_downloader,
             file_storage,
             file_path_manager,
+            logger,
         }
     }
 
@@ -43,6 +46,12 @@ impl<'a> ExternalPackagesDownloader<'a> {
                 .resolve_to_external_package_directory_path(&external_package);
 
             if !self.file_storage.exists(&directory_path) {
+                self.logger.log(&format!(
+                    "downloading package {} {}",
+                    external_package.name(),
+                    external_package.version()
+                ))?;
+
                 self.external_package_downloader
                     .download(&external_package, &directory_path)?;
             }

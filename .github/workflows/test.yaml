@@ -1,9 +1,26 @@
-name: code-coverage
+name: test
 on:
   - push
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: einlang/ci
+    env:
+      HOME: /root
+      RUST_MIN_STACK: 8388608
+    steps:
+      - uses: actions/checkout@master
+      - run: npx cspell '**/*.{feature,md,rs}'
+      - run: cargo build
+      - run: cargo fmt -- --check
+      - run: cargo clippy -- -D warnings
+      - run: cargo audit
+      - run: cargo test
+      - run: cargo build --release --package runtime
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
   code-coverage:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - run: curl -f https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 10
       - uses: actions/checkout@master
