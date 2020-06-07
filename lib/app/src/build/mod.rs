@@ -11,7 +11,7 @@ mod modules_finder;
 mod modules_linker;
 mod package_builder;
 mod package_configuration;
-mod package_initializer;
+mod package_configuration_reader;
 mod package_interface;
 mod path;
 
@@ -28,6 +28,6 @@ pub use modules_finder::*;
 pub use modules_linker::*;
 pub use package_builder::*;
 pub use package_configuration::*;
-pub use package_initializer::*;
+pub use package_configuration_reader::*;
 pub use package_interface::*;
 pub use path::*;

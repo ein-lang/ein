@@ -1,12 +1,12 @@
 use super::external_package::ExternalPackage;
 use super::package_configuration::PackageConfiguration;
-use super::package_initializer::PackageInitializer;
+use super::package_configuration_reader::PackageConfigurationReader;
 use super::path::FilePathManager;
 use crate::infra::{ExternalPackageDownloader, FileStorage, Logger};
 use std::collections::HashMap;
 
 pub struct ExternalPackagesDownloader<'a> {
-    package_initializer: &'a PackageInitializer<'a>,
+    package_configuration_reader: &'a PackageConfigurationReader<'a>,
     external_package_downloader: &'a dyn ExternalPackageDownloader,
     file_storage: &'a dyn FileStorage,
     file_path_manager: &'a FilePathManager<'a>,
@@ -15,14 +15,14 @@ pub struct ExternalPackagesDownloader<'a> {
 
 impl<'a> ExternalPackagesDownloader<'a> {
     pub fn new(
-        package_initializer: &'a PackageInitializer<'a>,
+        package_configuration_reader: &'a PackageConfigurationReader<'a>,
         external_package_downloader: &'a dyn ExternalPackageDownloader,
         file_storage: &'a dyn FileStorage,
         file_path_manager: &'a FilePathManager<'a>,
         logger: &'a dyn Logger,
     ) -> Self {
         Self {
-            package_initializer,
+            package_configuration_reader,
             external_package_downloader,
             file_storage,
             file_path_manager,
@@ -56,7 +56,9 @@ impl<'a> ExternalPackagesDownloader<'a> {
                     .download(&external_package, &directory_path)?;
             }
 
-            let package_configuration = self.package_initializer.initialize(&directory_path)?;
+            let package_configuration = self
+                .package_configuration_reader
+                .initialize(&directory_path)?;
 
             package_configurations.extend(self.download(&package_configuration)?);
             package_configurations.insert(external_package, package_configuration);

@@ -63,7 +63,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_manager,
     );
 
-    let package_initializer = app::PackageInitializer::new(
+    let package_configuration_reader = app::PackageConfigurationReader::new(
         &file_storage,
         &file_path_displayer,
         &file_path_configuration,
@@ -74,14 +74,14 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let root_directory = std::path::Path::new(&root_directory_string);
 
     app::MainPackageBuilder::new(
-        &package_initializer,
+        &package_configuration_reader,
         &package_builder,
         &infra::CommandLinker::new(
             &file_path_converter,
             root_directory.join("target/release/libruntime.a"),
         ),
         &app::ExternalPackagesDownloader::new(
-            &package_initializer,
+            &package_configuration_reader,
             &infra::ExternalPackageDownloader::new(),
             &file_storage,
             &file_path_manager,

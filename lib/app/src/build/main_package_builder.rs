@@ -2,11 +2,11 @@ use super::external_packages_builder::ExternalPackagesBuilder;
 use super::external_packages_downloader::ExternalPackagesDownloader;
 use super::package_builder::PackageBuilder;
 use super::package_configuration::Target;
-use super::package_initializer::PackageInitializer;
+use super::package_configuration_reader::PackageConfigurationReader;
 use crate::infra::{CommandLinker, FilePath};
 
 pub struct MainPackageBuilder<'a> {
-    package_initializer: &'a PackageInitializer<'a>,
+    package_configuration_reader: &'a PackageConfigurationReader<'a>,
     package_builder: &'a PackageBuilder<'a>,
     command_linker: &'a dyn CommandLinker,
     external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
@@ -15,14 +15,14 @@ pub struct MainPackageBuilder<'a> {
 
 impl<'a> MainPackageBuilder<'a> {
     pub fn new(
-        package_initializer: &'a PackageInitializer<'a>,
+        package_configuration_reader: &'a PackageConfigurationReader<'a>,
         package_builder: &'a PackageBuilder<'a>,
         command_linker: &'a dyn CommandLinker,
         external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
         external_packages_builder: &'a ExternalPackagesBuilder<'a>,
     ) -> Self {
         Self {
-            package_initializer,
+            package_configuration_reader,
             package_builder,
             command_linker,
             external_packages_downloader,
@@ -31,7 +31,9 @@ impl<'a> MainPackageBuilder<'a> {
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let package_configuration = self.package_initializer.initialize(&FilePath::empty())?;
+        let package_configuration = self
+            .package_configuration_reader
+            .initialize(&FilePath::empty())?;
 
         let external_package_configurations = self
             .external_packages_downloader

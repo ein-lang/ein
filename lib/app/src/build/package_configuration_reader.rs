@@ -2,13 +2,13 @@ use super::package_configuration::PackageConfiguration;
 use super::path::FilePathConfiguration;
 use crate::infra::{FilePath, FilePathDisplayer, FileStorage};
 
-pub struct PackageInitializer<'a> {
+pub struct PackageConfigurationReader<'a> {
     file_storage: &'a dyn FileStorage,
     file_path_displayer: &'a dyn FilePathDisplayer,
     file_path_configuration: &'a FilePathConfiguration,
 }
 
-impl<'a> PackageInitializer<'a> {
+impl<'a> PackageConfigurationReader<'a> {
     pub fn new(
         file_storage: &'a dyn FileStorage,
         file_path_displayer: &'a dyn FilePathDisplayer,
