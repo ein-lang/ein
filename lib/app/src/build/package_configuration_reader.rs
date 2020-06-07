@@ -21,7 +21,7 @@ impl<'a> PackageConfigurationReader<'a> {
         }
     }
 
-    pub fn initialize(
+    pub fn read(
         &self,
         directory_path: &FilePath,
     ) -> Result<PackageConfiguration, Box<dyn std::error::Error>> {

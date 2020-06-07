@@ -31,9 +31,7 @@ impl<'a> MainPackageBuilder<'a> {
     }
 
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let package_configuration = self
-            .package_configuration_reader
-            .initialize(&FilePath::empty())?;
+        let package_configuration = self.package_configuration_reader.read(&FilePath::empty())?;
 
         let external_package_configurations = self
             .external_packages_downloader

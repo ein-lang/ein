@@ -56,9 +56,7 @@ impl<'a> ExternalPackagesDownloader<'a> {
                     .download(&external_package, &directory_path)?;
             }
 
-            let package_configuration = self
-                .package_configuration_reader
-                .initialize(&directory_path)?;
+            let package_configuration = self.package_configuration_reader.read(&directory_path)?;
 
             package_configurations.extend(self.download(&package_configuration)?);
             package_configurations.insert(external_package, package_configuration);
