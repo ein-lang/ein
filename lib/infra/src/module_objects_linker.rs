@@ -26,7 +26,7 @@ impl<'a> app::ModuleObjectsLinker for ModuleObjectsLinker<'a> {
                     .or_else(|_| which::which("llvm-link-10"))
                     .or_else(|_| which::which("llvm-link-9"))
                     .or_else(|_| which::which("llvm-link-8"))
-                    .or_else(|_| Err(InfrastructureError::LlvmLinkNotFound))?,
+                    .map_err(|_| InfrastructureError::LlvmLinkNotFound)?,
             )
             .arg("-o")
             .arg(
