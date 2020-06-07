@@ -8,7 +8,7 @@ pub trait FileStorage {
     fn read_repository(
         &self,
         directory_path: &FilePath,
-    ) -> Result<Repository, Box<dyn std::error::Error>>;
+    ) -> Result<Option<Repository>, Box<dyn std::error::Error>>;
     fn read_to_string(&self, path: &FilePath) -> Result<String, Box<dyn std::error::Error>>;
     fn read_to_vec(&self, path: &FilePath) -> Result<Vec<u8>, Box<dyn std::error::Error>>;
     fn write(&self, path: &FilePath, data: &[u8]) -> Result<(), Box<dyn std::error::Error>>;

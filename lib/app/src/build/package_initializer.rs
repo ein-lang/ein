@@ -25,24 +25,26 @@ impl<'a> PackageInitializer<'a> {
         &self,
         directory_path: &FilePath,
     ) -> Result<PackageConfiguration, Box<dyn std::error::Error>> {
-        let repository = self.file_storage.read_repository(directory_path);
+        let repository = self.file_storage.read_repository(directory_path)?;
 
         Ok(PackageConfiguration::new(
-            repository
-                .as_ref()
-                .map(|repository| {
-                    ein::Package::new(
-                        if let Some(host) = repository.url().host_str() {
-                            [host, repository.url().path()].concat()
-                        } else {
-                            repository.url().path().into()
-                        },
-                        repository.version(),
-                    )
-                })
-                .unwrap_or_else(|_| {
-                    ein::Package::new(self.file_path_displayer.display(directory_path), "")
-                }),
+            if let Some(repository) = repository {
+                // Normalize paths.
+                let path = repository
+                    .url()
+                    .path()
+                    .split('/')
+                    .filter(|component| component != &"")
+                    .collect::<Vec<_>>()
+                    .join("/");
+
+                ein::Package::new(
+                    [repository.url().host_str().unwrap_or(""), &path].join("/"),
+                    repository.version(),
+                )
+            } else {
+                ein::Package::new(self.file_path_displayer.display(directory_path), "")
+            },
             serde_json::from_str(&self.file_storage.read_to_string(
                 &directory_path.join(&self.file_path_configuration.build_configuration_file_path()),
             )?)?,
