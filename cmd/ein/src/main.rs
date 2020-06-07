@@ -2,7 +2,7 @@ const PACKAGE_CONFIGURATION_FILENAME: &str = "ein.json";
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("{}", error);
+        infra::Logger::new().log_error(error.as_ref()).unwrap();
         std::process::exit(1);
     }
 }

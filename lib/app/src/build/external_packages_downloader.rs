@@ -50,7 +50,7 @@ impl<'a> ExternalPackagesDownloader<'a> {
                     "Downloading package {} {}",
                     external_package.name(),
                     external_package.version()
-                ));
+                ))?;
 
                 self.external_package_downloader
                     .download(&external_package, &directory_path)?;

@@ -80,7 +80,7 @@ impl<'a> ModuleCompiler<'a> {
         self.logger.log(&format!(
             "Compiling module {}",
             &module_path.external_unresolved()
-        ));
+        ))?;
 
         let (bitcode, module_interface) = ein::compile(
             &module.resolve(

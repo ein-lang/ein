@@ -36,7 +36,7 @@ impl<'a> PackageBuilder<'a> {
             "Building package {} {}",
             package_configuration.package().name(),
             package_configuration.package().version()
-        ));
+        ))?;
 
         let external_module_interfaces = package_configuration
             .build_configuration()
