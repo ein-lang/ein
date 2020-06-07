@@ -15,7 +15,7 @@ jobs:
       - run: cargo fmt -- --check
       - run: cargo clippy -- -D warnings
       - run: cargo audit
-      - run: cargo test --release -- --test-threads=1
+      - run: cargo test -- --test-threads=1
       - run: cargo build --release --package runtime
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
   code-coverage:
