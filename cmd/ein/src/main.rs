@@ -100,7 +100,7 @@ fn find_package_directory() -> Result<std::path::PathBuf, Box<dyn std::error::Er
             std::io::Error::new(
                 std::io::ErrorKind::NotFound,
                 format!(
-                    "{} file not found in any parent directory",
+                    "file {} not found in any parent directory",
                     PACKAGE_CONFIGURATION_FILENAME
                 ),
             )
