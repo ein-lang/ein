@@ -25,6 +25,10 @@ impl Logger {
             format!("{}", error).replace("\n", "\n  ").trim()
         )?;
 
+        if let Some(error) = error.source() {
+            self.log_error(error)?;
+        }
+
         Ok(())
     }
 }
