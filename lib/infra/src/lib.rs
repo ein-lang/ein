@@ -9,6 +9,7 @@ mod logger;
 mod module_objects_linker;
 
 pub use command_linker::*;
+pub use command_runner::*;
 pub use error::*;
 pub use external_package_downloader::*;
 pub use file_path_converter::*;

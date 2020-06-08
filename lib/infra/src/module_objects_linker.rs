@@ -3,12 +3,17 @@ use super::error::InfrastructureError;
 use super::file_path_converter::FilePathConverter;
 
 pub struct ModuleObjectsLinker<'a> {
+    command_runner: &'a CommandRunner,
     file_path_converter: &'a FilePathConverter,
 }
 
 impl<'a> ModuleObjectsLinker<'a> {
-    pub fn new(file_path_converter: &'a FilePathConverter) -> Self {
+    pub fn new(
+        command_runner: &'a CommandRunner,
+        file_path_converter: &'a FilePathConverter,
+    ) -> Self {
         Self {
+            command_runner,
             file_path_converter,
         }
     }
@@ -20,7 +25,7 @@ impl<'a> app::ModuleObjectsLinker for ModuleObjectsLinker<'a> {
         object_file_paths: &[app::FilePath],
         package_object_file_path: &app::FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        CommandRunner::run(
+        self.command_runner.run(
             std::process::Command::new(
                 which::which("llvm-link")
                     .or_else(|_| which::which("llvm-link-10"))

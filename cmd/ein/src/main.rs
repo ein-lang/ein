@@ -38,7 +38,9 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let file_path_manager = app::FilePathManager::new(&file_path_configuration);
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
-    let module_objects_linker = infra::ModuleObjectsLinker::new(&file_path_converter);
+    let command_runner = infra::CommandRunner::new();
+    let module_objects_linker =
+        infra::ModuleObjectsLinker::new(&command_runner, &file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let compile_configuration = app::CompileConfiguration::new("main", "ein_main", "ein_init");
     let module_compiler = app::ModuleCompiler::new(
@@ -77,6 +79,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &package_configuration_reader,
         &package_builder,
         &infra::CommandLinker::new(
+            &command_runner,
             &file_path_converter,
             root_directory.join("target/release/libruntime.a"),
         ),
