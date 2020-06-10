@@ -105,6 +105,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             &logger,
         ),
         &app::ExternalPackagesBuilder::new(&package_builder, &file_storage),
+        &logger,
     )
     .build()
 }

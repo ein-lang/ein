@@ -4,7 +4,7 @@ use super::package_builder::PackageBuilder;
 use super::package_configuration::Target;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::prelude_package_builder::PreludePackageBuilder;
-use crate::infra::{CommandLinker, FilePath};
+use crate::infra::{CommandLinker, FilePath, Logger};
 
 pub struct MainPackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,
@@ -13,6 +13,7 @@ pub struct MainPackageBuilder<'a> {
     prelude_package_builder: &'a PreludePackageBuilder<'a>,
     external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
     external_packages_builder: &'a ExternalPackagesBuilder<'a>,
+    logger: &'a dyn Logger,
 }
 
 impl<'a> MainPackageBuilder<'a> {
@@ -23,6 +24,7 @@ impl<'a> MainPackageBuilder<'a> {
         prelude_package_builder: &'a PreludePackageBuilder<'a>,
         external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
         external_packages_builder: &'a ExternalPackagesBuilder<'a>,
+        logger: &'a dyn Logger,
     ) -> Self {
         Self {
             package_configuration_reader,
@@ -31,6 +33,7 @@ impl<'a> MainPackageBuilder<'a> {
             prelude_package_builder,
             external_packages_downloader,
             external_packages_builder,
+            logger,
         }
     }
 
@@ -56,6 +59,9 @@ impl<'a> MainPackageBuilder<'a> {
 
         match package_configuration.build_configuration().target() {
             Target::Command(command_target) => {
+                self.logger
+                    .log(&format!("linking command {}", command_target.name()))?;
+
                 self.command_linker.link(
                     &vec![package_object_file_path, prelude_package_object_file_path]
                         .into_iter()
