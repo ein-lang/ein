@@ -45,7 +45,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
 
             module_interfaces.insert(
                 external_package.clone(),
-                self.convert_package_interafce(&serde_json::from_str::<PackageInterface>(
+                self.convert_package_interface(&serde_json::from_str::<PackageInterface>(
                     &self.file_storage.read_to_string(&interface_file_path)?,
                 )?)?,
             );
@@ -54,7 +54,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
         Ok((object_file_paths, module_interfaces))
     }
 
-    fn convert_package_interafce(
+    fn convert_package_interface(
         &self,
         package_interface: &PackageInterface,
     ) -> Result<
