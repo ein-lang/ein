@@ -1,0 +1,6 @@
+{
+  "target": {
+    "type": "Library"
+  },
+  "dependencies": {}
+}
