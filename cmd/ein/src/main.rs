@@ -75,6 +75,19 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let root_directory_string = std::env::var("EIN_ROOT")?;
     let root_directory = std::path::Path::new(&root_directory_string);
 
+    let prelude_package_downloader = infra::PreludePackageDownloader::new(
+        &command_runner,
+        &file_path_converter,
+        root_directory.join("lib/prelude"),
+    );
+    let prelude_package_builder = app::PreludePackageBuilder::new(
+        &package_configuration_reader,
+        &package_builder,
+        &prelude_package_downloader,
+        &file_storage,
+        &file_path_manager,
+    );
+
     app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,
@@ -83,6 +96,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             &file_path_converter,
             root_directory.join("target/release/libruntime.a"),
         ),
+        &prelude_package_builder,
         &app::ExternalPackagesDownloader::new(
             &package_configuration_reader,
             &infra::ExternalPackageDownloader::new(),

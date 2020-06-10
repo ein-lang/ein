@@ -1,5 +1,4 @@
 mod boolean_compiler;
-mod builtin_function_creator;
 mod compile_configuration;
 mod desugar;
 mod error;
@@ -22,7 +21,6 @@ mod union_type_simplifier;
 use crate::ast::*;
 use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
-use builtin_function_creator::BuiltinFunctionCreator;
 pub use compile_configuration::CompileConfiguration;
 use desugar::{desugar_with_types, desugar_without_types};
 use error::CompileError;
@@ -40,7 +38,6 @@ pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = BuiltinFunctionCreator::new().create(&module);
     let module = RecordFunctionCreator::new().create(&module);
 
     let module = GlobalNameQualifier::new(

@@ -3,6 +3,7 @@ use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
 use super::modules_finder::ModulesFinder;
 use super::package_configuration::PackageConfiguration;
+use super::package_interface::PackageInterface;
 use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage};
 use petgraph::algo::toposort;
@@ -41,6 +42,7 @@ impl<'a> ModulesBuilder<'a> {
             ein::ExternalUnresolvedModulePath,
             ein::ModuleInterface,
         >,
+        prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
         let mut module_interfaces = external_module_interfaces
             .iter()
@@ -58,6 +60,7 @@ impl<'a> ModulesBuilder<'a> {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
                 &source_file_path,
                 &module_interfaces,
+                prelude_package_interface,
                 package_configuration,
             )?;
 

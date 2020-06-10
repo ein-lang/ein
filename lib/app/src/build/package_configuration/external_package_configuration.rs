@@ -6,7 +6,6 @@ pub struct ExternalPackageConfiguration {
 }
 
 impl ExternalPackageConfiguration {
-    #[cfg(test)]
     pub fn new(version: impl Into<String>) -> Self {
         Self {
             version: version.into(),

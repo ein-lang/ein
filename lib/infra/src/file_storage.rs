@@ -35,7 +35,7 @@ impl<'a> FileStorage<'a> {
     ) -> Result<Option<app::Repository>, Box<dyn std::error::Error>> {
         let path = self.file_path_converter.convert_to_os_path(directory_path);
 
-        if let Ok(repository) = git2::Repository::discover(&path) {
+        if let Ok(repository) = git2::Repository::open(&path) {
             let url = if let Some(url) = repository
                 .find_remote("origin")
                 .ok()

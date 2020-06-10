@@ -2,6 +2,7 @@ use super::external_package::ExternalPackage;
 use super::modules_builder::ModulesBuilder;
 use super::modules_linker::ModulesLinker;
 use super::package_configuration::PackageConfiguration;
+use super::package_interface::PackageInterface;
 use crate::infra::{FilePath, Logger};
 use std::collections::HashMap;
 
@@ -31,6 +32,7 @@ impl<'a> PackageBuilder<'a> {
             ExternalPackage,
             HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
         >,
+        prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         self.logger.log(&format!(
             "building package {} {}",
@@ -52,9 +54,11 @@ impl<'a> PackageBuilder<'a> {
             .flatten()
             .collect();
 
-        let (object_file_paths, interface_file_paths) = self
-            .modules_builder
-            .build(&package_configuration, &external_module_interfaces)?;
+        let (object_file_paths, interface_file_paths) = self.modules_builder.build(
+            &package_configuration,
+            &external_module_interfaces,
+            prelude_package_interface,
+        )?;
 
         self.modules_linker.link(
             &object_file_paths,
