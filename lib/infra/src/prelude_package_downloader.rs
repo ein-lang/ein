@@ -25,10 +25,9 @@ impl<'a> app::PreludePackageDownloader for PreludePackageDownloader<'a> {
     fn download(&self, directory_path: &app::FilePath) -> Result<(), Box<dyn std::error::Error>> {
         let path = self.file_path_converter.convert_to_os_path(directory_path);
 
-        self.command_runner
-            .run(std::process::Command::new("rm").arg("-rf").arg(&path))?;
-
-        if let Some(path) = path.parent() {
+        if path.exists() {
+            return Ok(());
+        } else if let Some(path) = path.parent() {
             std::fs::create_dir_all(&path)?;
         }
 
