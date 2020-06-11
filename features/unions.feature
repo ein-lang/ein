@@ -15,7 +15,7 @@ Feature: Union types
     Given a file named "Main.ein" with:
     """
     foo : Boolean | None
-    foo = true
+    foo = True
 
     main : Number -> Number
     main x = 42
@@ -31,7 +31,7 @@ Feature: Union types
     type Foo = Boolean | None
 
     foo : Foo
-    foo = true
+    foo = True
 
     main : Number -> Number
     main x = 42
@@ -45,7 +45,7 @@ Feature: Union types
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = case y = if true then 42 else none
+    main x = case y = if True then 42 else None
       Number => y
       None => 13
     """

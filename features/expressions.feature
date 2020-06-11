@@ -34,7 +34,7 @@ Feature: Expressions
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = if true then 42 else 13
+    main x = if True then 42 else 13
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`
@@ -70,7 +70,7 @@ Feature: Expressions
 
     main : Number -> Number
     main x =
-      if Foo ( foo = 42, bar = true ) == Foo ( foo = 42, bar = true )
+      if Foo ( foo = 42, bar = True ) == Foo ( foo = 42, bar = True )
       then 42
       else 13
     """
@@ -86,7 +86,7 @@ Feature: Expressions
     a = 0
 
     b : Number | None
-    b = none
+    b = None
 
     main : Number -> Number
     main x = if a == b then 13 else 42
@@ -111,7 +111,7 @@ Feature: Expressions
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = if false || true && true then 42 else 13
+    main x = if False || True && True then 42 else 13
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`

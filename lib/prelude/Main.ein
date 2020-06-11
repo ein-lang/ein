@@ -1,4 +1,4 @@
 export { not }
 
 not : Boolean -> Boolean
-not x = if x then false else true
+not x = if x then False else True

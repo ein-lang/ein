@@ -15,7 +15,7 @@ Feature: Builtin functions and types
     Given a file named "Main.ein" with:
     """
     main : Number -> Number
-    main x = if not false then 42 else 13
+    main x = if not False then 42 else 13
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`

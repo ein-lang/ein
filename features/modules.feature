@@ -110,7 +110,7 @@ Feature: Modules
     type Bar ( foo : Foo | None )
 
     foo : Foo
-    foo = Foo ( bar = none )
+    foo = Foo ( bar = None )
     """
     When I successfully run `ein build`
     And I run `sh -c ./foo`
