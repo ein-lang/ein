@@ -38,7 +38,9 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let file_path_manager = app::FilePathManager::new(&file_path_configuration);
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
-    let module_objects_linker = infra::ModuleObjectsLinker::new(&file_path_converter);
+    let command_runner = infra::CommandRunner::new();
+    let module_objects_linker =
+        infra::ModuleObjectsLinker::new(&command_runner, &file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let compile_configuration = app::CompileConfiguration::new("main", "ein_main", "ein_init");
     let module_compiler = app::ModuleCompiler::new(
@@ -63,7 +65,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_manager,
     );
 
-    let package_initializer = app::PackageInitializer::new(
+    let package_configuration_reader = app::PackageConfigurationReader::new(
         &file_storage,
         &file_path_displayer,
         &file_path_configuration,
@@ -73,21 +75,37 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let root_directory_string = std::env::var("EIN_ROOT")?;
     let root_directory = std::path::Path::new(&root_directory_string);
 
+    let prelude_package_downloader = infra::PreludePackageDownloader::new(
+        &command_runner,
+        &file_path_converter,
+        root_directory.join("lib/prelude"),
+    );
+    let prelude_package_builder = app::PreludePackageBuilder::new(
+        &package_configuration_reader,
+        &package_builder,
+        &prelude_package_downloader,
+        &file_storage,
+        &file_path_manager,
+    );
+
     app::MainPackageBuilder::new(
-        &package_initializer,
+        &package_configuration_reader,
         &package_builder,
         &infra::CommandLinker::new(
+            &command_runner,
             &file_path_converter,
             root_directory.join("target/release/libruntime.a"),
         ),
+        &prelude_package_builder,
         &app::ExternalPackagesDownloader::new(
-            &package_initializer,
+            &package_configuration_reader,
             &infra::ExternalPackageDownloader::new(),
             &file_storage,
             &file_path_manager,
             &logger,
         ),
         &app::ExternalPackagesBuilder::new(&package_builder, &file_storage),
+        &logger,
     )
     .build()
 }

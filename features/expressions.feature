@@ -42,17 +42,7 @@ Feature: Expressions
     And the exit status should be 0
 
   Scenario: Use arithmetic operators
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = 0 + 1 * 3 - 4 / 2
@@ -63,17 +53,7 @@ Feature: Expressions
     And the exit status should be 0
 
   Scenario: Use an equal operator with numbers
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = if x == 0 then 13 else 42
@@ -84,17 +64,7 @@ Feature: Expressions
     And the exit status should be 0
 
   Scenario: Use an equal operator with records
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     type Foo ( foo : Number, bar : Boolean )
 
@@ -110,17 +80,7 @@ Feature: Expressions
     And the exit status should be 0
 
   Scenario: Use an equal operator with unions
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     a : Number | None
     a = 0
@@ -137,17 +97,7 @@ Feature: Expressions
     And the exit status should be 0
 
   Scenario: Use a not-equal operator
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = if 1 /= 2 then 42 else 13
@@ -158,17 +108,7 @@ Feature: Expressions
     And the exit status should be 0
 
   Scenario: Use boolean operators
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = if false || true && true then 42 else 13

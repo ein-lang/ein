@@ -1,5 +1,5 @@
 Feature: Command
-  Scenario: Build a command
+  Background:
     Given a file named "ein.json" with:
     """
     {
@@ -10,7 +10,9 @@ Feature: Command
       "dependencies": {}
     }
     """
-    And a file named "Main.ein" with:
+
+  Scenario: Build a command
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = x
@@ -21,17 +23,7 @@ Feature: Command
     And the exit status should be 0
 
   Scenario: Build a command twice
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = x
@@ -41,17 +33,7 @@ Feature: Command
     Then the exit status should be 0
 
   Scenario: Build a command in an inner directory
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Main.ein" with:
+    Given a file named "Main.ein" with:
     """
     main : Number -> Number
     main x = x

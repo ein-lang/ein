@@ -1,10 +1,18 @@
 use super::error::InfrastructureError;
 use std::io::Write;
 
-pub struct CommandRunner;
+#[derive(Default)]
+pub struct CommandRunner {}
 
 impl CommandRunner {
-    pub fn run(command: &mut std::process::Command) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn new() -> Self {
+        Self {}
+    }
+
+    pub fn run(
+        &self,
+        command: &mut std::process::Command,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let output = command.output()?;
 
         if output.status.success() {

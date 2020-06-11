@@ -27,6 +27,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
     pub fn build(
         &self,
         package_configurations: &HashMap<ExternalPackage, PackageConfiguration>,
+        prelude_package_interface: &PackageInterface,
     ) -> Result<(Vec<FilePath>, ExternalModuleInterfaces), Box<dyn std::error::Error>> {
         let mut object_file_paths = vec![];
         let mut module_interfaces = HashMap::new();
@@ -34,30 +35,42 @@ impl<'a> ExternalPackagesBuilder<'a> {
         for external_package in self.sort_external_packages(package_configurations)? {
             let package_configuration = &package_configurations[&external_package];
 
-            let (object_file_path, interface_file_path) = self
-                .package_builder
-                .build(package_configuration, &module_interfaces)?;
+            let (object_file_path, interface_file_path) = self.package_builder.build(
+                package_configuration,
+                &module_interfaces,
+                Some(prelude_package_interface),
+            )?;
 
             object_file_paths.push(object_file_path);
 
             module_interfaces.insert(
                 external_package.clone(),
-                serde_json::from_str::<PackageInterface>(
+                self.convert_package_interface(&serde_json::from_str::<PackageInterface>(
                     &self.file_storage.read_to_string(&interface_file_path)?,
-                )?
-                .modules()
-                .iter()
-                .map(|module_interface| {
-                    (
-                        module_interface.path().external_unresolved(),
-                        module_interface.clone(),
-                    )
-                })
-                .collect(),
+                )?)?,
             );
         }
 
         Ok((object_file_paths, module_interfaces))
+    }
+
+    fn convert_package_interface(
+        &self,
+        package_interface: &PackageInterface,
+    ) -> Result<
+        HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
+        Box<dyn std::error::Error>,
+    > {
+        Ok(package_interface
+            .modules()
+            .iter()
+            .map(|module_interface| {
+                (
+                    module_interface.path().external_unresolved(),
+                    module_interface.clone(),
+                )
+            })
+            .collect())
     }
 
     fn sort_external_packages(

@@ -1,6 +1,7 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
 use super::package_configuration::PackageConfiguration;
+use super::package_interface::PackageInterface;
 use super::path::FilePathManager;
 use crate::infra::{FilePath, FileStorage, Logger};
 use std::collections::hash_map::DefaultHasher;
@@ -36,6 +37,7 @@ impl<'a> ModuleCompiler<'a> {
         &self,
         source_file_path: &FilePath,
         module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>,
+        prelude_package_interface: Option<&PackageInterface>,
         package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
@@ -88,6 +90,17 @@ impl<'a> ModuleCompiler<'a> {
                 imported_module_interfaces
                     .into_iter()
                     .map(|module_interface| ein::Import::new(module_interface, true))
+                    .chain(if let Some(package_interface) = prelude_package_interface {
+                        package_interface
+                            .modules()
+                            .iter()
+                            .map(|module_interface| {
+                                ein::Import::new(module_interface.clone(), false)
+                            })
+                            .collect()
+                    } else {
+                        vec![]
+                    })
                     .collect(),
             ),
             &self.compile_configuration,
