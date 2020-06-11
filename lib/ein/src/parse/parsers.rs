@@ -219,7 +219,7 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
 }
 
 fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
-    choice!(record_type_definition(), union_type_definition()).expected("type definition")
+    choice!(union_type_definition(), record_type_definition()).expected("type definition")
 }
 
 fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
@@ -227,15 +227,21 @@ fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefiniti
         keyword("type"),
         source_information(),
         identifier(),
-        sign("("),
-        sep_end_by((identifier().skip(sign(":")), type_()), sign(",")),
-        sign(")"),
+        optional(between(
+            sign("("),
+            sign(")"),
+            sep_end_by1((identifier().skip(sign(":")), type_()), sign(",")),
+        )),
     )
-        .map(|(_, source_information, name, _, elements, _)| {
-            let elements: Vec<_> = elements;
+        .map(|(_, source_information, name, elements)| {
+            let elements: Option<Vec<_>> = elements;
             TypeDefinition::new(
                 &name,
-                types::Record::new(&name, elements.into_iter().collect(), source_information),
+                types::Record::new(
+                    &name,
+                    elements.unwrap_or_default().into_iter().collect(),
+                    source_information,
+                ),
             )
         })
         .expected("record type definition")
@@ -1017,7 +1023,7 @@ mod tests {
     fn parse_type_definition() {
         for (source, expected) in &[
             (
-                "type Foo ()",
+                "type Foo",
                 TypeDefinition::new(
                     "Foo",
                     types::Record::new("Foo", Default::default(), SourceInformation::dummy()),
