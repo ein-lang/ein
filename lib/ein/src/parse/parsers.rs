@@ -18,8 +18,8 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "Boolean", "case", "else", "export", "false", "if", "import", "in", "let", "none", "None",
-    "Number", "then", "true", "type",
+    "Boolean", "case", "else", "export", "False", "if", "import", "in", "let", "None", "Number",
+    "then", "True", "type",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -552,17 +552,17 @@ fn concrete_operator<'a>(
 fn boolean_literal<'a>() -> impl Parser<Stream<'a>, Output = Boolean> {
     token(choice!(
         source_information()
-            .skip(keyword("false"))
+            .skip(keyword("False"))
             .map(|source_information| Boolean::new(false, source_information)),
         source_information()
-            .skip(keyword("true"))
+            .skip(keyword("True"))
             .map(|source_information| Boolean::new(true, source_information)),
     ))
     .expected("boolean literal")
 }
 
 fn none_literal<'a>() -> impl Parser<Stream<'a>, Output = None> {
-    token(source_information().skip(keyword("none")))
+    token(source_information().skip(keyword("None")))
         .map(None::new)
         .expected("none literal")
 }
@@ -1382,7 +1382,7 @@ mod tests {
     fn parse_if() {
         assert_eq!(
             if_()
-                .parse(stream("if true then 42 else 13", ""))
+                .parse(stream("if True then 42 else 13", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1395,7 +1395,7 @@ mod tests {
         assert_eq!(
             if_()
                 .parse(stream(
-                    "if if true then false else true then 42 else 13",
+                    "if if True then False else True then 42 else 13",
                     ""
                 ))
                 .unwrap()
@@ -1414,7 +1414,7 @@ mod tests {
         );
         assert_eq!(
             if_()
-                .parse(stream("if true then if false then 1 else 2 else 3", ""))
+                .parse(stream("if True then if False then 1 else 2 else 3", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1431,7 +1431,7 @@ mod tests {
         );
         assert_eq!(
             if_()
-                .parse(stream("if true then 1 else if false then 2 else 3", ""))
+                .parse(stream("if True then 1 else if False then 2 else 3", ""))
                 .unwrap()
                 .0,
             If::new(
@@ -1472,7 +1472,7 @@ mod tests {
                 .parse(stream(
                     indoc!(
                         "
-                          case foo = true
+                          case foo = True
                             Boolean => foo
                         "
                     ),
@@ -1495,9 +1495,9 @@ mod tests {
                 .parse(stream(
                     indoc!(
                         "
-                          case foo = true
-                            Boolean => true
-                            None => false
+                          case foo = True
+                            Boolean => True
+                            None => False
                         "
                     ),
                     ""
@@ -1940,7 +1940,7 @@ mod tests {
                 ),
             ),
             (
-                "true && true",
+                "True && True",
                 Operation::new(
                     Operator::And,
                     Boolean::new(true, SourceInformation::dummy()),
@@ -1949,7 +1949,7 @@ mod tests {
                 ),
             ),
             (
-                "true || true",
+                "True || True",
                 Operation::new(
                     Operator::Or,
                     Boolean::new(true, SourceInformation::dummy()),
@@ -1958,7 +1958,7 @@ mod tests {
                 ),
             ),
             (
-                "true && 1 < 2",
+                "True && 1 < 2",
                 Operation::new(
                     Operator::And,
                     Boolean::new(true, SourceInformation::dummy()),
@@ -1972,7 +1972,7 @@ mod tests {
                 ),
             ),
             (
-                "true || true && true",
+                "True || True && True",
                 Operation::new(
                     Operator::Or,
                     Boolean::new(true, SourceInformation::dummy()),
@@ -2157,11 +2157,11 @@ mod tests {
     fn parse_boolean_literal() {
         assert!(boolean_literal().parse(stream("", "")).is_err());
         assert_eq!(
-            boolean_literal().parse(stream("false", "")).unwrap().0,
+            boolean_literal().parse(stream("False", "")).unwrap().0,
             Boolean::new(false, SourceInformation::dummy())
         );
         assert_eq!(
-            boolean_literal().parse(stream("true", "")).unwrap().0,
+            boolean_literal().parse(stream("True", "")).unwrap().0,
             Boolean::new(true, SourceInformation::dummy())
         );
     }
@@ -2170,7 +2170,7 @@ mod tests {
     fn parse_none_literal() {
         assert!(none_literal().parse(stream("", "")).is_err());
         assert_eq!(
-            none_literal().parse(stream("none", "")).unwrap().0,
+            none_literal().parse(stream("None", "")).unwrap().0,
             None::new(SourceInformation::dummy())
         );
     }
