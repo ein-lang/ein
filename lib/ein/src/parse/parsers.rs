@@ -219,7 +219,7 @@ fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefin
 }
 
 fn type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
-    choice!(union_type_definition(), record_type_definition()).expected("type definition")
+    choice!(type_alias_definition(), record_type_definition()).expected("type definition")
 }
 
 fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
@@ -247,10 +247,10 @@ fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefiniti
         .expected("record type definition")
 }
 
-fn union_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
-    (keyword("type"), identifier(), sign("="), union_type())
+fn type_alias_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
+    (keyword("type"), identifier(), sign("="), type_())
         .map(|(_, name, _, type_)| TypeDefinition::new(&name, type_))
-        .expected("union type definition")
+        .expected("type alias definition")
 }
 
 fn type_<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -1123,6 +1123,36 @@ mod tests {
         ] {
             assert_eq!(
                 &type_definition().parse(stream(source, "")).unwrap().0,
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn parse_type_alias_definition() {
+        for (source, expected) in &[
+            (
+                "type Foo = Number",
+                TypeDefinition::new("Foo", types::Number::new(SourceInformation::dummy())),
+            ),
+            (
+                "type Foo = Number | None",
+                TypeDefinition::new(
+                    "Foo",
+                    types::Union::new(
+                        vec![
+                            types::Number::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ),
+        ] {
+            assert_eq!(
+                &type_alias_definition().parse(stream(source, "")).unwrap().0,
                 expected
             );
         }
