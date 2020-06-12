@@ -44,7 +44,8 @@ impl ReferenceTypeResolver {
     pub fn resolve(&self, type_: &Type) -> Result<Type, CompileError> {
         match type_ {
             Type::Reference(reference) => self.resolve_reference(reference),
-            Type::Boolean(_)
+            Type::Any(_)
+            | Type::Boolean(_)
             | Type::Function(_)
             | Type::None(_)
             | Type::Number(_)

@@ -209,7 +209,9 @@ impl ExpressionCompiler {
                     )
                     .into(),
                     Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
-                    Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
+                    Type::Any(_) | Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => {
+                        unreachable!()
+                    }
                 }
             }
             Expression::Variable(variable) => ssf::ir::Variable::new(variable.name()).into(),

@@ -1,3 +1,4 @@
+use super::any::Any;
 use super::boolean::Boolean;
 use super::function::Function;
 use super::none::None;
@@ -14,6 +15,7 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum Type {
+    Any(Any),
     Boolean(Boolean),
     Function(Function),
     None(None),
@@ -28,6 +30,7 @@ pub enum Type {
 impl Type {
     pub fn source_information(&self) -> &Rc<SourceInformation> {
         match self {
+            Self::Any(any) => any.source_information(),
             Self::Boolean(boolean) => boolean.source_information(),
             Self::Function(function) => function.source_information(),
             Self::None(none) => none.source_information(),
@@ -65,7 +68,8 @@ impl Type {
             Self::Function(function) => function.convert_types(convert)?.into(),
             Self::Record(record) => record.convert_types(convert)?.into(),
             Self::Union(union) => union.convert_types(convert)?.into(),
-            Self::Boolean(_)
+            Self::Any(_)
+            | Self::Boolean(_)
             | Self::None(_)
             | Self::Number(_)
             | Self::Reference(_)
@@ -106,6 +110,12 @@ impl Type {
 
     pub fn is_union(&self) -> bool {
         self.to_union().is_some()
+    }
+}
+
+impl From<Any> for Type {
+    fn from(any: Any) -> Self {
+        Self::Any(any)
     }
 }
 

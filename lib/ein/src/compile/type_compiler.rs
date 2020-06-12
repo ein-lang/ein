@@ -33,6 +33,7 @@ impl TypeCompiler {
 
     pub fn compile(&self, type_: &Type) -> Result<ssf::types::Type, CompileError> {
         match type_ {
+            Type::Any(_) => Ok(self.compile_any().into()),
             Type::Boolean(_) => Ok(self.compile_boolean().into()),
             Type::Function(function) => Ok(ssf::types::Function::new(
                 function
@@ -125,7 +126,8 @@ impl TypeCompiler {
                             other.union_tag_calculator.calculate(&type_)?,
                             ssf::types::Constructor::unboxed(vec![other.compile(&type_)?]),
                         ),
-                        Type::Reference(_)
+                        Type::Any(_)
+                        | Type::Reference(_)
                         | Type::Union(_)
                         | Type::Unknown(_)
                         | Type::Variable(_) => unreachable!(),
@@ -134,6 +136,11 @@ impl TypeCompiler {
                 .chain(vec![Ok(UNION_PADDING_ENTRY.clone())])
                 .collect::<Result<_, CompileError>>()?,
         ))
+    }
+
+    // Any types are compiled as union types which subsume all types.
+    fn compile_any(&self) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::with_tags(vec![UNION_PADDING_ENTRY.clone()].into_iter().collect())
     }
 
     pub fn compile_value(&self, type_: &Type) -> Result<ssf::types::Value, CompileError> {
