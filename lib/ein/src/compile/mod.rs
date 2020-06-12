@@ -230,6 +230,29 @@ mod tests {
     }
 
     #[test]
+    fn compile_elementless_record_types() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Record::new("Foo", Default::default(), SourceInformation::dummy()),
+                )],
+                vec![ValueDefinition::new(
+                    "x",
+                    Variable::new("Foo", SourceInformation::dummy()),
+                    reference_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            ),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
     fn compile_case_expression() {
         compile(
             &Module::from_definitions(vec![ValueDefinition::new(
