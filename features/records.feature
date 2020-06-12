@@ -71,3 +71,19 @@ Feature: Records
     When I run `sh -c ./foo`
     Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Define a record with no member
+    Given a file named "Main.ein" with:
+    """
+    type Foo
+
+    foo : Foo
+    foo = Foo
+
+    main : Number -> Number
+    main x = 42
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
+    And the exit status should be 0

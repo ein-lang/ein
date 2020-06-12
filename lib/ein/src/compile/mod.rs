@@ -10,7 +10,6 @@ mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
-mod record_function_creator;
 mod reference_type_resolver;
 mod type_compiler;
 mod type_equality_checker;
@@ -22,13 +21,12 @@ use crate::ast::*;
 use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
-use desugar::{desugar_with_types, desugar_without_types};
+use desugar::{desugar_before_name_qualification, desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
 use global_name_qualifier::GlobalNameQualifier;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
-use record_function_creator::RecordFunctionCreator;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
@@ -38,7 +36,7 @@ pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = RecordFunctionCreator::new().create(&module);
+    let module = desugar_before_name_qualification(&module)?;
 
     let module = GlobalNameQualifier::new(
         &module,
@@ -222,6 +220,29 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            ),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn compile_elementless_record_types() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Record::new("Foo", Default::default(), SourceInformation::dummy()),
+                )],
+                vec![ValueDefinition::new(
+                    "x",
+                    Variable::new("Foo", SourceInformation::dummy()),
+                    reference_type.clone(),
                     SourceInformation::dummy(),
                 )
                 .into()],
