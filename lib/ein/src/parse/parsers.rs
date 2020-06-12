@@ -1,4 +1,4 @@
-use super::attempt::{many, many1, optional, sep_end_by, sep_end_by1};
+use super::attempt::{many, many1, optional, sep_end_by1};
 use super::utilities;
 use crate::ast::*;
 use crate::debug::*;
@@ -438,7 +438,7 @@ fn record_construction<'a>() -> impl Parser<Stream<'a>, Output = RecordConstruct
         source_information(),
         reference_type(),
         sign("("),
-        sep_end_by((identifier().skip(sign("=")), expression()), sign(",")),
+        sep_end_by1((identifier().skip(sign("=")), expression()), sign(",")),
         sign(")"),
     )
         .then(|(source_information, reference_type, _, elements, _)| {
@@ -1999,14 +1999,7 @@ mod tests {
     #[test]
     fn parse_record_construction() {
         assert!(record_construction().parse(stream("f", "")).is_err());
-        assert_eq!(
-            record_construction().parse(stream("Foo ()", "")).unwrap().0,
-            RecordConstruction::new(
-                types::Reference::new("Foo", SourceInformation::dummy()),
-                Default::default(),
-                SourceInformation::dummy()
-            )
-        );
+        assert!(record_construction().parse(stream("Foo ()", "")).is_err());
         assert_eq!(
             record_construction()
                 .parse(stream("Foo ( foo = 42 )", ""))
