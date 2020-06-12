@@ -293,6 +293,46 @@ mod tests {
     }
 
     #[test]
+    fn compile_case_expression_with_union_type_alternative() {
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Case::new(
+                    "x",
+                    If::new(
+                        Boolean::new(false, SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    vec![Alternative::new(
+                        types::Union::new(
+                            vec![
+                                types::Number::new(SourceInformation::dummy()).into(),
+                                types::None::new(SourceInformation::dummy()).into(),
+                            ],
+                            SourceInformation::dummy(),
+                        ),
+                        Boolean::new(false, SourceInformation::dummy()),
+                    )],
+                    SourceInformation::dummy(),
+                ),
+                types::Union::new(
+                    vec![
+                        types::Boolean::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
     fn compile_equal_operation_with_none_type() {
         compile(
             &Module::from_definitions(vec![ValueDefinition::new(

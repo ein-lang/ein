@@ -58,17 +58,38 @@ impl ExpressionCompiler {
                 case.alternatives()
                     .iter()
                     .map(|alternative| {
-                        Ok(ssf::ir::AlgebraicAlternative::new(
-                            ssf::ir::Constructor::new(
-                                self.type_compiler
-                                    .compile_union(case.type_().to_union().unwrap())?,
-                                self.union_tag_calculator.calculate(alternative.type_())?,
-                            ),
-                            vec![case.name().into()],
-                            self.compile(alternative.expression())?,
-                        ))
+                        if let Type::Union(union_type) = alternative.type_() {
+                            union_type
+                                .types()
+                                .iter()
+                                .map(|type_| {
+                                    Ok(ssf::ir::AlgebraicAlternative::new(
+                                        ssf::ir::Constructor::new(
+                                            self.type_compiler
+                                                .compile_union(case.type_().to_union().unwrap())?,
+                                            self.union_tag_calculator.calculate(type_)?,
+                                        ),
+                                        vec![case.name().into()],
+                                        self.compile(alternative.expression())?,
+                                    ))
+                                })
+                                .collect()
+                        } else {
+                            Ok(vec![ssf::ir::AlgebraicAlternative::new(
+                                ssf::ir::Constructor::new(
+                                    self.type_compiler
+                                        .compile_union(case.type_().to_union().unwrap())?,
+                                    self.union_tag_calculator.calculate(alternative.type_())?,
+                                ),
+                                vec![case.name().into()],
+                                self.compile(alternative.expression())?,
+                            )])
+                        }
                     })
-                    .collect::<Result<_, CompileError>>()?,
+                    .collect::<Result<Vec<_>, CompileError>>()?
+                    .into_iter()
+                    .flatten()
+                    .collect(),
                 None,
             )
             .into(),
