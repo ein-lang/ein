@@ -17,8 +17,10 @@ impl UnionTypeSimplifier {
     }
 
     pub fn simplify(&self, type_: &Type) -> Result<Type, CompileError> {
+        let type_ = self.reference_type_resolver.resolve(type_)?;
+
         if let Type::Union(union) = type_ {
-            self.simplify_union(union)
+            self.simplify_union(&union)
         } else {
             Ok(type_.clone())
         }
@@ -29,7 +31,7 @@ impl UnionTypeSimplifier {
             .types()
             .iter()
             .map(|type_| {
-                Ok(match self.reference_type_resolver.resolve(type_)? {
+                Ok(match self.simplify(type_)? {
                     Type::Union(union) => union.types().iter().cloned().collect(),
                     type_ => vec![type_],
                 })
@@ -83,6 +85,36 @@ mod tests {
                     types::Union::new(
                         vec![
                             types::None::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into()
+                        ],
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                    types::None::new(SourceInformation::dummy()).into()
+                ],
+                SourceInformation::dummy()
+            )),
+            Ok(types::None::new(SourceInformation::dummy()).into())
+        );
+    }
+
+    #[test]
+    fn simplify_deeply_nested_union_types() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+
+        assert_eq!(
+            UnionTypeSimplifier::new(reference_type_resolver).simplify_union(&types::Union::new(
+                vec![
+                    types::Union::new(
+                        vec![
+                            types::Union::new(
+                                vec![
+                                    types::None::new(SourceInformation::dummy()).into(),
+                                    types::None::new(SourceInformation::dummy()).into()
+                                ],
+                                SourceInformation::dummy()
+                            )
+                            .into(),
                             types::None::new(SourceInformation::dummy()).into()
                         ],
                         SourceInformation::dummy()

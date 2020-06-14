@@ -57,6 +57,7 @@ mod tests {
     use crate::package::Package;
     use crate::path::*;
     use crate::types::{self, Type};
+    use insta::assert_debug_snapshot;
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -739,7 +740,8 @@ mod tests {
             )
             .into()],
         );
-        assert_eq!(infer_types(&module), Ok(module));
+
+        assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
@@ -795,7 +797,8 @@ mod tests {
             )
             .into()],
         );
-        assert_eq!(infer_types(&module), Ok(module));
+
+        assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
@@ -834,7 +837,8 @@ mod tests {
                 .into(),
             ],
         );
-        assert_eq!(infer_types(&module), Ok(module));
+
+        assert_debug_snapshot!(infer_types(&module));
     }
 
     mod if_ {
@@ -1067,7 +1071,7 @@ mod tests {
                 types::Record::new("Foo", Default::default(), SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let module = Module::from_definitions_and_type_definitions(
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
@@ -1080,8 +1084,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
-            );
-            assert_eq!(infer_types(&module), Ok(module));
+            )));
         }
 
         #[test]
@@ -1098,7 +1101,7 @@ mod tests {
             );
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let module = Module::from_definitions_and_type_definitions(
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
@@ -1116,8 +1119,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
-            );
-            assert_eq!(infer_types(&module), Ok(module));
+            )));
         }
 
         #[test]
@@ -1248,7 +1250,7 @@ mod tests {
                 SourceInformation::dummy(),
             );
 
-            let module = Module::from_definitions_and_type_definitions(
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![ValueDefinition::new(
                     "x",
@@ -1268,9 +1270,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
-            );
-
-            assert_eq!(infer_types(&module), Ok(module));
+            )));
         }
     }
 
@@ -1340,39 +1340,30 @@ mod tests {
                 types::Record::new("Foo", Default::default(), SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let create_module = |type_: Type| {
-                Module::from_definitions_and_type_definitions(
-                    vec![TypeDefinition::new("Foo", record_type.clone())],
-                    vec![ValueDefinition::new(
-                        "x",
-                        Operation::with_type(
-                            type_,
-                            Operator::Equal,
-                            RecordConstruction::new(
-                                reference_type.clone(),
-                                Default::default(),
-                                SourceInformation::dummy(),
-                            ),
-                            RecordConstruction::new(
-                                reference_type.clone(),
-                                Default::default(),
-                                SourceInformation::dummy(),
-                            ),
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        types::Unknown::new(SourceInformation::dummy()),
+                        Operator::Equal,
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            Default::default(),
                             SourceInformation::dummy(),
                         ),
-                        types::Boolean::new(SourceInformation::dummy()),
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            Default::default(),
+                            SourceInformation::dummy(),
+                        ),
                         SourceInformation::dummy(),
-                    )
-                    .into()],
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 )
-            };
-
-            assert_eq!(
-                infer_types(&create_module(
-                    types::Unknown::new(SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(record_type.clone().into()))
-            );
+                .into()],
+            )));
         }
 
         #[test]
