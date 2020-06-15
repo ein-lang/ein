@@ -111,6 +111,14 @@ impl Type {
     pub fn is_union(&self) -> bool {
         self.to_union().is_some()
     }
+
+    pub fn is_any(&self) -> bool {
+        if let Self::Any(_) = self {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 impl From<Any> for Type {

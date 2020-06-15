@@ -1579,5 +1579,68 @@ mod tests {
                 .into()
             ])));
         }
+
+        #[test]
+        fn infer_any_types_from_any_types() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy(),),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "z",
+                            Variable::new("x", SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn infer_any_types_from_union_of_concrete_type_and_any_type() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy(),),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "z",
+                            If::new(
+                                Boolean::new(true, SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                Number::new(42.0, SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
     }
 }
