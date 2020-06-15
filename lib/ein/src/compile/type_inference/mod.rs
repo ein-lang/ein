@@ -1537,4 +1537,47 @@ mod tests {
             assert_eq!(infer_types(&module), Ok(module));
         }
     }
+
+    mod any {
+        use super::*;
+
+        #[test]
+        fn infer_casting_of_non_union_types_to_any_types() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn infer_casting_of_union_types_to_any_types() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy(),),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+    }
 }

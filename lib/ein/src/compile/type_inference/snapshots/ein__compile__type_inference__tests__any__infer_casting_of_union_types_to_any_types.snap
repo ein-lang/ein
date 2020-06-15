@@ -1,0 +1,124 @@
+---
+source: lib/ein/src/compile/type_inference/mod.rs
+expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", Boolean ::\n                                               new(true, SourceInformation ::\n                                                   dummy()), types :: Union ::\n                                               new(vec !\n                                                   [types :: Boolean ::\n                                                    new(SourceInformation ::\n                                                        dummy()) . into(),\n                                                    types :: None ::\n                                                    new(SourceInformation ::\n                                                        dummy()) . into(),],\n                                                   SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into(), ValueDefinition ::\n                                           new(\"y\", Variable ::\n                                               new(\"x\", SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into()]))"
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [],
+        definitions: [
+            ValueDefinition(
+                ValueDefinition {
+                    name: "x",
+                    body: Boolean(
+                        Boolean {
+                            value: true,
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Union(
+                        Union {
+                            types: {
+                                Boolean(
+                                    Boolean {
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                                None(
+                                    None {
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                            },
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+            ValueDefinition(
+                ValueDefinition {
+                    name: "y",
+                    body: Variable(
+                        Variable {
+                            name: "x",
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Any(
+                        Any {
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+        ],
+        export: Export {
+            names: {},
+        },
+        imports: [],
+    },
+)
