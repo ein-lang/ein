@@ -4,7 +4,7 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
-use crate::types::Type;
+use crate::types::{self, Type};
 use std::convert::TryInto;
 use std::rc::Rc;
 
@@ -196,22 +196,48 @@ impl ExpressionCompiler {
                 let argument = self.compile(coercion.argument())?;
 
                 match &from_type {
+                    Type::Any(_) => argument,
                     Type::Boolean(_)
                     | Type::Function(_)
                     | Type::None(_)
                     | Type::Number(_)
-                    | Type::Record(_) => ssf::ir::ConstructorApplication::new(
-                        ssf::ir::Constructor::new(
-                            to_type,
-                            self.union_tag_calculator.calculate(&from_type)?,
-                        ),
-                        vec![argument],
-                    )
-                    .into(),
-                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
-                    Type::Any(_) | Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => {
-                        unreachable!()
+                    | Type::Record(_) => {
+                        if coercion.to().is_any() {
+                            ssf::ir::Bitcast::new(
+                                ssf::ir::ConstructorApplication::new(
+                                    ssf::ir::Constructor::new(
+                                        self.type_compiler
+                                            .compile(
+                                                &types::Union::new(
+                                                    vec![from_type.clone()],
+                                                    coercion.to().source_information().clone(),
+                                                )
+                                                .into(),
+                                            )?
+                                            .into_value()
+                                            .unwrap()
+                                            .into_algebraic()
+                                            .unwrap(),
+                                        self.union_tag_calculator.calculate(&from_type)?,
+                                    ),
+                                    vec![argument],
+                                ),
+                                to_type,
+                            )
+                            .into()
+                        } else {
+                            ssf::ir::ConstructorApplication::new(
+                                ssf::ir::Constructor::new(
+                                    to_type.clone(),
+                                    self.union_tag_calculator.calculate(&from_type)?,
+                                ),
+                                vec![argument],
+                            )
+                            .into()
+                        }
                     }
+                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
+                    Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 }
             }
             Expression::Variable(variable) => ssf::ir::Variable::new(variable.name()).into(),
@@ -914,6 +940,112 @@ mod tests {
                     ssf::ir::Variable::new("x"),
                     type_compiler
                         .compile(&upper_union_type.into())
+                        .unwrap()
+                        .into_value()
+                        .unwrap()
+                        .into_algebraic()
+                        .unwrap(),
+                )
+                .into())
+            );
+        }
+
+        #[test]
+        fn compile_type_coercion_from_any_type_to_any_type() {
+            let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+
+            assert_eq!(
+                expression_compiler.compile(
+                    &TypeCoercion::new(
+                        Variable::new("x", SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                Ok(ssf::ir::Variable::new("x").into())
+            );
+        }
+
+        #[test]
+        fn compile_type_coercion_from_non_union_type_to_any_type() {
+            let (expression_compiler, type_compiler, union_tag_calculator) =
+                create_expression_compiler(&Module::dummy());
+
+            assert_eq!(
+                expression_compiler.compile(
+                    &TypeCoercion::new(
+                        Variable::new("x", SourceInformation::dummy()),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                Ok(
+                    ssf::ir::Bitcast::new(
+                        ssf::ir::ConstructorApplication::new(
+                            ssf::ir::Constructor::new(
+                                type_compiler
+                                    .compile(
+                                        &types::Union::new(
+                                            vec![types::Boolean::new(SourceInformation::dummy())
+                                                .into()],
+                                            SourceInformation::dummy()
+                                        )
+                                        .into()
+                                    )
+                                    .unwrap()
+                                    .into_value()
+                                    .unwrap()
+                                    .into_algebraic()
+                                    .unwrap(),
+                                union_tag_calculator
+                                    .calculate(
+                                        &types::Boolean::new(SourceInformation::dummy()).into()
+                                    )
+                                    .unwrap()
+                            ),
+                            vec![ssf::ir::Variable::new("x").into()]
+                        ),
+                        type_compiler
+                            .compile(&types::Any::new(SourceInformation::dummy()).into())
+                            .unwrap()
+                            .into_value()
+                            .unwrap()
+                            .into_algebraic()
+                            .unwrap(),
+                    )
+                    .into()
+                )
+            );
+        }
+
+        #[test]
+        fn compile_type_coercion_from_union_type_to_any_type() {
+            let (expression_compiler, type_compiler, _) =
+                create_expression_compiler(&Module::dummy());
+
+            let union_type = types::Union::new(
+                vec![types::Boolean::new(SourceInformation::dummy()).into()],
+                SourceInformation::dummy(),
+            );
+
+            assert_eq!(
+                expression_compiler.compile(
+                    &TypeCoercion::new(
+                        Variable::new("x", SourceInformation::dummy()),
+                        union_type,
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                Ok(ssf::ir::Bitcast::new(
+                    ssf::ir::Variable::new("x"),
+                    type_compiler
+                        .compile(&types::Any::new(SourceInformation::dummy()).into())
                         .unwrap()
                         .into_value()
                         .unwrap()
