@@ -391,4 +391,39 @@ mod tests {
         )
         .unwrap();
     }
+
+    #[test]
+    fn compile_any_type() {
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Any::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn compile_any_type_with_union_type() {
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Any::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
 }

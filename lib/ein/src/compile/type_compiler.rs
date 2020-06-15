@@ -10,6 +10,10 @@ lazy_static! {
         0,
         ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
     );
+    static ref ANY_TYPE_DUMMY_ENTRY: (u64, ssf::types::Constructor) = (
+        1,
+        ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
+    );
 }
 
 pub struct TypeCompiler {
@@ -140,7 +144,11 @@ impl TypeCompiler {
 
     // Any types are compiled as union types which subsume all types.
     fn compile_any(&self) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::with_tags(vec![UNION_PADDING_ENTRY.clone()].into_iter().collect())
+        ssf::types::Algebraic::with_tags(
+            vec![UNION_PADDING_ENTRY.clone(), ANY_TYPE_DUMMY_ENTRY.clone()]
+                .into_iter()
+                .collect(),
+        )
     }
 
     pub fn compile_value(&self, type_: &Type) -> Result<ssf::types::Value, CompileError> {

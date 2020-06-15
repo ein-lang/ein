@@ -228,7 +228,7 @@ impl ExpressionCompiler {
                         } else {
                             ssf::ir::ConstructorApplication::new(
                                 ssf::ir::Constructor::new(
-                                    to_type.clone(),
+                                    to_type,
                                     self.union_tag_calculator.calculate(&from_type)?,
                                 ),
                                 vec![argument],
