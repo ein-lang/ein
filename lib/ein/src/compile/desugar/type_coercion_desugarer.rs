@@ -10,8 +10,8 @@ use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-/// TypeCoercionDesugarer desugars value-to-union and function-to-union type
-/// coercions.
+/// TypeCoercionDesugarer desugars value-to-union, function-to-union and
+/// value-to-any type coercions.
 /// Note that it does not desugar function-to-function ones.
 pub struct TypeCoercionDesugarer {
     reference_type_resolver: Rc<ReferenceTypeResolver>,
@@ -49,7 +49,10 @@ impl TypeCoercionDesugarer {
         )?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
 
-        if !to_type.is_union() && !self.type_equality_checker.equal(&from_type, &to_type)? {
+        if !to_type.is_union()
+            && !to_type.is_any()
+            && !self.type_equality_checker.equal(&from_type, &to_type)?
+        {
             unreachable!()
         }
 

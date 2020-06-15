@@ -641,6 +641,34 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn desugar_any() {
+            let create_module = |expression: Expression| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    expression,
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
+                    Number::new(42.0, SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    TypeCoercion::new(
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
     }
 
     #[test]
