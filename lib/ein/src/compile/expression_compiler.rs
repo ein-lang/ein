@@ -281,117 +281,23 @@ impl ExpressionCompiler {
     }
 
     fn compile_case(&self, case: &Case) -> Result<ssf::ir::Expression, CompileError> {
-        Ok(if case.type_().is_any() {
-            let argument_type = self
-                .type_compiler
-                .compile_any_for_case(case.alternatives().iter().map(Alternative::type_))?;
+        let argument_type = self
+            .type_compiler
+            .compile_union_for_case(case.alternatives().iter().map(Alternative::type_))?;
 
-            ssf::ir::LetValues::new(
-                vec![ssf::ir::ValueDefinition::new(
-                    case.name(),
-                    self.compile(case.argument())?,
-                    self.type_compiler.compile_value(case.type_())?,
-                )],
-                ssf::ir::AlgebraicCase::new(
-                    ssf::ir::Bitcast::new(
-                        ssf::ir::Variable::new(case.name()),
-                        argument_type.clone(),
-                    ),
-                    case.alternatives()
-                        .iter()
-                        .take_while(|alternative| !alternative.type_().is_any())
-                        .map(|alternative| {
-                            match self.reference_type_resolver.resolve(alternative.type_())? {
-                                Type::Boolean(_)
-                                | Type::Function(_)
-                                | Type::None(_)
-                                | Type::Number(_)
-                                | Type::Record(_) => Ok(vec![ssf::ir::AlgebraicAlternative::new(
-                                    ssf::ir::Constructor::new(
-                                        argument_type.clone(),
-                                        self.union_tag_calculator.calculate(alternative.type_())?,
-                                    ),
-                                    vec![case.name().into()],
-                                    self.compile(alternative.expression())?,
-                                )]),
-                                Type::Union(union_type) => {
-                                    let algebraic_type =
-                                        self.type_compiler.compile_union(&union_type)?;
-
-                                    union_type
-                                        .types()
-                                        .iter()
-                                        .map(|type_| {
-                                            Ok(ssf::ir::AlgebraicAlternative::new(
-                                                ssf::ir::Constructor::new(
-                                                    argument_type.clone(),
-                                                    self.union_tag_calculator.calculate(type_)?,
-                                                ),
-                                                vec![],
-                                                ssf::ir::LetValues::new(
-                                                    vec![ssf::ir::ValueDefinition::new(
-                                                        case.name(),
-                                                        ssf::ir::Bitcast::new(
-                                                            ssf::ir::Variable::new(case.name()),
-                                                            algebraic_type.clone(),
-                                                        ),
-                                                        algebraic_type.clone(),
-                                                    )],
-                                                    self.compile(alternative.expression())?,
-                                                ),
-                                            ))
-                                        })
-                                        .collect()
-                                }
-                                Type::Any(_)
-                                | Type::Reference(_)
-                                | Type::Unknown(_)
-                                | Type::Variable(_) => unreachable!(),
-                            }
-                        })
-                        .collect::<Result<Vec<_>, CompileError>>()?
-                        .into_iter()
-                        .flatten()
-                        .collect(),
-                    Some(ssf::ir::DefaultAlternative::new(
-                        "",
-                        self.compile(
-                            case.alternatives()
-                                .iter()
-                                .find(|alternative| alternative.type_().is_any())
-                                .unwrap()
-                                .expression(),
-                        )?,
-                    )),
-                ),
-            )
-            .into()
-        } else {
-            let argument_type = self
-                .type_compiler
-                .compile_union(&case.type_().to_union().unwrap())?;
-
-            ssf::ir::AlgebraicCase::new(
+        Ok(ssf::ir::LetValues::new(
+            vec![ssf::ir::ValueDefinition::new(
+                case.name(),
                 self.compile(case.argument())?,
+                self.type_compiler.compile_value(case.type_())?,
+            )],
+            ssf::ir::AlgebraicCase::new(
+                ssf::ir::Bitcast::new(ssf::ir::Variable::new(case.name()), argument_type.clone()),
                 case.alternatives()
                     .iter()
+                    .take_while(|alternative| !alternative.type_().is_any())
                     .map(|alternative| {
                         match self.reference_type_resolver.resolve(alternative.type_())? {
-                            Type::Union(union_type) => union_type
-                                .types()
-                                .iter()
-                                .map(|type_| {
-                                    // TODO Bind case expression variables to union types.
-                                    Ok(ssf::ir::AlgebraicAlternative::new(
-                                        ssf::ir::Constructor::new(
-                                            argument_type.clone(),
-                                            self.union_tag_calculator.calculate(type_)?,
-                                        ),
-                                        vec![],
-                                        self.compile(alternative.expression())?,
-                                    ))
-                                })
-                                .collect(),
                             Type::Boolean(_)
                             | Type::Function(_)
                             | Type::None(_)
@@ -404,6 +310,35 @@ impl ExpressionCompiler {
                                 vec![case.name().into()],
                                 self.compile(alternative.expression())?,
                             )]),
+                            Type::Union(union_type) => {
+                                let alternative_type =
+                                    self.type_compiler.compile_union(&union_type)?;
+
+                                union_type
+                                    .types()
+                                    .iter()
+                                    .map(|type_| {
+                                        Ok(ssf::ir::AlgebraicAlternative::new(
+                                            ssf::ir::Constructor::new(
+                                                argument_type.clone(),
+                                                self.union_tag_calculator.calculate(type_)?,
+                                            ),
+                                            vec![],
+                                            ssf::ir::LetValues::new(
+                                                vec![ssf::ir::ValueDefinition::new(
+                                                    case.name(),
+                                                    ssf::ir::Bitcast::new(
+                                                        ssf::ir::Variable::new(case.name()),
+                                                        alternative_type.clone(),
+                                                    ),
+                                                    alternative_type.clone(),
+                                                )],
+                                                self.compile(alternative.expression())?,
+                                            ),
+                                        ))
+                                    })
+                                    .collect()
+                            }
                             Type::Any(_)
                             | Type::Reference(_)
                             | Type::Unknown(_)
@@ -414,10 +349,19 @@ impl ExpressionCompiler {
                     .into_iter()
                     .flatten()
                     .collect(),
-                None,
-            )
-            .into()
-        })
+                case.alternatives()
+                    .iter()
+                    .find(|alternative| alternative.type_().is_any())
+                    .map(|alternative| -> Result<_, CompileError> {
+                        Ok(ssf::ir::DefaultAlternative::new(
+                            "",
+                            self.compile(alternative.expression())?,
+                        ))
+                    })
+                    .transpose()?,
+            ),
+        )
+        .into())
     }
 }
 
@@ -819,50 +763,6 @@ mod tests {
                         1.0
                     )
                 ],
-                None
-            )
-            .into())
-        );
-    }
-
-    #[test]
-    fn compile_case_expressions() {
-        let (expression_compiler, type_compiler, _) = create_expression_compiler(&Module::dummy());
-
-        let boolean_type = type_compiler.compile_boolean();
-        let union_type = types::Union::new(
-            vec![
-                types::Boolean::new(SourceInformation::dummy()).into(),
-                types::None::new(SourceInformation::dummy()).into(),
-            ],
-            SourceInformation::dummy(),
-        );
-        let algebraic_type = type_compiler.compile_union(&union_type).unwrap();
-
-        assert_eq!(
-            expression_compiler.compile(
-                &Case::with_type(
-                    union_type,
-                    "flag",
-                    Boolean::new(false, SourceInformation::dummy()),
-                    vec![Alternative::new(
-                        types::Boolean::new(SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy())
-                    )],
-                    SourceInformation::dummy()
-                )
-                .into(),
-            ),
-            Ok(ssf::ir::AlgebraicCase::new(
-                ssf::ir::ConstructorApplication::new(
-                    ssf::ir::Constructor::new(boolean_type.clone(), 0),
-                    vec![]
-                ),
-                vec![ssf::ir::AlgebraicAlternative::new(
-                    ssf::ir::Constructor::new(algebraic_type.clone(), 4919337809186972848),
-                    vec!["flag".into()],
-                    42.0
-                )],
                 None
             )
             .into())

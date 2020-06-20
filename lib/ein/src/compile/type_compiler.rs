@@ -149,7 +149,7 @@ impl TypeCompiler {
         ))
     }
 
-    pub fn compile_any_for_case<'a>(
+    pub fn compile_union_for_case<'a>(
         &self,
         types: impl IntoIterator<Item = &'a Type>,
     ) -> Result<ssf::types::Algebraic, CompileError> {
