@@ -122,7 +122,7 @@ impl TypeCompiler {
                 .iter()
                 .cloned()
                 .map(Ok)
-                .chain(union.types().into_iter().map(|type_| {
+                .chain(union.types().iter().map(|type_| {
                     Ok(match type_ {
                         Type::Boolean(_)
                         | Type::Function(_)
