@@ -281,9 +281,17 @@ impl ExpressionCompiler {
     }
 
     fn compile_case(&self, case: &Case) -> Result<ssf::ir::Expression, CompileError> {
-        let argument_type = self
-            .type_compiler
-            .compile_union_for_case(case.alternatives().iter().map(Alternative::type_))?;
+        let argument_type = if case.type_().is_any() {
+            self.type_compiler
+                .compile_union_for_case(case.alternatives().iter().map(Alternative::type_))?
+        } else {
+            self.type_compiler
+                .compile(case.type_())?
+                .into_value()
+                .unwrap()
+                .into_algebraic()
+                .unwrap()
+        };
 
         Ok(ssf::ir::LetValues::new(
             vec![ssf::ir::ValueDefinition::new(
@@ -292,7 +300,14 @@ impl ExpressionCompiler {
                 self.type_compiler.compile_value(case.type_())?,
             )],
             ssf::ir::AlgebraicCase::new(
-                ssf::ir::Bitcast::new(ssf::ir::Variable::new(case.name()), argument_type.clone()),
+                if case.type_().is_any() {
+                    ssf::ir::Expression::from(ssf::ir::Bitcast::new(
+                        ssf::ir::Variable::new(case.name()),
+                        argument_type.clone(),
+                    ))
+                } else {
+                    ssf::ir::Variable::new(case.name()).into()
+                },
                 case.alternatives()
                     .iter()
                     .take_while(|alternative| !alternative.type_().is_any())
@@ -323,13 +338,18 @@ impl ExpressionCompiler {
                                                 argument_type.clone(),
                                                 self.union_tag_calculator.calculate(type_)?,
                                             ),
-                                            vec![],
+                                            vec![case.name().into()],
                                             ssf::ir::LetValues::new(
                                                 vec![ssf::ir::ValueDefinition::new(
                                                     case.name(),
-                                                    ssf::ir::Bitcast::new(
-                                                        ssf::ir::Variable::new(case.name()),
-                                                        alternative_type.clone(),
+                                                    ssf::ir::ConstructorApplication::new(
+                                                        ssf::ir::Constructor::new(
+                                                            alternative_type.clone(),
+                                                            self.union_tag_calculator
+                                                                .calculate(type_)?,
+                                                        ),
+                                                        vec![ssf::ir::Variable::new(case.name())
+                                                            .into()],
                                                     ),
                                                     alternative_type.clone(),
                                                 )],
