@@ -281,6 +281,12 @@ impl ExpressionCompiler {
     }
 
     fn compile_case(&self, case: &Case) -> Result<ssf::ir::Expression, CompileError> {
+        if !case.type_().is_any() && !case.type_().is_union() {
+            return Err(CompileError::CaseArgumentTypeInvalid(
+                case.source_information().clone(),
+            ));
+        }
+
         let argument_type = if case.type_().is_any() {
             self.type_compiler
                 .compile_union_for_case(case.alternatives().iter().map(Alternative::type_))?
@@ -388,6 +394,7 @@ impl ExpressionCompiler {
 #[cfg(test)]
 mod tests {
     use super::super::boolean_compiler::BooleanCompiler;
+    use super::super::error::CompileError;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::type_compiler::TypeCompiler;
     use super::super::union_tag_calculator::UnionTagCalculator;
@@ -786,6 +793,29 @@ mod tests {
                 None
             )
             .into())
+        );
+    }
+
+    #[test]
+    fn fail_to_compile_case_expression_with_argument_type_invalid() {
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+
+        assert_eq!(
+            expression_compiler.compile(
+                &Case::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        Variable::new("x", SourceInformation::dummy())
+                    )],
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ),
+            Err(CompileError::CaseArgumentTypeInvalid(
+                SourceInformation::dummy().into()
+            ))
         );
     }
 
