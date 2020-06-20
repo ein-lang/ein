@@ -120,7 +120,7 @@ impl ConstraintCollector {
 
                 for alternative in case.alternatives() {
                     self.subsumption_set
-                        .add(alternative.type_().clone(), argument.clone());
+                        .add(alternative.type_().clone(), case.type_().clone());
 
                     let mut variables = variables.clone();
 

@@ -151,7 +151,12 @@ impl TypedDesugarer for TypeCoercionDesugarer {
                 Ok(Case::with_type(
                     case.type_().clone(),
                     case.name(),
-                    case.argument().clone(),
+                    self.coerce_type(
+                        case.argument(),
+                        case.type_(),
+                        case.source_information().clone(),
+                        &variables,
+                    )?,
                     case.alternatives()
                         .iter()
                         .map(|alternative| {

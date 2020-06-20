@@ -1642,5 +1642,27 @@ mod tests {
                 .into()
             ])));
         }
+
+        #[test]
+        fn infer_any_types_from_any_type_alternatives() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        "y",
+                        None::new(SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Any::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )
+                        .into()],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
     }
 }
