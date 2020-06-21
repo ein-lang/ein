@@ -44,10 +44,13 @@ Feature: Case expressions
     Given a file named "Main.ein" with:
     """
     x : Any
-    x =
-      case y = if True then 42 else None
-        Number | None => y
-        Any => y
+    x = 42
+
+    y : Any
+    y =
+      case z = x
+        Number | None => z
+        Any => z
 
     main : Number -> Number
     main x = x
