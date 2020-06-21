@@ -7,6 +7,7 @@ use std::rc::Rc;
 
 #[derive(Debug, PartialEq)]
 pub enum CompileError {
+    CaseArgumentTypeInvalid(Rc<SourceInformation>),
     CircularInitialization,
     ExportedNameNotFound { name: String },
     MixedDefinitionsInLet(Rc<SourceInformation>),
@@ -27,6 +28,11 @@ impl Display for CompileError {
             Self::ExportedNameNotFound { name } => {
                 write!(formatter, "exported name \"{}\" not found", name)
             }
+            Self::CaseArgumentTypeInvalid(source_information) => write!(
+                formatter,
+                "invalid argument type of case expression\n{}",
+                source_information
+            ),
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
                 "cannot mix function and value definitions in a let expression\n{}",

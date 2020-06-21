@@ -294,11 +294,19 @@ mod tests {
 
     #[test]
     fn compile_case_expression_with_union_type_alternative() {
+        let union_type = types::Union::new(
+            vec![
+                types::Number::new(SourceInformation::dummy()).into(),
+                types::None::new(SourceInformation::dummy()).into(),
+            ],
+            SourceInformation::dummy(),
+        );
+
         compile(
             &Module::from_definitions(vec![ValueDefinition::new(
                 "x",
                 Case::new(
-                    "x",
+                    "y",
                     If::new(
                         Boolean::new(false, SourceInformation::dummy()),
                         Number::new(42.0, SourceInformation::dummy()),
@@ -306,24 +314,12 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                     vec![Alternative::new(
-                        types::Union::new(
-                            vec![
-                                types::Number::new(SourceInformation::dummy()).into(),
-                                types::None::new(SourceInformation::dummy()).into(),
-                            ],
-                            SourceInformation::dummy(),
-                        ),
-                        Boolean::new(false, SourceInformation::dummy()),
+                        union_type.clone(),
+                        Variable::new("y", SourceInformation::dummy()),
                     )],
                     SourceInformation::dummy(),
                 ),
-                types::Union::new(
-                    vec![
-                        types::Boolean::new(SourceInformation::dummy()).into(),
-                        types::None::new(SourceInformation::dummy()).into(),
-                    ],
-                    SourceInformation::dummy(),
-                ),
+                union_type,
                 SourceInformation::dummy(),
             )
             .into()]),
@@ -387,6 +383,89 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn compile_any_type() {
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Any::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn compile_any_type_with_union_type() {
+        compile(
+            &Module::from_definitions(vec![ValueDefinition::new(
+                "x",
+                If::new(
+                    Boolean::new(false, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Any::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn compile_case_expression_with_any_type() {
+        compile(
+            &Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Case::new(
+                        "z",
+                        Variable::new("x", SourceInformation::dummy()),
+                        vec![
+                            Alternative::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                Variable::new("z", SourceInformation::dummy()),
+                            ),
+                            Alternative::new(
+                                types::Union::new(
+                                    vec![
+                                        types::Boolean::new(SourceInformation::dummy()).into(),
+                                        types::None::new(SourceInformation::dummy()).into(),
+                                    ],
+                                    SourceInformation::dummy(),
+                                ),
+                                Variable::new("z", SourceInformation::dummy()),
+                            ),
+                            Alternative::new(
+                                types::Any::new(SourceInformation::dummy()),
+                                Variable::new("z", SourceInformation::dummy()),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]),
             &COMPILE_CONFIGURATION,
         )
         .unwrap();

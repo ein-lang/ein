@@ -1,0 +1,147 @@
+---
+source: lib/ein/src/compile/type_inference/mod.rs
+expression: "infer_types(&Module::from_definitions_and_type_definitions(vec![TypeDefinition\n                                                                ::\n                                                                new(\"Foo\",\n                                                                    record_type)],\n                                                           vec![ValueDefinition\n                                                                ::\n                                                                new(\"x\",\n                                                                    RecordConstruction\n                                                                    ::\n                                                                    new(reference_type\n                                                                        .\n                                                                        clone(),\n                                                                        vec !\n                                                                        [(\"foo\"\n                                                                          .\n                                                                          into(),\n                                                                          Number\n                                                                          ::\n                                                                          new(42.0,\n                                                                              SourceInformation\n                                                                              ::\n                                                                              dummy())\n                                                                          .\n                                                                          into(),)]\n                                                                        .\n                                                                        into_iter()\n                                                                        .\n                                                                        collect(),\n                                                                        SourceInformation\n                                                                        ::\n                                                                        dummy(),),\n                                                                    reference_type,\n                                                                    SourceInformation\n                                                                    ::\n                                                                    dummy(),)\n                                                                . into()]))"
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [
+            TypeDefinition {
+                name: "Foo",
+                type_: Record(
+                    Record {
+                        name: "Foo",
+                        elements: {
+                            "foo": Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                        },
+                        source_information: SourceInformation {
+                            source_name: "",
+                            location: Location {
+                                line_number: 0,
+                                column_number: 0,
+                            },
+                            line: "",
+                        },
+                    },
+                ),
+            },
+        ],
+        definitions: [
+            ValueDefinition(
+                ValueDefinition {
+                    name: "x",
+                    body: RecordConstruction(
+                        RecordConstruction {
+                            type_: Record(
+                                Record {
+                                    name: "Foo",
+                                    elements: {
+                                        "foo": Number(
+                                            Number {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            elements: {
+                                "foo": Number(
+                                    Number {
+                                        value: 42.0,
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                            },
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Record(
+                        Record {
+                            name: "Foo",
+                            elements: {
+                                "foo": Number(
+                                    Number {
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                            },
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+        ],
+        export: Export {
+            names: {},
+        },
+        imports: [],
+    },
+)

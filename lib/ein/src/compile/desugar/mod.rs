@@ -641,6 +641,34 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn desugar_any() {
+            let create_module = |expression: Expression| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    expression,
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
+                    Number::new(42.0, SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    TypeCoercion::new(
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
     }
 
     #[test]
@@ -660,66 +688,30 @@ mod tests {
             SourceInformation::dummy(),
         );
 
-        let create_module = |expression: Expression| {
-            Module::from_definitions(vec![ValueDefinition::new(
+        assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
+            ValueDefinition::new(
                 "x",
-                expression,
+                Case::with_type(
+                    argument_union_type.clone(),
+                    "foo",
+                    Boolean::new(false, SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            types::Boolean::new(SourceInformation::dummy()),
+                            Number::new(42.0, SourceInformation::dummy()),
+                        ),
+                        Alternative::new(
+                            types::None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        ),
+                    ],
+                    SourceInformation::dummy(),
+                ),
                 result_union_type.clone(),
                 SourceInformation::dummy(),
             )
-            .into()])
-        };
-
-        assert_eq!(
-            desugar_with_types(&create_module(
-                Case::with_type(
-                    argument_union_type.clone(),
-                    "foo",
-                    Boolean::new(false, SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            types::Boolean::new(SourceInformation::dummy()),
-                            Number::new(42.0, SourceInformation::dummy())
-                        ),
-                        Alternative::new(
-                            types::None::new(SourceInformation::dummy()),
-                            None::new(SourceInformation::dummy())
-                        )
-                    ],
-                    SourceInformation::dummy()
-                )
-                .into()
-            )),
-            Ok(create_module(
-                Case::with_type(
-                    argument_union_type.clone(),
-                    "foo",
-                    Boolean::new(false, SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            types::Boolean::new(SourceInformation::dummy()),
-                            TypeCoercion::new(
-                                Number::new(42.0, SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                result_union_type.clone(),
-                                SourceInformation::dummy(),
-                            )
-                        ),
-                        Alternative::new(
-                            types::None::new(SourceInformation::dummy()),
-                            TypeCoercion::new(
-                                None::new(SourceInformation::dummy()),
-                                types::None::new(SourceInformation::dummy()),
-                                result_union_type.clone(),
-                                SourceInformation::dummy(),
-                            )
-                        )
-                    ],
-                    SourceInformation::dummy()
-                )
-                .into()
-            ))
-        );
+            .into()
+        ])));
     }
 
     #[test]
@@ -732,89 +724,21 @@ mod tests {
             SourceInformation::dummy(),
         );
 
-        let create_module = |expression: Expression| {
-            Module::from_definitions(vec![ValueDefinition::new(
+        assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
+            ValueDefinition::new(
                 "x",
-                expression,
-                types::Boolean::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()])
-        };
-
-        assert_eq!(
-            desugar_with_types(&create_module(
                 Operation::with_type(
                     union_type.clone(),
                     Operator::Equal,
                     None::new(SourceInformation::dummy()),
                     None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()
-            )),
-            Ok(create_module(
-                Case::with_type(
-                    union_type.clone(),
-                    "equal_operation_argument_0",
-                    None::new(SourceInformation::dummy()),
-                    vec![
-                        Alternative::new(
-                            types::None::new(SourceInformation::dummy()),
-                            Case::with_type(
-                                union_type.clone(),
-                                "equal_operation_argument_1",
-                                None::new(SourceInformation::dummy()),
-                                vec![
-                                    Alternative::new(
-                                        types::None::new(SourceInformation::dummy()),
-                                        Boolean::new(true, SourceInformation::dummy())
-                                    ),
-                                    Alternative::new(
-                                        types::Number::new(SourceInformation::dummy()),
-                                        Boolean::new(false, SourceInformation::dummy())
-                                    ),
-                                ],
-                                SourceInformation::dummy(),
-                            )
-                        ),
-                        Alternative::new(
-                            types::Number::new(SourceInformation::dummy()),
-                            Case::with_type(
-                                union_type.clone(),
-                                "equal_operation_argument_1",
-                                None::new(SourceInformation::dummy()),
-                                vec![
-                                    Alternative::new(
-                                        types::None::new(SourceInformation::dummy()),
-                                        Boolean::new(false, SourceInformation::dummy())
-                                    ),
-                                    Alternative::new(
-                                        types::Number::new(SourceInformation::dummy()),
-                                        Operation::with_type(
-                                            types::Number::new(SourceInformation::dummy()),
-                                            Operator::Equal,
-                                            Variable::new(
-                                                "equal_operation_argument_0",
-                                                SourceInformation::dummy()
-                                            ),
-                                            Variable::new(
-                                                "equal_operation_argument_1",
-                                                SourceInformation::dummy()
-                                            ),
-                                            SourceInformation::dummy()
-                                        )
-                                    ),
-                                ],
-                                SourceInformation::dummy(),
-                            )
-                        ),
-                    ],
-                    SourceInformation::dummy(),
-                )
-                .into(),
-            ))
-        );
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()
+        ])));
     }
 
     #[test]

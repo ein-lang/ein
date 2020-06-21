@@ -1,0 +1,112 @@
+---
+source: lib/ein/src/compile/type_inference/mod.rs
+expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", Case ::\n                                               new(\"y\", None ::\n                                                   new(SourceInformation ::\n                                                       dummy()), vec !\n                                                   [Alternative ::\n                                                    new(types :: Any ::\n                                                        new(SourceInformation\n                                                            :: dummy()), None\n                                                        ::\n                                                        new(SourceInformation\n                                                            :: dummy()),) .\n                                                    into()], SourceInformation\n                                                   :: dummy()), types :: None\n                                               ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [],
+        definitions: [
+            ValueDefinition(
+                ValueDefinition {
+                    name: "x",
+                    body: Case(
+                        Case {
+                            type_: Any(
+                                Any {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            name: "y",
+                            argument: None(
+                                None {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            alternatives: [
+                                Alternative {
+                                    type_: Any(
+                                        Any {
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    expression: None(
+                                        None {
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                },
+                            ],
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: None(
+                        None {
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+        ],
+        export: Export {
+            names: {},
+        },
+        imports: [],
+    },
+)

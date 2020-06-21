@@ -11,6 +11,8 @@ Feature: Library
     """
     And a file named "Foo.ein" with:
     """
+    export { foo }
+
     foo : Number -> Number
     foo x = x
     """
@@ -31,6 +33,8 @@ Feature: Library
     """
     And a file named "Bar.ein" with:
     """
+    export { bar }
+
     import "github.com/ein-lang/sample-package/Foo"
 
     bar : Number -> Number

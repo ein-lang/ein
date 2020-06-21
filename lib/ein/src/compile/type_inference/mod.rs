@@ -57,6 +57,7 @@ mod tests {
     use crate::package::Package;
     use crate::path::*;
     use crate::types::{self, Type};
+    use insta::assert_debug_snapshot;
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -739,7 +740,8 @@ mod tests {
             )
             .into()],
         );
-        assert_eq!(infer_types(&module), Ok(module));
+
+        assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
@@ -795,7 +797,8 @@ mod tests {
             )
             .into()],
         );
-        assert_eq!(infer_types(&module), Ok(module));
+
+        assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
@@ -834,7 +837,8 @@ mod tests {
                 .into(),
             ],
         );
-        assert_eq!(infer_types(&module), Ok(module));
+
+        assert_debug_snapshot!(infer_types(&module));
     }
 
     mod if_ {
@@ -1067,7 +1071,7 @@ mod tests {
                 types::Record::new("Foo", Default::default(), SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let module = Module::from_definitions_and_type_definitions(
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
@@ -1080,8 +1084,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
-            );
-            assert_eq!(infer_types(&module), Ok(module));
+            )));
         }
 
         #[test]
@@ -1098,7 +1101,7 @@ mod tests {
             );
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let module = Module::from_definitions_and_type_definitions(
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
@@ -1116,8 +1119,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
-            );
-            assert_eq!(infer_types(&module), Ok(module));
+            )));
         }
 
         #[test]
@@ -1248,7 +1250,7 @@ mod tests {
                 SourceInformation::dummy(),
             );
 
-            let module = Module::from_definitions_and_type_definitions(
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![ValueDefinition::new(
                     "x",
@@ -1268,9 +1270,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
-            );
-
-            assert_eq!(infer_types(&module), Ok(module));
+            )));
         }
     }
 
@@ -1340,39 +1340,30 @@ mod tests {
                 types::Record::new("Foo", Default::default(), SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            let create_module = |type_: Type| {
-                Module::from_definitions_and_type_definitions(
-                    vec![TypeDefinition::new("Foo", record_type.clone())],
-                    vec![ValueDefinition::new(
-                        "x",
-                        Operation::with_type(
-                            type_,
-                            Operator::Equal,
-                            RecordConstruction::new(
-                                reference_type.clone(),
-                                Default::default(),
-                                SourceInformation::dummy(),
-                            ),
-                            RecordConstruction::new(
-                                reference_type.clone(),
-                                Default::default(),
-                                SourceInformation::dummy(),
-                            ),
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        types::Unknown::new(SourceInformation::dummy()),
+                        Operator::Equal,
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            Default::default(),
                             SourceInformation::dummy(),
                         ),
-                        types::Boolean::new(SourceInformation::dummy()),
+                        RecordConstruction::new(
+                            reference_type.clone(),
+                            Default::default(),
+                            SourceInformation::dummy(),
+                        ),
                         SourceInformation::dummy(),
-                    )
-                    .into()],
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 )
-            };
-
-            assert_eq!(
-                infer_types(&create_module(
-                    types::Unknown::new(SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(record_type.clone().into()))
-            );
+                .into()],
+            )));
         }
 
         #[test]
@@ -1544,6 +1535,174 @@ mod tests {
             ]);
 
             assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
+        fn fail_to_infer_case_expressions_with_wrong_argument() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into()
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Case::new(
+                        "z",
+                        Variable::new("x", SourceInformation::dummy()),
+                        vec![
+                            Alternative::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                            ),
+                            Alternative::new(
+                                types::None::new(SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                            )
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+    }
+
+    mod any {
+        use super::*;
+
+        #[test]
+        fn infer_casting_of_non_union_types_to_any_types() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn infer_casting_of_union_types_to_any_types() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy(),),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn infer_any_types_from_any_types() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy(),),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "z",
+                            Variable::new("x", SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn infer_any_types_from_union_of_concrete_type_and_any_type() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy(),),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Let::new(
+                        vec![ValueDefinition::new(
+                            "z",
+                            If::new(
+                                Boolean::new(true, SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                Number::new(42.0, SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        "y",
+                        None::new(SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Any::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )
+                        .into()],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
         }
     }
 }

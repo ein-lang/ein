@@ -35,10 +35,14 @@ impl VariableConstraint {
     }
 
     pub fn to_type(&self) -> Type {
-        types::Union::new(
-            self.lower_types.iter().cloned().collect(),
-            self.source_information.clone(),
-        )
-        .into()
+        if self.lower_types.iter().any(|type_| type_.is_any()) {
+            types::Any::new(self.source_information.clone()).into()
+        } else {
+            types::Union::new(
+                self.lower_types.iter().cloned().collect(),
+                self.source_information.clone(),
+            )
+            .into()
+        }
     }
 }
