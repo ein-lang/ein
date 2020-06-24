@@ -1576,6 +1576,35 @@ mod tests {
                 .into()
             ])));
         }
+
+        #[test]
+        fn simplify_record_type_in_type_definitions() {
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "x",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Union::new(
+                                vec![
+                                    types::Any::new(SourceInformation::dummy()).into(),
+                                    types::None::new(SourceInformation::dummy()).into(),
+                                ],
+                                SourceInformation::dummy(),
+                            )
+                            .into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![],
+            );
+
+            assert_debug_snapshot!(infer_types(&module));
+        }
     }
 
     mod any {

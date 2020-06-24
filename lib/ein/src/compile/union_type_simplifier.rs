@@ -22,7 +22,7 @@ impl UnionTypeSimplifier {
         if let Type::Union(union) = type_ {
             self.simplify_union(&union)
         } else {
-            Ok(type_.clone())
+            Ok(type_)
         }
     }
 
@@ -34,10 +34,12 @@ impl UnionTypeSimplifier {
                 .types()
                 .iter()
                 .map(|type_| {
-                    Ok(match self.simplify(type_)? {
-                        Type::Union(union) => union.types().iter().cloned().collect(),
-                        type_ => vec![type_],
-                    })
+                    Ok(
+                        match type_.convert_types(&mut |type_| self.simplify(type_))? {
+                            Type::Union(union) => union.types().iter().cloned().collect(),
+                            type_ => vec![type_],
+                        },
+                    )
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?
                 .into_iter()
@@ -145,6 +147,43 @@ mod tests {
                 SourceInformation::dummy()
             )),
             Ok(types::Any::new(SourceInformation::dummy()).into())
+        );
+    }
+
+    #[test]
+    fn simplify_union_types_including_any_types_in_record_types() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver);
+
+        assert_eq!(
+            types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::Union::new(
+                        vec![
+                            types::Any::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into()
+                        ],
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            )
+            .convert_types(&mut |type_| union_type_simplifier.simplify(&type_)),
+            Ok(types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::Any::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            ))
         );
     }
 
