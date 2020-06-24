@@ -470,4 +470,41 @@ mod tests {
         )
         .unwrap();
     }
+
+    #[test]
+    fn compile_recursive_type_definition_not_normalized() {
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![
+                            (
+                                "foo".into(),
+                                types::Union::new(
+                                    vec![
+                                        types::Any::new(SourceInformation::dummy()).into(),
+                                        types::None::new(SourceInformation::dummy()).into(),
+                                    ],
+                                    SourceInformation::dummy(),
+                                )
+                                .into(),
+                            ),
+                            (
+                                "bar".into(),
+                                types::Reference::new("Foo", SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![],
+            ),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
 }

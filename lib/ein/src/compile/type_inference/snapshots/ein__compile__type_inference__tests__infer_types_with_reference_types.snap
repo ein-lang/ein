@@ -45,8 +45,9 @@ Ok(
                             },
                         },
                     ),
-                    type_: Number(
-                        Number {
+                    type_: Reference(
+                        Reference {
+                            name: "Foo",
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {

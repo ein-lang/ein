@@ -25,7 +25,10 @@ pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-    let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+    let union_type_simplifier = UnionTypeSimplifier::new(
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+    );
 
     let subsumption_set =
         ConstraintCollector::new(reference_type_resolver.clone()).collect(&module)?;
@@ -1575,6 +1578,35 @@ mod tests {
                 )
                 .into()
             ])));
+        }
+
+        #[test]
+        fn simplify_record_type_in_type_definitions() {
+            let module = Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "x",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Union::new(
+                                vec![
+                                    types::Any::new(SourceInformation::dummy()).into(),
+                                    types::None::new(SourceInformation::dummy()).into(),
+                                ],
+                                SourceInformation::dummy(),
+                            )
+                            .into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![],
+            );
+
+            assert_debug_snapshot!(infer_types(&module));
         }
     }
 

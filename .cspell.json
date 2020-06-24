@@ -8,6 +8,7 @@
     "bitcast",
     "bitcode",
     "canonicalize",
+    "canonicalized",
     "canonicalizer",
     "clippy",
     "codecov",

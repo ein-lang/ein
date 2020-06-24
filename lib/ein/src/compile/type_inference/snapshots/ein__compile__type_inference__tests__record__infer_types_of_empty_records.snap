@@ -36,10 +36,9 @@ Ok(
                     name: "x",
                     body: RecordConstruction(
                         RecordConstruction {
-                            type_: Record(
-                                Record {
+                            type_: Reference(
+                                Reference {
                                     name: "Foo",
-                                    elements: {},
                                     source_information: SourceInformation {
                                         source_name: "",
                                         location: Location {
@@ -61,10 +60,9 @@ Ok(
                             },
                         },
                     ),
-                    type_: Record(
-                        Record {
+                    type_: Reference(
+                        Reference {
                             name: "Foo",
-                            elements: {},
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {
