@@ -25,7 +25,10 @@ pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-    let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+    let union_type_simplifier = UnionTypeSimplifier::new(
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+    );
 
     let subsumption_set =
         ConstraintCollector::new(reference_type_resolver.clone()).collect(&module)?;

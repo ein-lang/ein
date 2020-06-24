@@ -49,23 +49,9 @@ Ok(
                     name: "x",
                     body: RecordElementOperation(
                         RecordElementOperation {
-                            type_: Record(
-                                Record {
+                            type_: Reference(
+                                Reference {
                                     name: "Foo",
-                                    elements: {
-                                        "foo": None(
-                                            None {
-                                                source_information: SourceInformation {
-                                                    source_name: "",
-                                                    location: Location {
-                                                        line_number: 0,
-                                                        column_number: 0,
-                                                    },
-                                                    line: "",
-                                                },
-                                            },
-                                        ),
-                                    },
                                     source_information: SourceInformation {
                                         source_name: "",
                                         location: Location {
@@ -79,23 +65,9 @@ Ok(
                             key: "foo",
                             argument: RecordConstruction(
                                 RecordConstruction {
-                                    type_: Record(
-                                        Record {
+                                    type_: Reference(
+                                        Reference {
                                             name: "Foo",
-                                            elements: {
-                                                "foo": None(
-                                                    None {
-                                                        source_information: SourceInformation {
-                                                            source_name: "",
-                                                            location: Location {
-                                                                line_number: 0,
-                                                                column_number: 0,
-                                                            },
-                                                            line: "",
-                                                        },
-                                                    },
-                                                ),
-                                            },
                                             source_information: SourceInformation {
                                                 source_name: "",
                                                 location: Location {

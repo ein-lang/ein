@@ -121,13 +121,18 @@ impl ExpressionTypeExtractor {
 #[cfg(test)]
 mod tests {
     use super::super::reference_type_resolver::ReferenceTypeResolver;
+    use super::super::type_equality_checker::TypeEqualityChecker;
     use super::*;
     use crate::debug::SourceInformation;
 
     #[test]
     fn extract_type_of_case_expression() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_type_simplifier = UnionTypeSimplifier::new(reference_type_resolver.clone());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let union_type_simplifier = UnionTypeSimplifier::new(
+            reference_type_resolver.clone(),
+            type_equality_checker.clone(),
+        );
 
         assert_eq!(
             ExpressionTypeExtractor::new(reference_type_resolver, union_type_simplifier).extract(

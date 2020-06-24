@@ -16,33 +16,9 @@ Ok(
                 name: "Foo",
                 type_: Function(
                     Function {
-                        argument: Function(
-                            Function {
-                                argument: Reference(
-                                    Reference {
-                                        name: "Foo",
-                                        source_information: SourceInformation {
-                                            source_name: "",
-                                            location: Location {
-                                                line_number: 0,
-                                                column_number: 0,
-                                            },
-                                            line: "",
-                                        },
-                                    },
-                                ),
-                                result: Number(
-                                    Number {
-                                        source_information: SourceInformation {
-                                            source_name: "",
-                                            location: Location {
-                                                line_number: 0,
-                                                column_number: 0,
-                                            },
-                                            line: "",
-                                        },
-                                    },
-                                ),
+                        argument: Reference(
+                            Reference {
+                                name: "Foo",
                                 source_information: SourceInformation {
                                     source_name: "",
                                     location: Location {
@@ -97,33 +73,9 @@ Ok(
                             },
                         },
                     ),
-                    type_: Function(
-                        Function {
-                            argument: Reference(
-                                Reference {
-                                    name: "Foo",
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
-                                        },
-                                        line: "",
-                                    },
-                                },
-                            ),
-                            result: Number(
-                                Number {
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
-                                        },
-                                        line: "",
-                                    },
-                                },
-                            ),
+                    type_: Reference(
+                        Reference {
+                            name: "Foo",
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {
