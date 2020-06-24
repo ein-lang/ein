@@ -473,8 +473,6 @@ mod tests {
 
     #[test]
     fn compile_recursive_type_definition_not_normalized() {
-        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
-
         compile(
             &Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
@@ -493,7 +491,10 @@ mod tests {
                                 )
                                 .into(),
                             ),
-                            ("bar".into(), reference_type.into()),
+                            (
+                                "bar".into(),
+                                types::Reference::new("Foo", SourceInformation::dummy()).into(),
+                            ),
                         ]
                         .into_iter()
                         .collect(),
