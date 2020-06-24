@@ -31,19 +31,7 @@ impl UnionTypeSimplifier {
 
     // This function assumes that contained types are canonicalized already.
     pub fn simplify_union(&self, union: &types::Union) -> Result<Type, CompileError> {
-        let all_types = union
-            .types()
-            .iter()
-            .map(|type_| {
-                Ok(match self.reference_type_resolver.resolve(type_)? {
-                    Type::Union(union) => union.types().iter().cloned().collect(),
-                    type_ => vec![type_],
-                })
-            })
-            .collect::<Result<Vec<_>, CompileError>>()?
-            .into_iter()
-            .flatten()
-            .collect::<Vec<_>>();
+        let all_types = self.get_member_types(union)?;
 
         if let Some(type_) = all_types.iter().find(|type_| type_.is_any()) {
             Ok(type_.clone())
@@ -66,6 +54,22 @@ impl UnionTypeSimplifier {
                 _ => types::Union::new(types, union.source_information().clone()).into(),
             })
         }
+    }
+
+    fn get_member_types(&self, union: &types::Union) -> Result<Vec<Type>, CompileError> {
+        Ok(union
+            .types()
+            .iter()
+            .map(|type_| {
+                Ok(match self.reference_type_resolver.resolve(type_)? {
+                    Type::Union(union) => self.get_member_types(&union)?,
+                    type_ => vec![type_],
+                })
+            })
+            .collect::<Result<Vec<_>, CompileError>>()?
+            .into_iter()
+            .flatten()
+            .collect())
     }
 }
 
@@ -124,32 +128,30 @@ mod tests {
     fn simplify_deeply_nested_union_types() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let union_type_simplifier =
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker);
 
         assert_eq!(
-            Type::Union(types::Union::new(
-                vec![
-                    types::Union::new(
-                        vec![
-                            types::Union::new(
-                                vec![
-                                    types::None::new(SourceInformation::dummy()).into(),
-                                    types::None::new(SourceInformation::dummy()).into()
-                                ],
-                                SourceInformation::dummy()
-                            )
-                            .into(),
-                            types::None::new(SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    )
-                    .into(),
-                    types::None::new(SourceInformation::dummy()).into()
-                ],
-                SourceInformation::dummy()
-            ))
-            .convert_types(&mut |type_| union_type_simplifier.simplify(type_)),
+            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
+                .simplify_union(&types::Union::new(
+                    vec![
+                        types::Union::new(
+                            vec![
+                                types::Union::new(
+                                    vec![
+                                        types::None::new(SourceInformation::dummy()).into(),
+                                        types::None::new(SourceInformation::dummy()).into()
+                                    ],
+                                    SourceInformation::dummy()
+                                )
+                                .into(),
+                                types::None::new(SourceInformation::dummy()).into()
+                            ],
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        types::None::new(SourceInformation::dummy()).into()
+                    ],
+                    SourceInformation::dummy()
+                )),
             Ok(types::None::new(SourceInformation::dummy()).into())
         );
     }
@@ -176,28 +178,28 @@ mod tests {
     fn simplify_union_types_including_any_types_in_record_types() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let union_type_simplifier =
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker);
 
         assert_eq!(
-            types::Record::new(
-                "Foo",
-                vec![(
-                    "foo".into(),
-                    types::Union::new(
-                        vec![
-                            types::Any::new(SourceInformation::dummy()).into(),
-                            types::None::new(SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    )
-                    .into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-            .convert_types(&mut |type_| union_type_simplifier.simplify(&type_)),
+            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker).simplify(
+                &types::Record::new(
+                    "Foo",
+                    vec![(
+                        "foo".into(),
+                        types::Union::new(
+                            vec![
+                                types::Any::new(SourceInformation::dummy()).into(),
+                                types::None::new(SourceInformation::dummy()).into()
+                            ],
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy()
+                )
+                .into()
+            ),
             Ok(types::Record::new(
                 "Foo",
                 vec![(
@@ -207,7 +209,8 @@ mod tests {
                 .into_iter()
                 .collect(),
                 SourceInformation::dummy()
-            ))
+            )
+            .into())
         );
     }
 
@@ -258,19 +261,17 @@ mod tests {
                 vec![],
             ));
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let union_type_simplifier =
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker);
 
         assert_eq!(
-            Type::Union(types::Union::new(
-                vec![
-                    types::Reference::new("Foo", SourceInformation::dummy()).into(),
-                    types::Boolean::new(SourceInformation::dummy()).into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ],
-                SourceInformation::dummy(),
-            ))
-            .convert_types(&mut |type_| union_type_simplifier.simplify(type_)),
+            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
+                .simplify_union(&types::Union::new(
+                    vec![
+                        types::Reference::new("Foo", SourceInformation::dummy()).into(),
+                        types::Boolean::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy(),
+                )),
             Ok(types::Union::new(
                 vec![
                     types::Boolean::new(SourceInformation::dummy()).into(),
