@@ -63,7 +63,8 @@ impl UnionTypeSimplifier {
             .map(|type_| {
                 Ok(match self.reference_type_resolver.resolve(type_)? {
                     Type::Union(union) => self.get_member_types(&union)?,
-                    type_ => vec![type_],
+                    // Do not use resolved types because they are not simplified yet.
+                    _ => vec![type_.clone()],
                 })
             })
             .collect::<Result<Vec<_>, CompileError>>()?
@@ -275,6 +276,38 @@ mod tests {
             Ok(types::Union::new(
                 vec![
                     types::Boolean::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
+                SourceInformation::dummy(),
+            )
+            .into())
+        );
+    }
+
+    #[test]
+    fn simplify_union_type_not_resolving_reference_types() {
+        let reference_type_resolver =
+            ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Boolean::new(SourceInformation::dummy()),
+                )],
+                vec![],
+            ));
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+
+        assert_eq!(
+            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
+                .simplify_union(&types::Union::new(
+                    vec![
+                        types::Reference::new("Foo", SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy(),
+                )),
+            Ok(types::Union::new(
+                vec![
+                    types::Reference::new("Foo", SourceInformation::dummy()).into(),
                     types::None::new(SourceInformation::dummy()).into(),
                 ],
                 SourceInformation::dummy(),
