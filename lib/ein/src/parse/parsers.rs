@@ -18,13 +18,17 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "Any", "Boolean", "case", "else", "export", "False", "if", "import", "in", "let", "None",
-    "Number", "then", "True", "type",
+    "case", "else", "export", "if", "import", "in", "let", "then", "type",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
 lazy_static! {
+    static ref RESERVED_IDENTIFIERS: Vec<&'static str> = KEYWORDS
+        .iter()
+        .cloned()
+        .chain(vec!["Any", "Boolean", "False", "None", "Number", "True"])
+        .collect();
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
 }
@@ -433,6 +437,7 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
 fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str> {
     choice!(
         newlines1(),
+        sign(","),
         sign(")"),
         operator().with(value(())),
         any_keyword(),
@@ -609,7 +614,10 @@ fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 
 fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
     unchecked_identifier().then(|identifier| {
-        if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
+        if RESERVED_IDENTIFIERS
+            .iter()
+            .any(|keyword| &identifier == keyword)
+        {
             unexpected_any("keyword").left()
         } else {
             value(identifier).right()
@@ -2046,7 +2054,9 @@ mod tests {
     #[test]
     fn parse_record_construction() {
         assert!(record_construction().parse(stream("f", "")).is_err());
+
         assert!(record_construction().parse(stream("Foo ()", "")).is_err());
+
         assert_eq!(
             record_construction()
                 .parse(stream("Foo ( foo = 42 )", ""))
@@ -2063,6 +2073,7 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+
         assert_eq!(
             record_construction()
                 .parse(stream("Foo ( foo = 42, bar = 42 )", ""))
@@ -2085,9 +2096,11 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+
         assert!(record_construction()
             .parse(stream("Foo ( foo = 42, foo = 42 )", ""))
             .is_err());
+
         assert_eq!(
             application()
                 .parse(stream("foo (Foo ( foo = 42 ))", ""))
@@ -2108,9 +2121,32 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+
         assert!(application()
             .parse(stream("foo Foo ( foo = 42 )", ""))
             .is_err());
+
+        assert_eq!(
+            record_construction()
+                .parse(stream("Foo ( foo = bar\n42, )", ""))
+                .unwrap()
+                .0,
+            RecordConstruction::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                vec![(
+                    "foo".into(),
+                    Application::new(
+                        Variable::new("bar", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            )
+        );
     }
 
     #[test]
