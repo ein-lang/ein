@@ -18,13 +18,17 @@ use std::collections::HashSet;
 use std::rc::Rc;
 
 const KEYWORDS: &[&str] = &[
-    "Any", "Boolean", "case", "else", "export", "False", "if", "import", "in", "let", "None",
-    "Number", "then", "True", "type",
+    "case", "else", "export", "if", "import", "in", "let", "then", "type",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
 lazy_static! {
+    static ref RESERVED_IDENTIFIERS: Vec<&'static str> = KEYWORDS
+        .iter()
+        .cloned()
+        .chain(vec!["Any", "Boolean", "False", "None", "Number", "True"])
+        .collect();
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
 }
@@ -610,7 +614,10 @@ fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 
 fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
     unchecked_identifier().then(|identifier| {
-        if KEYWORDS.iter().any(|keyword| &identifier == keyword) {
+        if RESERVED_IDENTIFIERS
+            .iter()
+            .any(|keyword| &identifier == keyword)
+        {
             unexpected_any("keyword").left()
         } else {
             value(identifier).right()
