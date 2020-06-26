@@ -4,11 +4,11 @@ use crate::debug::SourceInformation;
 pub fn reduce_operations(
     lhs: Expression,
     pairs: &[(Operator, Expression, SourceInformation)],
-) -> Operation {
+) -> Expression {
     match pairs {
-        [] => unreachable!(),
+        [] => lhs,
         [(operator, rhs, source_information)] => {
-            Operation::new(*operator, lhs, rhs.clone(), source_information.clone())
+            Operation::new(*operator, lhs, rhs.clone(), source_information.clone()).into()
         }
         [(operator, rhs, source_information), (next_operator, _, _), ..] => {
             if operator_priority(*operator) >= operator_priority(*next_operator) {
@@ -23,6 +23,7 @@ pub fn reduce_operations(
                     reduce_operations(rhs.clone(), &pairs[1..]),
                     source_information.clone(),
                 )
+                .into()
             }
         }
     }
