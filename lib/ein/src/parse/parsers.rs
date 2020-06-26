@@ -2046,7 +2046,9 @@ mod tests {
     #[test]
     fn parse_record_construction() {
         assert!(record_construction().parse(stream("f", "")).is_err());
+
         assert!(record_construction().parse(stream("Foo ()", "")).is_err());
+
         assert_eq!(
             record_construction()
                 .parse(stream("Foo ( foo = 42 )", ""))
@@ -2063,6 +2065,7 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+
         assert_eq!(
             record_construction()
                 .parse(stream("Foo ( foo = 42, bar = 42 )", ""))
@@ -2085,9 +2088,11 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+
         assert!(record_construction()
             .parse(stream("Foo ( foo = 42, foo = 42 )", ""))
             .is_err());
+
         assert_eq!(
             application()
                 .parse(stream("foo (Foo ( foo = 42 ))", ""))
@@ -2108,6 +2113,7 @@ mod tests {
                 SourceInformation::dummy()
             )
         );
+
         assert!(application()
             .parse(stream("foo Foo ( foo = 42 )", ""))
             .is_err());
