@@ -333,7 +333,7 @@ fn reference_type<'a>() -> impl Parser<Stream<'a>, Output = types::Reference> {
 }
 
 fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
-    lazy(|| no_partial(choice!(operation().map(Expression::from), term())))
+    lazy(|| no_partial(operation_or_term()))
         .boxed()
         .expected("expression")
 }
@@ -397,40 +397,32 @@ fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
         .expected("let expression")
 }
 
-fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
+fn application_or_atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     (
         source_information(),
         atomic_expression(),
-        many1((
+        many((
             many(atomic_expression().skip(not_followed_by(application_terminator()))),
             atomic_expression().skip(look_ahead(application_terminator())),
         )),
     )
-        .map(
-            |(source_information, function, mut argument_sets): (
-                _,
-                _,
-                Vec<(Vec<Expression>, _)>,
-            )| {
-                let source_information = Rc::new(source_information);
-                let mut all_arguments = vec![];
+        .map(|(source_information, function, argument_sets)| {
+            let source_information = Rc::new(source_information);
+            let argument_sets: Vec<(Vec<Expression>, _)> = argument_sets;
 
-                for (mut arguments, argument) in argument_sets.drain(..) {
-                    all_arguments.extend(arguments.drain(..));
-                    all_arguments.push(argument);
-                }
+            let mut all_arguments = vec![];
 
-                let mut drain = all_arguments.drain(..);
-                let first_argument = drain.next().unwrap();
+            for (arguments, argument) in argument_sets {
+                all_arguments.extend(arguments);
+                all_arguments.push(argument);
+            }
 
-                drain.fold(
-                    Application::new(function, first_argument, source_information.clone()),
-                    |application, argument| {
-                        Application::new(application, argument, source_information.clone())
-                    },
-                )
-            },
-        )
+            all_arguments
+                .into_iter()
+                .fold(function, |application, argument| {
+                    Application::new(application, argument, source_information.clone()).into()
+                })
+        })
         .expected("application")
 }
 
@@ -515,20 +507,19 @@ fn record_update<'a>() -> impl Parser<Stream<'a>, Output = RecordUpdate> {
 
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice!(
-        application().map(Expression::from),
         record_construction().map(Expression::from),
         record_update().map(Expression::from),
+        application_or_atomic_expression(),
         if_().map(Expression::from),
         case().map(Expression::from),
         let_().map(Expression::from),
-        atomic_expression(),
     )
 }
 
-fn operation<'a>() -> impl Parser<Stream<'a>, Output = Operation> {
+fn operation_or_term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     (
         term(),
-        many1((source_information(), operator(), term()).map(
+        many((source_information(), operator(), term()).map(
             |(source_information, operator, expression)| (operator, expression, source_information),
         )),
     )
@@ -1413,14 +1404,16 @@ mod tests {
         );
     }
 
-    // TODO Fix performance and enable this test.
-    // #[test]
-    // fn parse_deeply_nested_expression() {
-    //     assert_eq!(
-    //         expression().parse(stream("((((((42))))))", "")).unwrap().0,
-    //         Number::new(42.0, SourceInformation::dummy()).into()
-    //     )
-    // }
+    #[test]
+    fn parse_deeply_nested_expression() {
+        assert_eq!(
+            expression()
+                .parse(stream("((((((((((((((42))))))))))))))", ""))
+                .unwrap()
+                .0,
+            Number::new(42.0, SourceInformation::dummy()).into()
+        )
+    }
 
     #[test]
     fn parse_atomic_expression() {
@@ -1779,25 +1772,26 @@ mod tests {
 
     #[test]
     fn parse_application() {
-        assert!(application().parse(stream("f", "")).is_err());
         assert_eq!(
-            application().parse(stream("f 1", "")).unwrap().0,
+            expression().parse(stream("f 1", "")).unwrap().0,
             Application::new(
                 Variable::new("f", SourceInformation::dummy()),
                 Number::new(1.0, SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
+            .into()
         );
         assert_eq!(
-            application().parse(stream("f x", "")).unwrap().0,
+            expression().parse(stream("f x", "")).unwrap().0,
             Application::new(
                 Variable::new("f", SourceInformation::dummy()),
                 Variable::new("x", SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
+            .into()
         );
         assert_eq!(
-            application().parse(stream("f 1 2", "")).unwrap().0,
+            expression().parse(stream("f 1 2", "")).unwrap().0,
             Application::new(
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),
@@ -1807,9 +1801,10 @@ mod tests {
                 Number::new(2.0, SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
+            .into()
         );
         assert_eq!(
-            application()
+            expression()
                 .parse(stream(
                     indoc!(
                         "
@@ -1826,9 +1821,10 @@ mod tests {
                 Variable::new("x", SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
+            .into()
         );
         assert_eq!(
-            application()
+            expression()
                 .parse(stream(
                     indoc!(
                         "
@@ -1845,9 +1841,10 @@ mod tests {
                 Variable::new("x", SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
+            .into()
         );
         assert_eq!(
-            application()
+            expression()
                 .parse(stream(
                     indoc!(
                         "
@@ -1864,9 +1861,10 @@ mod tests {
                 Variable::new("x", SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
+            .into()
         );
         assert_eq!(
-            application()
+            expression()
                 .parse(stream(
                     indoc!(
                         "
@@ -1883,6 +1881,7 @@ mod tests {
                 Variable::new("x", SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
+            .into()
         );
     }
 
@@ -1895,8 +1894,6 @@ mod tests {
 
     #[test]
     fn parse_operation() {
-        assert!(application().parse(stream("1", "")).is_err());
-
         for (source, target) in vec![
             (
                 "1 + 1",
@@ -2047,7 +2044,10 @@ mod tests {
                 ),
             ),
         ] {
-            assert_eq!(operation().parse(stream(source, "")).unwrap().0, target);
+            assert_eq!(
+                expression().parse(stream(source, "")).unwrap().0,
+                target.into()
+            );
         }
     }
 
@@ -2102,7 +2102,7 @@ mod tests {
             .is_err());
 
         assert_eq!(
-            application()
+            expression()
                 .parse(stream("foo (Foo ( foo = 42 ))", ""))
                 .unwrap()
                 .0,
@@ -2120,11 +2120,16 @@ mod tests {
                 ),
                 SourceInformation::dummy()
             )
+            .into()
         );
 
-        assert!(application()
-            .parse(stream("foo Foo ( foo = 42 )", ""))
-            .is_err());
+        assert_eq!(
+            expression()
+                .parse(stream("foo Foo ( foo = 42 )", ""))
+                .unwrap()
+                .0,
+            Variable::new("foo", SourceInformation::dummy()).into()
+        );
 
         assert_eq!(
             record_construction()
