@@ -433,6 +433,7 @@ fn application<'a>() -> impl Parser<Stream<'a>, Output = Application> {
 fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str> {
     choice!(
         newlines1(),
+        sign(","),
         sign(")"),
         operator().with(value(())),
         any_keyword(),
@@ -2117,6 +2118,28 @@ mod tests {
         assert!(application()
             .parse(stream("foo Foo ( foo = 42 )", ""))
             .is_err());
+
+        assert_eq!(
+            record_construction()
+                .parse(stream("Foo ( foo = bar\n42, )", ""))
+                .unwrap()
+                .0,
+            RecordConstruction::new(
+                types::Reference::new("Foo", SourceInformation::dummy()),
+                vec![(
+                    "foo".into(),
+                    Application::new(
+                        Variable::new("bar", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy()
+            )
+        );
     }
 
     #[test]
