@@ -1,0 +1,63 @@
+export {
+  concatenate,
+  empty,
+  getLength,
+  List,
+  prepend,
+}
+
+type List (
+  node : Node | None,
+)
+
+type Node (
+  first : Any,
+  rest : Node | None,
+)
+
+empty : List
+empty =
+  List (
+    node = None,
+  )
+
+getLength : List -> Number
+getLength list =
+   getLengthFromNode (List.node list)
+
+getLengthFromNode : Node | None -> Number
+getLengthFromNode node =
+  case node = node
+    Node => 1 + getLengthFromNode (Node.rest node)
+    None => 0
+
+prepend : Any -> List -> List
+prepend element list =
+  List ( node = prependToNode element (List.node list) )
+
+prependToNode : Any -> Node | None -> Node
+prependToNode element node =
+  Node (
+    first = element,
+    rest = node,
+  )
+
+concatenate : List -> List -> List
+concatenate one other =
+  List (
+    node = concatenateNodes (List.node one) (List.node other)
+  )
+
+concatenateNodes : Node | None -> Node | None -> Node | None
+concatenateNodes one other =
+  case one = one
+    Node => (
+      case other = other
+        Node =>
+          prependToNode (Node.first one) (concatenateNodes (Node.rest one) other)
+        None => one
+      )
+    None =>
+      case other = other
+        Node => other
+        None => None
