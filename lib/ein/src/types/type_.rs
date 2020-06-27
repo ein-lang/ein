@@ -1,6 +1,7 @@
 use super::any::Any;
 use super::boolean::Boolean;
 use super::function::Function;
+use super::list::List;
 use super::none::None;
 use super::number::Number;
 use super::record::Record;
@@ -18,6 +19,7 @@ pub enum Type {
     Any(Any),
     Boolean(Boolean),
     Function(Function),
+    List(List),
     None(None),
     Number(Number),
     Record(Record),
@@ -33,6 +35,7 @@ impl Type {
             Self::Any(any) => any.source_information(),
             Self::Boolean(boolean) => boolean.source_information(),
             Self::Function(function) => function.source_information(),
+            Self::List(list) => list.source_information(),
             Self::None(none) => none.source_information(),
             Self::Number(number) => number.source_information(),
             Self::Record(record) => record.source_information(),
@@ -66,6 +69,7 @@ impl Type {
     ) -> Result<Self, E> {
         let type_ = match self {
             Self::Function(function) => function.convert_types(convert)?.into(),
+            Self::List(list) => list.convert_types(convert)?.into(),
             Self::Record(record) => record.convert_types(convert)?.into(),
             Self::Union(union) => union.convert_types(convert)?.into(),
             Self::Any(_)
@@ -136,6 +140,12 @@ impl From<Boolean> for Type {
 impl From<Function> for Type {
     fn from(function: Function) -> Self {
         Self::Function(function)
+    }
+}
+
+impl From<List> for Type {
+    fn from(list: List) -> Self {
+        Self::List(list)
     }
 }
 

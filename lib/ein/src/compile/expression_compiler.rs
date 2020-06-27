@@ -160,6 +160,7 @@ impl ExpressionCompiler {
                     Type::Any(_) => argument,
                     Type::Boolean(_)
                     | Type::Function(_)
+                    | Type::List(_)
                     | Type::None(_)
                     | Type::Number(_)
                     | Type::Record(_) => {
@@ -321,6 +322,7 @@ impl ExpressionCompiler {
                         match self.reference_type_resolver.resolve(alternative.type_())? {
                             Type::Boolean(_)
                             | Type::Function(_)
+                            | Type::List(_)
                             | Type::None(_)
                             | Type::Number(_)
                             | Type::Record(_) => Ok(vec![ssf::ir::AlgebraicAlternative::new(

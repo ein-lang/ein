@@ -47,6 +47,7 @@ impl ReferenceTypeResolver {
             Type::Any(_)
             | Type::Boolean(_)
             | Type::Function(_)
+            | Type::List(_)
             | Type::None(_)
             | Type::Number(_)
             | Type::Record(_)

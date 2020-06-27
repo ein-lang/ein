@@ -1,6 +1,7 @@
 mod any;
 mod boolean;
 mod function;
+mod list;
 mod none;
 mod number;
 mod record;
@@ -13,6 +14,7 @@ mod variable;
 pub use any::*;
 pub use boolean::*;
 pub use function::*;
+pub use list::*;
 pub use none::*;
 pub use number::*;
 pub use record::*;

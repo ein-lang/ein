@@ -156,6 +156,7 @@ impl EqualOperationDesugarer {
             )
             .into(),
             Type::Function(_) => Boolean::new(false, source_information).into(),
+            Type::List(_) => unimplemented!(),
             Type::None(_) => Boolean::new(true, source_information).into(),
             Type::Number(_) => Operation::with_type(
                 type_.clone(),

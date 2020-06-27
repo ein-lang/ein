@@ -23,6 +23,7 @@ impl UnionTagCalculator {
         Ok(match type_ {
             Type::Boolean(_)
             | Type::Function(_)
+            | Type::List(_)
             | Type::None(_)
             | Type::Number(_)
             | Type::Record(_) => self.convert_type_id_to_tag(&self.calculate_type_id(&type_)?),
@@ -42,6 +43,7 @@ impl UnionTagCalculator {
                 self.calculate_type_id(function.argument())?,
                 self.calculate_type_id(function.result())?
             ),
+            Type::List(list) => format!("[{}]", self.calculate_type_id(list.element())?),
             Type::None(_) => "None".into(),
             Type::Number(_) => "Number".into(),
             Type::Record(record) => record.name().into(),
