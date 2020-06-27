@@ -1,9 +1,9 @@
 export {
-  concatenate,
-  empty,
-  getLength,
+  concatenateLists,
+  emptyList,
+  getListLength,
   List,
-  prepend,
+  prependToList,
 }
 
 type List (
@@ -15,14 +15,14 @@ type Node (
   rest : Node | None,
 )
 
-empty : List
-empty =
+emptyList : List
+emptyList =
   List (
     node = None,
   )
 
-getLength : List -> Number
-getLength list =
+getListLength : List -> Number
+getListLength list =
    getLengthFromNode (List.node list)
 
 getLengthFromNode : Node | None -> Number
@@ -31,8 +31,8 @@ getLengthFromNode node =
     Node => 1 + getLengthFromNode (Node.rest node)
     None => 0
 
-prepend : Any -> List -> List
-prepend element list =
+prependToList : Any -> List -> List
+prependToList element list =
   List ( node = prependToNode element (List.node list) )
 
 prependToNode : Any -> Node | None -> Node
@@ -42,8 +42,8 @@ prependToNode element node =
     rest = node,
   )
 
-concatenate : List -> List -> List
-concatenate one other =
+concatenateLists : List -> List -> List
+concatenateLists one other =
   List (
     node = concatenateNodes (List.node one) (List.node other)
   )
