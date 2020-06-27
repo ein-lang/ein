@@ -286,7 +286,9 @@ impl ConstraintCollector {
                 .get(variable.name())
                 .cloned()
                 .ok_or_else(|| CompileError::VariableNotFound(variable.clone())),
-            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
+            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
+                unreachable!()
+            }
         }
     }
 }

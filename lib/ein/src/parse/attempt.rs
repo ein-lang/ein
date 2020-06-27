@@ -25,6 +25,22 @@ pub fn optional<I: combine::Stream, P: Parser<I>>(
     combine::optional(attempt(p))
 }
 
+pub fn sep_end_by<
+    F: Extend<P::Output> + Default,
+    I: combine::Stream,
+    P: Parser<I>,
+    S: Parser<I>,
+>(
+    p: P,
+    s: S,
+) -> combine::parser::repeat::SepEndBy<
+    F,
+    combine::parser::combinator::Try<P>,
+    combine::parser::combinator::Try<S>,
+> {
+    combine::sep_end_by(attempt(p), attempt(s))
+}
+
 pub fn sep_end_by1<
     F: Extend<P::Output> + Default,
     I: combine::Stream,

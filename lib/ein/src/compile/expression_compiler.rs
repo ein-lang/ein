@@ -202,7 +202,7 @@ impl ExpressionCompiler {
                 }
             }
             Expression::Variable(variable) => ssf::ir::Variable::new(variable.name()).into(),
-            Expression::RecordUpdate(_) => unreachable!(),
+            Expression::List(_) | Expression::RecordUpdate(_) => unreachable!(),
         })
     }
 

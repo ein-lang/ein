@@ -226,7 +226,9 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Variable(_) => expression.clone(),
-            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
+            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
+                unreachable!()
+            }
         };
 
         Ok(self

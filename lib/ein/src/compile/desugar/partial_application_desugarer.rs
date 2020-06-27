@@ -132,6 +132,7 @@ impl PartialApplicationDesugarer {
                 self.apply_arguments(expression, arguments, variable.source_information())
             }
             Expression::Boolean(_)
+            | Expression::List(_)
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Operation(_)

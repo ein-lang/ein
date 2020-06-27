@@ -204,6 +204,21 @@ impl GlobalNameRenamer {
                 )
                 .into()
             }
+            Expression::List(list) => List::new(
+                list.elements()
+                    .iter()
+                    .map(|element| match element {
+                        ListElement::Multiple(expression) => {
+                            ListElement::Multiple(self.rename_expression(expression, &names))
+                        }
+                        ListElement::Single(expression) => {
+                            ListElement::Single(self.rename_expression(expression, &names))
+                        }
+                    })
+                    .collect(),
+                list.source_information().clone(),
+            )
+            .into(),
             Expression::Operation(operation) => Operation::with_type(
                 operation.type_().clone(),
                 operation.operator(),

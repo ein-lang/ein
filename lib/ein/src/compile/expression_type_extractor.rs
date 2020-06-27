@@ -113,7 +113,7 @@ impl ExpressionTypeExtractor {
             }
             Expression::TypeCoercion(coercion) => coercion.to().clone(),
             Expression::Variable(variable) => variables[variable.name()].clone(),
-            Expression::RecordUpdate(_) => unreachable!(),
+            Expression::List(_) | Expression::RecordUpdate(_) => unreachable!(),
         })
     }
 }

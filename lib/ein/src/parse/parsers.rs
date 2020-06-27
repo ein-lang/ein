@@ -1,4 +1,4 @@
-use super::attempt::{many, many1, optional, sep_end_by1};
+use super::attempt::{many, many1, optional, sep_end_by, sep_end_by1};
 use super::utilities;
 use crate::ast::*;
 use crate::debug::*;
@@ -340,6 +340,7 @@ fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 
 fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice!(
+        list_literal().map(Expression::from),
         boolean_literal().map(Expression::from),
         none_literal().map(Expression::from),
         number_literal().map(Expression::from),
@@ -431,6 +432,7 @@ fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str
         newlines1(),
         sign(","),
         sign(")"),
+        sign("]"),
         operator().with(value(())),
         any_keyword(),
     )
@@ -583,6 +585,25 @@ fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
     token((source_information(), from_str(find(regex))))
         .map(|(source_information, number)| Number::new(number, source_information))
         .expected("number literal")
+}
+
+fn list_literal<'a>() -> impl Parser<Stream<'a>, Output = List> {
+    (
+        source_information(),
+        between(sign("["), sign("]"), sep_end_by(list_element(), sign(","))),
+    )
+        .map(|(source_information, elements)| List::new(elements, source_information))
+        .expected("list literal")
+}
+
+fn list_element<'a>() -> impl Parser<Stream<'a>, Output = ListElement> {
+    (optional(sign("...")), expression()).map(|(elipsis, expression)| {
+        if elipsis.is_some() {
+            ListElement::Multiple(expression)
+        } else {
+            ListElement::Single(expression)
+        }
+    })
 }
 
 fn variable<'a>() -> impl Parser<Stream<'a>, Output = Variable> {
@@ -1165,494 +1186,503 @@ mod tests {
         }
     }
 
-    #[test]
-    fn parse_type() {
-        assert!(type_().parse(stream("?", "")).is_err());
-        assert_eq!(
-            type_().parse(stream("Boolean", "")).unwrap().0,
-            types::Boolean::new(SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            type_().parse(stream("None", "")).unwrap().0,
-            types::None::new(SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            type_().parse(stream("Number", "")).unwrap().0,
-            types::Number::new(SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            type_().parse(stream("Number -> Number", "")).unwrap().0,
-            types::Function::new(
-                types::Number::new(SourceInformation::dummy()),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            type_()
-                .parse(stream("Number -> Number -> Number", ""))
-                .unwrap()
-                .0,
-            types::Function::new(
-                types::Number::new(SourceInformation::dummy()),
+    mod types_ {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_type() {
+            assert!(type_().parse(stream("?", "")).is_err());
+            assert_eq!(
+                type_().parse(stream("Boolean", "")).unwrap().0,
+                types::Boolean::new(SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                type_().parse(stream("None", "")).unwrap().0,
+                types::None::new(SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                type_().parse(stream("Number", "")).unwrap().0,
+                types::Number::new(SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                type_().parse(stream("Number -> Number", "")).unwrap().0,
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
-                ),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            type_()
-                .parse(stream("(Number -> Number) -> Number", ""))
-                .unwrap()
-                .0,
-            types::Function::new(
+                )
+                .into()
+            );
+            assert_eq!(
+                type_()
+                    .parse(stream("Number -> Number -> Number", ""))
+                    .unwrap()
+                    .0,
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            type_().parse(stream("Number | None", "")).unwrap().0,
-            types::Union::new(
-                vec![
-                    types::Number::new(SourceInformation::dummy()).into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ],
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            type_()
-                .parse(stream("Boolean | Number | None", ""))
-                .unwrap()
-                .0,
-            types::Union::new(
-                vec![
-                    types::Boolean::new(SourceInformation::dummy()).into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ],
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            type_()
-                .parse(stream("Number -> Number | None", ""))
-                .unwrap()
-                .0,
-            types::Function::new(
-                types::Number::new(SourceInformation::dummy()),
-                types::Union::new(
-                    vec![
-                        types::Number::new(SourceInformation::dummy()).into(),
-                        types::None::new(SourceInformation::dummy()).into(),
-                    ],
-                    SourceInformation::dummy()
-                ),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            type_()
-                .parse(stream("Number | None -> Number", ""))
-                .unwrap()
-                .0,
-            types::Function::new(
-                types::Union::new(
-                    vec![
-                        types::Number::new(SourceInformation::dummy()).into(),
-                        types::None::new(SourceInformation::dummy()).into(),
-                    ],
-                    SourceInformation::dummy()
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            type_()
-                .parse(stream("(Number -> Number) | None", ""))
-                .unwrap()
-                .0,
-            types::Union::new(
-                vec![
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ],
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-    }
-
-    #[test]
-    fn parse_any_type() {
-        assert_eq!(
-            any_type().parse(stream("Any", "")).unwrap().0,
-            types::Any::new(SourceInformation::dummy()).into()
-        );
-    }
-
-    #[test]
-    fn parse_reference_type() {
-        assert!(type_().parse(stream("", "")).is_err());
-        assert_eq!(
-            type_().parse(stream("Foo", "")).unwrap().0,
-            types::Reference::new("Foo", SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            type_().parse(stream("Foo.Bar", "")).unwrap().0,
-            types::Reference::new("Foo.Bar", SourceInformation::dummy()).into()
-        );
-    }
-
-    #[test]
-    fn parse_expression() {
-        assert!(expression().parse(stream("?", "")).is_err());
-        assert!(expression()
-            .skip(eof())
-            .parse(stream("Foo () foo", ""))
-            .is_err());
-        assert!(expression()
-            .skip(eof())
-            .parse(stream("Foo ( foo = 42 ) foo", ""))
-            .is_err());
-        assert_eq!(
-            expression().parse(stream("1", "")).unwrap().0,
-            Number::new(1.0, SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            expression().parse(stream("x", "")).unwrap().0,
-            Variable::new("x", SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            expression().parse(stream("x + 1", "")).unwrap().0,
-            Operation::new(
-                Operator::Add,
-                Variable::new("x", SourceInformation::dummy()),
-                Number::new(1.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression().parse(stream("x + y z", "")).unwrap().0,
-            Operation::new(
-                Operator::Add,
-                Variable::new("x", SourceInformation::dummy()),
-                Application::new(
-                    Variable::new("y", SourceInformation::dummy()),
-                    Variable::new("z", SourceInformation::dummy()),
+                    ),
                     SourceInformation::dummy()
-                ),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression().parse(stream("(x + y) z", "")).unwrap().0,
-            Application::new(
+                )
+                .into()
+            );
+            assert_eq!(
+                type_()
+                    .parse(stream("(Number -> Number) -> Number", ""))
+                    .unwrap()
+                    .0,
+                types::Function::new(
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                type_().parse(stream("Number | None", "")).unwrap().0,
+                types::Union::new(
+                    vec![
+                        types::Number::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                type_()
+                    .parse(stream("Boolean | Number | None", ""))
+                    .unwrap()
+                    .0,
+                types::Union::new(
+                    vec![
+                        types::Boolean::new(SourceInformation::dummy()).into(),
+                        types::Number::new(SourceInformation::dummy()).into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                type_()
+                    .parse(stream("Number -> Number | None", ""))
+                    .unwrap()
+                    .0,
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Number::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                type_()
+                    .parse(stream("Number | None -> Number", ""))
+                    .unwrap()
+                    .0,
+                types::Function::new(
+                    types::Union::new(
+                        vec![
+                            types::Number::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                type_()
+                    .parse(stream("(Number -> Number) | None", ""))
+                    .unwrap()
+                    .0,
+                types::Union::new(
+                    vec![
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        types::None::new(SourceInformation::dummy()).into(),
+                    ],
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+        }
+
+        #[test]
+        fn parse_any_type() {
+            assert_eq!(
+                any_type().parse(stream("Any", "")).unwrap().0,
+                types::Any::new(SourceInformation::dummy()).into()
+            );
+        }
+
+        #[test]
+        fn parse_reference_type() {
+            assert!(type_().parse(stream("", "")).is_err());
+            assert_eq!(
+                type_().parse(stream("Foo", "")).unwrap().0,
+                types::Reference::new("Foo", SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                type_().parse(stream("Foo.Bar", "")).unwrap().0,
+                types::Reference::new("Foo.Bar", SourceInformation::dummy()).into()
+            );
+        }
+    }
+
+    mod expressions {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn parse_expression() {
+            assert!(expression().parse(stream("?", "")).is_err());
+            assert!(expression()
+                .skip(eof())
+                .parse(stream("Foo () foo", ""))
+                .is_err());
+            assert!(expression()
+                .skip(eof())
+                .parse(stream("Foo ( foo = 42 ) foo", ""))
+                .is_err());
+            assert_eq!(
+                expression().parse(stream("1", "")).unwrap().0,
+                Number::new(1.0, SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                expression().parse(stream("x", "")).unwrap().0,
+                Variable::new("x", SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                expression().parse(stream("x + 1", "")).unwrap().0,
                 Operation::new(
                     Operator::Add,
                     Variable::new("x", SourceInformation::dummy()),
-                    Variable::new("y", SourceInformation::dummy()),
+                    Number::new(1.0, SourceInformation::dummy()),
                     SourceInformation::dummy()
-                ),
-                Variable::new("z", SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression()
-                .parse(stream(
-                    indoc!(
-                        "
+                )
+                .into()
+            );
+            assert_eq!(
+                expression().parse(stream("x + y z", "")).unwrap().0,
+                Operation::new(
+                    Operator::Add,
+                    Variable::new("x", SourceInformation::dummy()),
+                    Application::new(
+                        Variable::new("y", SourceInformation::dummy()),
+                        Variable::new("z", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                expression().parse(stream("(x + y) z", "")).unwrap().0,
+                Application::new(
+                    Operation::new(
+                        Operator::Add,
+                        Variable::new("x", SourceInformation::dummy()),
+                        Variable::new("y", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    Variable::new("z", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                expression()
+                    .parse(stream(
+                        indoc!(
+                            "
                         (f x
                          )
                         "
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+        }
+
+        #[test]
+        fn parse_deeply_nested_expression() {
+            assert_eq!(
+                expression()
+                    .parse(stream("((((((((((((((42))))))))))))))", ""))
+                    .unwrap()
+                    .0,
+                Number::new(42.0, SourceInformation::dummy()).into()
+            )
+        }
+
+        #[test]
+        fn parse_atomic_expression() {
+            assert!(atomic_expression().parse(stream("?", "")).is_err());
+            assert_eq!(
+                atomic_expression().parse(stream("1", "")).unwrap().0,
+                Number::new(1.0, SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                atomic_expression().parse(stream("x", "")).unwrap().0,
+                Variable::new("x", SourceInformation::dummy()).into()
+            );
+            assert_eq!(
+                atomic_expression().parse(stream(" x", "")).unwrap().0,
+                Variable::new("x", SourceInformation::dummy()).into()
+            );
+        }
+
+        #[test]
+        fn parse_if() {
+            assert_eq!(
+                if_()
+                    .parse(stream("if True then 42 else 13", ""))
+                    .unwrap()
+                    .0,
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(13.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+            );
+            assert_eq!(
+                if_()
+                    .parse(stream(
+                        "if if True then False else True then 42 else 13",
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                If::new(
+                    If::new(
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Boolean::new(false, SourceInformation::dummy()),
+                        Boolean::new(true, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Application::new(
-                Variable::new("f", SourceInformation::dummy()),
-                Variable::new("x", SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-    }
-
-    #[test]
-    fn parse_deeply_nested_expression() {
-        assert_eq!(
-            expression()
-                .parse(stream("((((((((((((((42))))))))))))))", ""))
-                .unwrap()
-                .0,
-            Number::new(42.0, SourceInformation::dummy()).into()
-        )
-    }
-
-    #[test]
-    fn parse_atomic_expression() {
-        assert!(atomic_expression().parse(stream("?", "")).is_err());
-        assert_eq!(
-            atomic_expression().parse(stream("1", "")).unwrap().0,
-            Number::new(1.0, SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            atomic_expression().parse(stream("x", "")).unwrap().0,
-            Variable::new("x", SourceInformation::dummy()).into()
-        );
-        assert_eq!(
-            atomic_expression().parse(stream(" x", "")).unwrap().0,
-            Variable::new("x", SourceInformation::dummy()).into()
-        );
-    }
-
-    #[test]
-    fn parse_if() {
-        assert_eq!(
-            if_()
-                .parse(stream("if True then 42 else 13", ""))
-                .unwrap()
-                .0,
-            If::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                Number::new(42.0, SourceInformation::dummy()),
-                Number::new(13.0, SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            if_()
-                .parse(stream(
-                    "if if True then False else True then 42 else 13",
-                    ""
-                ))
-                .unwrap()
-                .0,
-            If::new(
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(13.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+            );
+            assert_eq!(
+                if_()
+                    .parse(stream("if True then if False then 1 else 2 else 3", ""))
+                    .unwrap()
+                    .0,
                 If::new(
                     Boolean::new(true, SourceInformation::dummy()),
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-                Number::new(42.0, SourceInformation::dummy()),
-                Number::new(13.0, SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            if_()
-                .parse(stream("if True then if False then 1 else 2 else 3", ""))
-                .unwrap()
-                .0,
-            If::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                If::new(
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(2.0, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-                Number::new(3.0, SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            if_()
-                .parse(stream("if True then 1 else if False then 2 else 3", ""))
-                .unwrap()
-                .0,
-            If::new(
-                Boolean::new(true, SourceInformation::dummy()),
-                Number::new(1.0, SourceInformation::dummy()),
-                If::new(
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Number::new(2.0, SourceInformation::dummy()),
+                    If::new(
+                        Boolean::new(false, SourceInformation::dummy()),
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Number::new(2.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
                     Number::new(3.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                ),
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            if_()
-                .parse(stream("if x < 0 then 42 else 13", ""))
-                .unwrap()
-                .0,
-            If::new(
-                Operation::new(
-                    Operator::LessThan,
-                    Variable::new("x", SourceInformation::dummy()),
-                    Number::new(0.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                ),
-                Number::new(42.0, SourceInformation::dummy()),
-                Number::new(13.0, SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-        );
-    }
+                )
+            );
+            assert_eq!(
+                if_()
+                    .parse(stream("if True then 1 else if False then 2 else 3", ""))
+                    .unwrap()
+                    .0,
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Number::new(1.0, SourceInformation::dummy()),
+                    If::new(
+                        Boolean::new(false, SourceInformation::dummy()),
+                        Number::new(2.0, SourceInformation::dummy()),
+                        Number::new(3.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+            );
+            assert_eq!(
+                if_()
+                    .parse(stream("if x < 0 then 42 else 13", ""))
+                    .unwrap()
+                    .0,
+                If::new(
+                    Operation::new(
+                        Operator::LessThan,
+                        Variable::new("x", SourceInformation::dummy()),
+                        Number::new(0.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(13.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+            );
+        }
 
-    #[test]
-    fn parse_case() {
-        assert_eq!(
-            case()
-                .parse(stream(
-                    indoc!(
-                        "
+        #[test]
+        fn parse_case() {
+            assert_eq!(
+                case()
+                    .parse(stream(
+                        indoc!(
+                            "
                           case foo = True
                             Boolean => foo
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Case::new(
-                "foo",
-                Boolean::new(true, SourceInformation::dummy()),
-                vec![Alternative::new(
-                    types::Boolean::new(SourceInformation::dummy()),
-                    Variable::new("foo", SourceInformation::dummy())
-                )],
-                SourceInformation::dummy(),
-            )
-        );
-        assert_eq!(
-            case()
-                .parse(stream(
-                    indoc!(
-                        "
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Case::new(
+                    "foo",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        Variable::new("foo", SourceInformation::dummy())
+                    )],
+                    SourceInformation::dummy(),
+                )
+            );
+            assert_eq!(
+                case()
+                    .parse(stream(
+                        indoc!(
+                            "
                           case foo = True
                             Boolean => True
                             None => False
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Case::new(
-                "foo",
-                Boolean::new(true, SourceInformation::dummy()),
-                vec![
-                    Alternative::new(
-                        types::Boolean::new(SourceInformation::dummy()),
-                        Boolean::new(true, SourceInformation::dummy())
-                    ),
-                    Alternative::new(
-                        types::None::new(SourceInformation::dummy()),
-                        Boolean::new(false, SourceInformation::dummy())
-                    )
-                ],
-                SourceInformation::dummy()
-            )
-        );
-    }
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Case::new(
+                    "foo",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    vec![
+                        Alternative::new(
+                            types::Boolean::new(SourceInformation::dummy()),
+                            Boolean::new(true, SourceInformation::dummy())
+                        ),
+                        Alternative::new(
+                            types::None::new(SourceInformation::dummy()),
+                            Boolean::new(false, SourceInformation::dummy())
+                        )
+                    ],
+                    SourceInformation::dummy()
+                )
+            );
+        }
 
-    #[test]
-    fn parse_let() {
-        assert!(let_().parse(stream("let in 0", "")).is_err());
-        assert_eq!(
-            let_()
-                .parse(stream("let x : Number\nx = 42 in x", ""))
-                .unwrap()
-                .0,
-            Let::new(
-                vec![ValueDefinition::new(
-                    "x",
-                    Number::new(42.0, SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy()
+        #[test]
+        fn parse_let() {
+            assert!(let_().parse(stream("let in 0", "")).is_err());
+            assert_eq!(
+                let_()
+                    .parse(stream("let x : Number\nx = 42 in x", ""))
+                    .unwrap()
+                    .0,
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()],
+                    Variable::new("x", SourceInformation::dummy())
                 )
-                .into()],
-                Variable::new("x", SourceInformation::dummy())
-            )
-        );
-        assert_eq!(
-            let_().parse(stream("let x = 42 in x", "")).unwrap().0,
-            Let::new(
-                vec![ValueDefinition::new(
-                    "x",
-                    Number::new(42.0, SourceInformation::dummy()),
-                    types::Unknown::new(SourceInformation::dummy()),
-                    SourceInformation::dummy()
+            );
+            assert_eq!(
+                let_().parse(stream("let x = 42 in x", "")).unwrap().0,
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()],
+                    Variable::new("x", SourceInformation::dummy())
                 )
-                .into()],
-                Variable::new("x", SourceInformation::dummy())
-            )
-        );
-        assert_eq!(
-            let_().parse(stream("let\nx = 42 in x", "")).unwrap().0,
-            Let::new(
-                vec![ValueDefinition::new(
-                    "x",
-                    Number::new(42.0, SourceInformation::dummy()),
-                    types::Unknown::new(SourceInformation::dummy()),
-                    SourceInformation::dummy()
+            );
+            assert_eq!(
+                let_().parse(stream("let\nx = 42 in x", "")).unwrap().0,
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()],
+                    Variable::new("x", SourceInformation::dummy())
                 )
-                .into()],
-                Variable::new("x", SourceInformation::dummy())
-            )
-        );
-        assert_eq!(
-            let_().parse(stream("let\n x = 42 in x", "")).unwrap().0,
-            Let::new(
-                vec![ValueDefinition::new(
-                    "x",
-                    Number::new(42.0, SourceInformation::dummy()),
-                    types::Unknown::new(SourceInformation::dummy()),
-                    SourceInformation::dummy()
+            );
+            assert_eq!(
+                let_().parse(stream("let\n x = 42 in x", "")).unwrap().0,
+                Let::new(
+                    vec![ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()],
+                    Variable::new("x", SourceInformation::dummy())
                 )
-                .into()],
-                Variable::new("x", SourceInformation::dummy())
-            )
-        );
-        assert_eq!(
-            let_().parse(stream("let f x = x in f", "")).unwrap().0,
-            Let::new(
-                vec![FunctionDefinition::new(
-                    "f",
-                    vec!["x".into()],
-                    Variable::new("x", SourceInformation::dummy()),
-                    types::Unknown::new(SourceInformation::dummy()),
-                    SourceInformation::dummy()
+            );
+            assert_eq!(
+                let_().parse(stream("let f x = x in f", "")).unwrap().0,
+                Let::new(
+                    vec![FunctionDefinition::new(
+                        "f",
+                        vec!["x".into()],
+                        Variable::new("x", SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()],
+                    Variable::new("f", SourceInformation::dummy())
                 )
-                .into()],
-                Variable::new("f", SourceInformation::dummy())
-            )
-        );
-        assert_eq!(
-            let_()
-                .parse(stream(
-                    indoc!(
-                        "
+            );
+            assert_eq!(
+                let_()
+                    .parse(stream(
+                        indoc!(
+                            "
                         let
                             f x = x
                             y = (
@@ -1661,86 +1691,53 @@ mod tests {
                         in
                             y
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Let::new(
-                vec![
-                    FunctionDefinition::new(
-                        "f",
-                        vec!["x".into()],
-                        Variable::new("x", SourceInformation::dummy()),
-                        types::Unknown::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )
-                    .into(),
-                    ValueDefinition::new(
-                        "y",
-                        Application::new(
-                            Variable::new("f", SourceInformation::dummy()),
-                            Variable::new("x", SourceInformation::dummy()),
-                            SourceInformation::dummy()
                         ),
-                        types::Unknown::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )
-                    .into()
-                ],
-                Variable::new("y", SourceInformation::dummy())
-            )
-        );
-        assert_eq!(
-            let_()
-                .parse(stream(
-                    indoc!(
-                        "
-                        let
-                            f x = g x
-                        in
-                            f
-                        "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Let::new(
-                vec![FunctionDefinition::new(
-                    "f",
-                    vec!["x".into()],
-                    Application::new(
-                        Variable::new("g", SourceInformation::dummy()),
-                        Variable::new("x", SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
-                    types::Unknown::new(SourceInformation::dummy()),
-                    SourceInformation::dummy()
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Let::new(
+                    vec![
+                        FunctionDefinition::new(
+                            "f",
+                            vec!["x".into()],
+                            Variable::new("x", SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        ValueDefinition::new(
+                            "y",
+                            Application::new(
+                                Variable::new("f", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    ],
+                    Variable::new("y", SourceInformation::dummy())
                 )
-                .into(),],
-                Variable::new("f", SourceInformation::dummy())
-            )
-        );
-        assert_eq!(
-            let_()
-                .parse(stream(
-                    indoc!(
-                        "
+            );
+            assert_eq!(
+                let_()
+                    .parse(stream(
+                        indoc!(
+                            "
                         let
                             f x = g x
-                            h x = i x
                         in
                             f
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Let::new(
-                vec![
-                    FunctionDefinition::new(
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Let::new(
+                    vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
                         Application::new(
@@ -1751,363 +1748,350 @@ mod tests {
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
-                    .into(),
-                    FunctionDefinition::new(
-                        "h",
-                        vec!["x".into()],
-                        Application::new(
-                            Variable::new("i", SourceInformation::dummy()),
-                            Variable::new("x", SourceInformation::dummy()),
-                            SourceInformation::dummy()
+                    .into(),],
+                    Variable::new("f", SourceInformation::dummy())
+                )
+            );
+            assert_eq!(
+                let_()
+                    .parse(stream(
+                        indoc!(
+                            "
+                        let
+                            f x = g x
+                            h x = i x
+                        in
+                            f
+                        "
                         ),
-                        types::Unknown::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )
-                    .into()
-                ],
-                Variable::new("f", SourceInformation::dummy())
-            )
-        );
-    }
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Let::new(
+                    vec![
+                        FunctionDefinition::new(
+                            "f",
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("g", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        FunctionDefinition::new(
+                            "h",
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("i", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy()
+                            ),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    ],
+                    Variable::new("f", SourceInformation::dummy())
+                )
+            );
+        }
 
-    #[test]
-    fn parse_application() {
-        assert_eq!(
-            expression().parse(stream("f 1", "")).unwrap().0,
-            Application::new(
-                Variable::new("f", SourceInformation::dummy()),
-                Number::new(1.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression().parse(stream("f x", "")).unwrap().0,
-            Application::new(
-                Variable::new("f", SourceInformation::dummy()),
-                Variable::new("x", SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression().parse(stream("f 1 2", "")).unwrap().0,
-            Application::new(
+        #[test]
+        fn parse_application() {
+            assert_eq!(
+                expression().parse(stream("f 1", "")).unwrap().0,
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
                     SourceInformation::dummy()
-                ),
-                Number::new(2.0, SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression()
-                .parse(stream(
-                    indoc!(
-                        "
+                )
+                .into()
+            );
+            assert_eq!(
+                expression().parse(stream("f x", "")).unwrap().0,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                expression().parse(stream("f 1 2", "")).unwrap().0,
+                Application::new(
+                    Application::new(
+                        Variable::new("f", SourceInformation::dummy()),
+                        Number::new(1.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    Number::new(2.0, SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                expression()
+                    .parse(stream(
+                        indoc!(
+                            "
                         f x
                         g x =
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Application::new(
-                Variable::new("f", SourceInformation::dummy()),
-                Variable::new("x", SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression()
-                .parse(stream(
-                    indoc!(
-                        "
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                expression()
+                    .parse(stream(
+                        indoc!(
+                            "
                         f x
                          g x =
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Application::new(
-                Variable::new("f", SourceInformation::dummy()),
-                Variable::new("x", SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression()
-                .parse(stream(
-                    indoc!(
-                        "
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                expression()
+                    .parse(stream(
+                        indoc!(
+                            "
                         f
                         x)
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Application::new(
-                Variable::new("f", SourceInformation::dummy()),
-                Variable::new("x", SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-        assert_eq!(
-            expression()
-                .parse(stream(
-                    indoc!(
-                        "
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+            assert_eq!(
+                expression()
+                    .parse(stream(
+                        indoc!(
+                            "
                         f
                         x then
                         "
-                    ),
-                    ""
-                ))
-                .unwrap()
-                .0,
-            Application::new(
-                Variable::new("f", SourceInformation::dummy()),
-                Variable::new("x", SourceInformation::dummy()),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-    }
-
-    #[test]
-    fn parse_application_terminator() {
-        for source in &["", "\n", " \n", "\n\n", "+", ")", "\n)", "\n )", "then"] {
-            assert!(application_terminator().parse(stream(source, "")).is_ok());
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
         }
-    }
 
-    #[test]
-    fn parse_operation() {
-        for (source, target) in vec![
-            (
-                "1 + 1",
-                Operation::new(
-                    Operator::Add,
-                    Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(1.0, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-            ),
-            (
-                "1 + 1 then",
-                Operation::new(
-                    Operator::Add,
-                    Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(1.0, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-            ),
-            (
-                "1 + 1 + 1",
-                Operation::new(
-                    Operator::Add,
+        #[test]
+        fn parse_application_terminator() {
+            for source in &["", "\n", " \n", "\n\n", "+", ")", "\n)", "\n )", "then"] {
+                assert!(application_terminator().parse(stream(source, "")).is_ok());
+            }
+        }
+
+        #[test]
+        fn parse_operation() {
+            for (source, target) in vec![
+                (
+                    "1 + 1",
                     Operation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
-                    Number::new(1.0, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
                 ),
-            ),
-            (
-                "1 + (1 + 1)",
-                Operation::new(
-                    Operator::Add,
-                    Number::new(1.0, SourceInformation::dummy()),
+                (
+                    "1 + 1 then",
                     Operation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
-                    SourceInformation::dummy(),
                 ),
-            ),
-            (
-                "1 * 2 - 3",
-                Operation::new(
-                    Operator::Subtract,
+                (
+                    "1 + 1 + 1",
                     Operation::new(
-                        Operator::Multiply,
+                        Operator::Add,
+                        Operation::new(
+                            Operator::Add,
+                            Number::new(1.0, SourceInformation::dummy()),
+                            Number::new(1.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
                         Number::new(1.0, SourceInformation::dummy()),
-                        Number::new(2.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
-                    Number::new(3.0, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
                 ),
-            ),
-            (
-                "1 + 2 * 3",
-                Operation::new(
-                    Operator::Add,
-                    Number::new(1.0, SourceInformation::dummy()),
+                (
+                    "1 + (1 + 1)",
                     Operation::new(
-                        Operator::Multiply,
-                        Number::new(2.0, SourceInformation::dummy()),
+                        Operator::Add,
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Operation::new(
+                            Operator::Add,
+                            Number::new(1.0, SourceInformation::dummy()),
+                            Number::new(1.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "1 * 2 - 3",
+                    Operation::new(
+                        Operator::Subtract,
+                        Operation::new(
+                            Operator::Multiply,
+                            Number::new(1.0, SourceInformation::dummy()),
+                            Number::new(2.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
                         Number::new(3.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
-                    SourceInformation::dummy(),
                 ),
-            ),
-            (
-                "1 * 2 - 3 / 4",
-                Operation::new(
-                    Operator::Subtract,
+                (
+                    "1 + 2 * 3",
                     Operation::new(
-                        Operator::Multiply,
+                        Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
-                        Number::new(2.0, SourceInformation::dummy()),
+                        Operation::new(
+                            Operator::Multiply,
+                            Number::new(2.0, SourceInformation::dummy()),
+                            Number::new(3.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
                         SourceInformation::dummy(),
                     ),
+                ),
+                (
+                    "1 * 2 - 3 / 4",
                     Operation::new(
-                        Operator::Divide,
-                        Number::new(3.0, SourceInformation::dummy()),
-                        Number::new(4.0, SourceInformation::dummy()),
+                        Operator::Subtract,
+                        Operation::new(
+                            Operator::Multiply,
+                            Number::new(1.0, SourceInformation::dummy()),
+                            Number::new(2.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        Operation::new(
+                            Operator::Divide,
+                            Number::new(3.0, SourceInformation::dummy()),
+                            Number::new(4.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
                         SourceInformation::dummy(),
                     ),
-                    SourceInformation::dummy(),
                 ),
-            ),
-            (
-                "1 == 1",
-                Operation::new(
-                    Operator::Equal,
-                    Number::new(1.0, SourceInformation::dummy()),
-                    Number::new(1.0, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-            ),
-            (
-                "True && True",
-                Operation::new(
-                    Operator::And,
-                    Boolean::new(true, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-            ),
-            (
-                "True || True",
-                Operation::new(
-                    Operator::Or,
-                    Boolean::new(true, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-            ),
-            (
-                "True && 1 < 2",
-                Operation::new(
-                    Operator::And,
-                    Boolean::new(true, SourceInformation::dummy()),
+                (
+                    "1 == 1",
                     Operation::new(
-                        Operator::LessThan,
+                        Operator::Equal,
                         Number::new(1.0, SourceInformation::dummy()),
-                        Number::new(2.0, SourceInformation::dummy()),
+                        Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
-                    SourceInformation::dummy(),
                 ),
-            ),
-            (
-                "True || True && True",
-                Operation::new(
-                    Operator::Or,
-                    Boolean::new(true, SourceInformation::dummy()),
+                (
+                    "True && True",
                     Operation::new(
                         Operator::And,
                         Boolean::new(true, SourceInformation::dummy()),
                         Boolean::new(true, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
-                    SourceInformation::dummy(),
                 ),
-            ),
-        ] {
-            assert_eq!(
-                expression().parse(stream(source, "")).unwrap().0,
-                target.into()
-            );
-        }
-    }
-
-    #[test]
-    fn parse_record_construction() {
-        assert!(record_construction().parse(stream("f", "")).is_err());
-
-        assert!(record_construction().parse(stream("Foo ()", "")).is_err());
-
-        assert_eq!(
-            record_construction()
-                .parse(stream("Foo ( foo = 42 )", ""))
-                .unwrap()
-                .0,
-            RecordConstruction::new(
-                types::Reference::new("Foo", SourceInformation::dummy()),
-                vec![(
-                    "foo".into(),
-                    Number::new(42.0, SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-        );
-
-        assert_eq!(
-            record_construction()
-                .parse(stream("Foo ( foo = 42, bar = 42 )", ""))
-                .unwrap()
-                .0,
-            RecordConstruction::new(
-                types::Reference::new("Foo", SourceInformation::dummy()),
-                vec![
-                    (
-                        "foo".into(),
-                        Number::new(42.0, SourceInformation::dummy()).into()
+                (
+                    "True || True",
+                    Operation::new(
+                        Operator::Or,
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Boolean::new(true, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
-                    (
-                        "bar".into(),
-                        Number::new(42.0, SourceInformation::dummy()).into()
-                    )
-                ]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-        );
+                ),
+                (
+                    "True && 1 < 2",
+                    Operation::new(
+                        Operator::And,
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Operation::new(
+                            Operator::LessThan,
+                            Number::new(1.0, SourceInformation::dummy()),
+                            Number::new(2.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "True || True && True",
+                    Operation::new(
+                        Operator::Or,
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Operation::new(
+                            Operator::And,
+                            Boolean::new(true, SourceInformation::dummy()),
+                            Boolean::new(true, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ] {
+                assert_eq!(
+                    expression().parse(stream(source, "")).unwrap().0,
+                    target.into()
+                );
+            }
+        }
 
-        assert!(record_construction()
-            .parse(stream("Foo ( foo = 42, foo = 42 )", ""))
-            .is_err());
+        #[test]
+        fn parse_record_construction() {
+            assert!(record_construction().parse(stream("f", "")).is_err());
 
-        assert_eq!(
-            expression()
-                .parse(stream("foo (Foo ( foo = 42 ))", ""))
-                .unwrap()
-                .0,
-            Application::new(
-                Variable::new("foo", SourceInformation::dummy()),
+            assert!(record_construction().parse(stream("Foo ()", "")).is_err());
+
+            assert_eq!(
+                record_construction()
+                    .parse(stream("Foo ( foo = 42 )", ""))
+                    .unwrap()
+                    .0,
                 RecordConstruction::new(
                     types::Reference::new("Foo", SourceInformation::dummy()),
                     vec![(
@@ -2117,170 +2101,349 @@ mod tests {
                     .into_iter()
                     .collect(),
                     SourceInformation::dummy()
-                ),
-                SourceInformation::dummy()
-            )
-            .into()
-        );
-
-        assert_eq!(
-            expression()
-                .parse(stream("foo Foo ( foo = 42 )", ""))
-                .unwrap()
-                .0,
-            Variable::new("foo", SourceInformation::dummy()).into()
-        );
-
-        assert_eq!(
-            record_construction()
-                .parse(stream("Foo ( foo = bar\n42, )", ""))
-                .unwrap()
-                .0,
-            RecordConstruction::new(
-                types::Reference::new("Foo", SourceInformation::dummy()),
-                vec![(
-                    "foo".into(),
-                    Application::new(
-                        Variable::new("bar", SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )
-                    .into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-        );
-    }
-
-    #[test]
-    fn parse_record_update() {
-        assert_eq!(
-            record_update()
-                .parse(stream("Foo ( ...foo, bar = 42 )", ""))
-                .unwrap()
-                .0,
-            RecordUpdate::new(
-                types::Reference::new("Foo", SourceInformation::dummy()),
-                Variable::new("foo", SourceInformation::dummy()),
-                vec![(
-                    "bar".into(),
-                    Number::new(42.0, SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-        );
-        assert_eq!(
-            record_update()
-                .parse(stream("Foo ( ...foo, bar = 42, )", ""))
-                .unwrap()
-                .0,
-            RecordUpdate::new(
-                types::Reference::new("Foo", SourceInformation::dummy()),
-                Variable::new("foo", SourceInformation::dummy()),
-                vec![(
-                    "bar".into(),
-                    Number::new(42.0, SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy()
-            )
-        );
-        assert!(record_update().parse(stream("Foo ( ...foo )", "")).is_err());
-        assert!(record_update()
-            .parse(stream("Foo ( ...foo, bar = 42, bar = 42 )", ""))
-            .is_err());
-        assert!(record_update()
-            .parse(stream("Foo ( ...(foo bar), baz = 42 )", ""))
-            .is_ok());
-        assert!(record_update()
-            .parse(stream("Foo ( ...foo bar, baz = 42 )", ""))
-            .is_err());
-    }
-
-    #[test]
-    fn parse_operator() {
-        assert!(operator().parse(stream("", "")).is_err());
-        assert!(operator().parse(stream("++", "")).is_err());
-
-        for (source, expected) in &[
-            ("+", Operator::Add),
-            ("-", Operator::Subtract),
-            ("*", Operator::Multiply),
-            ("/", Operator::Divide),
-            ("==", Operator::Equal),
-            ("/=", Operator::NotEqual),
-            ("<", Operator::LessThan),
-            ("<=", Operator::LessThanOrEqual),
-            (">", Operator::GreaterThan),
-            (">=", Operator::GreaterThanOrEqual),
-        ] {
-            assert_eq!(operator().parse(stream(source, "")).unwrap().0, *expected);
-        }
-    }
-
-    #[test]
-    fn parse_variable() {
-        assert!(variable().parse(stream("Foo. x", "")).is_err());
-        assert_eq!(
-            variable().parse(stream("x", "")).unwrap().0,
-            Variable::new("x", SourceInformation::dummy()),
-        );
-        assert_eq!(
-            variable().parse(stream("Foo.x", "")).unwrap().0,
-            Variable::new("Foo.x", SourceInformation::dummy()),
-        );
-        assert_eq!(
-            variable().parse(stream("Foo .x", "")).unwrap().0,
-            Variable::new("Foo", SourceInformation::dummy()),
-        );
-    }
-
-    #[test]
-    fn parse_boolean_literal() {
-        assert!(boolean_literal().parse(stream("", "")).is_err());
-        assert_eq!(
-            boolean_literal().parse(stream("False", "")).unwrap().0,
-            Boolean::new(false, SourceInformation::dummy())
-        );
-        assert_eq!(
-            boolean_literal().parse(stream("True", "")).unwrap().0,
-            Boolean::new(true, SourceInformation::dummy())
-        );
-    }
-
-    #[test]
-    fn parse_none_literal() {
-        assert!(none_literal().parse(stream("", "")).is_err());
-        assert_eq!(
-            none_literal().parse(stream("None", "")).unwrap().0,
-            None::new(SourceInformation::dummy())
-        );
-    }
-
-    #[test]
-    fn parse_number_literal() {
-        assert!(number_literal().parse(stream("", "")).is_err());
-        assert!(number_literal().parse(stream("foo", "")).is_err());
-        assert!(number_literal().parse(stream("x1", "")).is_err());
-
-        for (source, value) in &[
-            ("01", 0.0),
-            ("0", 0.0),
-            ("1", 1.0),
-            ("123456789", 123456789.0),
-            ("-1", -1.0),
-            ("0.1", 0.1),
-            ("0.01", 0.01),
-        ] {
-            assert_eq!(
-                number_literal().parse(stream(source, "")).unwrap().0,
-                Number::new(*value, SourceInformation::dummy())
+                )
             );
+
+            assert_eq!(
+                record_construction()
+                    .parse(stream("Foo ( foo = 42, bar = 42 )", ""))
+                    .unwrap()
+                    .0,
+                RecordConstruction::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    vec![
+                        (
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        ),
+                        (
+                            "bar".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        )
+                    ]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy()
+                )
+            );
+
+            assert!(record_construction()
+                .parse(stream("Foo ( foo = 42, foo = 42 )", ""))
+                .is_err());
+
+            assert_eq!(
+                expression()
+                    .parse(stream("foo (Foo ( foo = 42 ))", ""))
+                    .unwrap()
+                    .0,
+                Application::new(
+                    Variable::new("foo", SourceInformation::dummy()),
+                    RecordConstruction::new(
+                        types::Reference::new("Foo", SourceInformation::dummy()),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+
+            assert_eq!(
+                expression()
+                    .parse(stream("foo Foo ( foo = 42 )", ""))
+                    .unwrap()
+                    .0,
+                Variable::new("foo", SourceInformation::dummy()).into()
+            );
+
+            assert_eq!(
+                record_construction()
+                    .parse(stream("Foo ( foo = bar\n42, )", ""))
+                    .unwrap()
+                    .0,
+                RecordConstruction::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    vec![(
+                        "foo".into(),
+                        Application::new(
+                            Variable::new("bar", SourceInformation::dummy()),
+                            Number::new(42.0, SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy()
+                )
+            );
+        }
+
+        #[test]
+        fn parse_record_update() {
+            assert_eq!(
+                record_update()
+                    .parse(stream("Foo ( ...foo, bar = 42 )", ""))
+                    .unwrap()
+                    .0,
+                RecordUpdate::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    Variable::new("foo", SourceInformation::dummy()),
+                    vec![(
+                        "bar".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy()
+                )
+            );
+            assert_eq!(
+                record_update()
+                    .parse(stream("Foo ( ...foo, bar = 42, )", ""))
+                    .unwrap()
+                    .0,
+                RecordUpdate::new(
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    Variable::new("foo", SourceInformation::dummy()),
+                    vec![(
+                        "bar".into(),
+                        Number::new(42.0, SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    SourceInformation::dummy()
+                )
+            );
+            assert!(record_update().parse(stream("Foo ( ...foo )", "")).is_err());
+            assert!(record_update()
+                .parse(stream("Foo ( ...foo, bar = 42, bar = 42 )", ""))
+                .is_err());
+            assert!(record_update()
+                .parse(stream("Foo ( ...(foo bar), baz = 42 )", ""))
+                .is_ok());
+            assert!(record_update()
+                .parse(stream("Foo ( ...foo bar, baz = 42 )", ""))
+                .is_err());
+        }
+
+        #[test]
+        fn parse_operator() {
+            assert!(operator().parse(stream("", "")).is_err());
+            assert!(operator().parse(stream("++", "")).is_err());
+
+            for (source, expected) in &[
+                ("+", Operator::Add),
+                ("-", Operator::Subtract),
+                ("*", Operator::Multiply),
+                ("/", Operator::Divide),
+                ("==", Operator::Equal),
+                ("/=", Operator::NotEqual),
+                ("<", Operator::LessThan),
+                ("<=", Operator::LessThanOrEqual),
+                (">", Operator::GreaterThan),
+                (">=", Operator::GreaterThanOrEqual),
+            ] {
+                assert_eq!(operator().parse(stream(source, "")).unwrap().0, *expected);
+            }
+        }
+
+        #[test]
+        fn parse_variable() {
+            assert!(variable().parse(stream("Foo. x", "")).is_err());
+            assert_eq!(
+                variable().parse(stream("x", "")).unwrap().0,
+                Variable::new("x", SourceInformation::dummy()),
+            );
+            assert_eq!(
+                variable().parse(stream("Foo.x", "")).unwrap().0,
+                Variable::new("Foo.x", SourceInformation::dummy()),
+            );
+            assert_eq!(
+                variable().parse(stream("Foo .x", "")).unwrap().0,
+                Variable::new("Foo", SourceInformation::dummy()),
+            );
+        }
+
+        #[test]
+        fn parse_boolean_literal() {
+            assert!(boolean_literal().parse(stream("", "")).is_err());
+            assert_eq!(
+                boolean_literal().parse(stream("False", "")).unwrap().0,
+                Boolean::new(false, SourceInformation::dummy())
+            );
+            assert_eq!(
+                boolean_literal().parse(stream("True", "")).unwrap().0,
+                Boolean::new(true, SourceInformation::dummy())
+            );
+        }
+
+        #[test]
+        fn parse_none_literal() {
+            assert!(none_literal().parse(stream("", "")).is_err());
+            assert_eq!(
+                none_literal().parse(stream("None", "")).unwrap().0,
+                None::new(SourceInformation::dummy())
+            );
+        }
+
+        #[test]
+        fn parse_number_literal() {
+            assert!(number_literal().parse(stream("", "")).is_err());
+            assert!(number_literal().parse(stream("foo", "")).is_err());
+            assert!(number_literal().parse(stream("x1", "")).is_err());
+
+            for (source, value) in &[
+                ("01", 0.0),
+                ("0", 0.0),
+                ("1", 1.0),
+                ("123456789", 123456789.0),
+                ("-1", -1.0),
+                ("0.1", 0.1),
+                ("0.01", 0.01),
+            ] {
+                assert_eq!(
+                    number_literal().parse(stream(source, "")).unwrap().0,
+                    Number::new(*value, SourceInformation::dummy())
+                );
+            }
+        }
+
+        #[test]
+        fn parse_list() {
+            for (source, target) in vec![
+                ("[]", List::new(vec![], SourceInformation::dummy())),
+                (
+                    "[42]",
+                    List::new(
+                        vec![ListElement::Single(
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[42,]",
+                    List::new(
+                        vec![ListElement::Single(
+                            Number::new(42.0, SourceInformation::dummy()).into(),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[42,42]",
+                    List::new(
+                        vec![
+                            ListElement::Single(
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                            ListElement::Single(
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[42,42,]",
+                    List::new(
+                        vec![
+                            ListElement::Single(
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                            ListElement::Single(
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[...foo]",
+                    List::new(
+                        vec![ListElement::Multiple(
+                            Variable::new("foo", SourceInformation::dummy()).into(),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[...foo,]",
+                    List::new(
+                        vec![ListElement::Multiple(
+                            Variable::new("foo", SourceInformation::dummy()).into(),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[...foo,...bar]",
+                    List::new(
+                        vec![
+                            ListElement::Multiple(
+                                Variable::new("foo", SourceInformation::dummy()).into(),
+                            ),
+                            ListElement::Multiple(
+                                Variable::new("bar", SourceInformation::dummy()).into(),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[...foo,...bar,]",
+                    List::new(
+                        vec![
+                            ListElement::Multiple(
+                                Variable::new("foo", SourceInformation::dummy()).into(),
+                            ),
+                            ListElement::Multiple(
+                                Variable::new("bar", SourceInformation::dummy()).into(),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[foo,...bar]",
+                    List::new(
+                        vec![
+                            ListElement::Single(
+                                Variable::new("foo", SourceInformation::dummy()).into(),
+                            ),
+                            ListElement::Multiple(
+                                Variable::new("bar", SourceInformation::dummy()).into(),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+                (
+                    "[...foo,bar]",
+                    List::new(
+                        vec![
+                            ListElement::Multiple(
+                                Variable::new("foo", SourceInformation::dummy()).into(),
+                            ),
+                            ListElement::Single(
+                                Variable::new("bar", SourceInformation::dummy()).into(),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                ),
+            ] {
+                assert_eq!(
+                    expression().parse(stream(source, "")).unwrap().0,
+                    target.into()
+                );
+            }
         }
     }
 
