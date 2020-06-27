@@ -597,8 +597,8 @@ fn list_literal<'a>() -> impl Parser<Stream<'a>, Output = List> {
 }
 
 fn list_element<'a>() -> impl Parser<Stream<'a>, Output = ListElement> {
-    (optional(sign("...")), expression()).map(|(elipsis, expression)| {
-        if elipsis.is_some() {
+    (optional(sign("...")), expression()).map(|(ellipsis, expression)| {
+        if ellipsis.is_some() {
             ListElement::Multiple(expression)
         } else {
             ListElement::Single(expression)
