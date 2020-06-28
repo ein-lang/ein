@@ -136,7 +136,7 @@ impl EqualOperationDesugarer {
         source_information: Rc<SourceInformation>,
     ) -> Result<Expression, CompileError> {
         Ok(match self.reference_type_resolver.resolve(type_)? {
-            // TODO Compare types inside any types.
+            // TODO Do not compare any types.
             Type::Any(_) => Boolean::new(false, source_information).into(),
             Type::Boolean(_) => If::new(
                 lhs.clone(),
@@ -155,6 +155,7 @@ impl EqualOperationDesugarer {
                 source_information,
             )
             .into(),
+            // TODO Do not compare function types.
             Type::Function(_) => Boolean::new(false, source_information).into(),
             Type::List(_) => unimplemented!(),
             Type::None(_) => Boolean::new(true, source_information).into(),
