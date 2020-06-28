@@ -2,6 +2,7 @@ export {
   AnyList,
   concatenateLists,
   emptyList,
+  equalLists,
   getListLength,
   prependToList,
 }
@@ -61,3 +62,22 @@ concatenateNodes one other =
       case other = other
         Node => other
         None => None
+
+equalLists : (Any -> Any -> Boolean) -> AnyList -> AnyList -> Boolean
+equalLists equalElements one other =
+  equalNodes equalElements (AnyList.node one) (AnyList.node other)
+
+equalNodes : (Any -> Any -> Boolean) -> Node | None -> Node | None -> Boolean
+equalNodes equalElements one other =
+  case one = one
+    Node => (
+      case other = other
+        Node =>
+          equalElements (Node.first one) (Node.first other) &&
+          equalNodes equalElements (Node.rest one) (Node.rest other)
+        None => False
+      )
+    None =>
+      case other = other
+        Node => False
+        None => True
