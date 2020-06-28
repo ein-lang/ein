@@ -49,7 +49,7 @@ impl Function {
 
     pub fn last_result(&self) -> &Type {
         match self.result.as_ref() {
-            Type::Function(function) => function.result(),
+            Type::Function(function) => function.last_result(),
             _ => &self.result,
         }
     }
@@ -63,5 +63,56 @@ impl Function {
             self.result.convert_types(convert)?,
             self.source_information.clone(),
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::debug::*;
+    use crate::types;
+
+    #[test]
+    fn last_result() {
+        assert_eq!(
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .last_result(),
+            &types::Number::new(SourceInformation::dummy()).into()
+        );
+
+        assert_eq!(
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+            .last_result(),
+            &types::Number::new(SourceInformation::dummy()).into()
+        );
+
+        assert_eq!(
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+            .last_result(),
+            &types::Number::new(SourceInformation::dummy()).into()
+        );
     }
 }
