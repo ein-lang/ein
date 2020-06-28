@@ -27,7 +27,9 @@ lazy_static! {
     static ref RESERVED_IDENTIFIERS: Vec<&'static str> = KEYWORDS
         .iter()
         .cloned()
-        .chain(vec!["Any", "Boolean", "False", "None", "Number", "True"])
+        .chain(vec![
+            "Any", "Boolean", "False", "List", "None", "Number", "True"
+        ])
         .collect();
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
@@ -272,7 +274,10 @@ fn function_type<'a>() -> impl Parser<Stream<'a>, Output = types::Function> {
 }
 
 fn union_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
-    (source_information(), sep_end_by1(atomic_type(), sign("|")))
+    (
+        source_information(),
+        sep_end_by1(type_application(), sign("|")),
+    )
         .map(|(source_information, types)| {
             let types: Vec<_> = types;
 
@@ -283,6 +288,16 @@ fn union_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
             }
         })
         .expected("union type")
+}
+
+fn type_application<'a>() -> impl Parser<Stream<'a>, Output = Type> {
+    choice!(list_type().map(Type::from), atomic_type())
+}
+
+fn list_type<'a>() -> impl Parser<Stream<'a>, Output = types::List> {
+    (source_information(), keyword("List"), atomic_type())
+        .map(|(source_information, _, element)| types::List::new(element, source_information))
+        .expected("list type")
 }
 
 fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
@@ -1347,6 +1362,72 @@ mod tests {
             assert_eq!(
                 type_().parse(stream("Foo.Bar", "")).unwrap().0,
                 types::Reference::new("Foo.Bar", SourceInformation::dummy()).into()
+            );
+        }
+
+        #[test]
+        fn parse_list_type() {
+            assert_eq!(
+                type_().parse(stream("List Number", "")).unwrap().0,
+                types::List::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+
+            assert_eq!(
+                type_().parse(stream("List (List Number)", "")).unwrap().0,
+                types::List::new(
+                    types::List::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+
+            assert_eq!(
+                type_()
+                    .parse(stream("List Number | List None", ""))
+                    .unwrap()
+                    .0,
+                types::Union::new(
+                    vec![
+                        types::List::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        types::List::new(
+                            types::None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    ],
+                    SourceInformation::dummy()
+                )
+                .into()
+            );
+
+            assert_eq!(
+                type_()
+                    .parse(stream("List Number -> List None", ""))
+                    .unwrap()
+                    .0,
+                types::Function::new(
+                    types::List::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    types::List::new(
+                        types::None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()
             );
         }
     }
