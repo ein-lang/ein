@@ -1,7 +1,10 @@
+use super::list_literal_configuration::ListLiteralConfiguration;
+
 pub struct CompileConfiguration {
     source_main_function_name: String,
     object_main_function_name: String,
     object_init_function_name: String,
+    list_literal_configuration: ListLiteralConfiguration,
 }
 
 impl CompileConfiguration {
@@ -9,11 +12,13 @@ impl CompileConfiguration {
         source_main_function_name: impl Into<String>,
         object_main_function_name: impl Into<String>,
         object_init_function_name: impl Into<String>,
-    ) -> CompileConfiguration {
+        list_literal_configuration: ListLiteralConfiguration,
+    ) -> Self {
         Self {
             source_main_function_name: source_main_function_name.into(),
             object_main_function_name: object_main_function_name.into(),
             object_init_function_name: object_init_function_name.into(),
+            list_literal_configuration,
         }
     }
 
@@ -27,5 +32,9 @@ impl CompileConfiguration {
 
     pub fn object_init_function_name(&self) -> &str {
         &self.object_init_function_name
+    }
+
+    pub fn list_literal_configuration(&self) -> &ListLiteralConfiguration {
+        &self.list_literal_configuration
     }
 }

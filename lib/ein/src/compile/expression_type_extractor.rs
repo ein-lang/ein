@@ -86,6 +86,7 @@ impl ExpressionTypeExtractor {
 
                 self.extract(let_.expression(), &variables)?
             }
+            Expression::List(list) => list.type_().clone(),
             Expression::None(none) => types::None::new(none.source_information().clone()).into(),
             Expression::Number(number) => {
                 types::Number::new(number.source_information().clone()).into()
@@ -113,7 +114,7 @@ impl ExpressionTypeExtractor {
             }
             Expression::TypeCoercion(coercion) => coercion.to().clone(),
             Expression::Variable(variable) => variables[variable.name()].clone(),
-            Expression::List(_) | Expression::RecordUpdate(_) => unreachable!(),
+            Expression::RecordUpdate(_) => unreachable!(),
         })
     }
 }

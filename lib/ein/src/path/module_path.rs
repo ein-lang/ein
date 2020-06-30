@@ -18,6 +18,14 @@ impl ModulePath {
         }
     }
 
+    #[cfg(test)]
+    pub fn dummy() -> Self {
+        Self {
+            package: Package::new("", ""),
+            components: vec![],
+        }
+    }
+
     pub fn package(&self) -> &Package {
         &self.package
     }

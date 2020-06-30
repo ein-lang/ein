@@ -1,11 +1,12 @@
 use super::expression::Expression;
 use super::list_element::ListElement;
 use crate::debug::SourceInformation;
-use crate::types::Type;
+use crate::types::{self, Type};
 use std::rc::Rc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct List {
+    type_: Type,
     elements: Vec<ListElement>,
     source_information: Rc<SourceInformation>,
 }
@@ -15,10 +16,29 @@ impl List {
         elements: Vec<ListElement>,
         source_information: impl Into<Rc<SourceInformation>>,
     ) -> Self {
+        let source_information: Rc<_> = source_information.into();
+
         Self {
+            type_: types::Unknown::new(source_information.clone()).into(),
+            elements,
+            source_information,
+        }
+    }
+
+    pub fn with_type(
+        type_: impl Into<Type>,
+        elements: Vec<ListElement>,
+        source_information: impl Into<Rc<SourceInformation>>,
+    ) -> Self {
+        Self {
+            type_: type_.into(),
             elements,
             source_information: source_information.into(),
         }
+    }
+
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
     pub fn elements(&self) -> &[ListElement] {
