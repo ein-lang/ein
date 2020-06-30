@@ -53,13 +53,12 @@ impl TypeCompiler {
                 self.compile_value(function.last_result())?,
             )
             .into(),
-            Type::List(_) => unimplemented!(),
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => self.compile_number().into(),
             Type::Record(record) => self.compile_record_recursively(record)?.into(),
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::Union(union) => self.compile_union(union)?.into(),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
+            Type::List(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
     }
 
