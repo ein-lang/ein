@@ -42,7 +42,17 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let module_objects_linker =
         infra::ModuleObjectsLinker::new(&command_runner, &file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
-    let compile_configuration = app::CompileConfiguration::new("main", "ein_main", "ein_init");
+    let compile_configuration = app::CompileConfiguration::new(
+        "main",
+        "ein_main",
+        "ein_init",
+        app::ListLiteralConfiguration::new(
+            "emptyList",
+            "concatenateLists",
+            "prependToList",
+            "AnyList",
+        ),
+    );
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
         &file_path_manager,

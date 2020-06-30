@@ -26,6 +26,7 @@ use desugar::{desugar_before_name_qualification, desugar_with_types, desugar_wit
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
 use global_name_qualifier::GlobalNameQualifier;
+pub use list_literal_configuration::ListLiteralConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
