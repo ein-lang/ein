@@ -37,12 +37,17 @@ impl VariableConstraint {
     pub fn to_type(&self) -> Type {
         if self.lower_types.iter().any(|type_| type_.is_any()) {
             types::Any::new(self.source_information.clone()).into()
-        } else {
+        } else if !self.lower_types.is_empty() {
             types::Union::new(
                 self.lower_types.iter().cloned().collect(),
                 self.source_information.clone(),
             )
             .into()
+        } else if !self.upper_types.is_empty() {
+            // TODO Calculate the minimal type from upper types?
+            self.upper_types.iter().next().unwrap().clone()
+        } else {
+            types::Unknown::new(self.source_information.clone()).into()
         }
     }
 }

@@ -188,6 +188,29 @@ impl ConstraintCollector {
 
                 self.infer_expression(let_.expression(), &variables)
             }
+            Expression::List(list) => {
+                let element_type = types::Variable::new(list.source_information().clone());
+                let list_type =
+                    types::List::new(element_type.clone(), list.source_information().clone());
+
+                self.subsumption_set
+                    .add(list_type.clone(), list.type_().clone());
+
+                for element in list.elements() {
+                    match element {
+                        ListElement::Multiple(expression) => {
+                            let type_ = self.infer_expression(expression, variables)?;
+                            self.subsumption_set.add(type_, list_type.clone())
+                        }
+                        ListElement::Single(expression) => {
+                            let type_ = self.infer_expression(expression, variables)?;
+                            self.subsumption_set.add(type_, element_type.clone())
+                        }
+                    }
+                }
+
+                Ok(list_type.into())
+            }
             Expression::None(none) => {
                 Ok(types::None::new(none.source_information().clone()).into())
             }
@@ -286,9 +309,7 @@ impl ConstraintCollector {
                 .get(variable.name())
                 .cloned()
                 .ok_or_else(|| CompileError::VariableNotFound(variable.clone())),
-            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
-                unreachable!()
-            }
+            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }
     }
 }

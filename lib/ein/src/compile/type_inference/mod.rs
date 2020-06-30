@@ -1737,4 +1737,72 @@ mod tests {
             ])));
         }
     }
+
+    mod lists {
+        use super::*;
+
+        #[test]
+        fn infer_type_of_empty_list_literal() {
+            let list_type = types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    List::new(vec![], SourceInformation::dummy()),
+                    list_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn infer_type_of_list_with_an_element() {
+            let list_type = types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    List::new(
+                        vec![ListElement::Single(
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    list_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn infer_type_of_list_with_spread_element() {
+            let list_type = types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    List::new(
+                        vec![ListElement::Multiple(
+                            List::new(vec![], SourceInformation::dummy(),).into()
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    list_type,
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+    }
 }

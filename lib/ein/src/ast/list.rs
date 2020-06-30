@@ -53,7 +53,8 @@ impl List {
         &self,
         convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
-        Ok(Self::new(
+        Ok(Self::with_type(
+            self.type_().clone(),
             self.elements()
                 .iter()
                 .map(|element| element.convert_expressions(convert))
@@ -66,7 +67,8 @@ impl List {
         &self,
         convert: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
-        Ok(Self::new(
+        Ok(Self::with_type(
+            self.type_.convert_types(convert)?,
             self.elements()
                 .iter()
                 .map(|element| element.convert_types(convert))

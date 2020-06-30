@@ -51,8 +51,9 @@ impl ReferenceTypeResolver {
             | Type::None(_)
             | Type::Number(_)
             | Type::Record(_)
-            | Type::Union(_) => Ok(type_.clone()),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
+            | Type::Union(_)
+            | Type::Unknown(_)
+            | Type::Variable(_) => Ok(type_.clone()),
         }
     }
 }
