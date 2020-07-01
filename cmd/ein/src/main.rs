@@ -49,9 +49,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         app::ListLiteralConfiguration::new(
             "emptyList",
             "concatenateLists",
+            "equalLists",
             "prependToList",
             "AnyList",
-        ),
+        )
+        .into(),
     );
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,

@@ -123,9 +123,11 @@ mod tests {
             ListLiteralConfiguration::new(
                 "emptyList",
                 "concatenateLists",
+                "equalLists",
                 "prependToLists",
                 "GenericList"
             )
+            .into()
         );
     }
 

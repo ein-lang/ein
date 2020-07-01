@@ -1,10 +1,11 @@
 use super::list_literal_configuration::ListLiteralConfiguration;
+use std::sync::Arc;
 
 pub struct CompileConfiguration {
     source_main_function_name: String,
     object_main_function_name: String,
     object_init_function_name: String,
-    list_literal_configuration: ListLiteralConfiguration,
+    list_literal_configuration: Arc<ListLiteralConfiguration>,
 }
 
 impl CompileConfiguration {
@@ -12,7 +13,7 @@ impl CompileConfiguration {
         source_main_function_name: impl Into<String>,
         object_main_function_name: impl Into<String>,
         object_init_function_name: impl Into<String>,
-        list_literal_configuration: ListLiteralConfiguration,
+        list_literal_configuration: Arc<ListLiteralConfiguration>,
     ) -> Self {
         Self {
             source_main_function_name: source_main_function_name.into(),
@@ -34,7 +35,7 @@ impl CompileConfiguration {
         &self.object_init_function_name
     }
 
-    pub fn list_literal_configuration(&self) -> &ListLiteralConfiguration {
+    pub fn list_literal_configuration(&self) -> &Arc<ListLiteralConfiguration> {
         &self.list_literal_configuration
     }
 }

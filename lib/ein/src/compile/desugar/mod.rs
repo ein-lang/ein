@@ -152,7 +152,13 @@ mod tests {
     fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
         super::desugar_with_types(
             module,
-            &ListLiteralConfiguration::new("empty", "concatenate", "prepend", "GenericList"),
+            &ListLiteralConfiguration::new(
+                "empty",
+                "concatenate",
+                "equal",
+                "prepend",
+                "GenericList",
+            ),
         )
     }
 
