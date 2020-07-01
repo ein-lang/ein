@@ -35,7 +35,7 @@ impl CompileConfiguration {
         &self.object_init_function_name
     }
 
-    pub fn list_literal_configuration(&self) -> &Arc<ListLiteralConfiguration> {
-        &self.list_literal_configuration
+    pub fn list_literal_configuration(&self) -> Arc<ListLiteralConfiguration> {
+        self.list_literal_configuration.clone()
     }
 }

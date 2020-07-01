@@ -28,6 +28,7 @@ use not_equal_operation_desugarer::NotEqualOperationDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
 use record_function_desugarer::RecordFunctionDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
+use std::sync::Arc;
 use type_coercion_desugarer::TypeCoercionDesugarer;
 use typed_meta_desugarer::TypedMetaDesugarer;
 
@@ -43,7 +44,7 @@ pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
 
 pub fn desugar_with_types(
     module: &Module,
-    configuration: &ListLiteralConfiguration,
+    list_literal_configuration: Arc<ListLiteralConfiguration>,
 ) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
@@ -56,14 +57,14 @@ pub fn desugar_with_types(
         union_type_simplifier.clone(),
     );
 
-    let module = ListLiteralDesugarer::new(configuration).desugar(&module)?;
-    let module = ListTypeDesugarer::new(configuration).desugar(&module)?;
+    let module = ListLiteralDesugarer::new(list_literal_configuration.clone()).desugar(&module)?;
     let module = BooleanOperationDesugarer::new().desugar(&module)?;
 
     let module = NotEqualOperationDesugarer::new().desugar(&module)?;
     let module = EqualOperationDesugarer::new(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
+        list_literal_configuration.clone(),
     )
     .desugar(&module)?;
 
@@ -75,6 +76,7 @@ pub fn desugar_with_types(
     .desugar(&module)?;
 
     let module = PartialApplicationDesugarer::new().desugar(&module)?;
+    let module = ListTypeDesugarer::new(list_literal_configuration).desugar(&module)?;
 
     TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
         reference_type_resolver,
@@ -131,6 +133,31 @@ mod tests {
                     .into(),
                 ),
                 (
+                    "equal".into(),
+                    types::Function::new(
+                        types::Function::new(
+                            types::Any::new(SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Any::new(SourceInformation::dummy()),
+                                types::Boolean::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Function::new(
+                            types::Reference::new("GenericList", SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Reference::new("GenericList", SourceInformation::dummy()),
+                                types::Boolean::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                (
                     "prepend".into(),
                     types::Function::new(
                         types::Any::new(SourceInformation::dummy()),
@@ -152,13 +179,14 @@ mod tests {
     fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
         super::desugar_with_types(
             module,
-            &ListLiteralConfiguration::new(
+            ListLiteralConfiguration::new(
                 "empty",
                 "concatenate",
                 "equal",
                 "prepend",
                 "GenericList",
-            ),
+            )
+            .into(),
         )
     }
 
@@ -798,72 +826,105 @@ mod tests {
         ])));
     }
 
-    #[test]
-    fn desugar_union_equal_operation() {
-        let union_type = types::Union::new(
-            vec![
-                types::Number::new(SourceInformation::dummy()).into(),
-                types::None::new(SourceInformation::dummy()).into(),
-            ],
-            SourceInformation::dummy(),
-        );
+    mod equal_operations {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
-            ValueDefinition::new(
-                "x",
-                Operation::with_type(
-                    union_type.clone(),
-                    Operator::Equal,
-                    None::new(SourceInformation::dummy()),
-                    None::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-                types::Boolean::new(SourceInformation::dummy()),
+        #[test]
+        fn desugar_union_equal_operation() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
                 SourceInformation::dummy(),
-            )
-            .into()
-        ])));
-    }
+            );
 
-    #[test]
-    fn desugar_not_equal_operation() {
-        let create_module = |expression: Expression| {
-            Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                expression,
-                types::Boolean::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()])
-        };
-
-        assert_eq!(
-            desugar_with_types(&create_module(
-                Operation::with_type(
-                    types::Number::new(SourceInformation::dummy()),
-                    Operator::NotEqual,
-                    Number::new(42.0, SourceInformation::dummy()),
-                    Number::new(42.0, SourceInformation::dummy()),
+            assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        union_type.clone(),
+                        Operator::Equal,
+                        None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into()
-            )),
-            Ok(create_module(
-                If::new(
+            ])));
+        }
+
+        #[test]
+        fn desugar_list_equal_operation() {
+            let list_type = types::List::new(
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(desugar_with_types(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![Import::new(list_module_interface(), false)],
+                vec![],
+                vec![ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        list_type.clone(),
+                        Operator::Equal,
+                        List::with_type(list_type.clone(), vec![], SourceInformation::dummy()),
+                        List::with_type(list_type.clone(), vec![], SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()]
+            )));
+        }
+
+        #[test]
+        fn desugar_not_equal_operation() {
+            let create_module = |expression: Expression| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    expression,
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
                     Operation::with_type(
                         types::Number::new(SourceInformation::dummy()),
-                        Operator::Equal,
+                        Operator::NotEqual,
                         Number::new(42.0, SourceInformation::dummy()),
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-            ))
-        );
+                    )
+                    .into()
+                )),
+                Ok(create_module(
+                    If::new(
+                        Operation::with_type(
+                            types::Number::new(SourceInformation::dummy()),
+                            Operator::Equal,
+                            Number::new(42.0, SourceInformation::dummy()),
+                            Number::new(42.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        Boolean::new(false, SourceInformation::dummy()),
+                        Boolean::new(true, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ))
+            );
+        }
     }
 
     #[test]

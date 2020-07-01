@@ -2,13 +2,14 @@ use super::super::error::CompileError;
 use super::super::list_literal_configuration::ListLiteralConfiguration;
 use crate::ast::*;
 use crate::types::{self, Type};
+use std::sync::Arc;
 
-pub struct ListTypeDesugarer<'a> {
-    configuration: &'a ListLiteralConfiguration,
+pub struct ListTypeDesugarer {
+    configuration: Arc<ListLiteralConfiguration>,
 }
 
-impl<'a> ListTypeDesugarer<'a> {
-    pub fn new(configuration: &'a ListLiteralConfiguration) -> Self {
+impl ListTypeDesugarer {
+    pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
         Self { configuration }
     }
 

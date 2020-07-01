@@ -250,6 +250,140 @@ Ok(
                                 },
                             },
                         ),
+                        "equal": Function(
+                            Function {
+                                argument: Function(
+                                    Function {
+                                        argument: Any(
+                                            Any {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        result: Function(
+                                            Function {
+                                                argument: Any(
+                                                    Any {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                result: Boolean(
+                                                    Boolean {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                                result: Function(
+                                    Function {
+                                        argument: Reference(
+                                            Reference {
+                                                name: "GenericList",
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        result: Function(
+                                            Function {
+                                                argument: Reference(
+                                                    Reference {
+                                                        name: "GenericList",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                result: Boolean(
+                                                    Boolean {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                                source_information: SourceInformation {
+                                    source_name: "",
+                                    location: Location {
+                                        line_number: 0,
+                                        column_number: 0,
+                                    },
+                                    line: "",
+                                },
+                            },
+                        ),
                         "prepend": Function(
                             Function {
                                 argument: Any(

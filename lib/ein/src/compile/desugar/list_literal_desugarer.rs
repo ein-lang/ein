@@ -3,16 +3,17 @@ use super::super::list_literal_configuration::ListLiteralConfiguration;
 use crate::ast::*;
 use crate::debug::*;
 use std::rc::Rc;
+use std::sync::Arc;
 
-pub struct ListLiteralDesugarer<'a> {
-    configuration: &'a ListLiteralConfiguration,
+pub struct ListLiteralDesugarer {
+    configuration: Arc<ListLiteralConfiguration>,
 }
 
 /// Desugars list literals into generic list functions and variables.
 /// Types are consistent after desugaring as all `List a` types are converted
 /// into `List Any`.
-impl<'a> ListLiteralDesugarer<'a> {
-    pub fn new(configuration: &'a ListLiteralConfiguration) -> Self {
+impl ListLiteralDesugarer {
+    pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
         Self { configuration }
     }
 
