@@ -51,7 +51,10 @@ pub fn compile(
 
     let module = desugar_with_types(
         &infer_types(&desugar_without_types(&module)?)?,
-        configuration.list_literal_configuration(),
+        configuration
+            .list_literal_configuration()
+            .qualify(&names)
+            .into(),
     )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);

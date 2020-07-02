@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 pub struct ListLiteralConfiguration {
     empty_list_variable_name: String,
     concatenate_function_name: String,
@@ -41,5 +43,19 @@ impl ListLiteralConfiguration {
 
     pub fn list_type_name(&self) -> &str {
         &self.list_type_name
+    }
+
+    pub fn qualify(&self, names: &HashMap<String, String>) -> Self {
+        Self {
+            empty_list_variable_name: self.qualify_name(&self.empty_list_variable_name, &names),
+            concatenate_function_name: self.qualify_name(&self.concatenate_function_name, &names),
+            equal_function_name: self.qualify_name(&self.equal_function_name, &names),
+            prepend_function_name: self.qualify_name(&self.prepend_function_name, &names),
+            list_type_name: self.qualify_name(&self.list_type_name, &names),
+        }
+    }
+
+    fn qualify_name(&self, name: &str, names: &HashMap<String, String>) -> String {
+        names.get(name).cloned().unwrap_or_else(|| name.into())
     }
 }
