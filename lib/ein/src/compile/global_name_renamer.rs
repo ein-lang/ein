@@ -3,12 +3,12 @@ use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
 
-pub struct GlobalNameRenamer {
-    names: HashMap<String, String>,
+pub struct GlobalNameRenamer<'a> {
+    names: &'a HashMap<String, String>,
 }
 
-impl GlobalNameRenamer {
-    pub fn new(names: HashMap<String, String>) -> Self {
+impl<'a> GlobalNameRenamer<'a> {
+    pub fn new(names: &'a HashMap<String, String>) -> Self {
         Self { names }
     }
 
@@ -302,7 +302,7 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(Default::default()).rename(&module),
+            GlobalNameRenamer::new(&Default::default()).rename(&module),
             module
         );
     }
@@ -324,7 +324,7 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(vec![("x".into(), "y".into())].into_iter().collect())
+            GlobalNameRenamer::new(&vec![("x".into(), "y".into())].into_iter().collect())
                 .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
@@ -353,7 +353,7 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(vec![("x".into(), "y".into())].into_iter().collect())
+            GlobalNameRenamer::new(&vec![("x".into(), "y".into())].into_iter().collect())
                 .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
@@ -379,7 +379,7 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(vec![("x".into(), "y".into())].into_iter().collect())
+            GlobalNameRenamer::new(&vec![("x".into(), "y".into())].into_iter().collect())
                 .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
@@ -414,7 +414,7 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(vec![("z".into(), "v".into())].into_iter().collect())
+            GlobalNameRenamer::new(&vec![("z".into(), "v".into())].into_iter().collect())
                 .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
@@ -449,7 +449,7 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(vec![("y".into(), "z".into())].into_iter().collect())
+            GlobalNameRenamer::new(&vec![("y".into(), "z".into())].into_iter().collect())
                 .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),

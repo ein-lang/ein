@@ -4,7 +4,7 @@ mod desugar;
 mod error;
 mod expression_compiler;
 mod expression_type_extractor;
-mod global_name_qualifier;
+mod global_name_map_creator;
 mod global_name_renamer;
 mod list_literal_configuration;
 mod module_compiler;
@@ -25,7 +25,8 @@ pub use compile_configuration::CompileConfiguration;
 use desugar::{desugar_before_name_qualification, desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
-use global_name_qualifier::GlobalNameQualifier;
+use global_name_map_creator::GlobalNameMapCreator;
+use global_name_renamer::GlobalNameRenamer;
 pub use list_literal_configuration::ListLiteralConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
@@ -40,13 +41,13 @@ pub fn compile(
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = desugar_before_name_qualification(&module)?;
 
-    let module = GlobalNameQualifier::new(
+    let names = GlobalNameMapCreator::create(
         &module,
         &vec![configuration.source_main_function_name().into()]
             .into_iter()
             .collect(),
-    )
-    .qualify(&module);
+    );
+    let module = GlobalNameRenamer::new(&names).rename(&module);
 
     let module = desugar_with_types(
         &infer_types(&desugar_without_types(&module)?)?,
