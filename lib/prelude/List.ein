@@ -1,0 +1,83 @@
+export {
+  AnyList,
+  concatenateLists,
+  emptyList,
+  equalLists,
+  getListLength,
+  prependToList,
+}
+
+type AnyList (
+  node : Node | None,
+)
+
+type Node (
+  first : Any,
+  rest : Node | None,
+)
+
+emptyList : AnyList
+emptyList =
+  AnyList (
+    node = None,
+  )
+
+getListLength : AnyList -> Number
+getListLength list =
+   getLengthFromNode (AnyList.node list)
+
+getLengthFromNode : Node | None -> Number
+getLengthFromNode node =
+  case node = node
+    Node => 1 + getLengthFromNode (Node.rest node)
+    None => 0
+
+prependToList : Any -> AnyList -> AnyList
+prependToList element list =
+  AnyList ( node = prependToNode element (AnyList.node list) )
+
+prependToNode : Any -> Node | None -> Node
+prependToNode element node =
+  Node (
+    first = element,
+    rest = node,
+  )
+
+concatenateLists : AnyList -> AnyList -> AnyList
+concatenateLists one other =
+  AnyList (
+    node = concatenateNodes (AnyList.node one) (AnyList.node other)
+  )
+
+concatenateNodes : Node | None -> Node | None -> Node | None
+concatenateNodes one other =
+  case one = one
+    Node => (
+      case other = other
+        Node =>
+          prependToNode (Node.first one) (concatenateNodes (Node.rest one) other)
+        None => one
+      )
+    None =>
+      case other = other
+        Node => other
+        None => None
+
+equalLists : (Any -> Any -> Boolean) -> AnyList -> AnyList -> Boolean
+equalLists equalElements one other =
+  equalNodes equalElements (AnyList.node one) (AnyList.node other)
+
+equalNodes : (Any -> Any -> Boolean) -> Node | None -> Node | None -> Boolean
+equalNodes equalElements one other =
+  case one = one
+    Node => (
+      case other = other
+        Node =>
+          equalElements (Node.first one) (Node.first other) &&
+          equalNodes equalElements (Node.rest one) (Node.rest other)
+        None => False
+      )
+    None =>
+      case other = other
+        Node => False
+        None => True

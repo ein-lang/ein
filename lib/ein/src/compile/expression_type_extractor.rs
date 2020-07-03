@@ -86,6 +86,7 @@ impl ExpressionTypeExtractor {
 
                 self.extract(let_.expression(), &variables)?
             }
+            Expression::List(list) => list.type_().clone(),
             Expression::None(none) => types::None::new(none.source_information().clone()).into(),
             Expression::Number(number) => {
                 types::Number::new(number.source_information().clone()).into()

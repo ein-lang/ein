@@ -41,10 +41,10 @@ impl TypeCompiler {
     }
 
     pub fn compile(&self, type_: &Type) -> Result<ssf::types::Type, CompileError> {
-        match type_ {
-            Type::Any(_) => Ok(self.compile_any()?.into()),
-            Type::Boolean(_) => Ok(self.compile_boolean().into()),
-            Type::Function(function) => Ok(ssf::types::Function::new(
+        Ok(match type_ {
+            Type::Any(_) => self.compile_any()?.into(),
+            Type::Boolean(_) => self.compile_boolean().into(),
+            Type::Function(function) => ssf::types::Function::new(
                 function
                     .arguments()
                     .iter()
@@ -52,14 +52,14 @@ impl TypeCompiler {
                     .collect::<Result<_, _>>()?,
                 self.compile_value(function.last_result())?,
             )
-            .into()),
-            Type::None(_) => Ok(self.compile_none().into()),
-            Type::Number(_) => Ok(self.compile_number().into()),
-            Type::Record(record) => Ok(self.compile_record_recursively(record)?.into()),
-            Type::Reference(reference) => self.compile_reference(reference),
-            Type::Union(union) => Ok(self.compile_union(union)?.into()),
-            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
-        }
+            .into(),
+            Type::None(_) => self.compile_none().into(),
+            Type::Number(_) => self.compile_number().into(),
+            Type::Record(record) => self.compile_record_recursively(record)?.into(),
+            Type::Reference(reference) => self.compile_reference(reference)?,
+            Type::Union(union) => self.compile_union(union)?.into(),
+            Type::List(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
+        })
     }
 
     fn compile_reference(
@@ -126,6 +126,7 @@ impl TypeCompiler {
                     Ok(match type_ {
                         Type::Boolean(_)
                         | Type::Function(_)
+                        | Type::List(_)
                         | Type::None(_)
                         | Type::Number(_)
                         | Type::Record(_)
@@ -154,11 +155,11 @@ impl TypeCompiler {
         types: impl IntoIterator<Item = &'a Type>,
     ) -> Result<ssf::types::Algebraic, CompileError> {
         Ok(ssf::types::Algebraic::with_tags(
-            self.compile_any_type_members(types)?,
+            self.compile_union_type_members(types)?,
         ))
     }
 
-    fn compile_any_type_members<'a>(
+    fn compile_union_type_members<'a>(
         &self,
         types: impl IntoIterator<Item = &'a Type>,
     ) -> Result<BTreeMap<u64, ssf::types::Constructor>, CompileError> {
@@ -172,6 +173,7 @@ impl TypeCompiler {
                         Ok(match type_ {
                             Type::Boolean(_)
                             | Type::Function(_)
+                            | Type::List(_)
                             | Type::None(_)
                             | Type::Number(_)
                             | Type::Record(_)
@@ -181,7 +183,7 @@ impl TypeCompiler {
                             )]
                             .into_iter()
                             .collect(),
-                            Type::Union(union) => self.compile_any_type_members(union.types())?,
+                            Type::Union(union) => self.compile_union_type_members(union.types())?,
                             Type::Any(_) => Default::default(),
 
                             Type::Unknown(_) | Type::Variable(_) => unreachable!(),

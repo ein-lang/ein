@@ -142,6 +142,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
             | Expression::Case(_) // TODO Desugar case expression arguments.
             | Expression::If(_)
             | Expression::Let(_)
+            | Expression::List(_)
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Operation(_)

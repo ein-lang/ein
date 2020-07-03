@@ -2,6 +2,8 @@ mod boolean_operation_desugarer;
 mod elementless_record_desugarer;
 mod equal_operation_desugarer;
 mod function_type_argument_desugarer;
+mod list_literal_desugarer;
+mod list_type_desugarer;
 mod not_equal_operation_desugarer;
 mod partial_application_desugarer;
 mod record_function_desugarer;
@@ -11,6 +13,7 @@ mod typed_meta_desugarer;
 
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
+use super::list_literal_configuration::ListLiteralConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
@@ -19,22 +22,30 @@ use boolean_operation_desugarer::BooleanOperationDesugarer;
 use elementless_record_desugarer::ElementlessRecordDesugarer;
 use equal_operation_desugarer::EqualOperationDesugarer;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
+use list_literal_desugarer::ListLiteralDesugarer;
+use list_type_desugarer::ListTypeDesugarer;
 use not_equal_operation_desugarer::NotEqualOperationDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
 use record_function_desugarer::RecordFunctionDesugarer;
 use record_update_desugarer::RecordUpdateDesugarer;
+use std::sync::Arc;
 use type_coercion_desugarer::TypeCoercionDesugarer;
 use typed_meta_desugarer::TypedMetaDesugarer;
 
 pub fn desugar_before_name_qualification(module: &Module) -> Result<Module, CompileError> {
-    Ok(RecordFunctionDesugarer::new().desugar(&ElementlessRecordDesugarer::new().desugar(module)))
+    let module = ElementlessRecordDesugarer::new().desugar(&module);
+
+    Ok(RecordFunctionDesugarer::new().desugar(&module))
 }
 
 pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
     RecordUpdateDesugarer::new().desugar(module)
 }
 
-pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
+pub fn desugar_with_types(
+    module: &Module,
+    list_literal_configuration: Arc<ListLiteralConfiguration>,
+) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let union_type_simplifier = UnionTypeSimplifier::new(
@@ -46,12 +57,14 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
         union_type_simplifier.clone(),
     );
 
+    let module = ListLiteralDesugarer::new(list_literal_configuration.clone()).desugar(&module)?;
     let module = BooleanOperationDesugarer::new().desugar(&module)?;
 
     let module = NotEqualOperationDesugarer::new().desugar(&module)?;
     let module = EqualOperationDesugarer::new(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
+        list_literal_configuration.clone(),
     )
     .desugar(&module)?;
 
@@ -63,6 +76,7 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
     .desugar(&module)?;
 
     let module = PartialApplicationDesugarer::new().desugar(&module)?;
+    let module = ListTypeDesugarer::new(list_literal_configuration).desugar(&module)?;
 
     TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
         reference_type_resolver,
@@ -77,9 +91,104 @@ pub fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
 mod tests {
     use super::*;
     use crate::debug::SourceInformation;
+    use crate::path::ModulePath;
     use crate::types;
     use insta::assert_debug_snapshot;
     use pretty_assertions::assert_eq;
+
+    fn list_module_interface() -> ModuleInterface {
+        ModuleInterface::new(
+            ModulePath::dummy(),
+            vec!["empty", "concatenate", "prepend"]
+                .into_iter()
+                .map(String::from)
+                .collect(),
+            vec![(
+                "GenericList".into(),
+                types::Record::new(
+                    "GenericList",
+                    Default::default(),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            )]
+            .into_iter()
+            .collect(),
+            vec![
+                (
+                    "empty".into(),
+                    types::Reference::new("GenericList", SourceInformation::dummy()).into(),
+                ),
+                (
+                    "concatenate".into(),
+                    types::Function::new(
+                        types::Reference::new("GenericList", SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Reference::new("GenericList", SourceInformation::dummy()),
+                            types::Reference::new("GenericList", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                (
+                    "equal".into(),
+                    types::Function::new(
+                        types::Function::new(
+                            types::Any::new(SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Any::new(SourceInformation::dummy()),
+                                types::Boolean::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Function::new(
+                            types::Reference::new("GenericList", SourceInformation::dummy()),
+                            types::Function::new(
+                                types::Reference::new("GenericList", SourceInformation::dummy()),
+                                types::Boolean::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                (
+                    "prepend".into(),
+                    types::Function::new(
+                        types::Any::new(SourceInformation::dummy()),
+                        types::Function::new(
+                            types::Reference::new("GenericList", SourceInformation::dummy()),
+                            types::Reference::new("GenericList", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+            ]
+            .into_iter()
+            .collect(),
+        )
+    }
+
+    fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
+        super::desugar_with_types(
+            module,
+            ListLiteralConfiguration::new(
+                "empty",
+                "concatenate",
+                "equal",
+                "prepend",
+                "GenericList",
+            )
+            .into(),
+        )
+    }
 
     mod type_coercion {
         use super::*;
@@ -717,72 +826,105 @@ mod tests {
         ])));
     }
 
-    #[test]
-    fn desugar_union_equal_operation() {
-        let union_type = types::Union::new(
-            vec![
-                types::Number::new(SourceInformation::dummy()).into(),
-                types::None::new(SourceInformation::dummy()).into(),
-            ],
-            SourceInformation::dummy(),
-        );
+    mod equal_operations {
+        use super::*;
+        use pretty_assertions::assert_eq;
 
-        assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
-            ValueDefinition::new(
-                "x",
-                Operation::with_type(
-                    union_type.clone(),
-                    Operator::Equal,
-                    None::new(SourceInformation::dummy()),
-                    None::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-                types::Boolean::new(SourceInformation::dummy()),
+        #[test]
+        fn desugar_union_equal_operation() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::None::new(SourceInformation::dummy()).into(),
+                ],
                 SourceInformation::dummy(),
-            )
-            .into()
-        ])));
-    }
+            );
 
-    #[test]
-    fn desugar_not_equal_operation() {
-        let create_module = |expression: Expression| {
-            Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                expression,
-                types::Boolean::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()])
-        };
-
-        assert_eq!(
-            desugar_with_types(&create_module(
-                Operation::with_type(
-                    types::Number::new(SourceInformation::dummy()),
-                    Operator::NotEqual,
-                    Number::new(42.0, SourceInformation::dummy()),
-                    Number::new(42.0, SourceInformation::dummy()),
+            assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        union_type.clone(),
+                        Operator::Equal,
+                        None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into()
-            )),
-            Ok(create_module(
-                If::new(
+            ])));
+        }
+
+        #[test]
+        fn desugar_list_equal_operation() {
+            let list_type = types::List::new(
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(desugar_with_types(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![Import::new(list_module_interface(), false)],
+                vec![],
+                vec![ValueDefinition::new(
+                    "x",
+                    Operation::with_type(
+                        list_type.clone(),
+                        Operator::Equal,
+                        List::with_type(list_type.clone(), vec![], SourceInformation::dummy()),
+                        List::with_type(list_type.clone(), vec![], SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()]
+            )));
+        }
+
+        #[test]
+        fn desugar_not_equal_operation() {
+            let create_module = |expression: Expression| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    expression,
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                desugar_with_types(&create_module(
                     Operation::with_type(
                         types::Number::new(SourceInformation::dummy()),
-                        Operator::Equal,
+                        Operator::NotEqual,
                         Number::new(42.0, SourceInformation::dummy()),
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-            ))
-        );
+                    )
+                    .into()
+                )),
+                Ok(create_module(
+                    If::new(
+                        Operation::with_type(
+                            types::Number::new(SourceInformation::dummy()),
+                            Operator::Equal,
+                            Number::new(42.0, SourceInformation::dummy()),
+                            Number::new(42.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        Boolean::new(false, SourceInformation::dummy()),
+                        Boolean::new(true, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ))
+            );
+        }
     }
 
     #[test]
@@ -853,5 +995,87 @@ mod tests {
                 .into(),
             ))
         );
+    }
+
+    mod list_literals {
+        use super::*;
+
+        #[test]
+        fn desugar_empty_list() {
+            let list_type = types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(desugar_with_types(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![Import::new(list_module_interface(), false)],
+                vec![],
+                vec![ValueDefinition::new(
+                    "x",
+                    List::with_type(list_type.clone(), vec![], SourceInformation::dummy(),),
+                    list_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into()]
+            )));
+        }
+
+        #[test]
+        fn desugar_list_with_an_element() {
+            let list_type = types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(desugar_with_types(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![Import::new(list_module_interface(), false)],
+                vec![],
+                vec![ValueDefinition::new(
+                    "x",
+                    List::with_type(
+                        list_type.clone(),
+                        vec![ListElement::Single(
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    list_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into()]
+            )));
+        }
+
+        #[test]
+        fn desugar_list_with_spread_element() {
+            let list_type = types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(desugar_with_types(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![Import::new(list_module_interface(), false)],
+                vec![],
+                vec![ValueDefinition::new(
+                    "x",
+                    List::with_type(
+                        list_type.clone(),
+                        vec![ListElement::Multiple(
+                            List::new(vec![], SourceInformation::dummy(),).into()
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    list_type,
+                    SourceInformation::dummy(),
+                )
+                .into()]
+            )));
+        }
     }
 }

@@ -1,0 +1,96 @@
+---
+source: lib/ein/src/compile/type_inference/mod.rs
+expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", List ::\n                                               new(vec ! [], SourceInformation\n                                                   :: dummy()), list_type .\n                                               clone(), SourceInformation ::\n                                               dummy(),) . into()]))"
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [],
+        definitions: [
+            ValueDefinition(
+                ValueDefinition {
+                    name: "x",
+                    body: List(
+                        List {
+                            type_: List(
+                                List {
+                                    element: Number(
+                                        Number {
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            elements: [],
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: List(
+                        List {
+                            element: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+        ],
+        export: Export {
+            names: {},
+        },
+        imports: [],
+    },
+)

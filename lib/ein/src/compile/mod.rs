@@ -4,8 +4,9 @@ mod desugar;
 mod error;
 mod expression_compiler;
 mod expression_type_extractor;
-mod global_name_qualifier;
+mod global_name_map_creator;
 mod global_name_renamer;
+mod list_literal_configuration;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
@@ -24,7 +25,9 @@ pub use compile_configuration::CompileConfiguration;
 use desugar::{desugar_before_name_qualification, desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
-use global_name_qualifier::GlobalNameQualifier;
+use global_name_map_creator::GlobalNameMapCreator;
+use global_name_renamer::GlobalNameRenamer;
+pub use list_literal_configuration::ListLiteralConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
@@ -38,15 +41,21 @@ pub fn compile(
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = desugar_before_name_qualification(&module)?;
 
-    let module = GlobalNameQualifier::new(
+    let names = GlobalNameMapCreator::create(
         &module,
         &vec![configuration.source_main_function_name().into()]
             .into_iter()
             .collect(),
-    )
-    .qualify(&module);
+    );
+    let module = GlobalNameRenamer::new(&names).rename(&module);
 
-    let module = desugar_with_types(&infer_types(&desugar_without_types(&module)?)?)?;
+    let module = desugar_with_types(
+        &infer_types(&desugar_without_types(&module)?)?,
+        configuration
+            .list_literal_configuration()
+            .qualify(&names)
+            .into(),
+    )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
@@ -104,14 +113,26 @@ fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::list_literal_configuration::ListLiteralConfiguration;
     use super::*;
     use crate::debug::*;
     use crate::types;
     use lazy_static::lazy_static;
 
     lazy_static! {
-        static ref COMPILE_CONFIGURATION: CompileConfiguration =
-            CompileConfiguration::new("main", "ein_main", "ein_init");
+        static ref COMPILE_CONFIGURATION: CompileConfiguration = CompileConfiguration::new(
+            "main",
+            "ein_main",
+            "ein_init",
+            ListLiteralConfiguration::new(
+                "emptyList",
+                "concatenateLists",
+                "equalLists",
+                "prependToLists",
+                "GenericList"
+            )
+            .into()
+        );
     }
 
     #[test]
@@ -507,4 +528,27 @@ mod tests {
         )
         .unwrap();
     }
+
+    // TODO Enable these tests.
+    // mod list {
+    //     use super::*;
+    //
+    //     #[test]
+    //     fn compile_empty_list() {
+    //         assert!(compile(
+    //             &Module::from_definitions(vec![ValueDefinition::new(
+    //                 "x",
+    //                 List::new(vec![], SourceInformation::dummy()),
+    //                 types::List::new(
+    //                     types::Number::new(SourceInformation::dummy()),
+    //                     SourceInformation::dummy()
+    //                 ),
+    //                 SourceInformation::dummy(),
+    //             )
+    //             .into()]),
+    //             &COMPILE_CONFIGURATION
+    //         )
+    //         .is_ok());
+    //     }
+    // }
 }

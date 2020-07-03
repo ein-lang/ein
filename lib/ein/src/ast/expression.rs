@@ -3,6 +3,7 @@ use super::boolean::Boolean;
 use super::case::Case;
 use super::if_::If;
 use super::let_::Let;
+use super::list::List;
 use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
@@ -18,14 +19,15 @@ pub enum Expression {
     Application(Application),
     Boolean(Boolean),
     Case(Case),
-    RecordConstruction(RecordConstruction),
-    RecordElementOperation(RecordElementOperation),
-    RecordUpdate(RecordUpdate),
     If(If),
     Let(Let),
+    List(List),
     None(None),
     Number(Number),
     Operation(Operation),
+    RecordConstruction(RecordConstruction),
+    RecordElementOperation(RecordElementOperation),
+    RecordUpdate(RecordUpdate),
     TypeCoercion(TypeCoercion),
     Variable(Variable),
 }
@@ -47,6 +49,7 @@ impl Expression {
             Self::RecordUpdate(record_update) => record_update.convert_expressions(convert)?.into(),
             Self::If(if_) => if_.convert_expressions(convert)?.into(),
             Self::Let(let_) => let_.convert_expressions(convert)?.into(),
+            Self::List(list) => list.convert_expressions(convert)?.into(),
             Self::Operation(operation) => operation.convert_expressions(convert)?.into(),
             Self::TypeCoercion(coercion) => coercion.convert_expressions(convert)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
@@ -69,6 +72,7 @@ impl Expression {
             Self::RecordUpdate(record_update) => record_update.convert_types(convert)?.into(),
             Self::If(if_) => if_.convert_types(convert)?.into(),
             Self::Let(let_) => let_.convert_types(convert)?.into(),
+            Self::List(list) => list.convert_types(convert)?.into(),
             Self::Operation(operation) => operation.convert_types(convert)?.into(),
             Self::TypeCoercion(coercion) => coercion.convert_types(convert)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
@@ -125,6 +129,12 @@ impl From<If> for Expression {
 impl From<Let> for Expression {
     fn from(let_: Let) -> Expression {
         Self::Let(let_)
+    }
+}
+
+impl From<List> for Expression {
+    fn from(list: List) -> Expression {
+        Self::List(list)
     }
 }
 
