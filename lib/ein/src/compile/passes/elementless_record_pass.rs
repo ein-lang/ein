@@ -62,12 +62,10 @@ mod tests {
         let record_type = types::Record::new("Foo", Default::default(), SourceInformation::dummy());
 
         assert_eq!(
-            ElementlessRecordPass::new().compile(
-                &Module::from_definitions_and_type_definitions(
-                    vec![TypeDefinition::new("Foo", record_type.clone())],
-                    vec![]
-                )
-            ),
+            ElementlessRecordPass::new().compile(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![]
+            )),
             Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![ValueDefinition::new(

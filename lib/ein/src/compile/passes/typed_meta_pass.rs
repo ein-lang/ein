@@ -28,9 +28,7 @@ pub struct TypedMetaPass<D> {
 
 impl<D: TypedPass> TypedMetaPass<D> {
     pub fn new(child_pass: D) -> Self {
-        Self {
-            child_pass,
-        }
+        Self { child_pass }
     }
 
     pub fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
