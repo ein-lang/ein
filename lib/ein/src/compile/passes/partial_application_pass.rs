@@ -4,36 +4,36 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::types::Type;
 
-pub struct PartialApplicationDesugarer {
+pub struct PartialApplicationPass {
     name_generator: NameGenerator,
 }
 
-impl PartialApplicationDesugarer {
+impl PartialApplicationPass {
     pub fn new() -> Self {
         Self {
             name_generator: NameGenerator::new("pa_argument_"),
         }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
         module
             .convert_definitions(&mut |definition| -> Result<_, CompileError> {
                 if let Definition::ValueDefinition(value_definition) = definition {
-                    Ok(self.desugar_value_definition(value_definition))
+                    Ok(self.compile_value_definition(value_definition))
                 } else {
                     Ok(definition.clone())
                 }
             })?
             .convert_definitions(&mut |definition| -> Result<_, CompileError> {
                 if let Definition::FunctionDefinition(function_definition) = definition {
-                    Ok(self.desugar_function_definition(function_definition).into())
+                    Ok(self.compile_function_definition(function_definition).into())
                 } else {
                     Ok(definition.clone())
                 }
             })
     }
 
-    fn desugar_value_definition(&mut self, value_definition: &ValueDefinition) -> Definition {
+    fn compile_value_definition(&mut self, value_definition: &ValueDefinition) -> Definition {
         if let Type::Function(_) = value_definition.type_() {
             FunctionDefinition::new(
                 value_definition.name(),
@@ -48,7 +48,7 @@ impl PartialApplicationDesugarer {
         }
     }
 
-    fn desugar_function_definition(
+    fn compile_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
     ) -> FunctionDefinition {
@@ -165,7 +165,7 @@ mod tests {
     #[test]
     fn complement_an_omitted_argument_of_value_definition() {
         assert_eq!(
-            PartialApplicationDesugarer::new().desugar(&Module::from_definitions(vec![
+            PartialApplicationPass::new().compile(&Module::from_definitions(vec![
                 ValueDefinition::new(
                     "f",
                     Variable::new("g", SourceInformation::dummy()),
@@ -210,7 +210,7 @@ mod tests {
         );
 
         assert_eq!(
-            PartialApplicationDesugarer::new().desugar(&Module::from_definitions(vec![
+            PartialApplicationPass::new().compile(&Module::from_definitions(vec![
                 ValueDefinition::new(
                     "f",
                     Variable::new("g", SourceInformation::dummy()),
@@ -251,7 +251,7 @@ mod tests {
         );
 
         assert_eq!(
-            PartialApplicationDesugarer::new().desugar(&Module::from_definitions(vec![
+            PartialApplicationPass::new().compile(&Module::from_definitions(vec![
                 FunctionDefinition::new(
                     "f",
                     vec!["x".into()],
@@ -293,7 +293,7 @@ mod tests {
         );
 
         assert_eq!(
-            PartialApplicationDesugarer::new().desugar(&Module::from_definitions(vec![
+            PartialApplicationPass::new().compile(&Module::from_definitions(vec![
                 FunctionDefinition::new(
                     "f",
                     vec!["x".into()],

@@ -4,36 +4,36 @@ use crate::ast::*;
 use crate::types::Type;
 use std::collections::HashMap;
 
-pub trait TypedDesugarer {
-    fn desugar_function_definition(
+pub trait TypedPass {
+    fn compile_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError>;
-    fn desugar_value_definition(
+    fn compile_value_definition(
         &mut self,
         value_definition: &ValueDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<ValueDefinition, CompileError>;
-    fn desugar_expression(
+    fn compile_expression(
         &mut self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError>;
 }
 
-pub struct TypedMetaDesugarer<D> {
-    component_desugarer: D,
+pub struct TypedMetaPass<D> {
+    child_pass: D,
 }
 
-impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
-    pub fn new(component_desugarer: D) -> Self {
+impl<D: TypedPass> TypedMetaPass<D> {
+    pub fn new(child_pass: D) -> Self {
         Self {
-            component_desugarer,
+            child_pass,
         }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
         let variables = ModuleEnvironmentCreator::create(module);
 
         Ok(Module::new(
@@ -47,10 +47,10 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
                 .map(|definition| {
                     Ok(match definition {
                         Definition::FunctionDefinition(function_definition) => self
-                            .desugar_function_definition(function_definition, &variables)?
+                            .compile_function_definition(function_definition, &variables)?
                             .into(),
                         Definition::ValueDefinition(value_definition) => self
-                            .desugar_value_definition(value_definition, &variables)?
+                            .compile_value_definition(value_definition, &variables)?
                             .into(),
                     })
                 })
@@ -58,7 +58,7 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
         ))
     }
 
-    fn desugar_function_definition(
+    fn compile_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
@@ -75,9 +75,9 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
             variables.insert(name.into(), type_.clone());
         }
 
-        let body = self.desugar_expression(function_definition.body(), &variables)?;
+        let body = self.compile_expression(function_definition.body(), &variables)?;
 
-        Ok(self.component_desugarer.desugar_function_definition(
+        Ok(self.child_pass.compile_function_definition(
             &FunctionDefinition::new(
                 function_definition.name(),
                 function_definition.arguments().to_vec(),
@@ -89,14 +89,14 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
         )?)
     }
 
-    fn desugar_value_definition(
+    fn compile_value_definition(
         &mut self,
         value_definition: &ValueDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<ValueDefinition, CompileError> {
-        let body = self.desugar_expression(value_definition.body(), variables)?;
+        let body = self.compile_expression(value_definition.body(), variables)?;
 
-        Ok(self.component_desugarer.desugar_value_definition(
+        Ok(self.child_pass.compile_value_definition(
             &ValueDefinition::new(
                 value_definition.name(),
                 body,
@@ -107,22 +107,22 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
         )?)
     }
 
-    fn desugar_expression(
+    fn compile_expression(
         &mut self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
         let expression = match expression {
             Expression::Application(application) => Application::new(
-                self.desugar_expression(application.function(), variables)?,
-                self.desugar_expression(application.argument(), variables)?,
+                self.compile_expression(application.function(), variables)?,
+                self.compile_expression(application.argument(), variables)?,
                 application.source_information().clone(),
             )
             .into(),
             Expression::Case(case) => Case::with_type(
                 case.type_().clone(),
                 case.name(),
-                self.desugar_expression(case.argument(), variables)?,
+                self.compile_expression(case.argument(), variables)?,
                 case.alternatives()
                     .iter()
                     .map(|alternative| {
@@ -132,7 +132,7 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
 
                         Ok(Alternative::new(
                             alternative.type_().clone(),
-                            self.desugar_expression(alternative.expression(), &variables)?,
+                            self.compile_expression(alternative.expression(), &variables)?,
                         ))
                     })
                     .collect::<Result<_, CompileError>>()?,
@@ -140,9 +140,9 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
             )
             .into(),
             Expression::If(if_) => If::new(
-                self.desugar_expression(if_.condition(), variables)?,
-                self.desugar_expression(if_.then(), variables)?,
-                self.desugar_expression(if_.else_(), variables)?,
+                self.compile_expression(if_.condition(), variables)?,
+                self.compile_expression(if_.then(), variables)?,
+                self.compile_expression(if_.else_(), variables)?,
                 if_.source_information().clone(),
             )
             .into(),
@@ -173,11 +173,11 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
                 for definition in let_.definitions() {
                     definitions.push(match definition {
                         Definition::FunctionDefinition(function_definition) => self
-                            .desugar_function_definition(function_definition, &variables)?
+                            .compile_function_definition(function_definition, &variables)?
                             .into(),
                         Definition::ValueDefinition(value_definition) => {
                             let definition =
-                                self.desugar_value_definition(value_definition, &variables)?;
+                                self.compile_value_definition(value_definition, &variables)?;
 
                             variables.insert(
                                 value_definition.name().into(),
@@ -191,15 +191,15 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
 
                 Let::new(
                     definitions,
-                    self.desugar_expression(let_.expression(), &variables)?,
+                    self.compile_expression(let_.expression(), &variables)?,
                 )
                 .into()
             }
             Expression::Operation(operation) => Operation::with_type(
                 operation.type_().clone(),
                 operation.operator(),
-                self.desugar_expression(operation.lhs(), &variables)?,
-                self.desugar_expression(operation.rhs(), &variables)?,
+                self.compile_expression(operation.lhs(), &variables)?,
+                self.compile_expression(operation.rhs(), &variables)?,
                 operation.source_information().clone(),
             )
             .into(),
@@ -209,7 +209,7 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
                     .elements()
                     .iter()
                     .map(|(key, expression)| {
-                        Ok((key.clone(), self.desugar_expression(expression, variables)?))
+                        Ok((key.clone(), self.compile_expression(expression, variables)?))
                     })
                     .collect::<Result<_, CompileError>>()?,
                 record_construction.source_information().clone(),
@@ -218,7 +218,7 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
             Expression::RecordElementOperation(operation) => RecordElementOperation::new(
                 operation.type_().clone(),
                 operation.key(),
-                self.desugar_expression(operation.argument(), variables)?,
+                self.compile_expression(operation.argument(), variables)?,
                 operation.source_information().clone(),
             )
             .into(),
@@ -232,7 +232,7 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
         };
 
         Ok(self
-            .component_desugarer
-            .desugar_expression(&expression, &variables)?)
+            .child_pass
+            .compile_expression(&expression, &variables)?)
     }
 }

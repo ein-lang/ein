@@ -3,24 +3,24 @@ use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
 use super::super::union_type_simplifier::UnionTypeSimplifier;
-use super::typed_meta_desugarer::TypedDesugarer;
+use super::typed_meta_pass::TypedPass;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::rc::Rc;
 
-/// TypeCoercionDesugarer desugars value-to-union, function-to-union and
+/// TypeCoercionPass compiles value-to-union, function-to-union and
 /// value-to-any type coercions.
-/// Note that it does not desugar function-to-function ones.
-pub struct TypeCoercionDesugarer {
+/// Note that it does not compile function-to-function ones.
+pub struct TypeCoercionPass {
     reference_type_resolver: Rc<ReferenceTypeResolver>,
     type_equality_checker: Rc<TypeEqualityChecker>,
     expression_type_extractor: Rc<ExpressionTypeExtractor>,
     union_type_simplifier: Rc<UnionTypeSimplifier>,
 }
 
-impl TypeCoercionDesugarer {
+impl TypeCoercionPass {
     pub fn new(
         reference_type_resolver: Rc<ReferenceTypeResolver>,
         type_equality_checker: Rc<TypeEqualityChecker>,
@@ -64,8 +64,8 @@ impl TypeCoercionDesugarer {
     }
 }
 
-impl TypedDesugarer for TypeCoercionDesugarer {
-    fn desugar_function_definition(
+impl TypedPass for TypeCoercionPass {
+    fn compile_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
@@ -100,7 +100,7 @@ impl TypedDesugarer for TypeCoercionDesugarer {
         ))
     }
 
-    fn desugar_value_definition(
+    fn compile_value_definition(
         &mut self,
         value_definition: &ValueDefinition,
         variables: &HashMap<String, Type>,
@@ -118,7 +118,7 @@ impl TypedDesugarer for TypeCoercionDesugarer {
         ))
     }
 
-    fn desugar_expression(
+    fn compile_expression(
         &mut self,
         expression: &Expression,
         variables: &HashMap<String, Type>,

@@ -1,6 +1,5 @@
 mod boolean_compiler;
 mod compile_configuration;
-mod desugar;
 mod error;
 mod expression_compiler;
 mod expression_type_extractor;
@@ -11,6 +10,8 @@ mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
+mod pass;
+mod passes;
 mod reference_type_resolver;
 mod type_compiler;
 mod type_equality_checker;
@@ -22,7 +23,6 @@ use crate::ast::*;
 use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
-use desugar::{desugar_before_name_qualification, desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
 use global_name_map_creator::GlobalNameMapCreator;
@@ -30,6 +30,7 @@ use global_name_renamer::GlobalNameRenamer;
 pub use list_literal_configuration::ListLiteralConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
+use passes::{compile_before_name_qualification, compile_with_types, compile_without_types};
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
@@ -39,7 +40,7 @@ pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = desugar_before_name_qualification(&module)?;
+    let module = compile_before_name_qualification(&module)?;
 
     let names = GlobalNameMapCreator::create(
         &module,
@@ -49,8 +50,8 @@ pub fn compile(
     );
     let module = GlobalNameRenamer::new(&names).rename(&module);
 
-    let module = desugar_with_types(
-        &infer_types(&desugar_without_types(&module)?)?,
+    let module = compile_with_types(
+        &infer_types(&compile_without_types(&module)?)?,
         configuration
             .list_literal_configuration()
             .qualify(&names)

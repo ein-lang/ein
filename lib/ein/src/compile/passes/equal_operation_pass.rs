@@ -9,14 +9,14 @@ use crate::types::{self, Type};
 use std::rc::Rc;
 use std::sync::Arc;
 
-pub struct EqualOperationDesugarer {
+pub struct EqualOperationPass {
     name_generator: NameGenerator,
     reference_type_resolver: Rc<ReferenceTypeResolver>,
     type_equality_checker: Rc<TypeEqualityChecker>,
     list_literal_configuration: Arc<ListLiteralConfiguration>,
 }
 
-impl EqualOperationDesugarer {
+impl EqualOperationPass {
     pub fn new(
         reference_type_resolver: Rc<ReferenceTypeResolver>,
         type_equality_checker: Rc<TypeEqualityChecker>,
@@ -30,10 +30,10 @@ impl EqualOperationDesugarer {
         }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
         let module =
             module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-                self.desugar_expression(expression)
+                self.compile_expression(expression)
             })?;
 
         Ok(Module::new(
@@ -75,7 +75,7 @@ impl EqualOperationDesugarer {
         for (key, element_type) in record_type.elements() {
             expression = If::new(
                 expression,
-                self.desugar_equal_operation(
+                self.compile_equal_operation(
                     element_type,
                     &RecordElementOperation::new(
                         record_type.clone(),
@@ -116,10 +116,10 @@ impl EqualOperationDesugarer {
         ))
     }
 
-    fn desugar_expression(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
+    fn compile_expression(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
         Ok(if let Expression::Operation(operation) = expression {
             if operation.operator() == Operator::Equal {
-                self.desugar_equal_operation(
+                self.compile_equal_operation(
                     operation.type_(),
                     operation.lhs(),
                     operation.rhs(),
@@ -133,7 +133,7 @@ impl EqualOperationDesugarer {
         })
     }
 
-    fn desugar_equal_operation(
+    fn compile_equal_operation(
         &mut self,
         type_: &Type,
         lhs: &Expression,
@@ -183,7 +183,7 @@ impl EqualOperationDesugarer {
                                         vec![
                                             Alternative::new(
                                                 element_type.clone(),
-                                                self.desugar_equal_operation(
+                                                self.compile_equal_operation(
                                                     element_type,
                                                     &Variable::new(
                                                         "lhs",
@@ -294,7 +294,7 @@ impl EqualOperationDesugarer {
                                                     .type_equality_checker
                                                     .equal(lhs_type, rhs_type)?
                                                 {
-                                                    self.desugar_equal_operation(
+                                                    self.compile_equal_operation(
                                                         rhs_type,
                                                         &Variable::new(
                                                             &lhs_name,

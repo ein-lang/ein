@@ -3,27 +3,27 @@ use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
-use super::typed_meta_desugarer::TypedDesugarer;
+use super::typed_meta_pass::TypedPass;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub struct FunctionTypeArgumentDesugarer {
+pub struct FunctionTypeArgumentPass {
     name_generator: NameGenerator,
     reference_type_resolver: Rc<ReferenceTypeResolver>,
     type_equality_checker: Rc<TypeEqualityChecker>,
     expression_type_extractor: Rc<ExpressionTypeExtractor>,
 }
 
-impl FunctionTypeArgumentDesugarer {
+impl FunctionTypeArgumentPass {
     pub fn new(
         reference_type_resolver: Rc<ReferenceTypeResolver>,
         type_equality_checker: Rc<TypeEqualityChecker>,
         expression_type_extractor: Rc<ExpressionTypeExtractor>,
     ) -> Self {
-        FunctionTypeArgumentDesugarer {
+        FunctionTypeArgumentPass {
             name_generator: NameGenerator::new("fta_function_"),
             reference_type_resolver,
             type_equality_checker,
@@ -31,7 +31,7 @@ impl FunctionTypeArgumentDesugarer {
         }
     }
 
-    fn desugar_function_type_argument(
+    fn compile_function_type_argument(
         &mut self,
         expression: &Expression,
         to_type: &Type,
@@ -70,8 +70,8 @@ impl FunctionTypeArgumentDesugarer {
     }
 }
 
-impl TypedDesugarer for FunctionTypeArgumentDesugarer {
-    fn desugar_function_definition(
+impl TypedPass for FunctionTypeArgumentPass {
+    fn compile_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
         _: &HashMap<String, Type>,
@@ -79,7 +79,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
         Ok(function_definition.clone())
     }
 
-    fn desugar_value_definition(
+    fn compile_value_definition(
         &mut self,
         value_definition: &ValueDefinition,
         _: &HashMap<String, Type>,
@@ -87,7 +87,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
         Ok(value_definition.clone())
     }
 
-    fn desugar_expression(
+    fn compile_expression(
         &mut self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
@@ -101,7 +101,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
 
                 Ok(Application::new(
                     application.function().clone(),
-                    self.desugar_function_type_argument(
+                    self.compile_function_type_argument(
                         application.argument(),
                         function_type.to_function().unwrap().argument(),
                         source_information.clone(),
@@ -125,7 +125,7 @@ impl TypedDesugarer for FunctionTypeArgumentDesugarer {
                         .map(|(key, expression)| {
                             Ok((
                                 key.clone(),
-                                self.desugar_function_type_argument(
+                                self.compile_function_type_argument(
                                     expression,
                                     &record_type.elements()[key],
                                     record_construction.source_information().clone(),

@@ -1,6 +1,6 @@
 ---
-source: lib/ein/src/compile/desugar/mod.rs
-expression: "desugar_with_types(&Module::new(ModulePath::dummy(),\n                                Export::new(Default::default()),\n                                vec![Import ::\n                                     new(list_module_interface(), false)],\n                                vec![],\n                                vec![ValueDefinition ::\n                                     new(\"x\", List ::\n                                         with_type(list_type . clone(), vec !\n                                                   [], SourceInformation ::\n                                                   dummy(),), list_type .\n                                         clone(), SourceInformation ::\n                                         dummy(),) . into()]))"
+source: lib/ein/src/compile/passes/mod.rs
+expression: "compile_with_types(&Module::new(ModulePath::dummy(),\n                                Export::new(Default::default()),\n                                vec![Import ::\n                                     new(list_module_interface(), false)],\n                                vec![],\n                                vec![ValueDefinition ::\n                                     new(\"x\", List ::\n                                         with_type(list_type . clone(), vec !\n                                                   [], SourceInformation ::\n                                                   dummy(),), list_type .\n                                         clone(), SourceInformation ::\n                                         dummy(),) . into()]))"
 ---
 Ok(
     Module {

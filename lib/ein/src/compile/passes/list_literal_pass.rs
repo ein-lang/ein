@@ -5,38 +5,38 @@ use crate::debug::*;
 use std::rc::Rc;
 use std::sync::Arc;
 
-pub struct ListLiteralDesugarer {
+pub struct ListLiteralPass {
     configuration: Arc<ListLiteralConfiguration>,
 }
 
 /// Desugars list literals into generic list functions and variables.
-/// Types are consistent after desugaring as all `List a` types are converted
+/// Types are consistent after compiling as all `List a` types are converted
 /// into `List Any`.
-impl ListLiteralDesugarer {
+impl ListLiteralPass {
     pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
         Self { configuration }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
         module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            Ok(self.desugar_expression(expression))
+            Ok(self.compile_expression(expression))
         })
     }
 
-    fn desugar_expression(&mut self, expression: &Expression) -> Expression {
+    fn compile_expression(&mut self, expression: &Expression) -> Expression {
         if let Expression::List(list) = expression {
-            self.desugar_list(list.elements(), list.source_information())
+            self.compile_list(list.elements(), list.source_information())
         } else {
             expression.clone()
         }
     }
 
-    fn desugar_list(
+    fn compile_list(
         &self,
         elements: &[ListElement],
         source_information: &Rc<SourceInformation>,
     ) -> Expression {
-        let rest_expression = || self.desugar_list(&elements[1..], source_information);
+        let rest_expression = || self.compile_list(&elements[1..], source_information);
 
         match elements {
             [] => Variable::new(

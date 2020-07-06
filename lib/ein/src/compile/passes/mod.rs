@@ -1,15 +1,15 @@
-mod boolean_operation_desugarer;
-mod elementless_record_desugarer;
-mod equal_operation_desugarer;
-mod function_type_argument_desugarer;
-mod list_literal_desugarer;
-mod list_type_desugarer;
-mod not_equal_operation_desugarer;
-mod partial_application_desugarer;
-mod record_function_desugarer;
-mod record_update_desugarer;
-mod type_coercion_desugarer;
-mod typed_meta_desugarer;
+mod boolean_operation_pass;
+mod elementless_record_pass;
+mod equal_operation_pass;
+mod function_type_argument_pass;
+mod list_literal_pass;
+mod list_type_pass;
+mod not_equal_operation_pass;
+mod partial_application_pass;
+mod record_function_pass;
+mod record_update_pass;
+mod type_coercion_pass;
+mod typed_meta_pass;
 
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
@@ -18,31 +18,31 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
-use boolean_operation_desugarer::BooleanOperationDesugarer;
-use elementless_record_desugarer::ElementlessRecordDesugarer;
-use equal_operation_desugarer::EqualOperationDesugarer;
-use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
-use list_literal_desugarer::ListLiteralDesugarer;
-use list_type_desugarer::ListTypeDesugarer;
-use not_equal_operation_desugarer::NotEqualOperationDesugarer;
-use partial_application_desugarer::PartialApplicationDesugarer;
-use record_function_desugarer::RecordFunctionDesugarer;
-use record_update_desugarer::RecordUpdateDesugarer;
+use boolean_operation_pass::BooleanOperationPass;
+use elementless_record_pass::ElementlessRecordPass;
+use equal_operation_pass::EqualOperationPass;
+use function_type_argument_pass::FunctionTypeArgumentPass;
+use list_literal_pass::ListLiteralPass;
+use list_type_pass::ListTypePass;
+use not_equal_operation_pass::NotEqualOperationPass;
+use partial_application_pass::PartialApplicationPass;
+use record_function_pass::RecordFunctionPass;
+use record_update_pass::RecordUpdatePass;
 use std::sync::Arc;
-use type_coercion_desugarer::TypeCoercionDesugarer;
-use typed_meta_desugarer::TypedMetaDesugarer;
+use type_coercion_pass::TypeCoercionPass;
+use typed_meta_pass::TypedMetaPass;
 
-pub fn desugar_before_name_qualification(module: &Module) -> Result<Module, CompileError> {
-    let module = ElementlessRecordDesugarer::new().desugar(&module);
+pub fn compile_before_name_qualification(module: &Module) -> Result<Module, CompileError> {
+    let module = ElementlessRecordPass::new().compile(&module);
 
-    Ok(RecordFunctionDesugarer::new().desugar(&module))
+    Ok(RecordFunctionPass::new().compile(&module))
 }
 
-pub fn desugar_without_types(module: &Module) -> Result<Module, CompileError> {
-    RecordUpdateDesugarer::new().desugar(module)
+pub fn compile_without_types(module: &Module) -> Result<Module, CompileError> {
+    RecordUpdatePass::new().compile(module)
 }
 
-pub fn desugar_with_types(
+pub fn compile_with_types(
     module: &Module,
     list_literal_configuration: Arc<ListLiteralConfiguration>,
 ) -> Result<Module, CompileError> {
@@ -57,34 +57,34 @@ pub fn desugar_with_types(
         union_type_simplifier.clone(),
     );
 
-    let module = ListLiteralDesugarer::new(list_literal_configuration.clone()).desugar(&module)?;
-    let module = BooleanOperationDesugarer::new().desugar(&module)?;
+    let module = ListLiteralPass::new(list_literal_configuration.clone()).compile(&module)?;
+    let module = BooleanOperationPass::new().compile(&module)?;
 
-    let module = NotEqualOperationDesugarer::new().desugar(&module)?;
-    let module = EqualOperationDesugarer::new(
+    let module = NotEqualOperationPass::new().compile(&module)?;
+    let module = EqualOperationPass::new(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
         list_literal_configuration.clone(),
     )
-    .desugar(&module)?;
+    .compile(&module)?;
 
-    let module = TypedMetaDesugarer::new(FunctionTypeArgumentDesugarer::new(
+    let module = TypedMetaPass::new(FunctionTypeArgumentPass::new(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
         expression_type_extractor.clone(),
     ))
-    .desugar(&module)?;
+    .compile(&module)?;
 
-    let module = PartialApplicationDesugarer::new().desugar(&module)?;
-    let module = ListTypeDesugarer::new(list_literal_configuration).desugar(&module)?;
+    let module = PartialApplicationPass::new().compile(&module)?;
+    let module = ListTypePass::new(list_literal_configuration).compile(&module)?;
 
-    TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
+    TypedMetaPass::new(TypeCoercionPass::new(
         reference_type_resolver,
         type_equality_checker,
         expression_type_extractor,
         union_type_simplifier,
     ))
-    .desugar(&module)
+    .compile(&module)
 }
 
 #[cfg(test)]
@@ -176,8 +176,8 @@ mod tests {
         )
     }
 
-    fn desugar_with_types(module: &Module) -> Result<Module, CompileError> {
-        super::desugar_with_types(
+    fn compile_with_types(module: &Module) -> Result<Module, CompileError> {
+        super::compile_with_types(
             module,
             ListLiteralConfiguration::new(
                 "empty",
@@ -195,7 +195,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn desugar_function_definition() {
+        fn compile_function_definition() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -234,7 +234,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
                         Number::new(42.0, SourceInformation::dummy()),
@@ -264,7 +264,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_value_definition() {
+        fn compile_value_definition() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -284,7 +284,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Number::new(42.0, SourceInformation::dummy()).into()
                 )),
                 Ok(create_module(
@@ -300,7 +300,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_application() {
+        fn compile_application() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -338,7 +338,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Number::new(42.0, SourceInformation::dummy()).into()
                 )),
                 Ok(create_module(
@@ -354,7 +354,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_let_value_expression() {
+        fn compile_let_value_expression() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -383,7 +383,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Number::new(42.0, SourceInformation::dummy()).into()
                 )),
                 Ok(create_module(
@@ -399,7 +399,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_let_function_expression() {
+        fn compile_let_function_expression() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -447,7 +447,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
                         Number::new(42.0, SourceInformation::dummy()),
@@ -477,7 +477,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_record_construction() {
+        fn compile_record_construction() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -487,7 +487,7 @@ mod tests {
             );
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
-            assert_debug_snapshot!(desugar_with_types(
+            assert_debug_snapshot!(compile_with_types(
                 &Module::from_definitions_and_type_definitions(
                     vec![TypeDefinition::new(
                         "Foo",
@@ -520,7 +520,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_union() {
+        fn compile_union() {
             let lower_union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -557,7 +557,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Number::new(42.0, SourceInformation::dummy()).into(),
                     Variable::new("x", SourceInformation::dummy()).into()
                 )),
@@ -581,7 +581,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_function() {
+        fn compile_function() {
             let lower_type = types::None::new(SourceInformation::dummy());
             let upper_type = types::Union::new(
                 vec![
@@ -616,7 +616,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     ValueDefinition::new(
                         "g",
                         Variable::new("f", SourceInformation::dummy()),
@@ -661,7 +661,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_function_as_argument() {
+        fn compile_function_as_argument() {
             let lower_type = types::None::new(SourceInformation::dummy());
             let upper_type = types::Union::new(
                 vec![
@@ -716,7 +716,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Variable::new("f", SourceInformation::dummy()).into()
                 )),
                 Ok(create_module(
@@ -755,7 +755,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_any() {
+        fn compile_any() {
             let create_module = |expression: Expression| {
                 Module::from_definitions(vec![ValueDefinition::new(
                     "x",
@@ -767,7 +767,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Number::new(42.0, SourceInformation::dummy()).into()
                 )),
                 Ok(create_module(
@@ -784,7 +784,7 @@ mod tests {
     }
 
     #[test]
-    fn desugar_case_expression() {
+    fn compile_case_expression() {
         let argument_union_type = types::Union::new(
             vec![
                 types::Boolean::new(SourceInformation::dummy()).into(),
@@ -800,7 +800,7 @@ mod tests {
             SourceInformation::dummy(),
         );
 
-        assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
+        assert_debug_snapshot!(compile_with_types(&Module::from_definitions(vec![
             ValueDefinition::new(
                 "x",
                 Case::with_type(
@@ -831,7 +831,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn desugar_union_equal_operation() {
+        fn compile_union_equal_operation() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -840,7 +840,7 @@ mod tests {
                 SourceInformation::dummy(),
             );
 
-            assert_debug_snapshot!(desugar_with_types(&Module::from_definitions(vec![
+            assert_debug_snapshot!(compile_with_types(&Module::from_definitions(vec![
                 ValueDefinition::new(
                     "x",
                     Operation::with_type(
@@ -858,13 +858,13 @@ mod tests {
         }
 
         #[test]
-        fn desugar_list_equal_operation() {
+        fn compile_list_equal_operation() {
             let list_type = types::List::new(
                 types::None::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             );
 
-            assert_debug_snapshot!(desugar_with_types(&Module::new(
+            assert_debug_snapshot!(compile_with_types(&Module::new(
                 ModulePath::dummy(),
                 Export::new(Default::default()),
                 vec![Import::new(list_module_interface(), false)],
@@ -886,7 +886,7 @@ mod tests {
         }
 
         #[test]
-        fn desugar_not_equal_operation() {
+        fn compile_not_equal_operation() {
             let create_module = |expression: Expression| {
                 Module::from_definitions(vec![ValueDefinition::new(
                     "x",
@@ -898,7 +898,7 @@ mod tests {
             };
 
             assert_eq!(
-                desugar_with_types(&create_module(
+                compile_with_types(&create_module(
                     Operation::with_type(
                         types::Number::new(SourceInformation::dummy()),
                         Operator::NotEqual,
@@ -928,7 +928,7 @@ mod tests {
     }
 
     #[test]
-    fn desugar_and_operation() {
+    fn compile_and_operation() {
         let create_module = |expression: Expression| {
             Module::from_definitions(vec![ValueDefinition::new(
                 "x",
@@ -940,7 +940,7 @@ mod tests {
         };
 
         assert_eq!(
-            desugar_with_types(&create_module(
+            compile_with_types(&create_module(
                 Operation::with_type(
                     types::Boolean::new(SourceInformation::dummy()),
                     Operator::And,
@@ -963,7 +963,7 @@ mod tests {
     }
 
     #[test]
-    fn desugar_or_operation() {
+    fn compile_or_operation() {
         let create_module = |expression: Expression| {
             Module::from_definitions(vec![ValueDefinition::new(
                 "x",
@@ -975,7 +975,7 @@ mod tests {
         };
 
         assert_eq!(
-            desugar_with_types(&create_module(
+            compile_with_types(&create_module(
                 Operation::with_type(
                     types::Boolean::new(SourceInformation::dummy()),
                     Operator::Or,
@@ -1001,13 +1001,13 @@ mod tests {
         use super::*;
 
         #[test]
-        fn desugar_empty_list() {
+        fn compile_empty_list() {
             let list_type = types::List::new(
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             );
 
-            assert_debug_snapshot!(desugar_with_types(&Module::new(
+            assert_debug_snapshot!(compile_with_types(&Module::new(
                 ModulePath::dummy(),
                 Export::new(Default::default()),
                 vec![Import::new(list_module_interface(), false)],
@@ -1023,13 +1023,13 @@ mod tests {
         }
 
         #[test]
-        fn desugar_list_with_an_element() {
+        fn compile_list_with_an_element() {
             let list_type = types::List::new(
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             );
 
-            assert_debug_snapshot!(desugar_with_types(&Module::new(
+            assert_debug_snapshot!(compile_with_types(&Module::new(
                 ModulePath::dummy(),
                 Export::new(Default::default()),
                 vec![Import::new(list_module_interface(), false)],
@@ -1051,13 +1051,13 @@ mod tests {
         }
 
         #[test]
-        fn desugar_list_with_spread_element() {
+        fn compile_list_with_spread_element() {
             let list_type = types::List::new(
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             );
 
-            assert_debug_snapshot!(desugar_with_types(&Module::new(
+            assert_debug_snapshot!(compile_with_types(&Module::new(
                 ModulePath::dummy(),
                 Export::new(Default::default()),
                 vec![Import::new(list_module_interface(), false)],
