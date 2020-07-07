@@ -1,5 +1,5 @@
 ---
-source: lib/ein/src/compile/type_inference/type_inferer.rs
+source: lib/ein/src/compile/type_inference/type_inferrer.rs
 expression: infer_types(&module)
 ---
 Ok(

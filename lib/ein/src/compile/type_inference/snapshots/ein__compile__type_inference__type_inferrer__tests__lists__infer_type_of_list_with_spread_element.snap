@@ -1,5 +1,5 @@
 ---
-source: lib/ein/src/compile/type_inference/type_inferer.rs
+source: lib/ein/src/compile/type_inference/type_inferrer.rs
 expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", List ::\n                                               new(vec !\n                                                   [ListElement ::\n                                                    Multiple(List ::\n                                                             new(vec ! [],\n                                                                 SourceInformation\n                                                                 :: dummy(),)\n                                                             . into())],\n                                                   SourceInformation ::\n                                                   dummy(),), list_type,\n                                               SourceInformation :: dummy(),)\n                                           . into()]))"
 ---
 Ok(

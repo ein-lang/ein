@@ -1,6 +1,6 @@
 ---
-source: lib/ein/src/compile/type_inference/type_inferer.rs
-expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", Number ::\n                                               new(42.0, SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into(), ValueDefinition ::\n                                           new(\"y\", Let ::\n                                               new(vec !\n                                                   [ValueDefinition ::\n                                                    new(\"z\", Variable ::\n                                                        new(\"x\",\n                                                            SourceInformation\n                                                            :: dummy()), types\n                                                        :: Unknown ::\n                                                        new(SourceInformation\n                                                            :: dummy()),\n                                                        SourceInformation ::\n                                                        dummy(),) . into()],\n                                                   Number ::\n                                                   new(42.0, SourceInformation\n                                                       :: dummy()),), types ::\n                                               Number ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
+source: lib/ein/src/compile/type_inference/type_inferrer.rs
+expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", Number ::\n                                               new(42.0, SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into(), ValueDefinition ::\n                                           new(\"y\", Let ::\n                                               new(vec !\n                                                   [ValueDefinition ::\n                                                    new(\"z\", If ::\n                                                        new(Boolean ::\n                                                            new(true,\n                                                                SourceInformation\n                                                                :: dummy()),\n                                                            Variable ::\n                                                            new(\"x\",\n                                                                SourceInformation\n                                                                :: dummy()),\n                                                            Number ::\n                                                            new(42.0,\n                                                                SourceInformation\n                                                                :: dummy()),\n                                                            SourceInformation\n                                                            :: dummy()), types\n                                                        :: Unknown ::\n                                                        new(SourceInformation\n                                                            :: dummy()),\n                                                        SourceInformation ::\n                                                        dummy(),) . into()],\n                                                   Number ::\n                                                   new(42.0, SourceInformation\n                                                       :: dummy()),), types ::\n                                               Number ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
 ---
 Ok(
     Module {
@@ -60,9 +60,47 @@ Ok(
                                 ValueDefinition(
                                     ValueDefinition {
                                         name: "z",
-                                        body: Variable(
-                                            Variable {
-                                                name: "x",
+                                        body: If(
+                                            If {
+                                                condition: Boolean(
+                                                    Boolean {
+                                                        value: true,
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                then: Variable(
+                                                    Variable {
+                                                        name: "x",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                else_: Number(
+                                                    Number {
+                                                        value: 42.0,
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
                                                 source_information: SourceInformation {
                                                     source_name: "",
                                                     location: Location {

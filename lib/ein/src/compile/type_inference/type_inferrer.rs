@@ -8,13 +8,13 @@ use crate::ast::*;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
-pub struct TypeInferer {
+pub struct TypeInferrer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
     union_type_simplifier: Arc<UnionTypeSimplifier>,
 }
 
-impl TypeInferer {
+impl TypeInferrer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
@@ -80,7 +80,7 @@ mod tests {
             type_equality_checker.clone(),
         );
 
-        TypeInferer::new(
+        TypeInferrer::new(
             reference_type_resolver,
             type_equality_checker,
             union_type_simplifier,

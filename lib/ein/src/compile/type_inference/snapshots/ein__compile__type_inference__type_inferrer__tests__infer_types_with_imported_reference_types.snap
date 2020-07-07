@@ -1,5 +1,5 @@
 ---
-source: lib/ein/src/compile/type_inference/type_inferer.rs
+source: lib/ein/src/compile/type_inference/type_inferrer.rs
 expression: infer_types(&module)
 ---
 Ok(
@@ -11,23 +11,7 @@ Ok(
             },
             components: [],
         },
-        type_definitions: [
-            TypeDefinition {
-                name: "Foo",
-                type_: Number(
-                    Number {
-                        source_information: SourceInformation {
-                            source_name: "",
-                            location: Location {
-                                line_number: 0,
-                                column_number: 0,
-                            },
-                            line: "",
-                        },
-                    },
-                ),
-            },
-        ],
+        type_definitions: [],
         definitions: [
             ValueDefinition(
                 ValueDefinition {
@@ -72,6 +56,35 @@ Ok(
         export: Export {
             names: {},
         },
-        imports: [],
+        imports: [
+            Import {
+                module_interface: ModuleInterface {
+                    path: ModulePath {
+                        package: Package {
+                            name: "P",
+                            version: "",
+                        },
+                        components: [],
+                    },
+                    exported_names: {},
+                    types: {
+                        "Foo": Number(
+                            Number {
+                                source_information: SourceInformation {
+                                    source_name: "",
+                                    location: Location {
+                                        line_number: 0,
+                                        column_number: 0,
+                                    },
+                                    line: "",
+                                },
+                            },
+                        ),
+                    },
+                    variables: {},
+                },
+                qualified: true,
+            },
+        ],
     },
 )

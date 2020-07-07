@@ -1,6 +1,6 @@
 ---
-source: lib/ein/src/compile/type_inference/type_inferer.rs
-expression: infer_types(&module)
+source: lib/ein/src/compile/type_inference/type_inferrer.rs
+expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", Boolean ::\n                                               new(true, SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
 ---
 Ok(
     Module {
@@ -16,9 +16,9 @@ Ok(
             ValueDefinition(
                 ValueDefinition {
                     name: "x",
-                    body: Number(
-                        Number {
-                            value: 42.0,
+                    body: Boolean(
+                        Boolean {
+                            value: true,
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {
@@ -29,9 +29,8 @@ Ok(
                             },
                         },
                     ),
-                    type_: Reference(
-                        Reference {
-                            name: "Foo",
+                    type_: Any(
+                        Any {
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {
@@ -56,35 +55,6 @@ Ok(
         export: Export {
             names: {},
         },
-        imports: [
-            Import {
-                module_interface: ModuleInterface {
-                    path: ModulePath {
-                        package: Package {
-                            name: "P",
-                            version: "",
-                        },
-                        components: [],
-                    },
-                    exported_names: {},
-                    types: {
-                        "Foo": Number(
-                            Number {
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
-                                },
-                            },
-                        ),
-                    },
-                    variables: {},
-                },
-                qualified: true,
-            },
-        ],
+        imports: [],
     },
 )
