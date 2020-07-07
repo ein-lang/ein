@@ -11,7 +11,6 @@ mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
-mod pass;
 mod reference_type_resolver;
 mod type_compiler;
 mod type_equality_checker;
