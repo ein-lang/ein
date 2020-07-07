@@ -21,8 +21,8 @@ pub fn infer_types(module: &Module) -> Result<Module, CompileError> {
     );
 
     TypeInferer::new(
-        reference_type_resolver.clone(),
-        type_equality_checker.clone(),
+        reference_type_resolver,
+        type_equality_checker,
         union_type_simplifier,
     )
     .infer(module)
