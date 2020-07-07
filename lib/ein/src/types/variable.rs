@@ -1,7 +1,7 @@
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Arc;
 
 static GLOBAL_VARIABLE_ID: AtomicUsize = AtomicUsize::new(0);
 
