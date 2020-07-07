@@ -1,24 +1,24 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Application {
-    function: Rc<Expression>,
-    argument: Rc<Expression>,
-    source_information: Rc<SourceInformation>,
+    function: Arc<Expression>,
+    argument: Arc<Expression>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Application {
     pub fn new(
         function: impl Into<Expression>,
         argument: impl Into<Expression>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
-            function: Rc::new(function.into()),
-            argument: Rc::new(argument.into()),
+            function: Arc::new(function.into()),
+            argument: Arc::new(argument.into()),
             source_information: source_information.into(),
         }
     }
@@ -31,7 +31,7 @@ impl Application {
         &self.argument
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

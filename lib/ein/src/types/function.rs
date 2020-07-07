@@ -1,24 +1,24 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Function {
-    argument: Rc<Type>,
-    result: Rc<Type>,
-    source_information: Rc<SourceInformation>,
+    argument: Arc<Type>,
+    result: Arc<Type>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Function {
     pub fn new(
         argument: impl Into<Type>,
         result: impl Into<Type>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
-            argument: Rc::new(argument.into()),
-            result: Rc::new(result.into()),
+            argument: Arc::new(argument.into()),
+            result: Arc::new(result.into()),
             source_information: source_information.into(),
         }
     }
@@ -31,7 +31,7 @@ impl Function {
         &self.result
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

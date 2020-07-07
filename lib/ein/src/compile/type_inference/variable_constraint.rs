@@ -1,16 +1,16 @@
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
 use std::collections::BTreeSet;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct VariableConstraint {
     lower_types: BTreeSet<Type>,
     upper_types: BTreeSet<Type>,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl VariableConstraint {
-    pub fn new(source_information: Rc<SourceInformation>) -> Self {
+    pub fn new(source_information: Arc<SourceInformation>) -> Self {
         Self {
             lower_types: Default::default(),
             upper_types: Default::default(),

@@ -2,21 +2,21 @@ use super::expression::Expression;
 use super::list_element::ListElement;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct List {
     type_: Type,
     elements: Vec<ListElement>,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl List {
     pub fn new(
         elements: Vec<ListElement>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
-        let source_information: Rc<_> = source_information.into();
+        let source_information: Arc<_> = source_information.into();
 
         Self {
             type_: types::Unknown::new(source_information.clone()).into(),
@@ -28,7 +28,7 @@ impl List {
     pub fn with_type(
         type_: impl Into<Type>,
         elements: Vec<ListElement>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
@@ -45,7 +45,7 @@ impl List {
         &self.elements
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

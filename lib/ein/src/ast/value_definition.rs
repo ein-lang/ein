@@ -1,14 +1,14 @@
 use super::expression::Expression;
 use crate::debug::*;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ValueDefinition {
     name: String,
     body: Expression,
     type_: Type,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl ValueDefinition {
@@ -16,7 +16,7 @@ impl ValueDefinition {
         name: impl Into<String>,
         body: impl Into<Expression>,
         type_: impl Into<Type>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             name: name.into(),
@@ -38,7 +38,7 @@ impl ValueDefinition {
         &self.type_
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

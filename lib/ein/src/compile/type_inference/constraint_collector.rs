@@ -6,15 +6,15 @@ use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::{HashMap, HashSet};
 use std::iter::FromIterator;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct ConstraintCollector {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
     subsumption_set: SubsumptionSet,
 }
 
 impl ConstraintCollector {
-    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Self {
+    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Self {
         Self {
             reference_type_resolver,
             subsumption_set: SubsumptionSet::new(),

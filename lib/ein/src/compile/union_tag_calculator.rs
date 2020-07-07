@@ -3,14 +3,14 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::types::Type;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct UnionTagCalculator {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl UnionTagCalculator {
-    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Rc<Self> {
+    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Arc<Self> {
         Self {
             reference_type_resolver,
         }

@@ -8,24 +8,24 @@ use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// TypeCoercionDesugarer desugars value-to-union, function-to-union and
 /// value-to-any type coercions.
 /// Note that it does not desugar function-to-function ones.
 pub struct TypeCoercionDesugarer {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    type_equality_checker: Rc<TypeEqualityChecker>,
-    expression_type_extractor: Rc<ExpressionTypeExtractor>,
-    union_type_simplifier: Rc<UnionTypeSimplifier>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    type_equality_checker: Arc<TypeEqualityChecker>,
+    expression_type_extractor: Arc<ExpressionTypeExtractor>,
+    union_type_simplifier: Arc<UnionTypeSimplifier>,
 }
 
 impl TypeCoercionDesugarer {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        type_equality_checker: Rc<TypeEqualityChecker>,
-        expression_type_extractor: Rc<ExpressionTypeExtractor>,
-        union_type_simplifier: Rc<UnionTypeSimplifier>,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        type_equality_checker: Arc<TypeEqualityChecker>,
+        expression_type_extractor: Arc<ExpressionTypeExtractor>,
+        union_type_simplifier: Arc<UnionTypeSimplifier>,
     ) -> Self {
         Self {
             reference_type_resolver,
@@ -39,7 +39,7 @@ impl TypeCoercionDesugarer {
         &mut self,
         expression: &Expression,
         to_type: &Type,
-        source_information: Rc<SourceInformation>,
+        source_information: Arc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
         let from_type = self.reference_type_resolver.resolve(

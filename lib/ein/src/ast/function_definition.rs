@@ -1,7 +1,7 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct FunctionDefinition {
@@ -9,7 +9,7 @@ pub struct FunctionDefinition {
     arguments: Vec<String>,
     body: Expression,
     type_: Type,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl FunctionDefinition {
@@ -18,7 +18,7 @@ impl FunctionDefinition {
         arguments: Vec<String>,
         body: impl Into<Expression>,
         type_: impl Into<Type>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             name: name.into(),
@@ -45,7 +45,7 @@ impl FunctionDefinition {
         &self.type_
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

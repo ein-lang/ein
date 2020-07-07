@@ -6,20 +6,19 @@ use super::super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
-use std::rc::Rc;
 use std::sync::Arc;
 
 pub struct EqualOperationDesugarer {
     name_generator: NameGenerator,
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    type_equality_checker: Rc<TypeEqualityChecker>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    type_equality_checker: Arc<TypeEqualityChecker>,
     list_literal_configuration: Arc<ListLiteralConfiguration>,
 }
 
 impl EqualOperationDesugarer {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        type_equality_checker: Rc<TypeEqualityChecker>,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        type_equality_checker: Arc<TypeEqualityChecker>,
         list_literal_configuration: Arc<ListLiteralConfiguration>,
     ) -> Self {
         Self {
@@ -138,7 +137,7 @@ impl EqualOperationDesugarer {
         type_: &Type,
         lhs: &Expression,
         rhs: &Expression,
-        source_information: Rc<SourceInformation>,
+        source_information: Arc<SourceInformation>,
     ) -> Result<Expression, CompileError> {
         Ok(match self.reference_type_resolver.resolve(type_)? {
             // TODO Do not compare any types.

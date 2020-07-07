@@ -1,19 +1,19 @@
 use super::definition::*;
 use super::expression::*;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Let {
     definitions: Vec<Definition>,
-    expression: Rc<Expression>,
+    expression: Arc<Expression>,
 }
 
 impl Let {
     pub fn new(definitions: Vec<Definition>, expression: impl Into<Expression>) -> Self {
         Self {
             definitions,
-            expression: Rc::new(expression.into()),
+            expression: Arc::new(expression.into()),
         }
     }
 

@@ -1,14 +1,14 @@
 use crate::debug::SourceInformation;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Boolean {
     value: bool,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Boolean {
-    pub fn new(value: bool, source_information: impl Into<Rc<SourceInformation>>) -> Self {
+    pub fn new(value: bool, source_information: impl Into<Arc<SourceInformation>>) -> Self {
         Self {
             value,
             source_information: source_information.into(),
@@ -19,7 +19,7 @@ impl Boolean {
         self.value
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 }
