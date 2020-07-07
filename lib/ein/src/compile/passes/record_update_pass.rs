@@ -1,5 +1,6 @@
 use super::super::error::CompileError;
 use super::super::name_generator::NameGenerator;
+use super::super::pass::Pass;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 
@@ -59,6 +60,12 @@ impl RecordUpdatePass {
                 Ok(expression.clone())
             }
         })
+    }
+}
+
+impl Pass for RecordUpdatePass {
+    fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
+        self.compile(module)
     }
 }
 

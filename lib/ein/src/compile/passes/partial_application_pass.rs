@@ -1,5 +1,6 @@
 use super::super::error::CompileError;
 use super::super::name_generator::NameGenerator;
+use super::super::pass::Pass;
 use crate::ast::*;
 use crate::debug::*;
 use crate::types::Type;
@@ -153,6 +154,12 @@ impl PartialApplicationPass {
             .fold(expression.clone(), |application, argument| {
                 Application::new(application, argument.clone(), source_information.clone()).into()
             })
+    }
+}
+
+impl Pass for PartialApplicationPass {
+    fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
+        self.compile(module)
     }
 }
 

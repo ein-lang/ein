@@ -18,25 +18,19 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
-use boolean_operation_pass::BooleanOperationPass;
-use elementless_record_pass::ElementlessRecordPass;
-use equal_operation_pass::EqualOperationPass;
-use function_type_argument_pass::FunctionTypeArgumentPass;
-use list_literal_pass::ListLiteralPass;
-use list_type_pass::ListTypePass;
-use not_equal_operation_pass::NotEqualOperationPass;
-use partial_application_pass::PartialApplicationPass;
-use record_function_pass::RecordFunctionPass;
-use record_update_pass::RecordUpdatePass;
+pub use boolean_operation_pass::BooleanOperationPass;
+pub use elementless_record_pass::ElementlessRecordPass;
+pub use equal_operation_pass::EqualOperationPass;
+pub use function_type_argument_pass::FunctionTypeArgumentPass;
+pub use list_literal_pass::ListLiteralPass;
+pub use list_type_pass::ListTypePass;
+pub use not_equal_operation_pass::NotEqualOperationPass;
+pub use partial_application_pass::PartialApplicationPass;
+pub use record_function_pass::RecordFunctionPass;
+pub use record_update_pass::RecordUpdatePass;
 use std::sync::Arc;
-use type_coercion_pass::TypeCoercionPass;
-use typed_meta_pass::TypedMetaPass;
-
-pub fn compile_before_name_qualification(module: &Module) -> Result<Module, CompileError> {
-    let module = ElementlessRecordPass::new().compile(&module);
-
-    Ok(RecordFunctionPass::new().compile(&module))
-}
+pub use type_coercion_pass::TypeCoercionPass;
+pub use typed_meta_pass::TypedMetaPass;
 
 pub fn compile_without_types(module: &Module) -> Result<Module, CompileError> {
     RecordUpdatePass::new().compile(module)

@@ -1,3 +1,5 @@
+use super::super::error::CompileError;
+use super::super::pass::Pass;
 use crate::ast::*;
 use crate::types::Type;
 
@@ -47,6 +49,12 @@ impl ElementlessRecordPass {
                 )
                 .collect(),
         )
+    }
+}
+
+impl Pass for ElementlessRecordPass {
+    fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
+        Ok(self.compile(module))
     }
 }
 

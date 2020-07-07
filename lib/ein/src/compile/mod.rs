@@ -30,7 +30,8 @@ use global_name_renamer::GlobalNameRenamer;
 pub use list_literal_configuration::ListLiteralConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
-use passes::{compile_before_name_qualification, compile_with_types, compile_without_types};
+use pass::Pass;
+use passes::*;
 use reference_type_resolver::ReferenceTypeResolver;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
@@ -40,7 +41,14 @@ pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = compile_before_name_qualification(&module)?;
+    let mut module = module.clone();
+
+    for pass in &mut [
+        &mut ElementlessRecordPass::new() as &mut dyn Pass,
+        &mut RecordFunctionPass::new(),
+    ] {
+        module = pass.compile(&module)?;
+    }
 
     let names = GlobalNameMapCreator::create(
         &module,
@@ -50,8 +58,10 @@ pub fn compile(
     );
     let module = GlobalNameRenamer::new(&names).rename(&module);
 
+    let module = compile_without_types(&module)?;
+    let module = infer_types(&module)?;
     let module = compile_with_types(
-        &infer_types(&compile_without_types(&module)?)?,
+        &module,
         configuration
             .list_literal_configuration()
             .qualify(&names)

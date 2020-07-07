@@ -1,3 +1,5 @@
+use super::super::error::CompileError;
+use super::super::pass::Pass;
 use crate::ast::*;
 use crate::types::{self, Type};
 
@@ -57,6 +59,12 @@ impl RecordFunctionPass {
                 )
                 .collect(),
         )
+    }
+}
+
+impl Pass for RecordFunctionPass {
+    fn compile(&mut self, module: &Module) -> Result<Module, CompileError> {
+        Ok(self.compile(module))
     }
 }
 
