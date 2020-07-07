@@ -2,20 +2,20 @@ use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::collections::BTreeMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordConstruction {
     type_: Type,
     elements: BTreeMap<String, Expression>,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl RecordConstruction {
     pub fn new(
         type_: impl Into<Type>,
         elements: BTreeMap<String, Expression>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
@@ -32,7 +32,7 @@ impl RecordConstruction {
         &self.elements
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

@@ -1,14 +1,14 @@
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct TypeEqualityChecker {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl TypeEqualityChecker {
-    pub fn new(reference_type_resolver: Rc<ReferenceTypeResolver>) -> Rc<Self> {
+    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Arc<Self> {
         Self {
             reference_type_resolver,
         }

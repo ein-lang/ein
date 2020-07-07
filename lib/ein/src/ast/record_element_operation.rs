@@ -1,14 +1,14 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordElementOperation {
     type_: Type,
     key: String,
-    argument: Rc<Expression>,
-    source_information: Rc<SourceInformation>,
+    argument: Arc<Expression>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl RecordElementOperation {
@@ -16,12 +16,12 @@ impl RecordElementOperation {
         type_: impl Into<Type>,
         key: impl Into<String>,
         argument: impl Into<Expression>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
             key: key.into(),
-            argument: Rc::new(argument.into()),
+            argument: Arc::new(argument.into()),
             source_information: source_information.into(),
         }
     }
@@ -38,7 +38,7 @@ impl RecordElementOperation {
         &self.argument
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

@@ -5,17 +5,17 @@ use super::subsumption_set::SubsumptionSet;
 use super::variable_constraint_set::VariableConstraintSet;
 use crate::types::Type;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct ConstraintSolver {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    type_equality_checker: Rc<TypeEqualityChecker>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    type_equality_checker: Arc<TypeEqualityChecker>,
 }
 
 impl ConstraintSolver {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        type_equality_checker: Rc<TypeEqualityChecker>,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        type_equality_checker: Arc<TypeEqualityChecker>,
     ) -> Self {
         Self {
             reference_type_resolver,

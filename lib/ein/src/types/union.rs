@@ -2,16 +2,16 @@ use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Union {
     types: BTreeSet<Type>,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Union {
-    pub fn new(types: Vec<Type>, source_information: impl Into<Rc<SourceInformation>>) -> Self {
+    pub fn new(types: Vec<Type>, source_information: impl Into<Arc<SourceInformation>>) -> Self {
         Self {
             types: types.into_iter().collect(),
             source_information: source_information.into(),
@@ -22,7 +22,7 @@ impl Union {
         &self.types
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

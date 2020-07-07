@@ -1,14 +1,14 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct TypeCoercion {
-    argument: Rc<Expression>,
+    argument: Arc<Expression>,
     from: Type,
     to: Type,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl TypeCoercion {
@@ -16,10 +16,10 @@ impl TypeCoercion {
         argument: impl Into<Expression>,
         from: impl Into<Type>,
         to: impl Into<Type>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
-            argument: Rc::new(argument.into()),
+            argument: Arc::new(argument.into()),
             from: from.into(),
             to: to.into(),
             source_information: source_information.into(),
@@ -38,7 +38,7 @@ impl TypeCoercion {
         &self.to
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

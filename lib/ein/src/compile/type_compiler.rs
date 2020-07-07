@@ -4,7 +4,7 @@ use super::union_tag_calculator::UnionTagCalculator;
 use crate::types::{self, Type};
 use lazy_static::lazy_static;
 use std::collections::BTreeMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 lazy_static! {
     // Algebraic data type entries which make sure that all union and any types
@@ -23,15 +23,15 @@ lazy_static! {
 
 pub struct TypeCompiler {
     record_names: Vec<Option<String>>,
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    union_tag_calculator: Rc<UnionTagCalculator>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    union_tag_calculator: Arc<UnionTagCalculator>,
 }
 
 impl TypeCompiler {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        union_tag_calculator: Rc<UnionTagCalculator>,
-    ) -> Rc<Self> {
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        union_tag_calculator: Arc<UnionTagCalculator>,
+    ) -> Arc<Self> {
         Self {
             record_names: vec![],
             reference_type_resolver,

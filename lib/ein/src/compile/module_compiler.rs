@@ -2,17 +2,17 @@ use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
 use crate::ast::*;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct ModuleCompiler {
-    expression_compiler: Rc<ExpressionCompiler>,
-    type_compiler: Rc<TypeCompiler>,
+    expression_compiler: Arc<ExpressionCompiler>,
+    type_compiler: Arc<TypeCompiler>,
 }
 
 impl ModuleCompiler {
     pub fn new(
-        expression_compiler: Rc<ExpressionCompiler>,
-        type_compiler: Rc<TypeCompiler>,
+        expression_compiler: Arc<ExpressionCompiler>,
+        type_compiler: Arc<TypeCompiler>,
     ) -> Self {
         Self {
             expression_compiler,

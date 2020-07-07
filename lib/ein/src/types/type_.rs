@@ -12,7 +12,7 @@ use super::variable::Variable;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum Type {
@@ -30,7 +30,7 @@ pub enum Type {
 }
 
 impl Type {
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         match self {
             Self::Any(any) => any.source_information(),
             Self::Boolean(boolean) => boolean.source_information(),

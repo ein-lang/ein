@@ -15,7 +15,7 @@ use combine::{
 };
 use lazy_static::lazy_static;
 use std::collections::HashSet;
-use std::rc::Rc;
+use std::sync::Arc;
 
 const KEYWORDS: &[&str] = &[
     "case", "else", "export", "if", "import", "in", "let", "then", "type",
@@ -199,7 +199,7 @@ fn untyped_function_definition<'a>() -> impl Parser<Stream<'a>, Output = Functio
         expression(),
     )
         .map(|(source_information, name, arguments, _, expression)| {
-            let source_information = Rc::new(source_information);
+            let source_information = Arc::new(source_information);
             FunctionDefinition::new(
                 name,
                 arguments,
@@ -213,7 +213,7 @@ fn untyped_function_definition<'a>() -> impl Parser<Stream<'a>, Output = Functio
 fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefinition> {
     (source_information(), identifier(), sign("="), expression()).map(
         |(source_information, name, _, expression)| {
-            let source_information = Rc::new(source_information);
+            let source_information = Arc::new(source_information);
             ValueDefinition::new(
                 name,
                 expression,
@@ -423,7 +423,7 @@ fn application_or_atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Ex
         )),
     )
         .map(|(source_information, function, argument_sets)| {
-            let source_information = Rc::new(source_information);
+            let source_information = Arc::new(source_information);
             let argument_sets: Vec<(Vec<Expression>, _)> = argument_sets;
 
             let mut all_arguments = vec![];

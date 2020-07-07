@@ -2,7 +2,7 @@ use super::error::CompileError;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Debug)]
 pub struct ReferenceTypeResolver {
@@ -10,7 +10,7 @@ pub struct ReferenceTypeResolver {
 }
 
 impl ReferenceTypeResolver {
-    pub fn new(module: &Module) -> Rc<Self> {
+    pub fn new(module: &Module) -> Arc<Self> {
         Self {
             environment: module
                 .imports()

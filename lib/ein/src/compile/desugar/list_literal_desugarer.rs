@@ -2,7 +2,6 @@ use super::super::error::CompileError;
 use super::super::list_literal_configuration::ListLiteralConfiguration;
 use crate::ast::*;
 use crate::debug::*;
-use std::rc::Rc;
 use std::sync::Arc;
 
 pub struct ListLiteralDesugarer {
@@ -34,7 +33,7 @@ impl ListLiteralDesugarer {
     fn desugar_list(
         &self,
         elements: &[ListElement],
-        source_information: &Rc<SourceInformation>,
+        source_information: &Arc<SourceInformation>,
     ) -> Expression {
         let rest_expression = || self.desugar_list(&elements[1..], source_information);
 

@@ -3,7 +3,7 @@ use crate::debug::SourceInformation;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -16,14 +16,14 @@ pub struct Record {
         PartialOrd = "ignore"
     )]
     elements: BTreeMap<String, Type>,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Record {
     pub fn new(
         name: impl Into<String>,
         elements: BTreeMap<String, Type>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             name: name.into(),
@@ -40,7 +40,7 @@ impl Record {
         &self.elements
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

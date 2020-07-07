@@ -2,15 +2,15 @@ use super::expression::Expression;
 use super::operator::Operator;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Operation {
     type_: Type,
     operator: Operator,
-    lhs: Rc<Expression>,
-    rhs: Rc<Expression>,
-    source_information: Rc<SourceInformation>,
+    lhs: Arc<Expression>,
+    rhs: Arc<Expression>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Operation {
@@ -18,9 +18,9 @@ impl Operation {
         operator: Operator,
         lhs: impl Into<Expression>,
         rhs: impl Into<Expression>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
-        let source_information: Rc<_> = source_information.into();
+        let source_information: Arc<_> = source_information.into();
 
         Self::with_type(
             types::Unknown::new(source_information.clone()),
@@ -36,13 +36,13 @@ impl Operation {
         operator: Operator,
         lhs: impl Into<Expression>,
         rhs: impl Into<Expression>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
             operator,
-            lhs: Rc::new(lhs.into()),
-            rhs: Rc::new(rhs.into()),
+            lhs: Arc::new(lhs.into()),
+            rhs: Arc::new(rhs.into()),
             source_information: source_information.into(),
         }
     }
@@ -63,7 +63,7 @@ impl Operation {
         &self.rhs
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

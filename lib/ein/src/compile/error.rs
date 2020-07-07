@@ -3,19 +3,19 @@ use crate::debug::*;
 use crate::types;
 use std::error::Error;
 use std::fmt::Display;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Debug, PartialEq)]
 pub enum CompileError {
-    CaseArgumentTypeInvalid(Rc<SourceInformation>),
+    CaseArgumentTypeInvalid(Arc<SourceInformation>),
     CircularInitialization,
     ExportedNameNotFound { name: String },
-    MixedDefinitionsInLet(Rc<SourceInformation>),
+    MixedDefinitionsInLet(Arc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
     TypeNotFound(types::Reference),
-    TypesNotMatched(Rc<SourceInformation>, Rc<SourceInformation>),
-    TypeNotInferred(Rc<SourceInformation>),
+    TypesNotMatched(Arc<SourceInformation>, Arc<SourceInformation>),
+    TypeNotInferred(Arc<SourceInformation>),
     VariableNotFound(ast::Variable),
 }
 

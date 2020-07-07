@@ -1,14 +1,14 @@
 use crate::debug::SourceInformation;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Number {
     value: f64,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Number {
-    pub fn new(value: f64, source_information: impl Into<Rc<SourceInformation>>) -> Self {
+    pub fn new(value: f64, source_information: impl Into<Arc<SourceInformation>>) -> Self {
         Self {
             value,
             source_information: source_information.into(),
@@ -19,7 +19,7 @@ impl Number {
         self.value
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 }

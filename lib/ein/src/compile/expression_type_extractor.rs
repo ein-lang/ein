@@ -4,18 +4,18 @@ use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct ExpressionTypeExtractor {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    union_type_simplifier: Rc<UnionTypeSimplifier>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    union_type_simplifier: Arc<UnionTypeSimplifier>,
 }
 
 impl ExpressionTypeExtractor {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        union_type_simplifier: Rc<UnionTypeSimplifier>,
-    ) -> Rc<Self> {
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        union_type_simplifier: Arc<UnionTypeSimplifier>,
+    ) -> Arc<Self> {
         Self {
             reference_type_resolver,
             union_type_simplifier,

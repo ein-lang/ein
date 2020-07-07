@@ -6,22 +6,22 @@ use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::convert::TryInto;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct ExpressionCompiler {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    union_tag_calculator: Rc<UnionTagCalculator>,
-    type_compiler: Rc<TypeCompiler>,
-    boolean_compiler: Rc<BooleanCompiler>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    union_tag_calculator: Arc<UnionTagCalculator>,
+    type_compiler: Arc<TypeCompiler>,
+    boolean_compiler: Arc<BooleanCompiler>,
 }
 
 impl ExpressionCompiler {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        union_tag_calculator: Rc<UnionTagCalculator>,
-        type_compiler: Rc<TypeCompiler>,
-        boolean_compiler: Rc<BooleanCompiler>,
-    ) -> Rc<Self> {
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        union_tag_calculator: Arc<UnionTagCalculator>,
+        type_compiler: Arc<TypeCompiler>,
+        boolean_compiler: Arc<BooleanCompiler>,
+    ) -> Arc<Self> {
         Self {
             reference_type_resolver,
             union_tag_calculator,
@@ -405,14 +405,14 @@ mod tests {
     use crate::debug::SourceInformation;
     use crate::types;
     use pretty_assertions::assert_eq;
-    use std::rc::Rc;
+    use std::sync::Arc;
 
     fn create_expression_compiler(
         module: &Module,
     ) -> (
-        Rc<ExpressionCompiler>,
-        Rc<TypeCompiler>,
-        Rc<UnionTagCalculator>,
+        Arc<ExpressionCompiler>,
+        Arc<TypeCompiler>,
+        Arc<UnionTagCalculator>,
     ) {
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
         let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());

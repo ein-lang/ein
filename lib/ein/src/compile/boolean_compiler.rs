@@ -1,12 +1,12 @@
 use super::type_compiler::TypeCompiler;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct BooleanCompiler {
-    type_compiler: Rc<TypeCompiler>,
+    type_compiler: Arc<TypeCompiler>,
 }
 
 impl BooleanCompiler {
-    pub fn new(type_compiler: Rc<TypeCompiler>) -> Rc<Self> {
+    pub fn new(type_compiler: Arc<TypeCompiler>) -> Arc<Self> {
         Self { type_compiler }.into()
     }
 

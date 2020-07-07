@@ -1,14 +1,14 @@
 use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct If {
-    condition: Rc<Expression>,
-    then: Rc<Expression>,
-    else_: Rc<Expression>,
-    source_information: Rc<SourceInformation>,
+    condition: Arc<Expression>,
+    then: Arc<Expression>,
+    else_: Arc<Expression>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl If {
@@ -16,12 +16,12 @@ impl If {
         condition: impl Into<Expression>,
         then: impl Into<Expression>,
         else_: impl Into<Expression>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
-            condition: Rc::new(condition.into()),
-            then: Rc::new(then.into()),
-            else_: Rc::new(else_.into()),
+            condition: Arc::new(condition.into()),
+            then: Arc::new(then.into()),
+            else_: Arc::new(else_.into()),
             source_information: source_information.into(),
         }
     }
@@ -38,7 +38,7 @@ impl If {
         &self.else_
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

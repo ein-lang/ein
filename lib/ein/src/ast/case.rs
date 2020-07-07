@@ -3,15 +3,15 @@ use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types;
 use crate::types::Type;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Case {
     type_: Type,
     name: String,
-    argument: Rc<Expression>,
+    argument: Arc<Expression>,
     alternatives: Vec<Alternative>,
-    source_information: Rc<SourceInformation>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Case {
@@ -19,12 +19,12 @@ impl Case {
         name: impl Into<String>,
         argument: impl Into<Expression>,
         alternatives: Vec<Alternative>,
-        source_information: impl Into<Rc<SourceInformation>> + Clone,
+        source_information: impl Into<Arc<SourceInformation>> + Clone,
     ) -> Self {
         Self {
             type_: types::Unknown::new(source_information.clone()).into(),
             name: name.into(),
-            argument: Rc::new(argument.into()),
+            argument: Arc::new(argument.into()),
             alternatives,
             source_information: source_information.into(),
         }
@@ -35,12 +35,12 @@ impl Case {
         name: impl Into<String>,
         argument: impl Into<Expression>,
         alternatives: Vec<Alternative>,
-        source_information: impl Into<Rc<SourceInformation>>,
+        source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
             name: name.into(),
-            argument: Rc::new(argument.into()),
+            argument: Arc::new(argument.into()),
             alternatives,
             source_information: source_information.into(),
         }
@@ -62,7 +62,7 @@ impl Case {
         &self.alternatives
     }
 
-    pub fn source_information(&self) -> &Rc<SourceInformation> {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
 

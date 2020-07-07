@@ -8,20 +8,20 @@ use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct FunctionTypeArgumentDesugarer {
     name_generator: NameGenerator,
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    type_equality_checker: Rc<TypeEqualityChecker>,
-    expression_type_extractor: Rc<ExpressionTypeExtractor>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    type_equality_checker: Arc<TypeEqualityChecker>,
+    expression_type_extractor: Arc<ExpressionTypeExtractor>,
 }
 
 impl FunctionTypeArgumentDesugarer {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        type_equality_checker: Rc<TypeEqualityChecker>,
-        expression_type_extractor: Rc<ExpressionTypeExtractor>,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        type_equality_checker: Arc<TypeEqualityChecker>,
+        expression_type_extractor: Arc<ExpressionTypeExtractor>,
     ) -> Self {
         FunctionTypeArgumentDesugarer {
             name_generator: NameGenerator::new("fta_function_"),
@@ -35,7 +35,7 @@ impl FunctionTypeArgumentDesugarer {
         &mut self,
         expression: &Expression,
         to_type: &Type,
-        source_information: Rc<SourceInformation>,
+        source_information: Arc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
         let from_type = self.reference_type_resolver.resolve(

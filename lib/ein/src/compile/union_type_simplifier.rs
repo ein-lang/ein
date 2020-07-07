@@ -2,18 +2,18 @@ use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_equality_checker::TypeEqualityChecker;
 use crate::types::{self, Type};
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct UnionTypeSimplifier {
-    reference_type_resolver: Rc<ReferenceTypeResolver>,
-    type_equality_checker: Rc<TypeEqualityChecker>,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
+    type_equality_checker: Arc<TypeEqualityChecker>,
 }
 
 impl UnionTypeSimplifier {
     pub fn new(
-        reference_type_resolver: Rc<ReferenceTypeResolver>,
-        type_equality_checker: Rc<TypeEqualityChecker>,
-    ) -> Rc<Self> {
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        type_equality_checker: Arc<TypeEqualityChecker>,
+    ) -> Arc<Self> {
         Self {
             reference_type_resolver,
             type_equality_checker,
