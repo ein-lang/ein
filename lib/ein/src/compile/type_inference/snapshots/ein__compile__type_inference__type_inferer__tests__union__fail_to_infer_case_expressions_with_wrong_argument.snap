@@ -1,0 +1,24 @@
+---
+source: lib/ein/src/compile/type_inference/type_inferer.rs
+expression: "infer_types(&Module::from_definitions(vec![ValueDefinition ::\n                                           new(\"x\", Boolean ::\n                                               new(true, SourceInformation ::\n                                                   dummy()), types :: Union ::\n                                               new(vec !\n                                                   [types :: Boolean ::\n                                                    new(SourceInformation ::\n                                                        dummy()) . into(),\n                                                    types :: None ::\n                                                    new(SourceInformation ::\n                                                        dummy()) . into()],\n                                                   SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into(),\n                                           ValueDefinition ::\n                                           new(\"y\", Case ::\n                                               new(\"z\", Variable ::\n                                                   new(\"x\", SourceInformation\n                                                       :: dummy()), vec !\n                                                   [Alternative ::\n                                                    new(types :: Number ::\n                                                        new(SourceInformation\n                                                            :: dummy()), None\n                                                        ::\n                                                        new(SourceInformation\n                                                            :: dummy()),),\n                                                    Alternative ::\n                                                    new(types :: None ::\n                                                        new(SourceInformation\n                                                            :: dummy()), None\n                                                        ::\n                                                        new(SourceInformation\n                                                            :: dummy()),)],\n                                                   SourceInformation ::\n                                                   dummy()), types :: None ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
+---
+Err(
+    TypesNotMatched(
+        SourceInformation {
+            source_name: "",
+            location: Location {
+                line_number: 0,
+                column_number: 0,
+            },
+            line: "",
+        },
+        SourceInformation {
+            source_name: "",
+            location: Location {
+                line_number: 0,
+                column_number: 0,
+            },
+            line: "",
+        },
+    ),
+)

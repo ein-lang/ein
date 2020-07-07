@@ -1,0 +1,143 @@
+---
+source: lib/ein/src/compile/type_inference/type_inferer.rs
+expression: "infer_types(&Module::from_definitions_and_type_definitions(vec![TypeDefinition\n                                                                ::\n                                                                new(\"Foo\",\n                                                                    record_type\n                                                                    .\n                                                                    clone())],\n                                                           vec![ValueDefinition\n                                                                ::\n                                                                new(\"x\",\n                                                                    Operation\n                                                                    ::\n                                                                    with_type(types\n                                                                              ::\n                                                                              Unknown\n                                                                              ::\n                                                                              new(SourceInformation\n                                                                                  ::\n                                                                                  dummy()),\n                                                                              Operator\n                                                                              ::\n                                                                              Equal,\n                                                                              RecordConstruction\n                                                                              ::\n                                                                              new(reference_type\n                                                                                  .\n                                                                                  clone(),\n                                                                                  Default\n                                                                                  ::\n                                                                                  default(),\n                                                                                  SourceInformation\n                                                                                  ::\n                                                                                  dummy(),),\n                                                                              RecordConstruction\n                                                                              ::\n                                                                              new(reference_type\n                                                                                  .\n                                                                                  clone(),\n                                                                                  Default\n                                                                                  ::\n                                                                                  default(),\n                                                                                  SourceInformation\n                                                                                  ::\n                                                                                  dummy(),),\n                                                                              SourceInformation\n                                                                              ::\n                                                                              dummy(),),\n                                                                    types ::\n                                                                    Boolean ::\n                                                                    new(SourceInformation\n                                                                        ::\n                                                                        dummy()),\n                                                                    SourceInformation\n                                                                    ::\n                                                                    dummy(),)\n                                                                . into()]))"
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [
+            TypeDefinition {
+                name: "Foo",
+                type_: Record(
+                    Record {
+                        name: "Foo",
+                        elements: {},
+                        source_information: SourceInformation {
+                            source_name: "",
+                            location: Location {
+                                line_number: 0,
+                                column_number: 0,
+                            },
+                            line: "",
+                        },
+                    },
+                ),
+            },
+        ],
+        definitions: [
+            ValueDefinition(
+                ValueDefinition {
+                    name: "x",
+                    body: Operation(
+                        Operation {
+                            type_: Reference(
+                                Reference {
+                                    name: "Foo",
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            operator: Equal,
+                            lhs: RecordConstruction(
+                                RecordConstruction {
+                                    type_: Reference(
+                                        Reference {
+                                            name: "Foo",
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    elements: {},
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            rhs: RecordConstruction(
+                                RecordConstruction {
+                                    type_: Reference(
+                                        Reference {
+                                            name: "Foo",
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    elements: {},
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Boolean(
+                        Boolean {
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+        ],
+        export: Export {
+            names: {},
+        },
+        imports: [],
+    },
+)
