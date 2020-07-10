@@ -132,12 +132,13 @@ dependencies = [
 
 [[package]]
 name = "combine"
-version = "4.2.1"
+version = "4.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8e5ef862b2df927249f4e2bdc29c1bd13a33105f900884b0c32acdf32aff584"
+checksum = "4abfa04f8b32fc5a9a8f83c88dabe62e03c2620de0b15822f144f812879968aa"
 dependencies = [
  "bytes",
  "memchr",
+ "pin-project-lite",
  "regex",
 ]
 
@@ -592,6 +593,12 @@ dependencies = [
  "fixedbitset",
  "indexmap",
 ]
+
+[[package]]
+name = "pin-project-lite"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "282adbf10f2698a7a77f8e983a74b2d18176c19a7fd32a45446139ae7b02b715"
 
 [[package]]
 name = "pkg-config"
