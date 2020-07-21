@@ -46,6 +46,8 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         "main",
         "ein_main",
         "ein_init",
+        "malloc",
+        "ein_panic",
         app::ListLiteralConfiguration::new(
             "emptyList",
             "concatenateLists",

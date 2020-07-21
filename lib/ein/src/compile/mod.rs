@@ -99,8 +99,8 @@ pub fn compile(
                         convert_path_to_initializer_name(import.module_interface().path())
                     })
                     .collect(),
-                None,
-                None,
+                Some(configuration.malloc_function_name().into()),
+                Some(configuration.panic_function_name().into()),
             ),
         )?,
         ModuleInterfaceCompiler::new().compile(&module)?,
