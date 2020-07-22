@@ -124,6 +124,8 @@ mod tests {
             "main",
             "ein_main",
             "ein_init",
+            "ein_malloc",
+            "ein_panic",
             ListLiteralConfiguration::new(
                 "emptyList",
                 "concatenateLists",
