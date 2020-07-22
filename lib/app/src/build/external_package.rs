@@ -1,4 +1,4 @@
-#[derive(Clone, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct ExternalPackage {
     name: String,
     // This version is the "expected" one different from ein::Package.

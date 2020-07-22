@@ -99,7 +99,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
         }
 
         Ok(toposort(&graph, None)
-            .map_err(|_| BuildError::CircularDependency)?
+            .map_err(|cycle| BuildError::PackageCircularDependency(graph[cycle.node_id()].clone()))?
             .into_iter()
             .map(|index| graph[index].clone())
             .collect())
