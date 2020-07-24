@@ -13,6 +13,7 @@ pub enum CompileError {
     ExportedNameNotFound { name: String },
     FunctionEqualOperation(Arc<SourceInformation>),
     MixedDefinitionsInLet(Arc<SourceInformation>),
+    RecordEqualOperation(Arc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
     TypeNotFound(types::Reference),
@@ -48,6 +49,11 @@ impl Display for CompileError {
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
                 "cannot mix function and value definitions in a let expression\n{}",
+                source_information
+            ),
+            Self::RecordEqualOperation(source_information) => write!(
+                formatter,
+                "cannot compare records including functions or Any values\n{}",
                 source_information
             ),
             Self::SsfAnalysis(error) => write!(formatter, "{}", error),

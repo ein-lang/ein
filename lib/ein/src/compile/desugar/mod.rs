@@ -15,6 +15,7 @@ use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
 use super::list_literal_configuration::ListLiteralConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::type_comparability_checker::TypeComparabilityChecker;
 use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
@@ -47,6 +48,8 @@ pub fn desugar_with_types(
     list_literal_configuration: Arc<ListLiteralConfiguration>,
 ) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
+    let type_comparability_checker =
+        TypeComparabilityChecker::new(reference_type_resolver.clone()).into();
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let union_type_simplifier = UnionTypeSimplifier::new(
         reference_type_resolver.clone(),
@@ -63,6 +66,7 @@ pub fn desugar_with_types(
     let module = NotEqualOperationDesugarer::new().desugar(&module)?;
     let module = EqualOperationDesugarer::new(
         reference_type_resolver.clone(),
+        type_comparability_checker,
         type_equality_checker.clone(),
         list_literal_configuration.clone(),
     )

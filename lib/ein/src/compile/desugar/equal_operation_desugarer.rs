@@ -2,6 +2,7 @@ use super::super::error::CompileError;
 use super::super::list_literal_configuration::ListLiteralConfiguration;
 use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::super::type_comparability_checker::TypeComparabilityChecker;
 use super::super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use crate::debug::SourceInformation;
@@ -11,6 +12,7 @@ use std::sync::Arc;
 pub struct EqualOperationDesugarer {
     name_generator: NameGenerator,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
+    type_comparability_checker: Arc<TypeComparabilityChecker>,
     type_equality_checker: Arc<TypeEqualityChecker>,
     list_literal_configuration: Arc<ListLiteralConfiguration>,
 }
@@ -18,12 +20,14 @@ pub struct EqualOperationDesugarer {
 impl EqualOperationDesugarer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
+        type_comparability_checker: Arc<TypeComparabilityChecker>,
         type_equality_checker: Arc<TypeEqualityChecker>,
         list_literal_configuration: Arc<ListLiteralConfiguration>,
     ) -> Self {
         Self {
             name_generator: NameGenerator::new("equal_operation_argument_"),
             reference_type_resolver,
+            type_comparability_checker,
             type_equality_checker,
             list_literal_configuration,
         }
@@ -35,6 +39,23 @@ impl EqualOperationDesugarer {
                 self.desugar_expression(expression)
             })?;
 
+        let mut equal_function_definitions = vec![];
+
+        for type_definition in module.type_definitions() {
+            if let Type::Record(record_type) = type_definition.type_() {
+                if self
+                    .type_comparability_checker
+                    .check_comparable(type_definition.type_())?
+                {
+                    if let Some(function_definition) =
+                        self.create_record_equal_function(record_type)?
+                    {
+                        equal_function_definitions.push(function_definition);
+                    }
+                }
+            }
+        }
+
         Ok(Module::new(
             module.path().clone(),
             module.export().clone(),
@@ -44,21 +65,7 @@ impl EqualOperationDesugarer {
                 .definitions()
                 .iter()
                 .cloned()
-                .chain(
-                    module
-                        .type_definitions()
-                        .iter()
-                        .filter_map(|type_definition| {
-                            if let Type::Record(record_type) = type_definition.type_() {
-                                self.create_record_equal_function(record_type)
-                                    .transpose()
-                                    .map(|result| result.map(Definition::from))
-                            } else {
-                                None
-                            }
-                        })
-                        .collect::<Result<Vec<_>, _>>()?,
-                )
+                .chain(equal_function_definitions.into_iter().map(Definition::from))
                 .collect(),
         ))
     }
@@ -90,7 +97,7 @@ impl EqualOperationDesugarer {
                 source_information.clone(),
             );
 
-            if matches!(result, Err(CompileError::AnyEqualOperation(_)) | Err(CompileError::FunctionEqualOperation(_)))
+            if matches!(result, Err(CompileError::AnyEqualOperation(_)) | Err(CompileError::FunctionEqualOperation(_)) | Err(CompileError::RecordEqualOperation(_)))
             {
                 return Ok(None);
             }
@@ -258,19 +265,25 @@ impl EqualOperationDesugarer {
                 source_information,
             )
             .into(),
-            Type::Record(record) => Application::new(
-                Application::new(
-                    Variable::new(
-                        self.get_record_equal_function_name(&record),
-                        source_information.clone(),
-                    ),
-                    lhs.clone(),
-                    source_information.clone(),
-                ),
-                rhs.clone(),
-                source_information,
-            )
-            .into(),
+            Type::Record(record) => {
+                if self.type_comparability_checker.check_comparable(type_)? {
+                    Application::new(
+                        Application::new(
+                            Variable::new(
+                                self.get_record_equal_function_name(&record),
+                                source_information.clone(),
+                            ),
+                            lhs.clone(),
+                            source_information.clone(),
+                        ),
+                        rhs.clone(),
+                        source_information,
+                    )
+                    .into()
+                } else {
+                    return Err(CompileError::RecordEqualOperation(source_information));
+                }
+            }
             Type::Union(union) => {
                 let lhs_name = self.name_generator.generate();
                 let rhs_name = self.name_generator.generate();
