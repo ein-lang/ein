@@ -12,6 +12,7 @@ mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod reference_type_resolver;
+mod type_comparability_checker;
 mod type_compiler;
 mod type_equality_checker;
 mod type_inference;
@@ -99,8 +100,8 @@ pub fn compile(
                         convert_path_to_initializer_name(import.module_interface().path())
                     })
                     .collect(),
-                None,
-                None,
+                Some(configuration.malloc_function_name().into()),
+                Some(configuration.panic_function_name().into()),
             ),
         )?,
         ModuleInterfaceCompiler::new().compile(&module)?,
@@ -124,6 +125,8 @@ mod tests {
             "main",
             "ein_main",
             "ein_init",
+            "ein_malloc",
+            "ein_panic",
             ListLiteralConfiguration::new(
                 "emptyList",
                 "concatenateLists",
@@ -267,6 +270,30 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
+            ),
+            &COMPILE_CONFIGURATION,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn compile_record_with_any_type_member() {
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Any::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![],
             ),
             &COMPILE_CONFIGURATION,
         )

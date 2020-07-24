@@ -112,7 +112,7 @@ impl<'a> ModulesBuilder<'a> {
         }
 
         Ok(toposort(&graph, None)
-            .map_err(|_| BuildError::CircularDependency)?
+            .map_err(|cycle| BuildError::ModuleCircularDependency(graph[cycle.node_id()].clone()))?
             .into_iter()
             .map(|index| graph[index])
             .collect())

@@ -7,10 +7,13 @@ use std::sync::Arc;
 
 #[derive(Debug, PartialEq)]
 pub enum CompileError {
+    AnyEqualOperation(Arc<SourceInformation>),
     CaseArgumentTypeInvalid(Arc<SourceInformation>),
     CircularInitialization,
     ExportedNameNotFound { name: String },
+    FunctionEqualOperation(Arc<SourceInformation>),
     MixedDefinitionsInLet(Arc<SourceInformation>),
+    RecordEqualOperation(Arc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
     TypeNotFound(types::Reference),
@@ -22,20 +25,35 @@ pub enum CompileError {
 impl Display for CompileError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
-            Self::CircularInitialization => {
-                write!(formatter, "circular variable initialization detected",)
-            }
-            Self::ExportedNameNotFound { name } => {
-                write!(formatter, "exported name \"{}\" not found", name)
-            }
+            Self::AnyEqualOperation(source_information) => write!(
+                formatter,
+                "cannot compare Any type values\n{}",
+                source_information
+            ),
             Self::CaseArgumentTypeInvalid(source_information) => write!(
                 formatter,
                 "invalid argument type of case expression\n{}",
                 source_information
             ),
+            Self::CircularInitialization => {
+                write!(formatter, "circular variable initialization detected")
+            }
+            Self::ExportedNameNotFound { name } => {
+                write!(formatter, "exported name \"{}\" not found", name)
+            }
+            Self::FunctionEqualOperation(source_information) => write!(
+                formatter,
+                "cannot compare functions\n{}",
+                source_information
+            ),
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
                 "cannot mix function and value definitions in a let expression\n{}",
+                source_information
+            ),
+            Self::RecordEqualOperation(source_information) => write!(
+                formatter,
+                "cannot compare records including functions or Any values\n{}",
                 source_information
             ),
             Self::SsfAnalysis(error) => write!(formatter, "{}", error),

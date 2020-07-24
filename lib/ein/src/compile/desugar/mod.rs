@@ -15,6 +15,7 @@ use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
 use super::list_literal_configuration::ListLiteralConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::type_comparability_checker::TypeComparabilityChecker;
 use super::type_equality_checker::TypeEqualityChecker;
 use super::union_type_simplifier::UnionTypeSimplifier;
 use crate::ast::*;
@@ -47,6 +48,8 @@ pub fn desugar_with_types(
     list_literal_configuration: Arc<ListLiteralConfiguration>,
 ) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
+    let type_comparability_checker =
+        TypeComparabilityChecker::new(reference_type_resolver.clone()).into();
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let union_type_simplifier = UnionTypeSimplifier::new(
         reference_type_resolver.clone(),
@@ -63,6 +66,7 @@ pub fn desugar_with_types(
     let module = NotEqualOperationDesugarer::new().desugar(&module)?;
     let module = EqualOperationDesugarer::new(
         reference_type_resolver.clone(),
+        type_comparability_checker,
         type_equality_checker.clone(),
         list_literal_configuration.clone(),
     )
@@ -922,6 +926,75 @@ mod tests {
                         SourceInformation::dummy(),
                     )
                     .into(),
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_desugar_function_equal_operation() {
+            let function_type = types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_eq!(
+                desugar_with_types(&Module::from_definitions(vec![
+                    FunctionDefinition::new(
+                        "f",
+                        vec!["x".into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                        function_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "x",
+                        Operation::with_type(
+                            function_type,
+                            Operator::Equal,
+                            Variable::new("f", SourceInformation::dummy()),
+                            Variable::new("f", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ])),
+                Err(CompileError::FunctionEqualOperation(
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_desugar_any_equal_operation() {
+            assert_eq!(
+                desugar_with_types(&Module::from_definitions(vec![
+                    ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "y",
+                        Operation::with_type(
+                            types::Any::new(SourceInformation::dummy()),
+                            Operator::Equal,
+                            Variable::new("x", SourceInformation::dummy()),
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ])),
+                Err(CompileError::AnyEqualOperation(
+                    SourceInformation::dummy().into()
                 ))
             );
         }

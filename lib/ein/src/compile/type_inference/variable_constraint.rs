@@ -44,7 +44,7 @@ impl VariableConstraint {
             )
             .into()
         } else if !self.upper_types.is_empty() {
-            // TODO Calculate the minimal type from upper types?
+            // TODO Calculate intersection types from upper types?
             self.upper_types.iter().next().unwrap().clone()
         } else {
             types::Unknown::new(self.source_information.clone()).into()
