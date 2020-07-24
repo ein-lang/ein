@@ -45,7 +45,7 @@ impl EqualOperationDesugarer {
             if let Type::Record(record_type) = type_definition.type_() {
                 if self
                     .type_comparability_checker
-                    .check_comparable(type_definition.type_())?
+                    .check(type_definition.type_())?
                 {
                     if let Some(function_definition) =
                         self.create_record_equal_function(record_type)?
@@ -266,7 +266,7 @@ impl EqualOperationDesugarer {
             )
             .into(),
             Type::Record(record) => {
-                if self.type_comparability_checker.check_comparable(type_)? {
+                if self.type_comparability_checker.check(type_)? {
                     Application::new(
                         Application::new(
                             Variable::new(

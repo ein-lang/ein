@@ -15,11 +15,11 @@ impl TypeComparabilityChecker {
         }
     }
 
-    pub fn check_comparable(&self, type_: &Type) -> Result<bool, CompileError> {
-        self.check_comparable_with_cache(type_, &Default::default())
+    pub fn check(&self, type_: &Type) -> Result<bool, CompileError> {
+        self.check_with_cache(type_, &Default::default())
     }
 
-    fn check_comparable_with_cache(
+    fn check_with_cache(
         &self,
         type_: &Type,
         record_names: &HashSet<String>,
@@ -28,7 +28,7 @@ impl TypeComparabilityChecker {
             Type::Any(_) => false,
             Type::Boolean(_) => true,
             Type::Function(_) => false,
-            Type::List(list) => self.check_comparable_with_cache(list.element(), record_names)?,
+            Type::List(list) => self.check_with_cache(list.element(), record_names)?,
             Type::None(_) => true,
             Type::Number(_) => true,
             Type::Record(record) => {
@@ -42,20 +42,20 @@ impl TypeComparabilityChecker {
                     record
                         .elements()
                         .values()
-                        .map(|type_| self.check_comparable_with_cache(type_, &record_names))
+                        .map(|type_| self.check_with_cache(type_, &record_names))
                         .collect::<Result<Vec<_>, _>>()?
                         .into_iter()
                         .all(|flag| flag)
                 }
             }
-            Type::Reference(reference) => self.check_comparable_with_cache(
+            Type::Reference(reference) => self.check_with_cache(
                 &self.reference_type_resolver.resolve_reference(reference)?,
                 record_names,
             )?,
             Type::Union(union) => union
                 .types()
                 .iter()
-                .map(|type_| self.check_comparable_with_cache(type_, record_names))
+                .map(|type_| self.check_with_cache(type_, record_names))
                 .collect::<Result<Vec<_>, _>>()?
                 .into_iter()
                 .all(|flag| flag),
