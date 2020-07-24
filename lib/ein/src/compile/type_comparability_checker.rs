@@ -75,7 +75,7 @@ mod tests {
     fn check_comparability_of_record_type() {
         assert!(
             TypeComparabilityChecker::new(ReferenceTypeResolver::new(&Module::dummy()))
-                .check_comparable(
+                .check(
                     &types::Record::new("foo", Default::default(), SourceInformation::dummy())
                         .into()
                 )
@@ -87,7 +87,7 @@ mod tests {
     fn check_comparability_of_record_type_with_function_member() {
         assert!(
             !TypeComparabilityChecker::new(ReferenceTypeResolver::new(&Module::dummy()))
-                .check_comparable(
+                .check(
                     &types::Record::new(
                         "foo",
                         vec![(
@@ -113,7 +113,7 @@ mod tests {
     fn check_comparability_of_record_type_with_any_member() {
         assert!(
             !TypeComparabilityChecker::new(ReferenceTypeResolver::new(&Module::dummy()))
-                .check_comparable(
+                .check(
                     &types::Record::new(
                         "foo",
                         vec![(

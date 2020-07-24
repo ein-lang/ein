@@ -47,11 +47,8 @@ impl EqualOperationDesugarer {
                     .type_comparability_checker
                     .check(type_definition.type_())?
                 {
-                    if let Some(function_definition) =
-                        self.create_record_equal_function(record_type)?
-                    {
-                        equal_function_definitions.push(function_definition);
-                    }
+                    equal_function_definitions
+                        .push(self.create_record_equal_function(record_type)?);
                 }
             }
         }
@@ -73,7 +70,7 @@ impl EqualOperationDesugarer {
     fn create_record_equal_function(
         &mut self,
         record_type: &types::Record,
-    ) -> Result<Option<FunctionDefinition>, CompileError> {
+    ) -> Result<FunctionDefinition, CompileError> {
         let source_information = record_type.source_information();
         let mut expression: Expression = Boolean::new(true, source_information.clone()).into();
 
@@ -97,11 +94,6 @@ impl EqualOperationDesugarer {
                 source_information.clone(),
             );
 
-            if matches!(result, Err(CompileError::AnyEqualOperation(_)) | Err(CompileError::FunctionEqualOperation(_)) | Err(CompileError::RecordEqualOperation(_)))
-            {
-                return Ok(None);
-            }
-
             expression = If::new(
                 expression,
                 result?,
@@ -111,7 +103,7 @@ impl EqualOperationDesugarer {
             .into();
         }
 
-        Ok(Some(FunctionDefinition::new(
+        Ok(FunctionDefinition::new(
             self.get_record_equal_function_name(record_type),
             vec!["lhs".into(), "rhs".into()],
             expression,
@@ -125,7 +117,7 @@ impl EqualOperationDesugarer {
                 source_information.clone(),
             ),
             source_information.clone(),
-        )))
+        ))
     }
 
     fn desugar_expression(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
