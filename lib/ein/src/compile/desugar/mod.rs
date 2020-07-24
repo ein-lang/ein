@@ -925,6 +925,75 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn fail_to_desugar_function_equal_operation() {
+            let function_type = types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            );
+
+            assert_eq!(
+                desugar_with_types(&Module::from_definitions(vec![
+                    FunctionDefinition::new(
+                        "f",
+                        vec!["x".into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                        function_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "x",
+                        Operation::with_type(
+                            function_type,
+                            Operator::Equal,
+                            Variable::new("f", SourceInformation::dummy()),
+                            Variable::new("f", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ])),
+                Err(CompileError::FunctionEqualOperation(
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
+
+        #[test]
+        fn fail_to_desugar_any_equal_operation() {
+            assert_eq!(
+                desugar_with_types(&Module::from_definitions(vec![
+                    ValueDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    ValueDefinition::new(
+                        "y",
+                        Operation::with_type(
+                            types::Any::new(SourceInformation::dummy()),
+                            Operator::Equal,
+                            Variable::new("x", SourceInformation::dummy()),
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ])),
+                Err(CompileError::AnyEqualOperation(
+                    SourceInformation::dummy().into()
+                ))
+            );
+        }
     }
 
     #[test]

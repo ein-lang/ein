@@ -50,10 +50,9 @@ impl EqualOperationDesugarer {
                         .iter()
                         .filter_map(|type_definition| {
                             if let Type::Record(record_type) = type_definition.type_() {
-                                Some(
-                                    self.create_record_equal_function(record_type)
-                                        .map(Definition::from),
-                                )
+                                self.create_record_equal_function(record_type)
+                                    .transpose()
+                                    .map(|result| result.map(Definition::from))
                             } else {
                                 None
                             }
@@ -67,38 +66,45 @@ impl EqualOperationDesugarer {
     fn create_record_equal_function(
         &mut self,
         record_type: &types::Record,
-    ) -> Result<FunctionDefinition, CompileError> {
+    ) -> Result<Option<FunctionDefinition>, CompileError> {
         let source_information = record_type.source_information();
         let mut expression: Expression = Boolean::new(true, source_information.clone()).into();
 
         for (key, element_type) in record_type.elements() {
+            let result = self.desugar_equal_operation(
+                element_type,
+                &RecordElementOperation::new(
+                    record_type.clone(),
+                    key,
+                    Variable::new("lhs", source_information.clone()),
+                    source_information.clone(),
+                )
+                .into(),
+                &RecordElementOperation::new(
+                    record_type.clone(),
+                    key,
+                    Variable::new("rhs", source_information.clone()),
+                    source_information.clone(),
+                )
+                .into(),
+                source_information.clone(),
+            );
+
+            if matches!(result, Err(CompileError::AnyEqualOperation(_)) | Err(CompileError::FunctionEqualOperation(_)))
+            {
+                return Ok(None);
+            }
+
             expression = If::new(
                 expression,
-                self.desugar_equal_operation(
-                    element_type,
-                    &RecordElementOperation::new(
-                        record_type.clone(),
-                        key,
-                        Variable::new("lhs", source_information.clone()),
-                        source_information.clone(),
-                    )
-                    .into(),
-                    &RecordElementOperation::new(
-                        record_type.clone(),
-                        key,
-                        Variable::new("rhs", source_information.clone()),
-                        source_information.clone(),
-                    )
-                    .into(),
-                    source_information.clone(),
-                )?,
+                result?,
                 Boolean::new(false, source_information.clone()),
                 source_information.clone(),
             )
             .into();
         }
 
-        Ok(FunctionDefinition::new(
+        Ok(Some(FunctionDefinition::new(
             self.get_record_equal_function_name(record_type),
             vec!["lhs".into(), "rhs".into()],
             expression,
@@ -112,7 +118,7 @@ impl EqualOperationDesugarer {
                 source_information.clone(),
             ),
             source_information.clone(),
-        ))
+        )))
     }
 
     fn desugar_expression(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
@@ -140,8 +146,7 @@ impl EqualOperationDesugarer {
         source_information: Arc<SourceInformation>,
     ) -> Result<Expression, CompileError> {
         Ok(match self.reference_type_resolver.resolve(type_)? {
-            // TODO Do not compare any types.
-            Type::Any(_) => Boolean::new(false, source_information).into(),
+            Type::Any(_) => return Err(CompileError::AnyEqualOperation(source_information)),
             Type::Boolean(_) => If::new(
                 lhs.clone(),
                 If::new(
@@ -159,8 +164,9 @@ impl EqualOperationDesugarer {
                 source_information,
             )
             .into(),
-            // TODO Do not compare function types.
-            Type::Function(_) => Boolean::new(false, source_information).into(),
+            Type::Function(_) => {
+                return Err(CompileError::FunctionEqualOperation(source_information))
+            }
             Type::List(list_type) => {
                 let element_type = list_type.element();
 

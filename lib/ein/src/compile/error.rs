@@ -7,9 +7,11 @@ use std::sync::Arc;
 
 #[derive(Debug, PartialEq)]
 pub enum CompileError {
+    AnyEqualOperation(Arc<SourceInformation>),
     CaseArgumentTypeInvalid(Arc<SourceInformation>),
     CircularInitialization,
     ExportedNameNotFound { name: String },
+    FunctionEqualOperation(Arc<SourceInformation>),
     MixedDefinitionsInLet(Arc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
@@ -22,15 +24,25 @@ pub enum CompileError {
 impl Display for CompileError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match self {
+            Self::AnyEqualOperation(source_information) => write!(
+                formatter,
+                "cannot compare Any type values\n{}",
+                source_information
+            ),
+            Self::CaseArgumentTypeInvalid(source_information) => write!(
+                formatter,
+                "invalid argument type of case expression\n{}",
+                source_information
+            ),
             Self::CircularInitialization => {
-                write!(formatter, "circular variable initialization detected",)
+                write!(formatter, "circular variable initialization detected")
             }
             Self::ExportedNameNotFound { name } => {
                 write!(formatter, "exported name \"{}\" not found", name)
             }
-            Self::CaseArgumentTypeInvalid(source_information) => write!(
+            Self::FunctionEqualOperation(source_information) => write!(
                 formatter,
-                "invalid argument type of case expression\n{}",
+                "cannot compare functions\n{}",
                 source_information
             ),
             Self::MixedDefinitionsInLet(source_information) => write!(
