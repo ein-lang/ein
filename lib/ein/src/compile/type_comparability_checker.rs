@@ -72,7 +72,7 @@ mod tests {
     use crate::types;
 
     #[test]
-    fn check_comparabiliity_of_record_type() {
+    fn check_comparability_of_record_type() {
         assert!(
             TypeComparabilityChecker::new(ReferenceTypeResolver::new(&Module::dummy()))
                 .check_comparable(
@@ -84,7 +84,7 @@ mod tests {
     }
 
     #[test]
-    fn check_comparabiliity_of_record_type_with_function_member() {
+    fn check_comparability_of_record_type_with_function_member() {
         assert!(
             !TypeComparabilityChecker::new(ReferenceTypeResolver::new(&Module::dummy()))
                 .check_comparable(
@@ -110,7 +110,7 @@ mod tests {
     }
 
     #[test]
-    fn check_comparabiliity_of_record_type_with_any_member() {
+    fn check_comparability_of_record_type_with_any_member() {
         assert!(
             !TypeComparabilityChecker::new(ReferenceTypeResolver::new(&Module::dummy()))
                 .check_comparable(
