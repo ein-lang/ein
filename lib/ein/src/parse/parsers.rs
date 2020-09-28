@@ -234,8 +234,8 @@ fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefiniti
         source_information(),
         identifier(),
         optional(between(
-            sign("("),
-            sign(")"),
+            sign("{"),
+            sign("}"),
             sep_end_by1((identifier().skip(sign(":")), type_()), sign(",")),
         )),
     )
@@ -354,7 +354,13 @@ fn expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
 }
 
 fn atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
+    lazy(|| no_partial(strict_atomic_expression())).boxed()
+}
+
+fn strict_atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice!(
+        record_construction().map(Expression::from),
+        record_update().map(Expression::from),
         list_literal().map(Expression::from),
         boolean_literal().map(Expression::from),
         none_literal().map(Expression::from),
@@ -459,9 +465,9 @@ fn record_construction<'a>() -> impl Parser<Stream<'a>, Output = RecordConstruct
     (
         source_information(),
         reference_type(),
-        sign("("),
+        string("{"),
         sep_end_by1((identifier().skip(sign("=")), expression()), sign(",")),
-        sign(")"),
+        sign("}"),
     )
         .then(|(source_information, reference_type, _, elements, _)| {
             let elements: Vec<_> = elements;
@@ -490,12 +496,12 @@ fn record_update<'a>() -> impl Parser<Stream<'a>, Output = RecordUpdate> {
     (
         source_information(),
         reference_type(),
-        sign("("),
+        string("{"),
         sign("..."),
         atomic_expression(),
         sign(","),
         sep_end_by1((identifier().skip(sign("=")), expression()), sign(",")),
-        sign(")"),
+        sign("}"),
     )
         .then(
             |(source_information, reference_type, _, _, argument, _, elements, _)| {
@@ -524,8 +530,6 @@ fn record_update<'a>() -> impl Parser<Stream<'a>, Output = RecordUpdate> {
 
 fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
     choice!(
-        record_construction().map(Expression::from),
-        record_update().map(Expression::from),
         application_or_atomic_expression(),
         if_().map(Expression::from),
         case().map(Expression::from),
@@ -2164,13 +2168,21 @@ mod tests {
 
         #[test]
         fn parse_record_construction() {
-            assert!(record_construction().parse(stream("f", "")).is_err());
+            assert!(record_construction().parse(stream("Foo", "")).is_err());
 
-            assert!(record_construction().parse(stream("Foo ()", "")).is_err());
+            assert!(record_construction().parse(stream("Foo{}", "")).is_err());
+
+            assert_eq!(
+                expression()
+                    .parse(stream("Foo { foo = 42 }", ""))
+                    .unwrap()
+                    .0,
+                Variable::new("Foo", SourceInformation::dummy()).into()
+            );
 
             assert_eq!(
                 record_construction()
-                    .parse(stream("Foo ( foo = 42 )", ""))
+                    .parse(stream("Foo{ foo = 42 }", ""))
                     .unwrap()
                     .0,
                 RecordConstruction::new(
@@ -2187,7 +2199,7 @@ mod tests {
 
             assert_eq!(
                 record_construction()
-                    .parse(stream("Foo ( foo = 42, bar = 42 )", ""))
+                    .parse(stream("Foo{ foo = 42, bar = 42 }", ""))
                     .unwrap()
                     .0,
                 RecordConstruction::new(
@@ -2209,12 +2221,12 @@ mod tests {
             );
 
             assert!(record_construction()
-                .parse(stream("Foo ( foo = 42, foo = 42 )", ""))
+                .parse(stream("Foo{ foo = 42, foo = 42 }", ""))
                 .is_err());
 
             assert_eq!(
                 expression()
-                    .parse(stream("foo (Foo ( foo = 42 ))", ""))
+                    .parse(stream("foo Foo{ foo = 42 }", ""))
                     .unwrap()
                     .0,
                 Application::new(
@@ -2235,16 +2247,8 @@ mod tests {
             );
 
             assert_eq!(
-                expression()
-                    .parse(stream("foo Foo ( foo = 42 )", ""))
-                    .unwrap()
-                    .0,
-                Variable::new("foo", SourceInformation::dummy()).into()
-            );
-
-            assert_eq!(
                 record_construction()
-                    .parse(stream("Foo ( foo = bar\n42, )", ""))
+                    .parse(stream("Foo{ foo = bar\n42, }", ""))
                     .unwrap()
                     .0,
                 RecordConstruction::new(
@@ -2269,7 +2273,7 @@ mod tests {
         fn parse_record_update() {
             assert_eq!(
                 record_update()
-                    .parse(stream("Foo ( ...foo, bar = 42 )", ""))
+                    .parse(stream("Foo{ ...foo, bar = 42 }", ""))
                     .unwrap()
                     .0,
                 RecordUpdate::new(
@@ -2284,9 +2288,10 @@ mod tests {
                     SourceInformation::dummy()
                 )
             );
+
             assert_eq!(
                 record_update()
-                    .parse(stream("Foo ( ...foo, bar = 42, )", ""))
+                    .parse(stream("Foo{ ...foo, bar = 42, }", ""))
                     .unwrap()
                     .0,
                 RecordUpdate::new(
@@ -2301,15 +2306,24 @@ mod tests {
                     SourceInformation::dummy()
                 )
             );
-            assert!(record_update().parse(stream("Foo ( ...foo )", "")).is_err());
+
+            assert_eq!(
+                expression()
+                    .parse(stream("Foo { ...foo, bar = 42 }", ""))
+                    .unwrap()
+                    .0,
+                Variable::new("Foo", SourceInformation::dummy()).into(),
+            );
+
+            assert!(record_update().parse(stream("Foo{ ...foo }", "")).is_err());
             assert!(record_update()
-                .parse(stream("Foo ( ...foo, bar = 42, bar = 42 )", ""))
+                .parse(stream("Foo{ ...foo, bar = 42, bar = 42 }", ""))
                 .is_err());
             assert!(record_update()
-                .parse(stream("Foo ( ...(foo bar), baz = 42 )", ""))
+                .parse(stream("Foo{ ...(foo bar), baz = 42 }", ""))
                 .is_ok());
             assert!(record_update()
-                .parse(stream("Foo ( ...foo bar, baz = 42 )", ""))
+                .parse(stream("Foo{ ...foo bar, baz = 42 }", ""))
                 .is_err());
         }
 
