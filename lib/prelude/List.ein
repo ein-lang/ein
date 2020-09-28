@@ -7,20 +7,18 @@ export {
   prependToList,
 }
 
-type AnyList (
+type AnyList {
   node : Node | None,
-)
+}
 
-type Node (
+type Node {
   first : Any,
   rest : Node | None,
-)
+}
 
 emptyList : AnyList
 emptyList =
-  AnyList (
-    node = None,
-  )
+  AnyList{ node = None }
 
 getListLength : AnyList -> Number
 getListLength list =
@@ -34,20 +32,20 @@ getLengthFromNode node =
 
 prependToList : Any -> AnyList -> AnyList
 prependToList element list =
-  AnyList ( node = prependToNode element (AnyList.node list) )
+  AnyList{ node = prependToNode element (AnyList.node list) }
 
 prependToNode : Any -> Node | None -> Node
 prependToNode element node =
-  Node (
+  Node{
     first = element,
     rest = node,
-  )
+  }
 
 concatenateLists : AnyList -> AnyList -> AnyList
 concatenateLists one other =
-  AnyList (
+  AnyList{
     node = concatenateNodes (AnyList.node one) (AnyList.node other)
-  )
+  }
 
 concatenateNodes : Node | None -> Node | None -> Node | None
 concatenateNodes one other =

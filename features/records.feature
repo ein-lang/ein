@@ -14,10 +14,10 @@ Feature: Records
   Scenario: Define a record value
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Number )
+    type Foo { foo : Number }
 
     foo : Foo
-    foo = Foo ( foo = 42 )
+    foo = Foo{ foo = 42 }
 
     main : Number -> Number
     main x = 42
@@ -30,10 +30,10 @@ Feature: Records
   Scenario: Access a record's element
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Number )
+    type Foo { foo : Number }
 
     main : Number -> Number
-    main x = Foo.foo (Foo ( foo = 42 ))
+    main x = Foo.foo Foo{ foo = 42 }
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`
@@ -43,13 +43,13 @@ Feature: Records
   Scenario: Update a record's element
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Number, bar : Number )
+    type Foo { foo : Number, bar : Number }
 
     foo : Foo
-    foo = Foo ( foo = 13, bar = 13 )
+    foo = Foo{ foo = 13, bar = 13 }
 
     main : Number -> Number
-    main x = Foo.foo (Foo ( ...foo, foo = 42 ))
+    main x = Foo.foo Foo{ ...foo, foo = 42 }
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`
@@ -59,10 +59,10 @@ Feature: Records
   Scenario: Define a recursive record value
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Foo )
+    type Foo { foo : Foo }
 
     foo : Number -> Foo
-    foo x = Foo ( foo = foo x )
+    foo x = Foo{ foo = foo x }
 
     main : Number -> Number
     main x = 42
