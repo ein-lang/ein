@@ -453,6 +453,7 @@ fn application_terminator<'a>() -> impl Parser<Stream<'a>, Output = &'static str
         newlines1(),
         sign(","),
         sign(")"),
+        sign("}"),
         sign("]"),
         operator().with(value(())),
         any_keyword(),
@@ -2002,7 +2003,9 @@ mod tests {
 
         #[test]
         fn parse_application_terminator() {
-            for source in &["", "\n", " \n", "\n\n", "+", ")", "\n)", "\n )", "then"] {
+            for source in &[
+                "", "\n", " \n", "\n\n", "+", ")", "\n)", "\n )", "}", "then",
+            ] {
                 assert!(application_terminator().parse(stream(source, "")).is_ok());
             }
         }
