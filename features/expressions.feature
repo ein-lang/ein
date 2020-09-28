@@ -66,11 +66,11 @@ Feature: Expressions
   Scenario: Use an equal operator with records
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Number, bar : Boolean )
+    type Foo { foo : Number, bar : Boolean }
 
     main : Number -> Number
     main x =
-      if Foo ( foo = 42, bar = True ) == Foo ( foo = 42, bar = True )
+      if Foo{ foo = 42, bar = True } == Foo{ foo = 42, bar = True }
       then 42
       else 13
     """

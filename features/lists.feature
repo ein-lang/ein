@@ -14,8 +14,6 @@ Feature: Records
   Scenario: Create an empty list
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Number )
-
     foo : List Number
     foo = []
 
@@ -30,8 +28,6 @@ Feature: Records
   Scenario: Create a list with an element
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Number )
-
     foo : List Number
     foo = [ 42 ]
 
@@ -46,8 +42,6 @@ Feature: Records
   Scenario: Prepend an element to a list
     Given a file named "Main.ein" with:
     """
-    type Foo ( foo : Number )
-
     foo : List Number -> List Number
     foo x = [ 42, ...x ]
 

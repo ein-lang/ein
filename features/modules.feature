@@ -105,12 +105,12 @@ Feature: Modules
     """
     export { Foo, foo }
 
-    type Foo ( bar : Bar | None )
+    type Foo { bar : Bar | None }
 
-    type Bar ( foo : Foo | None )
+    type Bar { foo : Foo | None }
 
     foo : Foo
-    foo = Foo ( bar = None )
+    foo = Foo{ bar = None }
     """
     When I successfully run `ein build`
     And I run `sh -c ./foo`
