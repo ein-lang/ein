@@ -1149,6 +1149,34 @@ mod tests {
                 .into()
             ])));
         }
+
+        #[test]
+        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type_inferred_from_if_expression(
+        ) {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        "y",
+                        If::new(
+                            Boolean::new(true, SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        vec![Alternative::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )
+                        .into()],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
     }
 
     mod record {
