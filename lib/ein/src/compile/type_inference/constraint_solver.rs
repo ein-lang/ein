@@ -73,6 +73,7 @@ impl ConstraintSolver {
                     }
                 }
                 (one, Type::Union(union)) => {
+                    // TODO Fix this weird type checking.
                     // Union types' members cannot be type variables.
                     if !union
                         .types()

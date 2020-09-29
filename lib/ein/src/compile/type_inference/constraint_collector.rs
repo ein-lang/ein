@@ -119,9 +119,6 @@ impl ConstraintCollector {
                 let result = types::Variable::new(case.source_information().clone());
 
                 for alternative in case.alternatives() {
-                    self.subsumption_set
-                        .add(alternative.type_().clone(), argument.clone());
-
                     let mut variables = variables.clone();
 
                     variables.insert(case.name().into(), alternative.type_().clone());
