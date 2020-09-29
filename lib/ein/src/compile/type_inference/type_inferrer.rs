@@ -1034,7 +1034,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn infer_types_of_if_expressions() {
+        fn infer_types_of_case_expressions() {
             let create_module = |type_: Type| {
                 Module::from_definitions(vec![ValueDefinition::new(
                     "x",
