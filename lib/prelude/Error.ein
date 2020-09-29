@@ -1,0 +1,5 @@
+export { Error }
+
+type Error {
+  error : Any
+}
