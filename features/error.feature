@@ -14,8 +14,8 @@ Feature: Error
   Scenario: Define an error value
     Given a file named "Main.ein" with:
     """
-    error : Error
-    error = Error{ error = 42 }
+    x : Error
+    x = error 42
 
     main : Number -> Number
     main x = 42
