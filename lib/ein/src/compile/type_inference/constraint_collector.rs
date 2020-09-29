@@ -113,13 +113,14 @@ impl ConstraintCollector {
             Expression::Case(case) => {
                 let argument = self.infer_expression(case.argument(), variables)?;
 
+                self.subsumption_set
+                    .add(argument.clone(), case.type_().clone());
+
                 let result = types::Variable::new(case.source_information().clone());
-                let mut alternative_types = vec![];
 
                 for alternative in case.alternatives() {
                     self.subsumption_set
                         .add(alternative.type_().clone(), argument.clone());
-                    alternative_types.push(alternative.type_().clone());
 
                     let mut variables = variables.clone();
 
@@ -128,16 +129,6 @@ impl ConstraintCollector {
                     let type_ = self.infer_expression(alternative.expression(), &variables)?;
                     self.subsumption_set.add(type_, result.clone());
                 }
-
-                self.subsumption_set.add(
-                    argument.clone(),
-                    types::Union::new(alternative_types.clone(), case.source_information().clone()),
-                );
-
-                self.subsumption_set.add(
-                    types::Union::new(alternative_types, case.source_information().clone()),
-                    case.type_().clone(),
-                );
 
                 Ok(result.into())
             }
