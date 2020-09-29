@@ -1087,6 +1087,68 @@ mod tests {
                 ))
             );
         }
+
+        #[test]
+        fn fail_to_infer_case_expressions_with_wrong_argument() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into()
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Case::new(
+                        "z",
+                        Variable::new("x", SourceInformation::dummy()),
+                        vec![
+                            Alternative::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                            ),
+                            Alternative::new(
+                                types::None::new(SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                            )
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        "y",
+                        None::new(SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Any::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )
+                        .into()],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
     }
 
     mod record {
@@ -1566,46 +1628,6 @@ mod tests {
         }
 
         #[test]
-        fn fail_to_infer_case_expressions_with_wrong_argument() {
-            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
-                    "x",
-                    Boolean::new(true, SourceInformation::dummy()),
-                    types::Union::new(
-                        vec![
-                            types::Boolean::new(SourceInformation::dummy()).into(),
-                            types::None::new(SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    ),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-                ValueDefinition::new(
-                    "y",
-                    Case::new(
-                        "z",
-                        Variable::new("x", SourceInformation::dummy()),
-                        vec![
-                            Alternative::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                None::new(SourceInformation::dummy()),
-                            ),
-                            Alternative::new(
-                                types::None::new(SourceInformation::dummy()),
-                                None::new(SourceInformation::dummy()),
-                            )
-                        ],
-                        SourceInformation::dummy()
-                    ),
-                    types::None::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])));
-        }
-
-        #[test]
         fn simplify_record_type_in_type_definitions() {
             let module = Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
@@ -1734,28 +1756,6 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                     ),
                     types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])));
-        }
-
-        #[test]
-        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
-            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
-                    "x",
-                    Case::new(
-                        "y",
-                        None::new(SourceInformation::dummy()),
-                        vec![Alternative::new(
-                            types::Any::new(SourceInformation::dummy()),
-                            None::new(SourceInformation::dummy()),
-                        )
-                        .into()],
-                        SourceInformation::dummy()
-                    ),
-                    types::None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into()
