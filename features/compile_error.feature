@@ -1,4 +1,4 @@
-Feature: Error
+Feature: Compile error
   Background:
     Given a file named "ein.json" with:
     """
@@ -11,14 +11,15 @@ Feature: Error
     }
     """
 
-  Scenario: Define an error value
+  Scenario: Fail to build a command
     Given a file named "Main.ein" with:
     """
-    x : Error
-    x = error 42
+    f : Number
+    f = 42
 
     main : Number -> Number
-    main x = 42
+    main x = f x
     """
-    When I run `ein build`
-    Then the exit status should be 0
+    And I run `ein build`
+    Then stderr from "ein build" should contain "types not matched"
+    And the exit status should not be 0

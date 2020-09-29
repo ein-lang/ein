@@ -1,0 +1,8 @@
+export { Error, error }
+
+type Error {
+  error : Any
+}
+
+error : Any -> Error
+error x = Error{ error = x }
