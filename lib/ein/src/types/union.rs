@@ -14,15 +14,6 @@ pub struct Union {
 
 impl Union {
     pub fn new(types: Vec<Type>, source_information: impl Into<Arc<SourceInformation>>) -> Self {
-        for type_ in &types {
-            match type_ {
-                Type::Union(_) | Type::Unknown(_) | Type::Variable(_) => {
-                    panic!("invalid union type construction")
-                }
-                _ => {}
-            }
-        }
-
         Self {
             types: types.into_iter().collect(),
             source_information: source_information.into(),
