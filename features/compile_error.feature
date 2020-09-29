@@ -1,4 +1,4 @@
-Feature: Error
+Feature: Compile error
   Background:
     Given a file named "ein.json" with:
     """
