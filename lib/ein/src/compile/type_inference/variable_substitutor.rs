@@ -21,8 +21,11 @@ impl VariableSubstitutor {
         .into()
     }
 
-    // TODO Substitute variables recursively.
     pub fn substitute(&self, type_: &Type) -> Result<Type, CompileError> {
+        type_.convert_types(&mut |type_| self.substitute_shallowly(type_))
+    }
+
+    fn substitute_shallowly(&self, type_: &Type) -> Result<Type, CompileError> {
         self.type_canonicalizer
             .canonicalize(if let Type::Variable(variable) = type_ {
                 self.substitutions.get(&variable.id()).ok_or_else(|| {
@@ -31,5 +34,69 @@ impl VariableSubstitutor {
             } else {
                 type_
             })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::super::reference_type_resolver::ReferenceTypeResolver;
+    use super::super::super::type_equality_checker::TypeEqualityChecker;
+    use super::*;
+    use crate::ast::Module;
+    use crate::debug::SourceInformation;
+    use crate::types;
+
+    #[test]
+    fn substitute_variable() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker);
+
+        let variable = types::Variable::new(SourceInformation::dummy());
+
+        let substitutor = VariableSubstitutor::new(
+            type_canonicalizer,
+            vec![(
+                variable.id(),
+                types::Number::new(SourceInformation::dummy()).into(),
+            )]
+            .into_iter()
+            .collect(),
+        );
+
+        assert_eq!(
+            substitutor.substitute(&variable.into()),
+            Ok(types::Number::new(SourceInformation::dummy()).into())
+        );
+    }
+
+    #[test]
+    fn substitute_variable_recursively() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker);
+
+        let variable = types::Variable::new(SourceInformation::dummy());
+
+        let substitutor = VariableSubstitutor::new(
+            type_canonicalizer,
+            vec![(
+                variable.id(),
+                types::Number::new(SourceInformation::dummy()).into(),
+            )]
+            .into_iter()
+            .collect(),
+        );
+
+        assert_eq!(
+            substitutor.substitute(&types::List::new(variable, SourceInformation::dummy()).into()),
+            Ok(types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into())
+        );
     }
 }
