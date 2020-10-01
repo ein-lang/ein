@@ -31,11 +31,6 @@ impl ConstraintChecker {
                 self.variable_substitutor.substitute(&subsumption.0)?,
                 self.variable_substitutor.substitute(&subsumption.1)?,
             ) {
-                (Type::Variable(variable), _) | (_, Type::Variable(variable)) => {
-                    return Err(CompileError::TypeNotInferred(
-                        variable.source_information().clone(),
-                    ));
-                }
                 (Type::Reference(reference), other) => subsumption_set.add(
                     self.reference_type_resolver.resolve_reference(&reference)?,
                     other.clone(),
