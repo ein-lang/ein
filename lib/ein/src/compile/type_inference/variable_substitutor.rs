@@ -21,6 +21,7 @@ impl VariableSubstitutor {
         .into()
     }
 
+    // TODO Substitute variables recursively.
     pub fn substitute(&self, type_: &Type) -> Result<Type, CompileError> {
         self.type_canonicalizer
             .canonicalize(if let Type::Variable(variable) = type_ {
