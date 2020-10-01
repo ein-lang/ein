@@ -1,7 +1,7 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_equality_checker::TypeEqualityChecker;
 use super::super::type_canonicalizer::TypeCanonicalizer;
+use super::super::type_equality_checker::TypeEqualityChecker;
 use super::constraint_checker::ConstraintChecker;
 use super::constraint_collector::ConstraintCollector;
 use super::constraint_solver::ConstraintSolver;
@@ -45,8 +45,7 @@ impl TypeInferrer {
         let substitutions = ConstraintSolver::new(self.reference_type_resolver.clone())
             .solve(solved_subsumption_set, &mut checked_subsumption_set)?;
 
-        let substitutor =
-            VariableSubstitutor::new(self.type_canonicalizer.clone(), substitutions);
+        let substitutor = VariableSubstitutor::new(self.type_canonicalizer.clone(), substitutions);
 
         let checker = ConstraintChecker::new(
             substitutor.clone(),
@@ -56,9 +55,7 @@ impl TypeInferrer {
 
         checker.check(checked_subsumption_set)?;
 
-        module.convert_types(&mut |type_| -> Result<_, CompileError> {
-            substitutor.substitute(type_)
-        })
+        module.convert_types(&mut |type_| substitutor.substitute(type_))
     }
 }
 

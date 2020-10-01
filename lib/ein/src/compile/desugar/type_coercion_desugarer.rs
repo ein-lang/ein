@@ -1,8 +1,8 @@
 use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_equality_checker::TypeEqualityChecker;
 use super::super::type_canonicalizer::TypeCanonicalizer;
+use super::super::type_equality_checker::TypeEqualityChecker;
 use super::typed_meta_desugarer::TypedDesugarer;
 use crate::ast::*;
 use crate::debug::SourceInformation;

@@ -9,8 +9,8 @@ mod variable_substitutor;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_equality_checker::TypeEqualityChecker;
 use super::type_canonicalizer::TypeCanonicalizer;
+use super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use type_inferrer::TypeInferrer;
 
