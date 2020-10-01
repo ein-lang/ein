@@ -203,17 +203,18 @@ impl TypedDesugarer for TypeCoercionDesugarer {
                 .into())
             }
             Expression::Operation(operation) => {
-                let argument_type =
-                    self.union_type_simplifier
-                        .simplify_union(&types::Union::new(
-                            vec![
-                                self.expression_type_extractor
-                                    .extract(operation.lhs(), variables)?,
-                                self.expression_type_extractor
-                                    .extract(operation.rhs(), variables)?,
-                            ],
-                            operation.source_information().clone(),
-                        ))?;
+                let argument_type = self.union_type_simplifier.simplify(
+                    &types::Union::new(
+                        vec![
+                            self.expression_type_extractor
+                                .extract(operation.lhs(), variables)?,
+                            self.expression_type_extractor
+                                .extract(operation.rhs(), variables)?,
+                        ],
+                        operation.source_information().clone(),
+                    )
+                    .into(),
+                )?;
 
                 Ok(Operation::with_type(
                     operation.type_().clone(),

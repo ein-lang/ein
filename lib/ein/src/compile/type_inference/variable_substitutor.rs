@@ -22,13 +22,13 @@ impl VariableSubstitutor {
     }
 
     pub fn substitute(&self, type_: &Type) -> Result<Type, CompileError> {
-        if let Type::Variable(variable) = type_ {
-            self.substitutions.get(&variable.id()).ok_or_else(|| {
-                CompileError::TypeNotInferred(variable.source_information().clone())
-            })?
-        } else {
-            type_
-        }
-        .convert_types(&mut |type_| self.union_type_simplifier.simplify(type_))
+        self.union_type_simplifier
+            .simplify(if let Type::Variable(variable) = type_ {
+                self.substitutions.get(&variable.id()).ok_or_else(|| {
+                    CompileError::TypeNotInferred(variable.source_information().clone())
+                })?
+            } else {
+                type_
+            })
     }
 }

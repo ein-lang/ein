@@ -38,32 +38,32 @@ impl ExpressionTypeExtractor {
             Expression::Boolean(boolean) => {
                 types::Boolean::new(boolean.source_information().clone()).into()
             }
-            Expression::Case(case) => {
-                self.union_type_simplifier
-                    .simplify_union(&types::Union::new(
-                        case.alternatives()
-                            .iter()
-                            .map(|alternative| {
-                                let mut variables = variables.clone();
+            Expression::Case(case) => self.union_type_simplifier.simplify(
+                &types::Union::new(
+                    case.alternatives()
+                        .iter()
+                        .map(|alternative| {
+                            let mut variables = variables.clone();
 
-                                variables.insert(case.name().into(), alternative.type_().clone());
+                            variables.insert(case.name().into(), alternative.type_().clone());
 
-                                self.extract(alternative.expression(), &variables)
-                            })
-                            .collect::<Result<_, _>>()?,
-                        case.source_information().clone(),
-                    ))?
-            }
-            Expression::If(if_) => {
-                self.union_type_simplifier
-                    .simplify_union(&types::Union::new(
-                        vec![
-                            self.extract(if_.then(), variables)?,
-                            self.extract(if_.else_(), variables)?,
-                        ],
-                        if_.source_information().clone(),
-                    ))?
-            }
+                            self.extract(alternative.expression(), &variables)
+                        })
+                        .collect::<Result<_, _>>()?,
+                    case.source_information().clone(),
+                )
+                .into(),
+            )?,
+            Expression::If(if_) => self.union_type_simplifier.simplify(
+                &types::Union::new(
+                    vec![
+                        self.extract(if_.then(), variables)?,
+                        self.extract(if_.else_(), variables)?,
+                    ],
+                    if_.source_information().clone(),
+                )
+                .into(),
+            )?,
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
