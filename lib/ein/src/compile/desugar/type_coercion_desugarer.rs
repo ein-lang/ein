@@ -2,7 +2,7 @@ use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
-use super::super::union_type_simplifier::UnionTypeSimplifier;
+use super::super::type_canonicalizer::TypeCanonicalizer;
 use super::typed_meta_desugarer::TypedDesugarer;
 use crate::ast::*;
 use crate::debug::SourceInformation;
@@ -17,7 +17,7 @@ pub struct TypeCoercionDesugarer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
     expression_type_extractor: Arc<ExpressionTypeExtractor>,
-    union_type_simplifier: Arc<UnionTypeSimplifier>,
+    type_canonicalizer: Arc<TypeCanonicalizer>,
 }
 
 impl TypeCoercionDesugarer {
@@ -25,13 +25,13 @@ impl TypeCoercionDesugarer {
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
         expression_type_extractor: Arc<ExpressionTypeExtractor>,
-        union_type_simplifier: Arc<UnionTypeSimplifier>,
+        type_canonicalizer: Arc<TypeCanonicalizer>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
             expression_type_extractor,
-            union_type_simplifier,
+            type_canonicalizer,
         }
     }
 
@@ -203,7 +203,7 @@ impl TypedDesugarer for TypeCoercionDesugarer {
                 .into())
             }
             Expression::Operation(operation) => {
-                let argument_type = self.union_type_simplifier.simplify(
+                let argument_type = self.type_canonicalizer.canonicalize(
                     &types::Union::new(
                         vec![
                             self.expression_type_extractor

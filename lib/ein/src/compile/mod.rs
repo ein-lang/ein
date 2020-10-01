@@ -17,7 +17,7 @@ mod type_compiler;
 mod type_equality_checker;
 mod type_inference;
 mod union_tag_calculator;
-mod union_type_simplifier;
+mod type_canonicalizer;
 
 use crate::ast::*;
 use crate::path::ModulePath;

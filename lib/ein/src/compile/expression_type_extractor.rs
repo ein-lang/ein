@@ -1,6 +1,6 @@
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
-use super::union_type_simplifier::UnionTypeSimplifier;
+use super::type_canonicalizer::TypeCanonicalizer;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
@@ -8,17 +8,17 @@ use std::sync::Arc;
 
 pub struct ExpressionTypeExtractor {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    union_type_simplifier: Arc<UnionTypeSimplifier>,
+    type_canonicalizer: Arc<TypeCanonicalizer>,
 }
 
 impl ExpressionTypeExtractor {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
-        union_type_simplifier: Arc<UnionTypeSimplifier>,
+        type_canonicalizer: Arc<TypeCanonicalizer>,
     ) -> Arc<Self> {
         Self {
             reference_type_resolver,
-            union_type_simplifier,
+            type_canonicalizer,
         }
         .into()
     }
@@ -38,7 +38,7 @@ impl ExpressionTypeExtractor {
             Expression::Boolean(boolean) => {
                 types::Boolean::new(boolean.source_information().clone()).into()
             }
-            Expression::Case(case) => self.union_type_simplifier.simplify(
+            Expression::Case(case) => self.type_canonicalizer.canonicalize(
                 &types::Union::new(
                     case.alternatives()
                         .iter()
@@ -54,7 +54,7 @@ impl ExpressionTypeExtractor {
                 )
                 .into(),
             )?,
-            Expression::If(if_) => self.union_type_simplifier.simplify(
+            Expression::If(if_) => self.type_canonicalizer.canonicalize(
                 &types::Union::new(
                     vec![
                         self.extract(if_.then(), variables)?,
@@ -130,13 +130,13 @@ mod tests {
     fn extract_type_of_case_expression() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let union_type_simplifier = UnionTypeSimplifier::new(
+        let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
             type_equality_checker.clone(),
         );
 
         assert_eq!(
-            ExpressionTypeExtractor::new(reference_type_resolver, union_type_simplifier).extract(
+            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
                 &Case::new(
                     "",
                     None::new(SourceInformation::dummy()),

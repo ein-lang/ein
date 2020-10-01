@@ -1,7 +1,7 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
-use super::super::union_type_simplifier::UnionTypeSimplifier;
+use super::super::type_canonicalizer::TypeCanonicalizer;
 use super::constraint_checker::ConstraintChecker;
 use super::constraint_collector::ConstraintCollector;
 use super::constraint_solver::ConstraintSolver;
@@ -13,19 +13,19 @@ use std::sync::Arc;
 pub struct TypeInferrer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
-    union_type_simplifier: Arc<UnionTypeSimplifier>,
+    type_canonicalizer: Arc<TypeCanonicalizer>,
 }
 
 impl TypeInferrer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
-        union_type_simplifier: Arc<UnionTypeSimplifier>,
+        type_canonicalizer: Arc<TypeCanonicalizer>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
-            union_type_simplifier,
+            type_canonicalizer,
         }
     }
 
@@ -46,7 +46,7 @@ impl TypeInferrer {
             .solve(solved_subsumption_set, &mut checked_subsumption_set)?;
 
         let substitutor =
-            VariableSubstitutor::new(self.union_type_simplifier.clone(), substitutions);
+            VariableSubstitutor::new(self.type_canonicalizer.clone(), substitutions);
 
         let checker = ConstraintChecker::new(
             substitutor.clone(),
@@ -75,7 +75,7 @@ mod tests {
     fn infer_types(module: &Module) -> Result<Module, CompileError> {
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let union_type_simplifier = UnionTypeSimplifier::new(
+        let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
             type_equality_checker.clone(),
         );
@@ -83,7 +83,7 @@ mod tests {
         TypeInferrer::new(
             reference_type_resolver,
             type_equality_checker,
-            union_type_simplifier,
+            type_canonicalizer,
         )
         .infer(module)
     }
@@ -1656,7 +1656,7 @@ mod tests {
         }
 
         #[test]
-        fn simplify_record_type_in_type_definitions() {
+        fn canonicalize_record_type_in_type_definitions() {
             let module = Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
                     "x",

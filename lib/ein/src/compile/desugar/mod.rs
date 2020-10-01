@@ -17,7 +17,7 @@ use super::list_literal_configuration::ListLiteralConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_comparability_checker::TypeComparabilityChecker;
 use super::type_equality_checker::TypeEqualityChecker;
-use super::union_type_simplifier::UnionTypeSimplifier;
+use super::type_canonicalizer::TypeCanonicalizer;
 use crate::ast::*;
 use boolean_operation_desugarer::BooleanOperationDesugarer;
 use elementless_record_desugarer::ElementlessRecordDesugarer;
@@ -51,13 +51,13 @@ pub fn desugar_with_types(
     let type_comparability_checker =
         TypeComparabilityChecker::new(reference_type_resolver.clone()).into();
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-    let union_type_simplifier = UnionTypeSimplifier::new(
+    let type_canonicalizer = TypeCanonicalizer::new(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
     );
     let expression_type_extractor = ExpressionTypeExtractor::new(
         reference_type_resolver.clone(),
-        union_type_simplifier.clone(),
+        type_canonicalizer.clone(),
     );
 
     let module = ListLiteralDesugarer::new(list_literal_configuration.clone()).desugar(&module)?;
@@ -86,7 +86,7 @@ pub fn desugar_with_types(
         reference_type_resolver,
         type_equality_checker,
         expression_type_extractor,
-        union_type_simplifier,
+        type_canonicalizer,
     ))
     .desugar(&module)
 }
