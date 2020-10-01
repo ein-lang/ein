@@ -31,6 +31,7 @@ impl ConstraintChecker {
                 self.variable_substitutor.substitute(&subsumption.0)?,
                 self.variable_substitutor.substitute(&subsumption.1)?,
             ) {
+                (_, Type::Any(_)) => {}
                 (Type::Reference(reference), other) => subsumption_set.add(
                     self.reference_type_resolver.resolve_reference(&reference)?,
                     other.clone(),
@@ -46,7 +47,6 @@ impl ConstraintChecker {
                 (Type::List(one), Type::List(other)) => {
                     subsumption_set.add(one.element().clone(), other.element().clone());
                 }
-                (_, Type::Any(_)) => {}
                 (Type::Union(union), other) => {
                     for type_ in union.types() {
                         subsumption_set.add(type_.clone(), other.clone());
