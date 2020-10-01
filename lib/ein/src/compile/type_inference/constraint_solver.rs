@@ -1,6 +1,5 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_equality_checker::TypeEqualityChecker;
 use super::subsumption_set::SubsumptionSet;
 use super::variable_constraint_set::VariableConstraintSet;
 use crate::types::Type;
@@ -9,17 +8,12 @@ use std::sync::Arc;
 
 pub struct ConstraintSolver {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    type_equality_checker: Arc<TypeEqualityChecker>,
 }
 
 impl ConstraintSolver {
-    pub fn new(
-        reference_type_resolver: Arc<ReferenceTypeResolver>,
-        type_equality_checker: Arc<TypeEqualityChecker>,
-    ) -> Self {
+    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Self {
         Self {
             reference_type_resolver,
-            type_equality_checker,
         }
     }
 
@@ -67,46 +61,12 @@ impl ConstraintSolver {
                 (Type::List(one), Type::List(other)) => {
                     solved_subsumption_set.add(one.element().clone(), other.element().clone());
                 }
-                (_, Type::Any(_)) => {}
                 (Type::Union(union), other) => {
                     for type_ in union.types() {
                         solved_subsumption_set.add(type_.clone(), other.clone());
                     }
                 }
-                (one, Type::Union(union)) => {
-                    // TODO Fix this weird type checking.
-                    // Union types' members cannot be type variables.
-                    if !union
-                        .types()
-                        .iter()
-                        .map(|type_| self.type_equality_checker.equal(&one, type_))
-                        .collect::<Result<Vec<_>, _>>()?
-                        .into_iter()
-                        .any(|value| value)
-                    {
-                        return Err(CompileError::TypesNotMatched(
-                            one.source_information().clone(),
-                            union.source_information().clone(),
-                        ));
-                    }
-                }
-                (Type::Boolean(_), Type::Boolean(_)) => {}
-                (Type::None(_), Type::None(_)) => {}
-                (Type::Number(_), Type::Number(_)) => {}
-                (Type::Record(one), Type::Record(other)) => {
-                    if one.name() != other.name() {
-                        return Err(CompileError::TypesNotMatched(
-                            one.source_information().clone(),
-                            other.source_information().clone(),
-                        ));
-                    }
-                }
-                (one, other) => {
-                    return Err(CompileError::TypesNotMatched(
-                        one.source_information().clone(),
-                        other.source_information().clone(),
-                    ));
-                }
+                subsumption => checked_subsumption_set.add(subsumption.0, subsumption.1),
             }
         }
 

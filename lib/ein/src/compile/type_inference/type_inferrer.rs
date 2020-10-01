@@ -42,11 +42,8 @@ impl TypeInferrer {
         let (solved_subsumption_set, mut checked_subsumption_set) =
             ConstraintCollector::new(self.reference_type_resolver.clone()).collect(&module)?;
 
-        let substitutions = ConstraintSolver::new(
-            self.reference_type_resolver.clone(),
-            self.type_equality_checker.clone(),
-        )
-        .solve(solved_subsumption_set, &mut checked_subsumption_set)?;
+        let substitutions = ConstraintSolver::new(self.reference_type_resolver.clone())
+            .solve(solved_subsumption_set, &mut checked_subsumption_set)?;
 
         let substitutor =
             VariableSubstitutor::new(self.union_type_simplifier.clone(), substitutions);
