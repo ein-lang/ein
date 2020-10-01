@@ -2,8 +2,10 @@ use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
 use super::super::union_type_simplifier::UnionTypeSimplifier;
+use super::constraint_checker::ConstraintChecker;
 use super::constraint_collector::ConstraintCollector;
 use super::constraint_solver::ConstraintSolver;
+use super::variable_substitutor::VariableSubstitutor;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::sync::Arc;
@@ -37,28 +39,29 @@ impl TypeInferrer {
             })
         })?;
 
-        let subsumption_set =
+        let (solved_subsumption_set, mut checked_subsumption_set) =
             ConstraintCollector::new(self.reference_type_resolver.clone()).collect(&module)?;
+
         let substitutions = ConstraintSolver::new(
             self.reference_type_resolver.clone(),
             self.type_equality_checker.clone(),
         )
-        .solve(subsumption_set)?;
+        .solve(solved_subsumption_set, &mut checked_subsumption_set)?;
 
-        module
-            .convert_types(&mut |type_| -> Result<_, CompileError> {
-                Ok(if let Type::Variable(variable) = type_ {
-                    substitutions
-                        .get(&variable.id())
-                        .ok_or_else(|| {
-                            CompileError::TypeNotInferred(variable.source_information().clone())
-                        })?
-                        .clone()
-                } else {
-                    type_.clone()
-                })
-            })?
-            .convert_types(&mut |type_| self.union_type_simplifier.simplify(type_))
+        let substitutor =
+            VariableSubstitutor::new(self.union_type_simplifier.clone(), substitutions);
+
+        let checker = ConstraintChecker::new(
+            substitutor.clone(),
+            self.reference_type_resolver.clone(),
+            self.type_equality_checker.clone(),
+        );
+
+        checker.check(checked_subsumption_set)?;
+
+        module.convert_types(&mut |type_| -> Result<_, CompileError> {
+            substitutor.substitute(type_)
+        })
     }
 }
 

@@ -1,9 +1,11 @@
+mod constraint_checker;
 mod constraint_collector;
 mod constraint_solver;
 mod subsumption_set;
 mod type_inferrer;
 mod variable_constraint;
 mod variable_constraint_set;
+mod variable_substitutor;
 
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;

@@ -10,18 +10,23 @@ use std::sync::Arc;
 
 pub struct ConstraintCollector {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    subsumption_set: SubsumptionSet,
+    solved_subsumption_set: SubsumptionSet,
+    checked_subsumption_set: SubsumptionSet,
 }
 
 impl ConstraintCollector {
     pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Self {
         Self {
             reference_type_resolver,
-            subsumption_set: SubsumptionSet::new(),
+            solved_subsumption_set: SubsumptionSet::new(),
+            checked_subsumption_set: SubsumptionSet::new(),
         }
     }
 
-    pub fn collect(mut self, module: &Module) -> Result<SubsumptionSet, CompileError> {
+    pub fn collect(
+        mut self,
+        module: &Module,
+    ) -> Result<(SubsumptionSet, SubsumptionSet), CompileError> {
         let variables = ModuleEnvironmentCreator::create(module);
 
         for definition in module.definitions() {
@@ -35,7 +40,7 @@ impl ConstraintCollector {
             };
         }
 
-        Ok(self.subsumption_set)
+        Ok((self.solved_subsumption_set, self.checked_subsumption_set))
     }
 
     fn infer_function_definition(
@@ -51,7 +56,7 @@ impl ConstraintCollector {
             let argument_type: Type = types::Variable::new(source_information.clone()).into();
             let result_type: Type = types::Variable::new(source_information.clone()).into();
 
-            self.subsumption_set.add(
+            self.solved_subsumption_set.add(
                 types::Function::new(
                     argument_type.clone(),
                     result_type.clone(),
@@ -66,7 +71,7 @@ impl ConstraintCollector {
         }
 
         let body_type = self.infer_expression(function_definition.body(), &variables)?;
-        self.subsumption_set.add(body_type, type_);
+        self.solved_subsumption_set.add(body_type, type_);
 
         Ok(())
     }
@@ -78,7 +83,7 @@ impl ConstraintCollector {
     ) -> Result<(), CompileError> {
         let type_ = self.infer_expression(value_definition.body(), &variables)?;
 
-        self.subsumption_set
+        self.solved_subsumption_set
             .add(type_, value_definition.type_().clone());
 
         Ok(())
@@ -96,7 +101,7 @@ impl ConstraintCollector {
                 let result: Type =
                     types::Variable::new(application.source_information().clone()).into();
 
-                self.subsumption_set.add(
+                self.solved_subsumption_set.add(
                     function,
                     types::Function::new(
                         argument,
@@ -113,25 +118,28 @@ impl ConstraintCollector {
             Expression::Case(case) => {
                 let argument = self.infer_expression(case.argument(), variables)?;
 
-                self.subsumption_set
+                self.solved_subsumption_set
                     .add(argument.clone(), case.type_().clone());
 
                 let result = types::Variable::new(case.source_information().clone());
 
                 for alternative in case.alternatives() {
+                    self.checked_subsumption_set
+                        .add(alternative.type_().clone(), argument.clone());
+
                     let mut variables = variables.clone();
 
                     variables.insert(case.name().into(), alternative.type_().clone());
 
                     let type_ = self.infer_expression(alternative.expression(), &variables)?;
-                    self.subsumption_set.add(type_, result.clone());
+                    self.solved_subsumption_set.add(type_, result.clone());
                 }
 
                 Ok(result.into())
             }
             Expression::If(if_) => {
                 let condition = self.infer_expression(if_.condition(), variables)?;
-                self.subsumption_set.add(
+                self.solved_subsumption_set.add(
                     condition,
                     types::Boolean::new(if_.source_information().clone()),
                 );
@@ -140,8 +148,8 @@ impl ConstraintCollector {
                 let else_ = self.infer_expression(if_.else_(), variables)?;
                 let result = types::Variable::new(if_.source_information().clone());
 
-                self.subsumption_set.add(then, result.clone());
-                self.subsumption_set.add(else_, result.clone());
+                self.solved_subsumption_set.add(then, result.clone());
+                self.solved_subsumption_set.add(else_, result.clone());
 
                 Ok(result.into())
             }
@@ -190,18 +198,18 @@ impl ConstraintCollector {
                 let list_type =
                     types::List::new(element_type.clone(), list.source_information().clone());
 
-                self.subsumption_set
+                self.solved_subsumption_set
                     .add(list_type.clone(), list.type_().clone());
 
                 for element in list.elements() {
                     match element {
                         ListElement::Multiple(expression) => {
                             let type_ = self.infer_expression(expression, variables)?;
-                            self.subsumption_set.add(type_, list_type.clone())
+                            self.solved_subsumption_set.add(type_, list_type.clone())
                         }
                         ListElement::Single(expression) => {
                             let type_ = self.infer_expression(expression, variables)?;
-                            self.subsumption_set.add(type_, element_type.clone())
+                            self.solved_subsumption_set.add(type_, element_type.clone())
                         }
                     }
                 }
@@ -218,9 +226,9 @@ impl ConstraintCollector {
                 let lhs = self.infer_expression(operation.lhs(), variables)?;
                 let rhs = self.infer_expression(operation.rhs(), variables)?;
 
-                self.subsumption_set
+                self.solved_subsumption_set
                     .add(lhs.clone(), operation.type_().clone());
-                self.subsumption_set
+                self.solved_subsumption_set
                     .add(rhs.clone(), operation.type_().clone());
 
                 Ok(match operation.operator() {
@@ -235,8 +243,8 @@ impl ConstraintCollector {
                         let number_type =
                             types::Number::new(operation.source_information().clone());
 
-                        self.subsumption_set.add(lhs, number_type.clone());
-                        self.subsumption_set.add(rhs, number_type.clone());
+                        self.solved_subsumption_set.add(lhs, number_type.clone());
+                        self.solved_subsumption_set.add(rhs, number_type.clone());
 
                         match operation.operator() {
                             Operator::Add
@@ -253,8 +261,8 @@ impl ConstraintCollector {
                         let boolean_type =
                             types::Boolean::new(operation.source_information().clone());
 
-                        self.subsumption_set.add(lhs, boolean_type.clone());
-                        self.subsumption_set.add(rhs, boolean_type.clone());
+                        self.solved_subsumption_set.add(lhs, boolean_type.clone());
+                        self.solved_subsumption_set.add(rhs, boolean_type.clone());
 
                         boolean_type.into()
                     }
@@ -281,7 +289,7 @@ impl ConstraintCollector {
                 for (key, expression) in record.elements() {
                     let type_ = self.infer_expression(expression, variables)?;
 
-                    self.subsumption_set
+                    self.solved_subsumption_set
                         .add(type_, record_type.elements()[key].clone());
                 }
 
@@ -297,7 +305,7 @@ impl ConstraintCollector {
                 })?;
 
                 let argument = self.infer_expression(operation.argument(), variables)?;
-                self.subsumption_set
+                self.solved_subsumption_set
                     .add(argument, operation.type_().clone());
 
                 Ok(record_type.elements()[operation.key()].clone())

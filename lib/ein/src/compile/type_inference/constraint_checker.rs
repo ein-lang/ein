@@ -2,80 +2,62 @@ use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_equality_checker::TypeEqualityChecker;
 use super::subsumption_set::SubsumptionSet;
-use super::variable_constraint_set::VariableConstraintSet;
+use super::variable_substitutor::VariableSubstitutor;
 use crate::types::Type;
-use std::collections::HashMap;
 use std::sync::Arc;
 
-pub struct ConstraintSolver {
+pub struct ConstraintChecker {
+    variable_substitutor: Arc<VariableSubstitutor>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
 }
 
-impl ConstraintSolver {
+impl ConstraintChecker {
     pub fn new(
+        variable_substitutor: Arc<VariableSubstitutor>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
     ) -> Self {
         Self {
+            variable_substitutor,
             reference_type_resolver,
             type_equality_checker,
         }
     }
 
-    pub fn solve(
-        &self,
-        mut solved_subsumption_set: SubsumptionSet,
-        checked_subsumption_set: &mut SubsumptionSet,
-    ) -> Result<HashMap<usize, Type>, CompileError> {
-        let mut variable_constraint_set = VariableConstraintSet::new();
-
-        while let Some(subsumption) = solved_subsumption_set.remove() {
-            match subsumption {
-                (lower, Type::Variable(variable)) => {
-                    if let Type::Variable(lower) = &lower {
-                        if variable.id() == lower.id() {
-                            continue;
-                        }
-                    }
-
-                    for type_ in variable_constraint_set.get_upper_types(variable.id()) {
-                        solved_subsumption_set.add(lower.clone(), type_.clone());
-                    }
-
-                    variable_constraint_set.add_lower_type(&variable, &lower);
+    pub fn check(&self, mut subsumption_set: SubsumptionSet) -> Result<(), CompileError> {
+        while let Some(subsumption) = subsumption_set.remove() {
+            match (
+                self.variable_substitutor.substitute(&subsumption.0)?,
+                self.variable_substitutor.substitute(&subsumption.1)?,
+            ) {
+                (Type::Variable(variable), _) | (_, Type::Variable(variable)) => {
+                    return Err(CompileError::TypeNotInferred(
+                        variable.source_information().clone(),
+                    ));
                 }
-                (Type::Variable(variable), upper) => {
-                    for type_ in variable_constraint_set.get_lower_types(variable.id()) {
-                        solved_subsumption_set.add(type_.clone(), upper.clone());
-                    }
-
-                    variable_constraint_set.add_upper_type(&variable, &upper);
-                }
-                (Type::Reference(reference), other) => solved_subsumption_set.add(
+                (Type::Reference(reference), other) => subsumption_set.add(
                     self.reference_type_resolver.resolve_reference(&reference)?,
                     other.clone(),
                 ),
-                (one, Type::Reference(reference)) => solved_subsumption_set.add(
+                (one, Type::Reference(reference)) => subsumption_set.add(
                     one.clone(),
                     self.reference_type_resolver.resolve_reference(&reference)?,
                 ),
                 (Type::Function(one), Type::Function(other)) => {
-                    solved_subsumption_set.add(other.argument().clone(), one.argument().clone());
-                    solved_subsumption_set.add(one.result().clone(), other.result().clone());
+                    subsumption_set.add(other.argument().clone(), one.argument().clone());
+                    subsumption_set.add(one.result().clone(), other.result().clone());
                 }
                 (Type::List(one), Type::List(other)) => {
-                    solved_subsumption_set.add(one.element().clone(), other.element().clone());
+                    subsumption_set.add(one.element().clone(), other.element().clone());
                 }
                 (_, Type::Any(_)) => {}
                 (Type::Union(union), other) => {
                     for type_ in union.types() {
-                        solved_subsumption_set.add(type_.clone(), other.clone());
+                        subsumption_set.add(type_.clone(), other.clone());
                     }
                 }
                 (one, Type::Union(union)) => {
-                    // TODO Fix this weird type checking.
-                    // Union types' members cannot be type variables.
                     if !union
                         .types()
                         .iter()
@@ -110,6 +92,6 @@ impl ConstraintSolver {
             }
         }
 
-        Ok(variable_constraint_set.to_substitutions())
+        Ok(())
     }
 }
