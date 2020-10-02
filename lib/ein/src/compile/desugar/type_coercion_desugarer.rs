@@ -49,6 +49,8 @@ impl TypeCoercionDesugarer {
         )?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
 
+        // If "from" types are not able to be coerced to "to" types, they should be equal already
+        // due to type inference.
         if !to_type.is_union()
             && !to_type.is_any()
             && !self.type_equality_checker.equal(&from_type, &to_type)?
