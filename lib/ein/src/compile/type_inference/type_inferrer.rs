@@ -1,9 +1,11 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::super::type_canonicalizer::TypeCanonicalizer;
 use super::super::type_equality_checker::TypeEqualityChecker;
-use super::super::union_type_simplifier::UnionTypeSimplifier;
+use super::constraint_checker::ConstraintChecker;
 use super::constraint_collector::ConstraintCollector;
 use super::constraint_solver::ConstraintSolver;
+use super::variable_substitutor::VariableSubstitutor;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::sync::Arc;
@@ -11,19 +13,19 @@ use std::sync::Arc;
 pub struct TypeInferrer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
-    union_type_simplifier: Arc<UnionTypeSimplifier>,
+    type_canonicalizer: Arc<TypeCanonicalizer>,
 }
 
 impl TypeInferrer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
-        union_type_simplifier: Arc<UnionTypeSimplifier>,
+        type_canonicalizer: Arc<TypeCanonicalizer>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
-            union_type_simplifier,
+            type_canonicalizer,
         }
     }
 
@@ -37,28 +39,23 @@ impl TypeInferrer {
             })
         })?;
 
-        let subsumption_set =
+        let (solved_subsumption_set, mut checked_subsumption_set) =
             ConstraintCollector::new(self.reference_type_resolver.clone()).collect(&module)?;
-        let substitutions = ConstraintSolver::new(
+
+        let substitutions = ConstraintSolver::new(self.reference_type_resolver.clone())
+            .solve(solved_subsumption_set, &mut checked_subsumption_set)?;
+
+        let substitutor = VariableSubstitutor::new(self.type_canonicalizer.clone(), substitutions);
+
+        let checker = ConstraintChecker::new(
+            substitutor.clone(),
             self.reference_type_resolver.clone(),
             self.type_equality_checker.clone(),
-        )
-        .solve(subsumption_set)?;
+        );
 
-        module
-            .convert_types(&mut |type_| -> Result<_, CompileError> {
-                Ok(if let Type::Variable(variable) = type_ {
-                    substitutions
-                        .get(&variable.id())
-                        .ok_or_else(|| {
-                            CompileError::TypeNotInferred(variable.source_information().clone())
-                        })?
-                        .clone()
-                } else {
-                    type_.clone()
-                })
-            })?
-            .convert_types(&mut |type_| self.union_type_simplifier.simplify(type_))
+        checker.check(checked_subsumption_set)?;
+
+        module.convert_types(&mut |type_| substitutor.substitute(type_))
     }
 }
 
@@ -75,7 +72,7 @@ mod tests {
     fn infer_types(module: &Module) -> Result<Module, CompileError> {
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let union_type_simplifier = UnionTypeSimplifier::new(
+        let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
             type_equality_checker.clone(),
         );
@@ -83,7 +80,7 @@ mod tests {
         TypeInferrer::new(
             reference_type_resolver,
             type_equality_checker,
-            union_type_simplifier,
+            type_canonicalizer,
         )
         .infer(module)
     }
@@ -1034,7 +1031,7 @@ mod tests {
         use pretty_assertions::assert_eq;
 
         #[test]
-        fn infer_types_of_if_expressions() {
+        fn infer_types_of_case_expressions() {
             let create_module = |type_: Type| {
                 Module::from_definitions(vec![ValueDefinition::new(
                     "x",
@@ -1086,6 +1083,96 @@ mod tests {
                     .into()
                 ))
             );
+        }
+
+        #[test]
+        fn fail_to_infer_case_expressions_with_wrong_argument() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Boolean::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into()
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                ValueDefinition::new(
+                    "y",
+                    Case::new(
+                        "z",
+                        Variable::new("x", SourceInformation::dummy()),
+                        vec![
+                            Alternative::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                            ),
+                            Alternative::new(
+                                types::None::new(SourceInformation::dummy()),
+                                None::new(SourceInformation::dummy()),
+                            )
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        "y",
+                        None::new(SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Any::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )
+                        .into()],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type_inferred_from_if_expression(
+        ) {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                ValueDefinition::new(
+                    "x",
+                    Case::new(
+                        "y",
+                        If::new(
+                            Boolean::new(true, SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        vec![Alternative::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )
+                        .into()],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
         }
     }
 
@@ -1566,47 +1653,7 @@ mod tests {
         }
 
         #[test]
-        fn fail_to_infer_case_expressions_with_wrong_argument() {
-            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
-                    "x",
-                    Boolean::new(true, SourceInformation::dummy()),
-                    types::Union::new(
-                        vec![
-                            types::Boolean::new(SourceInformation::dummy()).into(),
-                            types::None::new(SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    ),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-                ValueDefinition::new(
-                    "y",
-                    Case::new(
-                        "z",
-                        Variable::new("x", SourceInformation::dummy()),
-                        vec![
-                            Alternative::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                None::new(SourceInformation::dummy()),
-                            ),
-                            Alternative::new(
-                                types::None::new(SourceInformation::dummy()),
-                                None::new(SourceInformation::dummy()),
-                            )
-                        ],
-                        SourceInformation::dummy()
-                    ),
-                    types::None::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])));
-        }
-
-        #[test]
-        fn simplify_record_type_in_type_definitions() {
+        fn canonicalize_record_type_in_type_definitions() {
             let module = Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
                     "x",
@@ -1734,28 +1781,6 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                     ),
                     types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])));
-        }
-
-        #[test]
-        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
-            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
-                    "x",
-                    Case::new(
-                        "y",
-                        None::new(SourceInformation::dummy()),
-                        vec![Alternative::new(
-                            types::Any::new(SourceInformation::dummy()),
-                            None::new(SourceInformation::dummy()),
-                        )
-                        .into()],
-                        SourceInformation::dummy()
-                    ),
-                    types::None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into()

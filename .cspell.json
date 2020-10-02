@@ -51,6 +51,7 @@
     "subcommand",
     "submodule",
     "subpath",
+    "substitutor",
     "termcolor",
     "toposort",
     "uint",

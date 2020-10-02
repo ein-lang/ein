@@ -4,12 +4,12 @@ use super::type_equality_checker::TypeEqualityChecker;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
-pub struct UnionTypeSimplifier {
+pub struct TypeCanonicalizer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
 }
 
-impl UnionTypeSimplifier {
+impl TypeCanonicalizer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
@@ -21,16 +21,20 @@ impl UnionTypeSimplifier {
         .into()
     }
 
-    pub fn simplify(&self, type_: &Type) -> Result<Type, CompileError> {
+    pub fn canonicalize(&self, type_: &Type) -> Result<Type, CompileError> {
+        type_.convert_types(&mut |type_| self.canonicalize_shallowly(type_))
+    }
+
+    fn canonicalize_shallowly(&self, type_: &Type) -> Result<Type, CompileError> {
         Ok(if let Type::Union(union) = type_ {
-            self.simplify_union(&union)?
+            self.canonicalize_union_shallowly(&union)?
         } else {
             type_.clone()
         })
     }
 
     // This function assumes that contained types are canonicalized already.
-    pub fn simplify_union(&self, union: &types::Union) -> Result<Type, CompileError> {
+    fn canonicalize_union_shallowly(&self, union: &types::Union) -> Result<Type, CompileError> {
         let all_types = self.get_member_types(union)?;
 
         if let Some(type_) = all_types.iter().find(|type_| type_.is_any()) {
@@ -63,7 +67,7 @@ impl UnionTypeSimplifier {
             .map(|type_| {
                 Ok(match self.reference_type_resolver.resolve(type_)? {
                     Type::Union(union) => self.get_member_types(&union)?,
-                    // Do not use resolved types because they are not simplified yet.
+                    // Do not use resolved types because they might not be canonicalized yet.
                     _ => vec![type_.clone()],
                 })
             })
@@ -83,31 +87,33 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn simplify_duplicate_types() {
+    fn canonicalize_duplicate_types() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&types::Union::new(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
+                &types::Union::new(
                     vec![
                         types::None::new(SourceInformation::dummy()).into(),
                         types::None::new(SourceInformation::dummy()).into()
                     ],
                     SourceInformation::dummy()
-                )),
+                )
+                .into()
+            ),
             Ok(types::None::new(SourceInformation::dummy()).into())
         );
     }
 
     #[test]
-    fn simplify_nested_union_types() {
+    fn canonicalize_nested_union_types() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&types::Union::new(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
+                &types::Union::new(
                     vec![
                         types::Union::new(
                             vec![
@@ -120,19 +126,21 @@ mod tests {
                         types::None::new(SourceInformation::dummy()).into()
                     ],
                     SourceInformation::dummy()
-                )),
+                )
+                .into()
+            ),
             Ok(types::None::new(SourceInformation::dummy()).into())
         );
     }
 
     #[test]
-    fn simplify_deeply_nested_union_types() {
+    fn canonicalize_deeply_nested_union_types() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&types::Union::new(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
+                &types::Union::new(
                     vec![
                         types::Union::new(
                             vec![
@@ -152,36 +160,80 @@ mod tests {
                         types::None::new(SourceInformation::dummy()).into()
                     ],
                     SourceInformation::dummy()
-                )),
+                )
+                .into()
+            ),
             Ok(types::None::new(SourceInformation::dummy()).into())
         );
     }
 
     #[test]
-    fn simplify_union_types_including_any_types() {
+    fn canonicalize_union_types_in_record_type() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&types::Union::new(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker)
+                .canonicalize(
+                    &types::Record::new(
+                        "Foo",
+                        vec![(
+                            "foo".into(),
+                            types::Union::new(
+                                vec![
+                                    types::None::new(SourceInformation::dummy()).into(),
+                                    types::None::new(SourceInformation::dummy()).into()
+                                ],
+                                SourceInformation::dummy()
+                            )
+                            .into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                )
+                .unwrap()
+                .to_record()
+                .unwrap()
+                .elements(),
+            &vec![(
+                "foo".into(),
+                types::None::new(SourceInformation::dummy()).into(),
+            )]
+            .into_iter()
+            .collect(),
+        );
+    }
+
+    #[test]
+    fn canonicalize_union_types_including_any_types() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+
+        assert_eq!(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
+                &types::Union::new(
                     vec![
                         types::Any::new(SourceInformation::dummy()).into(),
                         types::None::new(SourceInformation::dummy()).into()
                     ],
                     SourceInformation::dummy()
-                )),
+                )
+                .into()
+            ),
             Ok(types::Any::new(SourceInformation::dummy()).into())
         );
     }
 
     #[test]
-    fn simplify_union_types_including_any_types_in_record_types() {
+    fn canonicalize_union_types_including_any_types_in_record_types() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker).simplify(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
                 &types::Record::new(
                     "Foo",
                     vec![(
@@ -216,7 +268,7 @@ mod tests {
     }
 
     #[test]
-    fn do_not_simplify_normal_union_types() {
+    fn do_not_canonicalize_normal_union_types() {
         let union_type = types::Union::new(
             vec![
                 types::Boolean::new(SourceInformation::dummy()).into(),
@@ -228,14 +280,14 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&union_type),
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker)
+                .canonicalize(&union_type.clone().into()),
             Ok(union_type.into())
         );
     }
 
     #[test]
-    fn simplify_record_types_in_union_types() {
+    fn canonicalize_record_types_in_union_types() {
         let record_type = types::Record::new("Foo", Default::default(), SourceInformation::dummy());
         let union_type = types::Union::new(
             vec![record_type.clone().into(), record_type.clone().into()],
@@ -245,14 +297,14 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&union_type),
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker)
+                .canonicalize(&union_type.into()),
             Ok(record_type.into())
         );
     }
 
     #[test]
-    fn simplify_union_type_resolving_reference_types() {
+    fn canonicalize_union_type_resolving_reference_types() {
         let reference_type_resolver =
             ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
@@ -264,15 +316,17 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&types::Union::new(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
+                &types::Union::new(
                     vec![
                         types::Reference::new("Foo", SourceInformation::dummy()).into(),
                         types::Boolean::new(SourceInformation::dummy()).into(),
                         types::None::new(SourceInformation::dummy()).into(),
                     ],
                     SourceInformation::dummy(),
-                )),
+                )
+                .into()
+            ),
             Ok(types::Union::new(
                 vec![
                     types::Boolean::new(SourceInformation::dummy()).into(),
@@ -285,7 +339,7 @@ mod tests {
     }
 
     #[test]
-    fn simplify_union_type_not_resolving_reference_types() {
+    fn canonicalize_union_type_not_resolving_reference_types() {
         let reference_type_resolver =
             ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
@@ -297,14 +351,16 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            UnionTypeSimplifier::new(reference_type_resolver, type_equality_checker)
-                .simplify_union(&types::Union::new(
+            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
+                &types::Union::new(
                     vec![
                         types::Reference::new("Foo", SourceInformation::dummy()).into(),
                         types::None::new(SourceInformation::dummy()).into(),
                     ],
                     SourceInformation::dummy(),
-                )),
+                )
+                .into()
+            ),
             Ok(types::Union::new(
                 vec![
                     types::Reference::new("Foo", SourceInformation::dummy()).into(),

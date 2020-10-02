@@ -12,12 +12,12 @@ mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod reference_type_resolver;
+mod type_canonicalizer;
 mod type_comparability_checker;
 mod type_compiler;
 mod type_equality_checker;
 mod type_inference;
 mod union_tag_calculator;
-mod union_type_simplifier;
 
 use crate::ast::*;
 use crate::path::ModulePath;
