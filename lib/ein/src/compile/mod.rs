@@ -5,7 +5,7 @@ mod expression_compiler;
 mod expression_type_extractor;
 mod global_name_map_creator;
 mod global_name_renamer;
-mod list_literal_configuration;
+mod list_type_configuration;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
@@ -27,7 +27,7 @@ use error::CompileError;
 use expression_compiler::ExpressionCompiler;
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
-pub use list_literal_configuration::ListLiteralConfiguration;
+pub use list_type_configuration::ListTypeConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
@@ -55,7 +55,7 @@ pub fn compile(
     let module = transform_with_types(
         &infer_types(&transform_without_types(&module)?)?,
         configuration
-            .list_literal_configuration()
+            .list_type_configuration()
             .qualify(&names)
             .into(),
     )?;
@@ -116,7 +116,7 @@ fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::list_literal_configuration::ListLiteralConfiguration;
+    use super::list_type_configuration::ListTypeConfiguration;
     use super::*;
     use crate::debug::*;
     use crate::types;
@@ -129,7 +129,7 @@ mod tests {
             "ein_init",
             "ein_malloc",
             "ein_panic",
-            ListLiteralConfiguration::new(
+            ListTypeConfiguration::new(
                 "emptyList",
                 "concatenateLists",
                 "equalLists",

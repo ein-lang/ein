@@ -1,18 +1,18 @@
 use super::super::error::CompileError;
-use super::super::list_literal_configuration::ListLiteralConfiguration;
+use super::super::list_type_configuration::ListTypeConfiguration;
 use crate::ast::*;
 use crate::debug::*;
 use std::sync::Arc;
 
 pub struct ListLiteralTransformer {
-    configuration: Arc<ListLiteralConfiguration>,
+    configuration: Arc<ListTypeConfiguration>,
 }
 
 /// Transforms list literals into generic list functions and variables.
 /// Types are consistent after transforming as all `List a` types are converted
 /// into `List Any`.
 impl ListLiteralTransformer {
-    pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
+    pub fn new(configuration: Arc<ListTypeConfiguration>) -> Self {
         Self { configuration }
     }
 

@@ -13,7 +13,7 @@ mod typed_meta_transformer;
 
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
-use super::list_literal_configuration::ListLiteralConfiguration;
+use super::list_type_configuration::ListTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_canonicalizer::TypeCanonicalizer;
 use super::type_comparability_checker::TypeComparabilityChecker;
@@ -45,7 +45,7 @@ pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> 
 
 pub fn transform_with_types(
     module: &Module,
-    list_literal_configuration: Arc<ListLiteralConfiguration>,
+    list_type_configuration: Arc<ListTypeConfiguration>,
 ) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_comparability_checker =
@@ -59,7 +59,7 @@ pub fn transform_with_types(
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
 
     let module =
-        ListLiteralTransformer::new(list_literal_configuration.clone()).transform(&module)?;
+        ListLiteralTransformer::new(list_type_configuration.clone()).transform(&module)?;
     let module = BooleanOperationTransformer::new().transform(&module)?;
 
     let module = NotEqualOperationTransformer::new().transform(&module)?;
@@ -67,7 +67,7 @@ pub fn transform_with_types(
         reference_type_resolver.clone(),
         type_comparability_checker,
         type_equality_checker.clone(),
-        list_literal_configuration.clone(),
+        list_type_configuration.clone(),
     )
     .transform(&module)?;
 
@@ -79,7 +79,7 @@ pub fn transform_with_types(
     .transform(&module)?;
 
     let module = PartialApplicationTransformer::new().transform(&module)?;
-    let module = ListTypeTransformer::new(list_literal_configuration).transform(&module)?;
+    let module = ListTypeTransformer::new(list_type_configuration).transform(&module)?;
 
     TypedMetaTransformer::new(TypeCoercionTransformer::new(
         reference_type_resolver,
@@ -182,7 +182,7 @@ mod tests {
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
         super::transform_with_types(
             module,
-            ListLiteralConfiguration::new(
+            ListTypeConfiguration::new(
                 "empty",
                 "concatenate",
                 "equal",

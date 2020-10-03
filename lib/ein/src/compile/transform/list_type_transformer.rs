@@ -1,15 +1,15 @@
 use super::super::error::CompileError;
-use super::super::list_literal_configuration::ListLiteralConfiguration;
+use super::super::list_type_configuration::ListTypeConfiguration;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
 pub struct ListTypeTransformer {
-    configuration: Arc<ListLiteralConfiguration>,
+    configuration: Arc<ListTypeConfiguration>,
 }
 
 impl ListTypeTransformer {
-    pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
+    pub fn new(configuration: Arc<ListTypeConfiguration>) -> Self {
         Self { configuration }
     }
 

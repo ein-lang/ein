@@ -1,5 +1,5 @@
 use super::super::error::CompileError;
-use super::super::list_literal_configuration::ListLiteralConfiguration;
+use super::super::list_type_configuration::ListTypeConfiguration;
 use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_comparability_checker::TypeComparabilityChecker;
@@ -14,7 +14,7 @@ pub struct EqualOperationTransformer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_comparability_checker: Arc<TypeComparabilityChecker>,
     type_equality_checker: Arc<TypeEqualityChecker>,
-    list_literal_configuration: Arc<ListLiteralConfiguration>,
+    list_type_configuration: Arc<ListTypeConfiguration>,
 }
 
 impl EqualOperationTransformer {
@@ -22,14 +22,14 @@ impl EqualOperationTransformer {
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_comparability_checker: Arc<TypeComparabilityChecker>,
         type_equality_checker: Arc<TypeEqualityChecker>,
-        list_literal_configuration: Arc<ListLiteralConfiguration>,
+        list_type_configuration: Arc<ListTypeConfiguration>,
     ) -> Self {
         Self {
             name_generator: NameGenerator::new("equal_operation_argument_"),
             reference_type_resolver,
             type_comparability_checker,
             type_equality_checker,
-            list_literal_configuration,
+            list_type_configuration,
         }
     }
 
@@ -236,7 +236,7 @@ impl EqualOperationTransformer {
                         Application::new(
                             Application::new(
                                 Variable::new(
-                                    self.list_literal_configuration.equal_function_name(),
+                                    self.list_type_configuration.equal_function_name(),
                                     source_information.clone(),
                                 ),
                                 Variable::new("$equalElements", source_information.clone()),
