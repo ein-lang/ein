@@ -1,6 +1,6 @@
 mod boolean_compiler;
 mod compile_configuration;
-mod desugar;
+mod transform;
 mod error;
 mod expression_compiler;
 mod expression_type_extractor;
@@ -23,7 +23,7 @@ use crate::ast::*;
 use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
-use desugar::{desugar_before_name_qualification, desugar_with_types, desugar_without_types};
+use transform::{transform_before_name_qualification, transform_with_types, transform_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
 use global_name_map_creator::GlobalNameMapCreator;
@@ -40,7 +40,7 @@ pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = desugar_before_name_qualification(&module)?;
+    let module = transform_before_name_qualification(&module)?;
 
     let names = GlobalNameMapCreator::create(
         &module,
@@ -50,8 +50,8 @@ pub fn compile(
     );
     let module = GlobalNameRenamer::new(&names).rename(&module);
 
-    let module = desugar_with_types(
-        &infer_types(&desugar_without_types(&module)?)?,
+    let module = transform_with_types(
+        &infer_types(&transform_without_types(&module)?)?,
         configuration
             .list_literal_configuration()
             .qualify(&names)

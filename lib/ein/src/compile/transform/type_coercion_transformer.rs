@@ -3,24 +3,24 @@ use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_canonicalizer::TypeCanonicalizer;
 use super::super::type_equality_checker::TypeEqualityChecker;
-use super::typed_meta_desugarer::TypedDesugarer;
+use super::typed_meta_transformer::TypedTransformer;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::sync::Arc;
 
-/// TypeCoercionDesugarer desugars value-to-union, function-to-union and
+/// TypeCoercionTransformer transforms value-to-union, function-to-union and
 /// value-to-any type coercions.
-/// Note that it does not desugar function-to-function ones.
-pub struct TypeCoercionDesugarer {
+/// Note that it does not transform function-to-function ones.
+pub struct TypeCoercionTransformer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
     expression_type_extractor: Arc<ExpressionTypeExtractor>,
     type_canonicalizer: Arc<TypeCanonicalizer>,
 }
 
-impl TypeCoercionDesugarer {
+impl TypeCoercionTransformer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
@@ -64,8 +64,8 @@ impl TypeCoercionDesugarer {
     }
 }
 
-impl TypedDesugarer for TypeCoercionDesugarer {
-    fn desugar_function_definition(
+impl TypedTransformer for TypeCoercionTransformer {
+    fn transform_function_definition(
         &mut self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
@@ -100,7 +100,7 @@ impl TypedDesugarer for TypeCoercionDesugarer {
         ))
     }
 
-    fn desugar_value_definition(
+    fn transform_value_definition(
         &mut self,
         value_definition: &ValueDefinition,
         variables: &HashMap<String, Type>,
@@ -118,7 +118,7 @@ impl TypedDesugarer for TypeCoercionDesugarer {
         ))
     }
 
-    fn desugar_expression(
+    fn transform_expression(
         &mut self,
         expression: &Expression,
         variables: &HashMap<String, Type>,

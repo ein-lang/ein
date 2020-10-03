@@ -4,22 +4,22 @@ use crate::ast::*;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
-pub struct ListTypeDesugarer {
+pub struct ListTypeTransformer {
     configuration: Arc<ListLiteralConfiguration>,
 }
 
-impl ListTypeDesugarer {
+impl ListTypeTransformer {
     pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
         Self { configuration }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         module.convert_types(&mut |type_| -> Result<Type, CompileError> {
-            Ok(self.desugar_type(type_))
+            Ok(self.transform_type(type_))
         })
     }
 
-    fn desugar_type(&mut self, type_: &Type) -> Type {
+    fn transform_type(&mut self, type_: &Type) -> Type {
         if let Type::List(list) = type_ {
             types::Reference::new(
                 self.configuration.list_type_name(),
