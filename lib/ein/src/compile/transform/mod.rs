@@ -58,8 +58,7 @@ pub fn transform_with_types(
     let expression_type_extractor =
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
 
-    let module =
-        ListLiteralTransformer::new(list_type_configuration.clone()).transform(&module)?;
+    let module = ListLiteralTransformer::new(list_type_configuration.clone()).transform(&module)?;
     let module = BooleanOperationTransformer::new().transform(&module)?;
 
     let module = NotEqualOperationTransformer::new().transform(&module)?;
@@ -182,14 +181,8 @@ mod tests {
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
         super::transform_with_types(
             module,
-            ListTypeConfiguration::new(
-                "empty",
-                "concatenate",
-                "equal",
-                "prepend",
-                "GenericList",
-            )
-            .into(),
+            ListTypeConfiguration::new("empty", "concatenate", "equal", "prepend", "GenericList")
+                .into(),
         )
     }
 
