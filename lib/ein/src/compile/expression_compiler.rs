@@ -397,6 +397,7 @@ impl ExpressionCompiler {
 mod tests {
     use super::super::boolean_compiler::BooleanCompiler;
     use super::super::error::CompileError;
+    use super::super::list_literal_configuration::ListLiteralConfiguration;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::type_compiler::TypeCompiler;
     use super::super::union_tag_calculator::UnionTagCalculator;
@@ -419,6 +420,14 @@ mod tests {
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
             union_tag_calculator.clone(),
+            ListLiteralConfiguration::new(
+                "emptyList",
+                "concatenateLists",
+                "equalLists",
+                "prependToLists",
+                "GenericList",
+            )
+            .into(),
         );
         let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
 
