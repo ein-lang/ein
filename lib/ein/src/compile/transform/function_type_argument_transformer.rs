@@ -10,6 +10,8 @@ use crate::types::Type;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+/// Converts all arguments of function types into variables.
+/// Those arguments can be partial applications or lambda expressions.
 pub struct FunctionTypeArgumentTransformer {
     name_generator: NameGenerator,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
