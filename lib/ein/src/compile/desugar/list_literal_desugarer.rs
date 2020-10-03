@@ -1,7 +1,6 @@
 use super::super::error::CompileError;
 use super::super::list_literal_configuration::ListLiteralConfiguration;
 use crate::ast::*;
-use crate::debug::*;
 use std::sync::Arc;
 
 pub struct ListLiteralDesugarer {
@@ -24,20 +23,16 @@ impl ListLiteralDesugarer {
 
     fn desugar_expression(&mut self, expression: &Expression) -> Expression {
         if let Expression::List(list) = expression {
-            self.desugar_list(list.elements(), list.source_information())
+            self.desugar_list(list)
         } else {
             expression.clone()
         }
     }
 
-    fn desugar_list(
-        &self,
-        elements: &[ListElement],
-        source_information: &Arc<SourceInformation>,
-    ) -> Expression {
-        let rest_expression = || self.desugar_list(&elements[1..], source_information);
+    fn desugar_list(&self, list: &List) -> Expression {
+        let source_information = list.source_information();
 
-        match elements {
+        match list.elements() {
             [] => Variable::new(
                 self.configuration.empty_list_variable_name(),
                 source_information.clone(),
@@ -52,7 +47,7 @@ impl ListLiteralDesugarer {
                     expression.clone(),
                     source_information.clone(),
                 ),
-                rest_expression(),
+                self.desugar_rest(list),
                 source_information.clone(),
             )
             .into(),
@@ -65,10 +60,17 @@ impl ListLiteralDesugarer {
                     expression.clone(),
                     source_information.clone(),
                 ),
-                rest_expression(),
+                self.desugar_rest(list),
                 source_information.clone(),
             )
             .into(),
         }
+    }
+
+    fn desugar_rest(&self, list: &List) -> Expression {
+        self.desugar_list(&List::new(
+            list.elements()[1..].to_vec(),
+            list.source_information().clone(),
+        ))
     }
 }
