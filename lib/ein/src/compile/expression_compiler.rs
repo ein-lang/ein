@@ -158,6 +158,7 @@ impl ExpressionCompiler {
 
                 match &from_type {
                     Type::Any(_) => argument,
+                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
                     Type::Boolean(_)
                     | Type::Function(_)
                     | Type::List(_)
@@ -198,7 +199,6 @@ impl ExpressionCompiler {
                             .into()
                         }
                     }
-                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
                     Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 }
             }

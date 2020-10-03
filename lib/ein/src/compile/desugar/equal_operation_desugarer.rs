@@ -169,6 +169,20 @@ impl EqualOperationDesugarer {
             Type::List(list_type) => {
                 let element_type = list_type.element();
 
+                let coerce = |expression: &Expression| {
+                    TypeCoercion::new(
+                        expression.clone(),
+                        list_type.clone(),
+                        types::Reference::new(
+                            self.list_literal_configuration.list_type_name(),
+                            source_information.clone(),
+                        ),
+                        source_information.clone(),
+                    )
+                };
+                let lhs = coerce(lhs);
+                let rhs = coerce(rhs);
+
                 Let::new(
                     vec![FunctionDefinition::new(
                         "$equalElements",
@@ -239,10 +253,10 @@ impl EqualOperationDesugarer {
                                 Variable::new("$equalElements", source_information.clone()),
                                 source_information.clone(),
                             ),
-                            lhs.clone(),
+                            lhs,
                             source_information.clone(),
                         ),
-                        rhs.clone(),
+                        rhs,
                         source_information,
                     ),
                 )

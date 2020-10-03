@@ -3,7 +3,6 @@ mod elementless_record_desugarer;
 mod equal_operation_desugarer;
 mod function_type_argument_desugarer;
 mod list_literal_desugarer;
-mod list_type_desugarer;
 mod not_equal_operation_desugarer;
 mod partial_application_desugarer;
 mod record_function_desugarer;
@@ -24,7 +23,6 @@ use elementless_record_desugarer::ElementlessRecordDesugarer;
 use equal_operation_desugarer::EqualOperationDesugarer;
 use function_type_argument_desugarer::FunctionTypeArgumentDesugarer;
 use list_literal_desugarer::ListLiteralDesugarer;
-use list_type_desugarer::ListTypeDesugarer;
 use not_equal_operation_desugarer::NotEqualOperationDesugarer;
 use partial_application_desugarer::PartialApplicationDesugarer;
 use record_function_desugarer::RecordFunctionDesugarer;
@@ -78,7 +76,6 @@ pub fn desugar_with_types(
     .desugar(&module)?;
 
     let module = PartialApplicationDesugarer::new().desugar(&module)?;
-    let module = ListTypeDesugarer::new(list_literal_configuration).desugar(&module)?;
 
     TypedMetaDesugarer::new(TypeCoercionDesugarer::new(
         reference_type_resolver,

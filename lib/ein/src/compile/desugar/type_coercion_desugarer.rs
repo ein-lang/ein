@@ -35,6 +35,8 @@ impl TypeCoercionDesugarer {
         }
     }
 
+    // Note that we do not need to coerce function types into other function types directly due to
+    // the function type argument removal and the partial application transformation.
     fn coerce_type(
         &mut self,
         expression: &Expression,
@@ -269,10 +271,9 @@ impl TypedDesugarer for TypeCoercionDesugarer {
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::RecordElementOperation(_)
+            | Expression::TypeCoercion(_)
             | Expression::Variable(_) => Ok(expression.clone()),
-            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
-                unreachable!()
-            }
+            Expression::List(_) | Expression::RecordUpdate(_) => unreachable!(),
         }
     }
 }

@@ -32,6 +32,7 @@ pub use list_literal_configuration::ListLiteralConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
+use std::sync::Arc;
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
@@ -50,12 +51,11 @@ pub fn compile(
     );
     let module = GlobalNameRenamer::new(&names).rename(&module);
 
+    let list_literal_configuration =
+        Arc::new(configuration.list_literal_configuration().qualify(&names));
     let module = desugar_with_types(
         &infer_types(&desugar_without_types(&module)?)?,
-        configuration
-            .list_literal_configuration()
-            .qualify(&names)
-            .into(),
+        list_literal_configuration.clone(),
     )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
@@ -63,7 +63,7 @@ pub fn compile(
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
         union_tag_calculator.clone(),
-        configuration.list_literal_configuration(),
+        list_literal_configuration,
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let expression_compiler = ExpressionCompiler::new(

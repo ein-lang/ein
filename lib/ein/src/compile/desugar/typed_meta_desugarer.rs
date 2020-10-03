@@ -222,13 +222,18 @@ impl<D: TypedDesugarer> TypedMetaDesugarer<D> {
                 operation.source_information().clone(),
             )
             .into(),
+            Expression::TypeCoercion(type_coercion) => TypeCoercion::new(
+                self.desugar_expression(type_coercion.argument(), &variables)?,
+                type_coercion.from().clone(),
+                type_coercion.to().clone(),
+                type_coercion.source_information().clone(),
+            )
+            .into(),
             Expression::Boolean(_)
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Variable(_) => expression.clone(),
-            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
-                unreachable!()
-            }
+            Expression::List(_) | Expression::RecordUpdate(_) => unreachable!(),
         };
 
         Ok(self

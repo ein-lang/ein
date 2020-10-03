@@ -36,7 +36,9 @@ impl UnionTagCalculator {
     }
 
     fn calculate_type_id(&self, type_: &Type) -> Result<String, CompileError> {
+        // Any and union types can be list element types.
         Ok(match self.reference_type_resolver.resolve(type_)? {
+            Type::Any(_) => "Any".into(),
             Type::Boolean(_) => "Boolean".into(),
             Type::Function(function) => format!(
                 "({}->{})",
@@ -47,11 +49,13 @@ impl UnionTagCalculator {
             Type::None(_) => "None".into(),
             Type::Number(_) => "Number".into(),
             Type::Record(record) => record.name().into(),
-            Type::Any(_)
-            | Type::Reference(_)
-            | Type::Union(_)
-            | Type::Unknown(_)
-            | Type::Variable(_) => unreachable!(),
+            Type::Union(union) => union
+                .types()
+                .iter()
+                .map(|type_| self.calculate_type_id(type_))
+                .collect::<Result<Vec<_>, _>>()?
+                .join("|"),
+            Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
     }
 

@@ -1,6 +1,7 @@
 use super::super::error::CompileError;
 use super::super::list_literal_configuration::ListLiteralConfiguration;
 use crate::ast::*;
+use crate::types;
 use std::sync::Arc;
 
 pub struct ListLiteralDesugarer {
@@ -23,7 +24,16 @@ impl ListLiteralDesugarer {
 
     fn desugar_expression(&mut self, expression: &Expression) -> Expression {
         if let Expression::List(list) = expression {
-            self.desugar_list(list)
+            TypeCoercion::new(
+                self.desugar_list(list),
+                types::Reference::new(
+                    self.configuration.list_type_name(),
+                    list.source_information().clone(),
+                ),
+                list.type_().clone(),
+                list.source_information().clone(),
+            )
+            .into()
         } else {
             expression.clone()
         }
@@ -44,7 +54,15 @@ impl ListLiteralDesugarer {
                         self.configuration.concatenate_function_name(),
                         source_information.clone(),
                     ),
-                    expression.clone(),
+                    TypeCoercion::new(
+                        expression.clone(),
+                        list.type_().clone(),
+                        types::Reference::new(
+                            self.configuration.list_type_name(),
+                            list.source_information().clone(),
+                        ),
+                        list.source_information().clone(),
+                    ),
                     source_information.clone(),
                 ),
                 self.desugar_rest(list),
