@@ -147,10 +147,11 @@ impl TypedTransformer for FunctionTypeArgumentTransformer {
             | Expression::List(_)
             | Expression::None(_)
             | Expression::Number(_)
-            | Expression::Operation(_)
+            | Expression::Operation(_) // There is no operation applicable to functions.
             | Expression::RecordElementOperation(_)
+            | Expression::TypeCoercion(_)
             | Expression::Variable(_) => Ok(expression.clone()),
-            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
+            Expression::RecordUpdate(_)  => unreachable!(),
         }
     }
 }
