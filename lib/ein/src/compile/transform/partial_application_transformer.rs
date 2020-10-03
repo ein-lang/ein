@@ -26,7 +26,9 @@ impl PartialApplicationTransformer {
             })?
             .convert_definitions(&mut |definition| -> Result<_, CompileError> {
                 if let Definition::FunctionDefinition(function_definition) = definition {
-                    Ok(self.transform_function_definition(function_definition).into())
+                    Ok(self
+                        .transform_function_definition(function_definition)
+                        .into())
                 } else {
                     Ok(definition.clone())
                 }

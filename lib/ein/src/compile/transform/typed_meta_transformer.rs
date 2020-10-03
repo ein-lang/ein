@@ -209,7 +209,10 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                     .elements()
                     .iter()
                     .map(|(key, expression)| {
-                        Ok((key.clone(), self.transform_expression(expression, variables)?))
+                        Ok((
+                            key.clone(),
+                            self.transform_expression(expression, variables)?,
+                        ))
                     })
                     .collect::<Result<_, CompileError>>()?,
                 record_construction.source_information().clone(),

@@ -90,23 +90,25 @@ mod tests {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
         assert_eq!(
-            RecordUpdateTransformer::new().transform(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![ValueDefinition::new(
-                    "x",
-                    RecordUpdate::new(
+            RecordUpdateTransformer::new().transform(
+                &Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new("Foo", record_type.clone())],
+                    vec![ValueDefinition::new(
+                        "x",
+                        RecordUpdate::new(
+                            reference_type.clone(),
+                            Variable::new("foo", SourceInformation::dummy()),
+                            vec![("bar".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy()
+                        ),
                         reference_type.clone(),
-                        Variable::new("foo", SourceInformation::dummy()),
-                        vec![("bar".into(), None::new(SourceInformation::dummy()).into())]
-                            .into_iter()
-                            .collect(),
-                        SourceInformation::dummy()
-                    ),
-                    reference_type.clone(),
-                    SourceInformation::dummy(),
+                        SourceInformation::dummy(),
+                    )
+                    .into()]
                 )
-                .into()]
-            )),
+            ),
             Ok(Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![ValueDefinition::new(

@@ -58,7 +58,8 @@ pub fn transform_with_types(
     let expression_type_extractor =
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
 
-    let module = ListLiteralTransformer::new(list_literal_configuration.clone()).transform(&module)?;
+    let module =
+        ListLiteralTransformer::new(list_literal_configuration.clone()).transform(&module)?;
     let module = BooleanOperationTransformer::new().transform(&module)?;
 
     let module = NotEqualOperationTransformer::new().transform(&module)?;

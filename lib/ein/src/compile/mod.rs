@@ -1,6 +1,5 @@
 mod boolean_compiler;
 mod compile_configuration;
-mod transform;
 mod error;
 mod expression_compiler;
 mod expression_type_extractor;
@@ -12,6 +11,7 @@ mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod reference_type_resolver;
+mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
 mod type_compiler;
@@ -23,7 +23,6 @@ use crate::ast::*;
 use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
-use transform::{transform_before_name_qualification, transform_with_types, transform_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
 use global_name_map_creator::GlobalNameMapCreator;
@@ -32,6 +31,9 @@ pub use list_literal_configuration::ListLiteralConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
+use transform::{
+    transform_before_name_qualification, transform_with_types, transform_without_types,
+};
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;

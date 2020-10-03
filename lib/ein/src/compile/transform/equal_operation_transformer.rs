@@ -120,7 +120,10 @@ impl EqualOperationTransformer {
         ))
     }
 
-    fn transform_expression(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
+    fn transform_expression(
+        &mut self,
+        expression: &Expression,
+    ) -> Result<Expression, CompileError> {
         Ok(if let Expression::Operation(operation) = expression {
             if operation.operator() == Operator::Equal {
                 self.transform_equal_operation(

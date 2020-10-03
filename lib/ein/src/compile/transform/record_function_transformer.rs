@@ -81,10 +81,12 @@ mod tests {
         );
 
         assert_eq!(
-            RecordFunctionTransformer::new().transform(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![]
-            )),
+            RecordFunctionTransformer::new().transform(
+                &Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new("Foo", record_type.clone())],
+                    vec![]
+                )
+            ),
             Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![FunctionDefinition::new(
