@@ -31,6 +31,7 @@ pub use list_type_configuration::ListTypeConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
+use std::sync::Arc;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
 };
@@ -52,12 +53,10 @@ pub fn compile(
     );
     let module = GlobalNameRenamer::new(&names).rename(&module);
 
+    let list_type_configuration = Arc::new(configuration.list_type_configuration().qualify(&names));
     let module = transform_with_types(
         &infer_types(&transform_without_types(&module)?)?,
-        configuration
-            .list_type_configuration()
-            .qualify(&names)
-            .into(),
+        list_type_configuration.clone(),
     )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
@@ -65,6 +64,7 @@ pub fn compile(
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
         union_tag_calculator.clone(),
+        list_type_configuration.clone(),
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let expression_compiler = ExpressionCompiler::new(
