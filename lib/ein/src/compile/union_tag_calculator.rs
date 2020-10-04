@@ -111,7 +111,7 @@ mod tests {
                     )
                     .into()
                 ),
-            Ok("[(Number|None)]".into())
+            Ok("[(None|Number)]".into())
         );
     }
 }
