@@ -64,7 +64,7 @@ pub fn compile(
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
         union_tag_calculator.clone(),
-        list_type_configuration.clone(),
+        list_type_configuration,
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let expression_compiler = ExpressionCompiler::new(
