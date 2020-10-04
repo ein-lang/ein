@@ -1,25 +1,25 @@
 use super::super::error::CompileError;
-use super::super::list_literal_configuration::ListLiteralConfiguration;
+use super::super::list_type_configuration::ListTypeConfiguration;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
-pub struct ListTypeDesugarer {
-    configuration: Arc<ListLiteralConfiguration>,
+pub struct ListTypeTransformer {
+    configuration: Arc<ListTypeConfiguration>,
 }
 
-impl ListTypeDesugarer {
-    pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
+impl ListTypeTransformer {
+    pub fn new(configuration: Arc<ListTypeConfiguration>) -> Self {
         Self { configuration }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         module.convert_types(&mut |type_| -> Result<Type, CompileError> {
-            Ok(self.desugar_type(type_))
+            Ok(self.transform_type(type_))
         })
     }
 
-    fn desugar_type(&mut self, type_: &Type) -> Type {
+    fn transform_type(&mut self, type_: &Type) -> Type {
         if let Type::List(list) = type_ {
             types::Reference::new(
                 self.configuration.list_type_name(),

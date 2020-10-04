@@ -1,14 +1,14 @@
 use super::super::error::CompileError;
 use crate::ast::*;
 
-pub struct BooleanOperationDesugarer {}
+pub struct BooleanOperationTransformer {}
 
-impl BooleanOperationDesugarer {
+impl BooleanOperationTransformer {
     pub fn new() -> Self {
         Self {}
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
             Ok(match expression {
                 Expression::Operation(operation) => {

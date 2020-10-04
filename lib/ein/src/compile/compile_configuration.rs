@@ -1,4 +1,4 @@
-use super::list_literal_configuration::ListLiteralConfiguration;
+use super::list_type_configuration::ListTypeConfiguration;
 use std::sync::Arc;
 
 pub struct CompileConfiguration {
@@ -7,7 +7,7 @@ pub struct CompileConfiguration {
     object_init_function_name: String,
     malloc_function_name: String,
     panic_function_name: String,
-    list_literal_configuration: Arc<ListLiteralConfiguration>,
+    list_type_configuration: Arc<ListTypeConfiguration>,
 }
 
 impl CompileConfiguration {
@@ -17,7 +17,7 @@ impl CompileConfiguration {
         object_init_function_name: impl Into<String>,
         malloc_function_name: impl Into<String>,
         panic_function_name: impl Into<String>,
-        list_literal_configuration: Arc<ListLiteralConfiguration>,
+        list_type_configuration: Arc<ListTypeConfiguration>,
     ) -> Self {
         Self {
             source_main_function_name: source_main_function_name.into(),
@@ -25,7 +25,7 @@ impl CompileConfiguration {
             object_init_function_name: object_init_function_name.into(),
             malloc_function_name: malloc_function_name.into(),
             panic_function_name: panic_function_name.into(),
-            list_literal_configuration,
+            list_type_configuration,
         }
     }
 
@@ -49,7 +49,7 @@ impl CompileConfiguration {
         &self.panic_function_name
     }
 
-    pub fn list_literal_configuration(&self) -> Arc<ListLiteralConfiguration> {
-        self.list_literal_configuration.clone()
+    pub fn list_type_configuration(&self) -> Arc<ListTypeConfiguration> {
+        self.list_type_configuration.clone()
     }
 }

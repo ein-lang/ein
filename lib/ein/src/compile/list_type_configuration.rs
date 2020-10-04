@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub struct ListLiteralConfiguration {
+pub struct ListTypeConfiguration {
     empty_list_variable_name: String,
     concatenate_function_name: String,
     equal_function_name: String,
@@ -8,7 +8,7 @@ pub struct ListLiteralConfiguration {
     list_type_name: String,
 }
 
-impl ListLiteralConfiguration {
+impl ListTypeConfiguration {
     pub fn new(
         empty_list_variable_name: impl Into<String>,
         concatenate_function_name: impl Into<String>,

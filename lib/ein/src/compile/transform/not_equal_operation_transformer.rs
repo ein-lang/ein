@@ -1,20 +1,20 @@
 use super::super::error::CompileError;
 use crate::ast::*;
 
-pub struct NotEqualOperationDesugarer {}
+pub struct NotEqualOperationTransformer {}
 
-impl NotEqualOperationDesugarer {
+impl NotEqualOperationTransformer {
     pub fn new() -> Self {
         Self {}
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            Ok(self.desugar_expression(expression))
+            Ok(self.transform_expression(expression))
         })
     }
 
-    fn desugar_expression(&mut self, expression: &Expression) -> Expression {
+    fn transform_expression(&mut self, expression: &Expression) -> Expression {
         if let Expression::Operation(operation) = expression {
             if operation.operator() == Operator::NotEqual {
                 let source_information = operation.source_information();

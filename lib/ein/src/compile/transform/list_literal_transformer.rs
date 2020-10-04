@@ -1,41 +1,41 @@
 use super::super::error::CompileError;
-use super::super::list_literal_configuration::ListLiteralConfiguration;
+use super::super::list_type_configuration::ListTypeConfiguration;
 use crate::ast::*;
 use crate::debug::*;
 use std::sync::Arc;
 
-pub struct ListLiteralDesugarer {
-    configuration: Arc<ListLiteralConfiguration>,
+pub struct ListLiteralTransformer {
+    configuration: Arc<ListTypeConfiguration>,
 }
 
-/// Desugars list literals into generic list functions and variables.
-/// Types are consistent after desugaring as all `List a` types are converted
+/// Transforms list literals into generic list functions and variables.
+/// Types are consistent after transforming as all `List a` types are converted
 /// into `List Any`.
-impl ListLiteralDesugarer {
-    pub fn new(configuration: Arc<ListLiteralConfiguration>) -> Self {
+impl ListLiteralTransformer {
+    pub fn new(configuration: Arc<ListTypeConfiguration>) -> Self {
         Self { configuration }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            Ok(self.desugar_expression(expression))
+            Ok(self.transform_expression(expression))
         })
     }
 
-    fn desugar_expression(&mut self, expression: &Expression) -> Expression {
+    fn transform_expression(&mut self, expression: &Expression) -> Expression {
         if let Expression::List(list) = expression {
-            self.desugar_list(list.elements(), list.source_information())
+            self.transform_list(list.elements(), list.source_information())
         } else {
             expression.clone()
         }
     }
 
-    fn desugar_list(
+    fn transform_list(
         &self,
         elements: &[ListElement],
         source_information: &Arc<SourceInformation>,
     ) -> Expression {
-        let rest_expression = || self.desugar_list(&elements[1..], source_information);
+        let rest_expression = || self.transform_list(&elements[1..], source_information);
 
         match elements {
             [] => Variable::new(

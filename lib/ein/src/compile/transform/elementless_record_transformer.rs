@@ -1,14 +1,14 @@
 use crate::ast::*;
 use crate::types::Type;
 
-pub struct ElementlessRecordDesugarer {}
+pub struct ElementlessRecordTransformer {}
 
-impl ElementlessRecordDesugarer {
+impl ElementlessRecordTransformer {
     pub fn new() -> Self {
         Self {}
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Module {
+    pub fn transform(&mut self, module: &Module) -> Module {
         Module::new(
             module.path().clone(),
             module.export().clone(),
@@ -58,11 +58,11 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn desugar_elementless_record_type_definitions() {
+    fn transform_elementless_record_type_definitions() {
         let record_type = types::Record::new("Foo", Default::default(), SourceInformation::dummy());
 
         assert_eq!(
-            ElementlessRecordDesugarer::new().desugar(
+            ElementlessRecordTransformer::new().transform(
                 &Module::from_definitions_and_type_definitions(
                     vec![TypeDefinition::new("Foo", record_type.clone())],
                     vec![]

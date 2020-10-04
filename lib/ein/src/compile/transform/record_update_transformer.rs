@@ -3,18 +3,18 @@ use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 
-pub struct RecordUpdateDesugarer {
+pub struct RecordUpdateTransformer {
     name_generator: NameGenerator,
 }
 
-impl RecordUpdateDesugarer {
+impl RecordUpdateTransformer {
     pub fn new() -> Self {
         Self {
             name_generator: NameGenerator::new("record_update_argument_"),
         }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         let reference_type_resolver = ReferenceTypeResolver::new(module);
 
         module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
@@ -70,7 +70,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn desugar_record_update() {
+    fn transform_record_update() {
         let record_type = types::Record::new(
             "Foo",
             vec![
@@ -90,23 +90,25 @@ mod tests {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
         assert_eq!(
-            RecordUpdateDesugarer::new().desugar(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![ValueDefinition::new(
-                    "x",
-                    RecordUpdate::new(
+            RecordUpdateTransformer::new().transform(
+                &Module::from_definitions_and_type_definitions(
+                    vec![TypeDefinition::new("Foo", record_type.clone())],
+                    vec![ValueDefinition::new(
+                        "x",
+                        RecordUpdate::new(
+                            reference_type.clone(),
+                            Variable::new("foo", SourceInformation::dummy()),
+                            vec![("bar".into(), None::new(SourceInformation::dummy()).into())]
+                                .into_iter()
+                                .collect(),
+                            SourceInformation::dummy()
+                        ),
                         reference_type.clone(),
-                        Variable::new("foo", SourceInformation::dummy()),
-                        vec![("bar".into(), None::new(SourceInformation::dummy()).into())]
-                            .into_iter()
-                            .collect(),
-                        SourceInformation::dummy()
-                    ),
-                    reference_type.clone(),
-                    SourceInformation::dummy(),
+                        SourceInformation::dummy(),
+                    )
+                    .into()]
                 )
-                .into()]
-            )),
+            ),
             Ok(Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
                 vec![ValueDefinition::new(

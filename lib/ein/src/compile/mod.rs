@@ -1,17 +1,17 @@
 mod boolean_compiler;
 mod compile_configuration;
-mod desugar;
 mod error;
 mod expression_compiler;
 mod expression_type_extractor;
 mod global_name_map_creator;
 mod global_name_renamer;
-mod list_literal_configuration;
+mod list_type_configuration;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
 mod reference_type_resolver;
+mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
 mod type_compiler;
@@ -23,15 +23,17 @@ use crate::ast::*;
 use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
-use desugar::{desugar_before_name_qualification, desugar_with_types, desugar_without_types};
 use error::CompileError;
 use expression_compiler::ExpressionCompiler;
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
-pub use list_literal_configuration::ListLiteralConfiguration;
+pub use list_type_configuration::ListTypeConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
+use transform::{
+    transform_before_name_qualification, transform_with_types, transform_without_types,
+};
 use type_compiler::TypeCompiler;
 use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
@@ -40,7 +42,7 @@ pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    let module = desugar_before_name_qualification(&module)?;
+    let module = transform_before_name_qualification(&module)?;
 
     let names = GlobalNameMapCreator::create(
         &module,
@@ -50,10 +52,10 @@ pub fn compile(
     );
     let module = GlobalNameRenamer::new(&names).rename(&module);
 
-    let module = desugar_with_types(
-        &infer_types(&desugar_without_types(&module)?)?,
+    let module = transform_with_types(
+        &infer_types(&transform_without_types(&module)?)?,
         configuration
-            .list_literal_configuration()
+            .list_type_configuration()
             .qualify(&names)
             .into(),
     )?;
@@ -114,7 +116,7 @@ fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::list_literal_configuration::ListLiteralConfiguration;
+    use super::list_type_configuration::ListTypeConfiguration;
     use super::*;
     use crate::debug::*;
     use crate::types;
@@ -127,7 +129,7 @@ mod tests {
             "ein_init",
             "ein_malloc",
             "ein_panic",
-            ListLiteralConfiguration::new(
+            ListTypeConfiguration::new(
                 "emptyList",
                 "concatenateLists",
                 "equalLists",

@@ -1,5 +1,5 @@
 use super::super::error::CompileError;
-use super::super::list_literal_configuration::ListLiteralConfiguration;
+use super::super::list_type_configuration::ListTypeConfiguration;
 use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_comparability_checker::TypeComparabilityChecker;
@@ -9,34 +9,34 @@ use crate::debug::SourceInformation;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
-pub struct EqualOperationDesugarer {
+pub struct EqualOperationTransformer {
     name_generator: NameGenerator,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_comparability_checker: Arc<TypeComparabilityChecker>,
     type_equality_checker: Arc<TypeEqualityChecker>,
-    list_literal_configuration: Arc<ListLiteralConfiguration>,
+    list_type_configuration: Arc<ListTypeConfiguration>,
 }
 
-impl EqualOperationDesugarer {
+impl EqualOperationTransformer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_comparability_checker: Arc<TypeComparabilityChecker>,
         type_equality_checker: Arc<TypeEqualityChecker>,
-        list_literal_configuration: Arc<ListLiteralConfiguration>,
+        list_type_configuration: Arc<ListTypeConfiguration>,
     ) -> Self {
         Self {
             name_generator: NameGenerator::new("equal_operation_argument_"),
             reference_type_resolver,
             type_comparability_checker,
             type_equality_checker,
-            list_literal_configuration,
+            list_type_configuration,
         }
     }
 
-    pub fn desugar(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         let module =
             module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-                self.desugar_expression(expression)
+                self.transform_expression(expression)
             })?;
 
         let mut equal_function_definitions = vec![];
@@ -75,7 +75,7 @@ impl EqualOperationDesugarer {
         let mut expression: Expression = Boolean::new(true, source_information.clone()).into();
 
         for (key, element_type) in record_type.elements() {
-            let result = self.desugar_equal_operation(
+            let result = self.transform_equal_operation(
                 element_type,
                 &RecordElementOperation::new(
                     record_type.clone(),
@@ -120,10 +120,13 @@ impl EqualOperationDesugarer {
         ))
     }
 
-    fn desugar_expression(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
+    fn transform_expression(
+        &mut self,
+        expression: &Expression,
+    ) -> Result<Expression, CompileError> {
         Ok(if let Expression::Operation(operation) = expression {
             if operation.operator() == Operator::Equal {
-                self.desugar_equal_operation(
+                self.transform_equal_operation(
                     operation.type_(),
                     operation.lhs(),
                     operation.rhs(),
@@ -137,7 +140,7 @@ impl EqualOperationDesugarer {
         })
     }
 
-    fn desugar_equal_operation(
+    fn transform_equal_operation(
         &mut self,
         type_: &Type,
         lhs: &Expression,
@@ -187,7 +190,7 @@ impl EqualOperationDesugarer {
                                         vec![
                                             Alternative::new(
                                                 element_type.clone(),
-                                                self.desugar_equal_operation(
+                                                self.transform_equal_operation(
                                                     element_type,
                                                     &Variable::new(
                                                         "lhs",
@@ -233,7 +236,7 @@ impl EqualOperationDesugarer {
                         Application::new(
                             Application::new(
                                 Variable::new(
-                                    self.list_literal_configuration.equal_function_name(),
+                                    self.list_type_configuration.equal_function_name(),
                                     source_information.clone(),
                                 ),
                                 Variable::new("$equalElements", source_information.clone()),
@@ -304,7 +307,7 @@ impl EqualOperationDesugarer {
                                                     .type_equality_checker
                                                     .equal(lhs_type, rhs_type)?
                                                 {
-                                                    self.desugar_equal_operation(
+                                                    self.transform_equal_operation(
                                                         rhs_type,
                                                         &Variable::new(
                                                             &lhs_name,
