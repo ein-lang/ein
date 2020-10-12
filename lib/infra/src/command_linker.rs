@@ -32,8 +32,6 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                 .arg("-o")
                 .arg(command_name)
                 .arg("-O3")
-                .arg("-fuse-ld=lld")
-                .arg("-flto")
                 .arg("-ldl")
                 .arg("-lpthread")
                 .args(
