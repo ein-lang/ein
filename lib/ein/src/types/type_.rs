@@ -117,11 +117,7 @@ impl Type {
     }
 
     pub fn is_any(&self) -> bool {
-        if matches!(self, Self::Any(_)) {
-            true
-        } else {
-            false
-        }
+        matches!(self, Self::Any(_))
     }
 }
 
