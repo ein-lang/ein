@@ -54,10 +54,7 @@ pub fn compile(
     let module = GlobalNameRenamer::new(&names).rename(&module);
 
     let list_type_configuration = Arc::new(configuration.list_type_configuration().qualify(&names));
-    let module = transform_with_types(
-        &infer_types(&transform_without_types(&module)?)?,
-        list_type_configuration.clone(),
-    )?;
+    let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());

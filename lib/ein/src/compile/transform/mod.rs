@@ -2,8 +2,6 @@ mod boolean_operation_transformer;
 mod elementless_record_transformer;
 mod equal_operation_transformer;
 mod function_type_argument_transformer;
-mod list_literal_transformer;
-mod list_type_transformer;
 mod not_equal_operation_transformer;
 mod partial_application_transformer;
 mod record_function_transformer;
@@ -23,8 +21,6 @@ use boolean_operation_transformer::BooleanOperationTransformer;
 use elementless_record_transformer::ElementlessRecordTransformer;
 use equal_operation_transformer::EqualOperationTransformer;
 use function_type_argument_transformer::FunctionTypeArgumentTransformer;
-use list_literal_transformer::ListLiteralTransformer;
-use list_type_transformer::ListTypeTransformer;
 use not_equal_operation_transformer::NotEqualOperationTransformer;
 use partial_application_transformer::PartialApplicationTransformer;
 use record_function_transformer::RecordFunctionTransformer;
@@ -43,13 +39,9 @@ pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> 
     RecordUpdateTransformer::new().transform(module)
 }
 
-pub fn transform_with_types(
-    module: &Module,
-    list_type_configuration: Arc<ListTypeConfiguration>,
-) -> Result<Module, CompileError> {
+pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
-    let type_comparability_checker =
-        TypeComparabilityChecker::new(reference_type_resolver.clone()).into();
+    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let type_canonicalizer = TypeCanonicalizer::new(
         reference_type_resolver.clone(),
@@ -58,17 +50,9 @@ pub fn transform_with_types(
     let expression_type_extractor =
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
 
-    let module = ListLiteralTransformer::new(list_type_configuration.clone()).transform(&module)?;
     let module = BooleanOperationTransformer::new().transform(&module)?;
 
     let module = NotEqualOperationTransformer::new().transform(&module)?;
-    let module = EqualOperationTransformer::new(
-        reference_type_resolver.clone(),
-        type_comparability_checker,
-        type_equality_checker.clone(),
-        list_type_configuration.clone(),
-    )
-    .transform(&module)?;
 
     let module = TypedMetaTransformer::new(FunctionTypeArgumentTransformer::new(
         reference_type_resolver.clone(),
@@ -78,7 +62,6 @@ pub fn transform_with_types(
     .transform(&module)?;
 
     let module = PartialApplicationTransformer::new().transform(&module)?;
-    let module = ListTypeTransformer::new(list_type_configuration).transform(&module)?;
 
     TypedMetaTransformer::new(TypeCoercionTransformer::new(
         reference_type_resolver,
@@ -179,11 +162,7 @@ mod tests {
     }
 
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
-        super::transform_with_types(
-            module,
-            ListTypeConfiguration::new("empty", "concatenate", "equal", "prepend", "GenericList")
-                .into(),
-        )
+        super::transform_with_types(module)
     }
 
     mod type_coercion {
@@ -822,176 +801,6 @@ mod tests {
         ])));
     }
 
-    mod equal_operations {
-        use super::*;
-        use pretty_assertions::assert_eq;
-
-        #[test]
-        fn transform_union_equal_operation() {
-            let union_type = types::Union::new(
-                vec![
-                    types::Number::new(SourceInformation::dummy()).into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ],
-                SourceInformation::dummy(),
-            );
-
-            assert_debug_snapshot!(transform_with_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
-                    "x",
-                    Operation::with_type(
-                        union_type.clone(),
-                        Operator::Equal,
-                        None::new(SourceInformation::dummy()),
-                        None::new(SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            ])));
-        }
-
-        #[test]
-        fn transform_list_equal_operation() {
-            let list_type = types::List::new(
-                types::None::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            );
-
-            assert_debug_snapshot!(transform_with_types(&Module::new(
-                ModulePath::dummy(),
-                Export::new(Default::default()),
-                vec![Import::new(list_module_interface(), false)],
-                vec![],
-                vec![ValueDefinition::new(
-                    "x",
-                    Operation::with_type(
-                        list_type.clone(),
-                        Operator::Equal,
-                        List::with_type(list_type.clone(), vec![], SourceInformation::dummy()),
-                        List::with_type(list_type.clone(), vec![], SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()]
-            )));
-        }
-
-        #[test]
-        fn transform_not_equal_operation() {
-            let create_module = |expression: Expression| {
-                Module::from_definitions(vec![ValueDefinition::new(
-                    "x",
-                    expression,
-                    types::Boolean::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()])
-            };
-
-            assert_eq!(
-                transform_with_types(&create_module(
-                    Operation::with_type(
-                        types::Number::new(SourceInformation::dummy()),
-                        Operator::NotEqual,
-                        Number::new(42.0, SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    )
-                    .into()
-                )),
-                Ok(create_module(
-                    If::new(
-                        Operation::with_type(
-                            types::Number::new(SourceInformation::dummy()),
-                            Operator::Equal,
-                            Number::new(42.0, SourceInformation::dummy()),
-                            Number::new(42.0, SourceInformation::dummy()),
-                            SourceInformation::dummy(),
-                        ),
-                        Boolean::new(false, SourceInformation::dummy()),
-                        Boolean::new(true, SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                ))
-            );
-        }
-
-        #[test]
-        fn fail_to_transform_function_equal_operation() {
-            let function_type = types::Function::new(
-                types::Number::new(SourceInformation::dummy()),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            );
-
-            assert_eq!(
-                transform_with_types(&Module::from_definitions(vec![
-                    FunctionDefinition::new(
-                        "f",
-                        vec!["x".into()],
-                        Number::new(42.0, SourceInformation::dummy()),
-                        function_type.clone(),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                    ValueDefinition::new(
-                        "x",
-                        Operation::with_type(
-                            function_type,
-                            Operator::Equal,
-                            Variable::new("f", SourceInformation::dummy()),
-                            Variable::new("f", SourceInformation::dummy()),
-                            SourceInformation::dummy(),
-                        ),
-                        types::Boolean::new(SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    )
-                    .into()
-                ])),
-                Err(CompileError::FunctionEqualOperation(
-                    SourceInformation::dummy().into()
-                ))
-            );
-        }
-
-        #[test]
-        fn fail_to_transform_any_equal_operation() {
-            assert_eq!(
-                transform_with_types(&Module::from_definitions(vec![
-                    ValueDefinition::new(
-                        "x",
-                        Number::new(42.0, SourceInformation::dummy()),
-                        types::Any::new(SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                    ValueDefinition::new(
-                        "y",
-                        Operation::with_type(
-                            types::Any::new(SourceInformation::dummy()),
-                            Operator::Equal,
-                            Variable::new("x", SourceInformation::dummy()),
-                            Variable::new("x", SourceInformation::dummy()),
-                            SourceInformation::dummy(),
-                        ),
-                        types::Boolean::new(SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    )
-                    .into()
-                ])),
-                Err(CompileError::AnyEqualOperation(
-                    SourceInformation::dummy().into()
-                ))
-            );
-        }
-    }
-
     #[test]
     fn transform_and_operation() {
         let create_module = |expression: Expression| {
@@ -1060,87 +869,5 @@ mod tests {
                 .into(),
             ))
         );
-    }
-
-    mod list_literals {
-        use super::*;
-
-        #[test]
-        fn transform_empty_list() {
-            let list_type = types::List::new(
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            );
-
-            assert_debug_snapshot!(transform_with_types(&Module::new(
-                ModulePath::dummy(),
-                Export::new(Default::default()),
-                vec![Import::new(list_module_interface(), false)],
-                vec![],
-                vec![ValueDefinition::new(
-                    "x",
-                    List::with_type(list_type.clone(), vec![], SourceInformation::dummy(),),
-                    list_type.clone(),
-                    SourceInformation::dummy(),
-                )
-                .into()]
-            )));
-        }
-
-        #[test]
-        fn transform_list_with_an_element() {
-            let list_type = types::List::new(
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            );
-
-            assert_debug_snapshot!(transform_with_types(&Module::new(
-                ModulePath::dummy(),
-                Export::new(Default::default()),
-                vec![Import::new(list_module_interface(), false)],
-                vec![],
-                vec![ValueDefinition::new(
-                    "x",
-                    List::with_type(
-                        list_type.clone(),
-                        vec![ListElement::Single(
-                            Number::new(42.0, SourceInformation::dummy()).into()
-                        )],
-                        SourceInformation::dummy(),
-                    ),
-                    list_type.clone(),
-                    SourceInformation::dummy(),
-                )
-                .into()]
-            )));
-        }
-
-        #[test]
-        fn transform_list_with_spread_element() {
-            let list_type = types::List::new(
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            );
-
-            assert_debug_snapshot!(transform_with_types(&Module::new(
-                ModulePath::dummy(),
-                Export::new(Default::default()),
-                vec![Import::new(list_module_interface(), false)],
-                vec![],
-                vec![ValueDefinition::new(
-                    "x",
-                    List::with_type(
-                        list_type.clone(),
-                        vec![ListElement::Multiple(
-                            List::new(vec![], SourceInformation::dummy(),).into()
-                        )],
-                        SourceInformation::dummy(),
-                    ),
-                    list_type,
-                    SourceInformation::dummy(),
-                )
-                .into()]
-            )));
-        }
     }
 }
