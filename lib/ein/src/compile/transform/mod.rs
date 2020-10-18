@@ -5,6 +5,7 @@ mod function_type_argument_transformer;
 mod not_equal_operation_transformer;
 mod partial_application_transformer;
 mod record_element_function_transformer;
+mod record_equal_function_transformer;
 mod record_update_transformer;
 mod type_coercion_transformer;
 mod typed_meta_transformer;
@@ -24,15 +25,22 @@ use function_type_argument_transformer::FunctionTypeArgumentTransformer;
 use not_equal_operation_transformer::NotEqualOperationTransformer;
 use partial_application_transformer::PartialApplicationTransformer;
 use record_element_function_transformer::RecordElementFunctionTransformer;
+use record_equal_function_transformer::RecordEqualFunctionTransformer;
 use record_update_transformer::RecordUpdateTransformer;
 use std::sync::Arc;
 use type_coercion_transformer::TypeCoercionTransformer;
 use typed_meta_transformer::TypedMetaTransformer;
 
 pub fn transform_before_name_qualification(module: &Module) -> Result<Module, CompileError> {
-    let module = ElementlessRecordTransformer::new().transform(&module);
+    let reference_type_resolver = ReferenceTypeResolver::new(module);
+    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
 
-    Ok(RecordElementFunctionTransformer::new().transform(&module))
+    let module = ElementlessRecordTransformer::new().transform(&module);
+    let module = RecordElementFunctionTransformer::new().transform(&module);
+    let module = RecordEqualFunctionTransformer::new(type_comparability_checker.into())
+        .transform(&module)?;
+
+    Ok(module)
 }
 
 pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> {
@@ -41,7 +49,6 @@ pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> 
 
 pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
-    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let type_canonicalizer = TypeCanonicalizer::new(
         reference_type_resolver.clone(),
@@ -76,90 +83,9 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
 mod tests {
     use super::*;
     use crate::debug::SourceInformation;
-    use crate::path::ModulePath;
     use crate::types;
     use insta::assert_debug_snapshot;
     use pretty_assertions::assert_eq;
-
-    fn list_module_interface() -> ModuleInterface {
-        ModuleInterface::new(
-            ModulePath::dummy(),
-            vec!["empty", "concatenate", "prepend"]
-                .into_iter()
-                .map(String::from)
-                .collect(),
-            vec![(
-                "GenericList".into(),
-                types::Record::new(
-                    "GenericList",
-                    Default::default(),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-            )]
-            .into_iter()
-            .collect(),
-            vec![
-                (
-                    "empty".into(),
-                    types::Reference::new("GenericList", SourceInformation::dummy()).into(),
-                ),
-                (
-                    "concatenate".into(),
-                    types::Function::new(
-                        types::Reference::new("GenericList", SourceInformation::dummy()),
-                        types::Function::new(
-                            types::Reference::new("GenericList", SourceInformation::dummy()),
-                            types::Reference::new("GenericList", SourceInformation::dummy()),
-                            SourceInformation::dummy(),
-                        ),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                ),
-                (
-                    "equal".into(),
-                    types::Function::new(
-                        types::Function::new(
-                            types::Any::new(SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Any::new(SourceInformation::dummy()),
-                                types::Boolean::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy(),
-                        ),
-                        types::Function::new(
-                            types::Reference::new("GenericList", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Reference::new("GenericList", SourceInformation::dummy()),
-                                types::Boolean::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy(),
-                        ),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                ),
-                (
-                    "prepend".into(),
-                    types::Function::new(
-                        types::Any::new(SourceInformation::dummy()),
-                        types::Function::new(
-                            types::Reference::new("GenericList", SourceInformation::dummy()),
-                            types::Reference::new("GenericList", SourceInformation::dummy()),
-                            SourceInformation::dummy(),
-                        ),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                ),
-            ]
-            .into_iter()
-            .collect(),
-        )
-    }
 
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
         super::transform_with_types(module)
