@@ -4,7 +4,7 @@ mod equal_operation_transformer;
 mod function_type_argument_transformer;
 mod not_equal_operation_transformer;
 mod partial_application_transformer;
-mod record_function_transformer;
+mod record_element_function_transformer;
 mod record_update_transformer;
 mod type_coercion_transformer;
 mod typed_meta_transformer;
@@ -23,7 +23,7 @@ use equal_operation_transformer::EqualOperationTransformer;
 use function_type_argument_transformer::FunctionTypeArgumentTransformer;
 use not_equal_operation_transformer::NotEqualOperationTransformer;
 use partial_application_transformer::PartialApplicationTransformer;
-use record_function_transformer::RecordFunctionTransformer;
+use record_element_function_transformer::RecordElementFunctionTransformer;
 use record_update_transformer::RecordUpdateTransformer;
 use std::sync::Arc;
 use type_coercion_transformer::TypeCoercionTransformer;
@@ -32,7 +32,7 @@ use typed_meta_transformer::TypedMetaTransformer;
 pub fn transform_before_name_qualification(module: &Module) -> Result<Module, CompileError> {
     let module = ElementlessRecordTransformer::new().transform(&module);
 
-    Ok(RecordFunctionTransformer::new().transform(&module))
+    Ok(RecordElementFunctionTransformer::new().transform(&module))
 }
 
 pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> {
