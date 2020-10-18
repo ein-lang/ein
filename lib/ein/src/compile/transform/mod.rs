@@ -12,7 +12,6 @@ mod typed_meta_transformer;
 
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
-use super::list_type_configuration::ListTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_canonicalizer::TypeCanonicalizer;
 use super::type_comparability_checker::TypeComparabilityChecker;
@@ -20,14 +19,13 @@ use super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use boolean_operation_transformer::BooleanOperationTransformer;
 use elementless_record_transformer::ElementlessRecordTransformer;
-use equal_operation_transformer::EqualOperationTransformer;
+pub use equal_operation_transformer::EqualOperationTransformer;
 use function_type_argument_transformer::FunctionTypeArgumentTransformer;
 use not_equal_operation_transformer::NotEqualOperationTransformer;
 use partial_application_transformer::PartialApplicationTransformer;
 use record_element_function_transformer::RecordElementFunctionTransformer;
 use record_equal_function_transformer::RecordEqualFunctionTransformer;
 use record_update_transformer::RecordUpdateTransformer;
-use std::sync::Arc;
 use type_coercion_transformer::TypeCoercionTransformer;
 use typed_meta_transformer::TypedMetaTransformer;
 

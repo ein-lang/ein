@@ -33,16 +33,7 @@ impl EqualOperationTransformer {
         }
     }
 
-    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
-        module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            self.transform_expression(expression)
-        })
-    }
-
-    fn transform_expression(
-        &mut self,
-        expression: &Expression,
-    ) -> Result<Expression, CompileError> {
+    pub fn transform(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
         Ok(if let Expression::Operation(operation) = expression {
             if operation.operator() == Operator::Equal {
                 self.transform_equal_operation(
