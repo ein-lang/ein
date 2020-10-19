@@ -65,9 +65,13 @@ Feature: Case expressions
     """
     y : List Any
     y = []
+
+    z : List None
+    z = []
+
     main : Number -> Number
     main x =
-      case y = y
+      case y = if True then y else z
         List None => 13
         List Any => 42
     """
