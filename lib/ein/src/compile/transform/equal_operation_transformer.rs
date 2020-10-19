@@ -23,7 +23,7 @@ impl EqualOperationTransformer {
         type_comparability_checker: Arc<TypeComparabilityChecker>,
         type_equality_checker: Arc<TypeEqualityChecker>,
         list_type_configuration: Arc<ListTypeConfiguration>,
-    ) -> Self {
+    ) -> Arc<Self> {
         Self {
             name_generator: NameGenerator::new("equal_operation_argument_"),
             reference_type_resolver,
@@ -31,27 +31,24 @@ impl EqualOperationTransformer {
             type_equality_checker,
             list_type_configuration,
         }
+        .into()
     }
 
-    pub fn transform(&mut self, expression: &Expression) -> Result<Expression, CompileError> {
-        Ok(if let Expression::Operation(operation) = expression {
-            if operation.operator() == Operator::Equal {
-                self.transform_equal_operation(
-                    operation.type_(),
-                    operation.lhs(),
-                    operation.rhs(),
-                    operation.source_information().clone(),
-                )?
-            } else {
-                expression.clone()
-            }
+    pub fn transform(&self, operation: &Operation) -> Result<Expression, CompileError> {
+        Ok(if operation.operator() == Operator::Equal {
+            self.transform_equal_operation(
+                operation.type_(),
+                operation.lhs(),
+                operation.rhs(),
+                operation.source_information().clone(),
+            )?
         } else {
-            expression.clone()
+            operation.clone().into()
         })
     }
 
     fn transform_equal_operation(
-        &mut self,
+        &self,
         type_: &Type,
         lhs: &Expression,
         rhs: &Expression,

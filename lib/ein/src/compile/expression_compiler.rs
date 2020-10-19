@@ -1,6 +1,7 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::transform::EqualOperationTransformer;
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
@@ -9,6 +10,7 @@ use std::convert::TryInto;
 use std::sync::Arc;
 
 pub struct ExpressionCompiler {
+    equal_operation_transformer: Arc<EqualOperationTransformer>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
@@ -17,12 +19,14 @@ pub struct ExpressionCompiler {
 
 impl ExpressionCompiler {
     pub fn new(
+        equal_operation_transformer: Arc<EqualOperationTransformer>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
         boolean_compiler: Arc<BooleanCompiler>,
     ) -> Arc<Self> {
         Self {
+            equal_operation_transformer,
             reference_type_resolver,
             union_tag_calculator,
             type_compiler,
@@ -82,25 +86,32 @@ impl ExpressionCompiler {
             .into(),
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
-                let compiled = ssf::ir::Operation::new(
-                    operation.operator().try_into().unwrap(),
-                    self.compile(operation.lhs())?,
-                    self.compile(operation.rhs())?,
-                );
+                let type_ = self.reference_type_resolver.resolve(operation.type_())?;
 
-                match operation.operator() {
-                    Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
-                        compiled.into()
+                if operation.operator() == Operator::Equal && !matches!(type_, Type::Number(_)) {
+                    self.compile(&self.equal_operation_transformer.transform(operation)?)?
+                } else {
+                    let compiled = ssf::ir::Operation::new(
+                        operation.operator().try_into().unwrap(),
+                        self.compile(operation.lhs())?,
+                        self.compile(operation.rhs())?,
+                    );
+
+                    match operation.operator() {
+                        Operator::Add
+                        | Operator::Subtract
+                        | Operator::Multiply
+                        | Operator::Divide => compiled.into(),
+                        Operator::Equal
+                        | Operator::NotEqual
+                        | Operator::LessThan
+                        | Operator::LessThanOrEqual
+                        | Operator::GreaterThan
+                        | Operator::GreaterThanOrEqual => {
+                            self.boolean_compiler.compile_conversion(compiled)
+                        }
+                        Operator::And | Operator::Or => unreachable!(),
                     }
-                    Operator::Equal
-                    | Operator::NotEqual
-                    | Operator::LessThan
-                    | Operator::LessThanOrEqual
-                    | Operator::GreaterThan
-                    | Operator::GreaterThanOrEqual => {
-                        self.boolean_compiler.compile_conversion(compiled)
-                    }
-                    Operator::And | Operator::Or => unreachable!(),
                 }
             }
             Expression::RecordConstruction(record) => ssf::ir::ConstructorApplication::new(
@@ -399,14 +410,30 @@ mod tests {
     use super::super::error::CompileError;
     use super::super::list_type_configuration::ListTypeConfiguration;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
+    use super::super::transform::EqualOperationTransformer;
+    use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_compiler::TypeCompiler;
+    use super::super::type_equality_checker::TypeEqualityChecker;
     use super::super::union_tag_calculator::UnionTagCalculator;
     use super::ExpressionCompiler;
     use crate::ast::*;
     use crate::debug::SourceInformation;
     use crate::types;
+    use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
     use std::sync::Arc;
+
+    lazy_static! {
+        static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
+            ListTypeConfiguration::new(
+                "emptyList",
+                "concatenateLists",
+                "equalLists",
+                "prependToLists",
+                "GenericList",
+            )
+            .into();
+    }
 
     fn create_expression_compiler(
         module: &Module,
@@ -430,9 +457,19 @@ mod tests {
             .into(),
         );
         let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
+        let type_comparability_checker =
+            TypeComparabilityChecker::new(reference_type_resolver.clone());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let equal_operation_transformer = EqualOperationTransformer::new(
+            reference_type_resolver.clone(),
+            type_comparability_checker.clone(),
+            type_equality_checker.clone(),
+            LIST_TYPE_CONFIGURATION.clone(),
+        );
 
         (
             ExpressionCompiler::new(
+                equal_operation_transformer,
                 reference_type_resolver,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),

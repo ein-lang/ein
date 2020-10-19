@@ -1,20 +1,21 @@
+use std::sync::atomic::{AtomicUsize, Ordering};
+
 #[derive(Debug)]
 pub struct NameGenerator {
-    index: usize,
+    index: AtomicUsize,
     prefix: String,
 }
 
 impl NameGenerator {
     pub fn new(prefix: impl Into<String>) -> Self {
         Self {
-            index: 0,
+            index: AtomicUsize::new(0),
             prefix: prefix.into(),
         }
     }
 
-    pub fn generate(&mut self) -> String {
-        let index = self.index;
-        self.index += 1;
+    pub fn generate(&self) -> String {
+        let index = self.index.fetch_add(1, Ordering::SeqCst);
         format!("{}{}", self.prefix, index)
     }
 }
@@ -25,7 +26,7 @@ mod tests {
 
     #[test]
     fn generate_name() {
-        let mut generator = NameGenerator::new("name");
+        let generator = NameGenerator::new("name");
 
         assert_eq!(generator.generate(), "name0");
         assert_eq!(generator.generate(), "name1");
