@@ -97,6 +97,7 @@ impl PartialApplicationTransformer {
     ) -> Expression {
         match expression {
             Expression::Application(application) => {
+                // TODO Use apply_arguments_recursively by deconstructing applications.
                 self.apply_arguments(expression, arguments, application.source_information())
             }
             Expression::Case(case) => Case::with_type(
