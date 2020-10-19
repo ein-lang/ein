@@ -4,6 +4,7 @@ use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_comparability_checker::TypeComparabilityChecker;
 use super::super::type_equality_checker::TypeEqualityChecker;
+use super::utilities;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
@@ -172,7 +173,7 @@ impl EqualOperationTransformer {
                     Application::new(
                         Application::new(
                             Variable::new(
-                                self.get_record_equal_function_name(&record),
+                                utilities::get_record_equal_function_name(&record),
                                 source_information.clone(),
                             ),
                             lhs.clone(),
@@ -246,10 +247,5 @@ impl EqualOperationTransformer {
             }
             Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
-    }
-
-    // TODO Share this function with RecordEqualFunctionTransformer.
-    fn get_record_equal_function_name(&self, record_type: &types::Record) -> String {
-        format!("{}.$equal", record_type.name())
     }
 }

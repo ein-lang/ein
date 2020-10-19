@@ -1,5 +1,6 @@
 use super::super::error::CompileError;
 use super::super::type_comparability_checker::TypeComparabilityChecker;
+use super::utilities;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::sync::Arc;
@@ -78,7 +79,7 @@ impl RecordEqualFunctionTransformer {
         }
 
         Ok(FunctionDefinition::new(
-            self.get_record_equal_function_name(record_type),
+            utilities::get_record_equal_function_name(record_type),
             vec!["lhs".into(), "rhs".into()],
             expression,
             types::Function::new(
@@ -92,9 +93,5 @@ impl RecordEqualFunctionTransformer {
             ),
             source_information.clone(),
         ))
-    }
-
-    fn get_record_equal_function_name(&self, record_type: &types::Record) -> String {
-        format!("{}.$equal", record_type.name())
     }
 }

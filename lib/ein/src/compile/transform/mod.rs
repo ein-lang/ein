@@ -9,6 +9,7 @@ mod record_equal_function_transformer;
 mod record_update_transformer;
 mod type_coercion_transformer;
 mod typed_meta_transformer;
+mod utilities;
 
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
