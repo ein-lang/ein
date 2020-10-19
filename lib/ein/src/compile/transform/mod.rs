@@ -35,8 +35,8 @@ pub fn transform_before_name_qualification(module: &Module) -> Result<Module, Co
 
     let module = ElementlessRecordTransformer::new().transform(&module);
     let module = RecordElementFunctionTransformer::new().transform(&module);
-    let module = RecordEqualFunctionTransformer::new(type_comparability_checker.into())
-        .transform(&module)?;
+    let module =
+        RecordEqualFunctionTransformer::new(type_comparability_checker).transform(&module)?;
 
     Ok(module)
 }
