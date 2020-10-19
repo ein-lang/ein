@@ -116,16 +116,20 @@ impl Type {
         }
     }
 
+    pub fn is_any(&self) -> bool {
+        matches!(self, Self::Any(_))
+    }
+
     pub fn is_function(&self) -> bool {
-        self.to_function().is_some()
+        matches!(self, Self::Function(_))
+    }
+
+    pub fn is_list(&self) -> bool {
+        matches!(self, Self::List(_))
     }
 
     pub fn is_union(&self) -> bool {
-        self.to_union().is_some()
-    }
-
-    pub fn is_any(&self) -> bool {
-        matches!(self, Self::Any(_))
+        matches!(self, Self::Union(_))
     }
 }
 
