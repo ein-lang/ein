@@ -31,7 +31,7 @@ use typed_meta_transformer::TypedMetaTransformer;
 
 pub fn transform_before_name_qualification(module: &Module) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
-    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
+    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver);
 
     let module = ElementlessRecordTransformer::new().transform(&module);
     let module = RecordElementFunctionTransformer::new().transform(&module);
