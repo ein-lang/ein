@@ -102,24 +102,26 @@ impl ExpressionCompiler {
                 if operation.operator() == Operator::Equal && !matches!(type_, Type::Number(_)) {
                     self.compile(&self.equal_operation_transformer.transform(operation)?)?
                 } else {
-                    let compiled = ssf::ir::Operation::new(
-                        operation.operator().try_into().unwrap(),
-                        self.compile(operation.lhs())?,
-                        self.compile(operation.rhs())?,
-                    );
+                    let compile = || -> Result<_, CompileError> {
+                        Ok(ssf::ir::Operation::new(
+                            operation.operator().try_into().unwrap(),
+                            self.compile(operation.lhs())?,
+                            self.compile(operation.rhs())?,
+                        ))
+                    };
 
                     match operation.operator() {
                         Operator::Add
                         | Operator::Subtract
                         | Operator::Multiply
-                        | Operator::Divide => compiled.into(),
+                        | Operator::Divide => compile()?.into(),
                         Operator::Equal
                         | Operator::NotEqual
                         | Operator::LessThan
                         | Operator::LessThanOrEqual
                         | Operator::GreaterThan
                         | Operator::GreaterThanOrEqual => {
-                            self.boolean_compiler.compile_conversion(compiled)
+                            self.boolean_compiler.compile_conversion(compile()?)
                         }
                         Operator::And | Operator::Or => {
                             self.compile(&self.boolean_operation_transformer.transform(operation))?
