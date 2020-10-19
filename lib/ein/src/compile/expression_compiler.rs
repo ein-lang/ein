@@ -49,7 +49,7 @@ impl ExpressionCompiler {
                 let mut function = application.function();
                 let mut arguments = vec![application.argument()];
 
-                while let Expression::Application(application) = &*function {
+                while let Expression::Application(application) = function {
                     function = application.function();
                     arguments.push(application.argument());
                 }
