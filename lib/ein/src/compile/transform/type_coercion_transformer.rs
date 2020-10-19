@@ -266,13 +266,12 @@ impl TypedTransformer for TypeCoercionTransformer {
             }
             Expression::Boolean(_)
             | Expression::Let(_)
+            | Expression::List(_)
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::RecordElementOperation(_)
             | Expression::Variable(_) => Ok(expression.clone()),
-            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
-                unreachable!()
-            }
+            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }
     }
 }

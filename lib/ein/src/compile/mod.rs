@@ -32,9 +32,9 @@ use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
-use transform::EqualOperationTransformer;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
+    EqualOperationTransformer, ListLiteralTransformer,
 };
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
@@ -73,10 +73,12 @@ pub fn compile(
         reference_type_resolver.clone(),
         type_comparability_checker,
         type_equality_checker,
-        list_type_configuration,
+        list_type_configuration.clone(),
     );
+    let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
     let expression_compiler = ExpressionCompiler::new(
         equal_operation_transformer,
+        list_literal_transformer,
         reference_type_resolver,
         union_tag_calculator,
         type_compiler.clone(),
@@ -567,26 +569,25 @@ mod tests {
         .unwrap();
     }
 
-    // TODO Enable these tests.
-    // mod list {
-    //     use super::*;
-    //
-    //     #[test]
-    //     fn compile_empty_list() {
-    //         assert!(compile(
-    //             &Module::from_definitions(vec![ValueDefinition::new(
-    //                 "x",
-    //                 List::new(vec![], SourceInformation::dummy()),
-    //                 types::List::new(
-    //                     types::Number::new(SourceInformation::dummy()),
-    //                     SourceInformation::dummy()
-    //                 ),
-    //                 SourceInformation::dummy(),
-    //             )
-    //             .into()]),
-    //             &COMPILE_CONFIGURATION
-    //         )
-    //         .is_ok());
-    //     }
-    // }
+    mod list {
+        use super::*;
+
+        #[test]
+        fn compile_empty_list() {
+            assert!(compile(
+                &Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    List::new(vec![], SourceInformation::dummy()),
+                    types::List::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into()]),
+                &COMPILE_CONFIGURATION
+            )
+            .is_ok());
+        }
+    }
 }

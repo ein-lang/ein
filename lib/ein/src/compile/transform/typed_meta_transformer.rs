@@ -195,6 +195,22 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 )
                 .into()
             }
+            Expression::List(list) => List::with_type(
+                list.type_().clone(),
+                list.elements()
+                    .iter()
+                    .map(|element| match element {
+                        ListElement::Multiple(expression) => Ok(ListElement::Multiple(
+                            self.transform_expression(expression, &variables)?,
+                        )),
+                        ListElement::Single(expression) => Ok(ListElement::Single(
+                            self.transform_expression(expression, &variables)?,
+                        )),
+                    })
+                    .collect::<Result<Vec<_>, CompileError>>()?,
+                list.source_information().clone(),
+            )
+            .into(),
             Expression::Operation(operation) => Operation::with_type(
                 operation.type_().clone(),
                 operation.operator(),
@@ -229,9 +245,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Variable(_) => expression.clone(),
-            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
-                unreachable!()
-            }
+            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         };
 
         Ok(self

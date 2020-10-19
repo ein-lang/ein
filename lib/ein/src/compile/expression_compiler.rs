@@ -1,7 +1,7 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
-use super::transform::EqualOperationTransformer;
+use super::transform::{EqualOperationTransformer, ListLiteralTransformer};
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 pub struct ExpressionCompiler {
     equal_operation_transformer: Arc<EqualOperationTransformer>,
+    list_literal_transformer: Arc<ListLiteralTransformer>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
@@ -20,6 +21,7 @@ pub struct ExpressionCompiler {
 impl ExpressionCompiler {
     pub fn new(
         equal_operation_transformer: Arc<EqualOperationTransformer>,
+        list_literal_transformer: Arc<ListLiteralTransformer>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
@@ -27,6 +29,7 @@ impl ExpressionCompiler {
     ) -> Arc<Self> {
         Self {
             equal_operation_transformer,
+            list_literal_transformer,
             reference_type_resolver,
             union_tag_calculator,
             type_compiler,
@@ -84,6 +87,9 @@ impl ExpressionCompiler {
                 vec![],
             )
             .into(),
+            Expression::List(list) => {
+                self.compile(&self.list_literal_transformer.transform(list))?
+            }
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;
@@ -214,7 +220,7 @@ impl ExpressionCompiler {
                 }
             }
             Expression::Variable(variable) => ssf::ir::Variable::new(variable.name()).into(),
-            Expression::List(_) | Expression::RecordUpdate(_) => unreachable!(),
+            Expression::RecordUpdate(_) => unreachable!(),
         })
     }
 
@@ -410,7 +416,7 @@ mod tests {
     use super::super::error::CompileError;
     use super::super::list_type_configuration::ListTypeConfiguration;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
-    use super::super::transform::EqualOperationTransformer;
+    use super::super::transform::{EqualOperationTransformer, ListLiteralTransformer};
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
@@ -447,14 +453,7 @@ mod tests {
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
             union_tag_calculator.clone(),
-            ListTypeConfiguration::new(
-                "emptyList",
-                "concatenateLists",
-                "equalLists",
-                "prependToLists",
-                "GenericList",
-            )
-            .into(),
+            LIST_TYPE_CONFIGURATION.clone(),
         );
         let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
         let type_comparability_checker =
@@ -466,10 +465,12 @@ mod tests {
             type_equality_checker.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
         );
+        let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
 
         (
             ExpressionCompiler::new(
                 equal_operation_transformer,
+                list_literal_transformer,
                 reference_type_resolver,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
