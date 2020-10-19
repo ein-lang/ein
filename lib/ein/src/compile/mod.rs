@@ -60,8 +60,7 @@ pub fn compile(
     let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let type_comparability_checker =
-        TypeComparabilityChecker::new(reference_type_resolver.clone()).into();
+    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
     let type_compiler = TypeCompiler::new(
@@ -74,10 +73,10 @@ pub fn compile(
         reference_type_resolver.clone(),
         type_comparability_checker,
         type_equality_checker,
-        list_type_configuration.clone(),
+        list_type_configuration,
     );
     let expression_compiler = ExpressionCompiler::new(
-        equal_operation_transformer.into(),
+        equal_operation_transformer,
         reference_type_resolver,
         union_tag_calculator,
         type_compiler.clone(),
