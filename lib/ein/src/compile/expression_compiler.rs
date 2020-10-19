@@ -1,7 +1,9 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
-use super::transform::{EqualOperationTransformer, ListLiteralTransformer};
+use super::transform::{
+    BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
+};
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
@@ -12,6 +14,7 @@ use std::sync::Arc;
 pub struct ExpressionCompiler {
     equal_operation_transformer: Arc<EqualOperationTransformer>,
     list_literal_transformer: Arc<ListLiteralTransformer>,
+    boolean_operation_transformer: Arc<BooleanOperationTransformer>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
@@ -22,6 +25,7 @@ impl ExpressionCompiler {
     pub fn new(
         equal_operation_transformer: Arc<EqualOperationTransformer>,
         list_literal_transformer: Arc<ListLiteralTransformer>,
+        boolean_operation_transformer: Arc<BooleanOperationTransformer>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
@@ -30,6 +34,7 @@ impl ExpressionCompiler {
         Self {
             equal_operation_transformer,
             list_literal_transformer,
+            boolean_operation_transformer,
             reference_type_resolver,
             union_tag_calculator,
             type_compiler,
@@ -116,7 +121,9 @@ impl ExpressionCompiler {
                         | Operator::GreaterThanOrEqual => {
                             self.boolean_compiler.compile_conversion(compiled)
                         }
-                        Operator::And | Operator::Or => unreachable!(),
+                        Operator::And | Operator::Or => {
+                            self.compile(&self.boolean_operation_transformer.transform(operation))?
+                        }
                     }
                 }
             }
@@ -416,7 +423,9 @@ mod tests {
     use super::super::error::CompileError;
     use super::super::list_type_configuration::ListTypeConfiguration;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
-    use super::super::transform::{EqualOperationTransformer, ListLiteralTransformer};
+    use super::super::transform::{
+        BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
+    };
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
@@ -466,11 +475,13 @@ mod tests {
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
+        let boolean_operation_transformer = BooleanOperationTransformer::new();
 
         (
             ExpressionCompiler::new(
                 equal_operation_transformer,
                 list_literal_transformer,
+                boolean_operation_transformer,
                 reference_type_resolver,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),

@@ -19,7 +19,7 @@ use super::type_canonicalizer::TypeCanonicalizer;
 use super::type_comparability_checker::TypeComparabilityChecker;
 use super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
-use boolean_operation_transformer::BooleanOperationTransformer;
+pub use boolean_operation_transformer::BooleanOperationTransformer;
 use elementless_record_transformer::ElementlessRecordTransformer;
 pub use equal_operation_transformer::EqualOperationTransformer;
 use function_type_argument_transformer::FunctionTypeArgumentTransformer;
@@ -58,8 +58,6 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     let expression_type_extractor =
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
 
-    let module = BooleanOperationTransformer::new().transform(&module)?;
-
     let module = NotEqualOperationTransformer::new().transform(&module)?;
 
     let module = TypedMetaTransformer::new(FunctionTypeArgumentTransformer::new(
@@ -86,7 +84,6 @@ mod tests {
     use crate::debug::SourceInformation;
     use crate::types;
     use insta::assert_debug_snapshot;
-    use pretty_assertions::assert_eq;
 
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
         super::transform_with_types(module)
@@ -726,75 +723,5 @@ mod tests {
             )
             .into()
         ])));
-    }
-
-    #[test]
-    fn transform_and_operation() {
-        let create_module = |expression: Expression| {
-            Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                expression,
-                types::Boolean::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()])
-        };
-
-        assert_eq!(
-            transform_with_types(&create_module(
-                Operation::with_type(
-                    types::Boolean::new(SourceInformation::dummy()),
-                    Operator::And,
-                    Boolean::new(true, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            )),
-            Ok(create_module(
-                If::new(
-                    Boolean::new(true, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    Boolean::new(false, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-            ))
-        );
-    }
-
-    #[test]
-    fn transform_or_operation() {
-        let create_module = |expression: Expression| {
-            Module::from_definitions(vec![ValueDefinition::new(
-                "x",
-                expression,
-                types::Boolean::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()])
-        };
-
-        assert_eq!(
-            transform_with_types(&create_module(
-                Operation::with_type(
-                    types::Boolean::new(SourceInformation::dummy()),
-                    Operator::Or,
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Boolean::new(false, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()
-            )),
-            Ok(create_module(
-                If::new(
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Boolean::new(true, SourceInformation::dummy()),
-                    Boolean::new(false, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into(),
-            ))
-        );
     }
 }

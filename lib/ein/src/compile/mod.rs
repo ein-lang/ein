@@ -34,7 +34,7 @@ use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
-    EqualOperationTransformer, ListLiteralTransformer,
+    BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
 };
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
@@ -76,9 +76,12 @@ pub fn compile(
         list_type_configuration.clone(),
     );
     let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
+    let boolean_operation_transformer = BooleanOperationTransformer::new();
+
     let expression_compiler = ExpressionCompiler::new(
         equal_operation_transformer,
         list_literal_transformer,
+        boolean_operation_transformer,
         reference_type_resolver,
         union_tag_calculator,
         type_compiler.clone(),
