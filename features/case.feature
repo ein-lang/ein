@@ -59,3 +59,19 @@ Feature: Case expressions
     When I run `sh -c ./foo`
     Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Distinguish different list types
+    Given a file named "Main.ein" with:
+    """
+    y : List Any
+    y = []
+    main : Number -> Number
+    main x =
+      case y = y
+        List None => 13
+        List Any => 42
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
+    And the exit status should be 0
