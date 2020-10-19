@@ -92,6 +92,14 @@ impl Type {
         }
     }
 
+    pub fn to_list(&self) -> Option<&List> {
+        if let Self::List(list) = self {
+            Some(&list)
+        } else {
+            None
+        }
+    }
+
     pub fn to_record(&self) -> Option<&Record> {
         if let Self::Record(record) = self {
             Some(&record)
