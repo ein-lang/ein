@@ -25,7 +25,7 @@ impl FunctionTypeArgumentTransformer {
         type_equality_checker: Arc<TypeEqualityChecker>,
         expression_type_extractor: Arc<ExpressionTypeExtractor>,
     ) -> Self {
-        FunctionTypeArgumentTransformer {
+        Self {
             name_generator: NameGenerator::new("fta_function_"),
             reference_type_resolver,
             type_equality_checker,
