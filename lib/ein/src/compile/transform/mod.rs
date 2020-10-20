@@ -60,21 +60,27 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
 
     let module = NotEqualOperationTransformer::new().transform(&module)?;
 
-    let module = TypedMetaTransformer::new(FunctionTypeArgumentTransformer::new(
+    let module = TypedMetaTransformer::new(
+        FunctionTypeArgumentTransformer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker.clone(),
+            expression_type_extractor.clone(),
+        ),
         reference_type_resolver.clone(),
-        type_equality_checker.clone(),
-        expression_type_extractor.clone(),
-    ))
+    )
     .transform(&module)?;
 
     let module = PartialApplicationTransformer::new().transform(&module)?;
 
-    TypedMetaTransformer::new(TypeCoercionTransformer::new(
+    TypedMetaTransformer::new(
+        TypeCoercionTransformer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker,
+            expression_type_extractor,
+            type_canonicalizer,
+        ),
         reference_type_resolver,
-        type_equality_checker,
-        expression_type_extractor,
-        type_canonicalizer,
-    ))
+    )
     .transform(&module)
 }
 

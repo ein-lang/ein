@@ -128,9 +128,15 @@ impl PartialApplicationTransformer {
                 self.apply_arguments_recursively(let_.expression(), arguments),
             )
             .into(),
-            Expression::RecordElementOperation(operation) => {
-                self.apply_arguments(expression, arguments, operation.source_information())
-            }
+            Expression::RecordElementOperation(operation) => RecordElementOperation::new(
+                operation.type_().clone(),
+                operation.key(),
+                operation.argument().clone(),
+                operation.variable(),
+                self.apply_arguments_recursively(operation.expression(), arguments),
+                operation.source_information().clone(),
+            )
+            .into(),
             Expression::Variable(variable) => {
                 self.apply_arguments(expression, arguments, variable.source_information())
             }

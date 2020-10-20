@@ -1,8 +1,10 @@
 use super::super::error::CompileError;
 use super::super::module_environment_creator::ModuleEnvironmentCreator;
+use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::types::Type;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 pub trait TypedTransformer {
     fn transform_function_definition(
@@ -24,12 +26,17 @@ pub trait TypedTransformer {
 
 pub struct TypedMetaTransformer<D> {
     component_transformer: D,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl<D: TypedTransformer> TypedMetaTransformer<D> {
-    pub fn new(component_transformer: D) -> Self {
+    pub fn new(
+        component_transformer: D,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+    ) -> Self {
         Self {
             component_transformer,
+            reference_type_resolver,
         }
     }
 
@@ -238,6 +245,22 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 operation.type_().clone(),
                 operation.key(),
                 self.transform_expression(operation.argument(), variables)?,
+                operation.variable(),
+                {
+                    let mut variables = variables.clone();
+
+                    variables.insert(
+                        operation.variable().into(),
+                        self.reference_type_resolver
+                            .resolve(operation.type_())?
+                            .to_record()
+                            .unwrap()
+                            .elements()[operation.key()]
+                        .clone(),
+                    );
+
+                    self.transform_expression(operation.expression(), &variables)?
+                },
                 operation.source_information().clone(),
             )
             .into(),
