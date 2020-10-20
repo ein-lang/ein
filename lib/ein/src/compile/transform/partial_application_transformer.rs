@@ -81,8 +81,9 @@ impl PartialApplicationTransformer {
                                 argument,
                                 function_definition.source_information().clone(),
                             )
+                            .into()
                         })
-                        .collect::<Vec<Variable>>(),
+                        .collect::<Vec<_>>(),
                 ),
                 function_definition.type_().clone(),
                 function_definition.source_information().clone(),
@@ -93,13 +94,17 @@ impl PartialApplicationTransformer {
     fn apply_arguments_recursively(
         &self,
         expression: &Expression,
-        arguments: &[Variable],
+        arguments: &[Expression],
     ) -> Expression {
         match expression {
-            Expression::Application(application) => {
-                // TODO Use apply_arguments_recursively by deconstructing applications.
-                self.apply_arguments(expression, arguments, application.source_information())
-            }
+            Expression::Application(application) => self.apply_arguments_recursively(
+                application.function(),
+                &vec![application.argument()]
+                    .into_iter()
+                    .chain(arguments)
+                    .cloned()
+                    .collect::<Vec<_>>(),
+            ),
             Expression::Case(case) => Case::with_type(
                 case.type_().clone(),
                 case.name(),
@@ -154,7 +159,7 @@ impl PartialApplicationTransformer {
     fn apply_arguments(
         &self,
         expression: &Expression,
-        arguments: &[Variable],
+        arguments: &[Expression],
         source_information: &SourceInformation,
     ) -> Expression {
         arguments
@@ -322,6 +327,122 @@ mod tests {
                         SourceInformation::dummy()
                     ),
                     Variable::new("pa_argument_1", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                function_type,
+                SourceInformation::dummy(),
+            )
+            .into()]))
+        );
+    }
+
+    #[test]
+    fn deconstruct_if_expression_of_function() {
+        let function_type = types::Function::new(
+            types::Number::new(SourceInformation::dummy()),
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            SourceInformation::dummy(),
+        );
+
+        assert_eq!(
+            PartialApplicationTransformer::new().transform(&Module::from_definitions(vec![
+                FunctionDefinition::new(
+                    "f",
+                    vec!["x".into()],
+                    If::new(
+                        Boolean::new(true, SourceInformation::dummy()),
+                        Variable::new("g", SourceInformation::dummy()),
+                        Variable::new("g", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    function_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])),
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into(), "pa_argument_0".into()],
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Application::new(
+                        Variable::new("g", SourceInformation::dummy()),
+                        Variable::new("pa_argument_0", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    Application::new(
+                        Variable::new("g", SourceInformation::dummy()),
+                        Variable::new("pa_argument_0", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                ),
+                function_type,
+                SourceInformation::dummy(),
+            )
+            .into()]))
+        );
+    }
+
+    #[test]
+    fn deconstruct_if_expression_in_application() {
+        let function_type = types::Function::new(
+            types::Number::new(SourceInformation::dummy()),
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            SourceInformation::dummy(),
+        );
+
+        assert_eq!(
+            PartialApplicationTransformer::new().transform(&Module::from_definitions(vec![
+                FunctionDefinition::new(
+                    "f",
+                    vec!["x".into()],
+                    Application::new(
+                        If::new(
+                            Boolean::new(true, SourceInformation::dummy()),
+                            Variable::new("g", SourceInformation::dummy()),
+                            Variable::new("g", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        Variable::new("x", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    function_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])),
+            Ok(Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into(), "pa_argument_0".into()],
+                If::new(
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Application::new(
+                        Application::new(
+                            Variable::new("g", SourceInformation::dummy()),
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        Variable::new("pa_argument_0", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    Application::new(
+                        Application::new(
+                            Variable::new("g", SourceInformation::dummy()),
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        Variable::new("pa_argument_0", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
                     SourceInformation::dummy()
                 ),
                 function_type,
