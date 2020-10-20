@@ -1,8 +1,10 @@
 use super::super::error::CompileError;
 use super::super::module_environment_creator::ModuleEnvironmentCreator;
+use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::types::Type;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 pub trait TypedTransformer {
     fn transform_function_definition(
@@ -24,12 +26,17 @@ pub trait TypedTransformer {
 
 pub struct TypedMetaTransformer<D> {
     component_transformer: D,
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl<D: TypedTransformer> TypedMetaTransformer<D> {
-    pub fn new(component_transformer: D) -> Self {
+    pub fn new(
+        component_transformer: D,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+    ) -> Self {
         Self {
             component_transformer,
+            reference_type_resolver,
         }
     }
 
@@ -240,14 +247,19 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 self.transform_expression(operation.argument(), variables)?,
                 operation.variable(),
                 {
-                    let mut variables_with_element = variables.clone();
+                    let mut variables = variables.clone();
 
-                    variables_with_element.insert(
+                    variables.insert(
                         operation.variable().into(),
-                        operation.type_().to_record().unwrap().elements()[operation.key()].clone(),
+                        self.reference_type_resolver
+                            .resolve(operation.type_())?
+                            .to_record()
+                            .unwrap()
+                            .elements()[operation.key()]
+                        .clone(),
                     );
 
-                    self.transform_expression(operation.expression(), variables)?
+                    self.transform_expression(operation.expression(), &variables)?
                 },
                 operation.source_information().clone(),
             )
