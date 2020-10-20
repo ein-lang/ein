@@ -58,30 +58,32 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     let expression_type_extractor =
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
 
-    let module = NotEqualOperationTransformer::new().transform(&module)?;
-
-    let module = TypedMetaTransformer::new(
-        FunctionTypeArgumentTransformer::new(
+    let mut type_coercion_transformer = TypedMetaTransformer::new(
+        TypeCoercionTransformer::new(
             reference_type_resolver.clone(),
             type_equality_checker.clone(),
             expression_type_extractor.clone(),
+            type_canonicalizer,
         ),
         reference_type_resolver.clone(),
-    )
-    .transform(&module)?;
-
-    let module = PartialApplicationTransformer::new().transform(&module)?;
-
-    TypedMetaTransformer::new(
-        TypeCoercionTransformer::new(
+    );
+    let not_equal_operation_transformer = NotEqualOperationTransformer::new();
+    let mut function_type_argument_transformer = TypedMetaTransformer::new(
+        FunctionTypeArgumentTransformer::new(
             reference_type_resolver.clone(),
             type_equality_checker,
             expression_type_extractor,
-            type_canonicalizer,
         ),
         reference_type_resolver,
-    )
-    .transform(&module)
+    );
+    let partial_application_transformer = PartialApplicationTransformer::new();
+
+    let module = not_equal_operation_transformer.transform(&module)?;
+    let module = function_type_argument_transformer.transform(&module)?;
+    let module = partial_application_transformer.transform(&module)?;
+    let module = type_coercion_transformer.transform(&module)?;
+
+    Ok(module)
 }
 
 #[cfg(test)]

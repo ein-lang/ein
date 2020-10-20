@@ -8,13 +8,13 @@ impl NotEqualOperationTransformer {
         Self {}
     }
 
-    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&self, module: &Module) -> Result<Module, CompileError> {
         module.transform_expressions(&mut |expression| -> Result<Expression, CompileError> {
             Ok(self.transform_expression(expression))
         })
     }
 
-    fn transform_expression(&mut self, expression: &Expression) -> Expression {
+    fn transform_expression(&self, expression: &Expression) -> Expression {
         if let Expression::Operation(operation) = expression {
             if operation.operator() == Operator::NotEqual {
                 let source_information = operation.source_information();
