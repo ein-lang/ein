@@ -66,35 +66,35 @@ impl Case {
         &self.source_information
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self {
             type_: self.type_.clone(),
             name: self.name.clone(),
-            argument: self.argument.convert_expressions(convert)?.into(),
+            argument: self.argument.transform_expressions(transform)?.into(),
             alternatives: self
                 .alternatives
                 .iter()
-                .map(|alternative| alternative.convert_expressions(convert))
+                .map(|alternative| alternative.transform_expressions(transform))
                 .collect::<Result<_, _>>()?,
             source_information: self.source_information.clone(),
         })
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self {
-            type_: self.type_.convert_types(convert)?,
+            type_: self.type_.transform_types(transform)?,
             name: self.name.clone(),
-            argument: self.argument.convert_types(convert)?.into(),
+            argument: self.argument.transform_types(transform)?.into(),
             alternatives: self
                 .alternatives
                 .iter()
-                .map(|alternative| alternative.convert_types(convert))
+                .map(|alternative| alternative.transform_types(transform))
                 .collect::<Result<_, _>>()?,
             source_information: self.source_information.clone(),
         })

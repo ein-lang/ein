@@ -42,26 +42,26 @@ impl If {
         &self.source_information
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.condition.convert_expressions(convert)?,
-            self.then.convert_expressions(convert)?,
-            self.else_.convert_expressions(convert)?,
+            self.condition.transform_expressions(transform)?,
+            self.then.transform_expressions(transform)?,
+            self.else_.transform_expressions(transform)?,
             self.source_information.clone(),
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.condition.convert_types(convert)?,
-            self.then.convert_types(convert)?,
-            self.else_.convert_types(convert)?,
+            self.condition.transform_types(transform)?,
+            self.then.transform_types(transform)?,
+            self.else_.transform_types(transform)?,
             self.source_information.clone(),
         ))
     }

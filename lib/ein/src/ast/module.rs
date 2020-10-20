@@ -89,9 +89,9 @@ impl Module {
         &self.imports
     }
 
-    pub fn convert_definitions<E>(
+    pub fn transform_definitions<E>(
         &self,
-        mut convert: &mut impl FnMut(&Definition) -> Result<Definition, E>,
+        mut transform: &mut impl FnMut(&Definition) -> Result<Definition, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.path.clone(),
@@ -101,12 +101,12 @@ impl Module {
             self.definitions
                 .iter()
                 .map(|definition| {
-                    let definition = definition.convert_expressions(&mut |expression| {
+                    let definition = definition.transform_expressions(&mut |expression| {
                         if let Expression::Let(let_) = expression {
                             Ok(Let::new(
                                 let_.definitions()
                                     .iter()
-                                    .map(&mut convert)
+                                    .map(&mut transform)
                                     .collect::<Result<_, _>>()?,
                                 let_.expression().clone(),
                             )
@@ -116,15 +116,15 @@ impl Module {
                         }
                     })?;
 
-                    convert(&definition)
+                    transform(&definition)
                 })
                 .collect::<Result<_, _>>()?,
         ))
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.path.clone(),
@@ -133,14 +133,14 @@ impl Module {
             self.type_definitions.clone(),
             self.definitions
                 .iter()
-                .map(|definition| definition.convert_expressions(convert))
+                .map(|definition| definition.transform_expressions(transform))
                 .collect::<Result<_, _>>()?,
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.path.clone(),
@@ -148,11 +148,11 @@ impl Module {
             self.imports.clone(),
             self.type_definitions
                 .iter()
-                .map(|type_definition| type_definition.convert_types(convert))
+                .map(|type_definition| type_definition.transform_types(transform))
                 .collect::<Result<_, _>>()?,
             self.definitions
                 .iter()
-                .map(|definition| definition.convert_types(convert))
+                .map(|definition| definition.transform_types(transform))
                 .collect::<Result<_, _>>()?,
         ))
     }

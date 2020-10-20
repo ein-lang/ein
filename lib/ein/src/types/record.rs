@@ -44,16 +44,16 @@ impl Record {
         &self.source_information
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self {
             name: self.name.clone(),
             elements: self
                 .elements
                 .iter()
-                .map(|(name, type_)| Ok((name.into(), type_.convert_types(convert)?)))
+                .map(|(name, type_)| Ok((name.into(), type_.transform_types(transform)?)))
                 .collect::<Result<_, _>>()?,
             source_information: self.source_information.clone(),
         })

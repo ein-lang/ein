@@ -43,33 +43,33 @@ impl RecordUpdate {
         &self.source_information
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.type_.clone(),
-            self.argument.convert_expressions(convert)?,
+            self.argument.transform_expressions(transform)?,
             self.elements
                 .iter()
                 .map(|(name, expression)| {
-                    Ok((name.into(), expression.convert_expressions(convert)?))
+                    Ok((name.into(), expression.transform_expressions(transform)?))
                 })
                 .collect::<Result<_, _>>()?,
             self.source_information.clone(),
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.type_.convert_types(convert)?,
-            self.argument.convert_types(convert)?,
+            self.type_.transform_types(transform)?,
+            self.argument.transform_types(transform)?,
             self.elements
                 .iter()
-                .map(|(name, expression)| Ok((name.into(), expression.convert_types(convert)?)))
+                .map(|(name, expression)| Ok((name.into(), expression.transform_types(transform)?)))
                 .collect::<Result<_, _>>()?,
             self.source_information.clone(),
         ))

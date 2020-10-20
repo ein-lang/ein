@@ -32,29 +32,29 @@ impl Let {
         })
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.definitions
                 .iter()
-                .map(|definition| definition.convert_expressions(convert))
+                .map(|definition| definition.transform_expressions(transform))
                 .collect::<Result<_, _>>()?,
-            self.expression.convert_expressions(convert)?,
+            self.expression.transform_expressions(transform)?,
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.definitions
                 .iter()
-                .map(|definition| definition.convert_types(convert))
+                .map(|definition| definition.transform_types(transform))
                 .collect::<Result<_, _>>()?,
-            self.expression.convert_types(convert)?,
+            self.expression.transform_types(transform)?,
         ))
     }
 }

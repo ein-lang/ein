@@ -28,12 +28,12 @@ impl List {
         &self.source_information
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.element.convert_types(convert)?,
+            self.element.transform_types(transform)?,
             self.source_information.clone(),
         ))
     }

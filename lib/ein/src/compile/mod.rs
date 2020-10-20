@@ -107,13 +107,13 @@ pub fn compile(
                 if module.definitions().iter().any(is_main_function) {
                     configuration.object_init_function_name().into()
                 } else {
-                    convert_path_to_initializer_name(module.path())
+                    transform_path_to_initializer_name(module.path())
                 },
                 module
                     .imports()
                     .iter()
                     .map(|import| {
-                        convert_path_to_initializer_name(import.module_interface().path())
+                        transform_path_to_initializer_name(import.module_interface().path())
                     })
                     .collect(),
                 Some(configuration.malloc_function_name().into()),
@@ -124,7 +124,7 @@ pub fn compile(
     ))
 }
 
-fn convert_path_to_initializer_name(module_path: &ModulePath) -> String {
+fn transform_path_to_initializer_name(module_path: &ModulePath) -> String {
     module_path.fully_qualify_name("$init")
 }
 

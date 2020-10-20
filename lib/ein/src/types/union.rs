@@ -28,14 +28,14 @@ impl Union {
         &self.source_information
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.types
                 .iter()
-                .map(|type_| type_.convert_types(convert))
+                .map(|type_| type_.transform_types(transform))
                 .collect::<Result<_, _>>()?,
             self.source_information.clone(),
         ))

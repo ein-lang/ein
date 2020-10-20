@@ -30,7 +30,7 @@ impl TypeInferrer {
     }
 
     pub fn infer(&self, module: &Module) -> Result<Module, CompileError> {
-        let module = module.convert_types(&mut |type_| -> Result<_, CompileError> {
+        let module = module.transform_types(&mut |type_| -> Result<_, CompileError> {
             Ok(match type_ {
                 Type::Unknown(unknown) => {
                     types::Variable::new(unknown.source_information().clone()).into()
@@ -55,7 +55,7 @@ impl TypeInferrer {
 
         checker.check(checked_subsumption_set)?;
 
-        module.convert_types(&mut |type_| substitutor.substitute(type_))
+        module.transform_types(&mut |type_| substitutor.substitute(type_))
     }
 }
 

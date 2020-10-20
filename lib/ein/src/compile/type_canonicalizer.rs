@@ -22,7 +22,7 @@ impl TypeCanonicalizer {
     }
 
     pub fn canonicalize(&self, type_: &Type) -> Result<Type, CompileError> {
-        type_.convert_types(&mut |type_| self.canonicalize_shallowly(type_))
+        type_.transform_types(&mut |type_| self.canonicalize_shallowly(type_))
     }
 
     fn canonicalize_shallowly(&self, type_: &Type) -> Result<Type, CompileError> {

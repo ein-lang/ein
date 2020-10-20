@@ -17,7 +17,7 @@ impl RecordUpdateTransformer {
     pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         let reference_type_resolver = ReferenceTypeResolver::new(module);
 
-        module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
+        module.transform_expressions(&mut |expression| -> Result<Expression, CompileError> {
             if let Expression::RecordUpdate(record_update) = expression {
                 let type_ = reference_type_resolver.resolve(record_update.type_())?;
                 let record_type = type_.to_record().unwrap();
