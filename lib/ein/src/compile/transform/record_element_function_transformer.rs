@@ -37,6 +37,11 @@ impl RecordElementFunctionTransformer {
                                                 type_definition.type_().clone(),
                                                 key,
                                                 Variable::new("record", source_information.clone()),
+                                                "$element",
+                                                Variable::new(
+                                                    "$element",
+                                                    source_information.clone(),
+                                                ),
                                                 source_information.clone(),
                                             ),
                                             types::Function::new(
@@ -96,6 +101,8 @@ mod tests {
                         record_type.clone(),
                         "foo",
                         Variable::new("record", SourceInformation::dummy()),
+                        "$element",
+                        Variable::new("$element", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
                     types::Function::new(

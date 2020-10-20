@@ -243,6 +243,12 @@ impl<'a> GlobalNameRenamer<'a> {
                 operation.type_().clone(),
                 operation.key(),
                 self.rename_expression(operation.argument(), names),
+                operation.variable(),
+                {
+                    let names = names.clone();
+                    names.remove(operation.variable());
+                    self.rename_expression(operation.expression(), &names)
+                },
                 operation.source_information().clone(),
             )
             .into(),

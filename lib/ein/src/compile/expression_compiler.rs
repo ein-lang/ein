@@ -172,9 +172,15 @@ impl ExpressionCompiler {
                         .unwrap()
                         .elements()
                         .keys()
-                        .map(|key| format!("${}", key))
+                        .map(|key| {
+                            if key == operation.key() {
+                                operation.variable()
+                            } else {
+                                format!("${}", key)
+                            }
+                        })
                         .collect(),
-                    ssf::ir::Variable::new(format!("${}", operation.key())),
+                    self.compile(operation.expression())?,
                 )],
                 None,
             )

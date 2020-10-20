@@ -110,7 +110,14 @@ impl ExpressionTypeExtractor {
             Expression::RecordElementOperation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;
 
-                type_.to_record().unwrap().elements()[operation.key()].clone()
+                let mut variables = variables.clone();
+
+                variables.insert(
+                    operation.variable().into(),
+                    type_.to_record().unwrap().elements()[operation.key()].clone(),
+                );
+
+                self.extract(operation.expression(), &variables)
             }
             Expression::TypeCoercion(coercion) => coercion.to().clone(),
             Expression::Variable(variable) => variables[variable.name()].clone(),

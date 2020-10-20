@@ -1379,6 +1379,8 @@ mod tests {
                                 .collect(),
                             SourceInformation::dummy(),
                         ),
+                        "$element",
+                        Variable::new("$element", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
                     types::None::new(SourceInformation::dummy()),
