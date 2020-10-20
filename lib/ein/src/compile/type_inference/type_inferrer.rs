@@ -1353,7 +1353,7 @@ mod tests {
         }
 
         #[test]
-        fn infer_types_of_record_element_operations() {
+        fn infer_types_of_record_element_operation() {
             let record_type = types::Record::new(
                 "Foo",
                 vec![(
@@ -1387,6 +1387,53 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
+            )));
+        }
+
+        #[test]
+        fn infer_type_of_comparison_operation_in_record_element_operation() {
+            let record_type = types::Record::new(
+                "Foo",
+                vec![(
+                    "foo".into(),
+                    types::Number::new(SourceInformation::dummy()).into(),
+                )]
+                .into_iter()
+                .collect(),
+                SourceInformation::dummy(),
+            );
+
+            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![ValueDefinition::new(
+                    "x",
+                    RecordElementOperation::new(
+                        record_type.clone(),
+                        "foo",
+                        RecordConstruction::new(
+                            record_type.clone(),
+                            vec![(
+                                "foo".into(),
+                                Number::new(42.0, SourceInformation::dummy()).into()
+                            )]
+                            .into_iter()
+                            .collect(),
+                            SourceInformation::dummy()
+                        ),
+                        "bar",
+                        Operation::with_type(
+                            types::Number::new(SourceInformation::dummy()),
+                            Operator::LessThan,
+                            Variable::new("bar", SourceInformation::dummy()),
+                            Variable::new("bar", SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        SourceInformation::dummy()
+                    ),
+                    types::Boolean::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()]
             )));
         }
     }

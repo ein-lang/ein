@@ -117,7 +117,7 @@ impl ExpressionTypeExtractor {
                     type_.to_record().unwrap().elements()[operation.key()].clone(),
                 );
 
-                self.extract(operation.expression(), &variables)
+                self.extract(operation.expression(), &variables)?
             }
             Expression::TypeCoercion(coercion) => coercion.to().clone(),
             Expression::Variable(variable) => variables[variable.name()].clone(),
@@ -170,6 +170,57 @@ mod tests {
                 SourceInformation::dummy()
             )
             .into())
+        );
+    }
+
+    #[test]
+    fn extract_type_of_record_element_operation() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer = TypeCanonicalizer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker.clone(),
+        );
+        let record_type = types::Record::new(
+            "Foo",
+            vec![(
+                "foo".into(),
+                types::Number::new(SourceInformation::dummy()).into(),
+            )]
+            .into_iter()
+            .collect(),
+            SourceInformation::dummy(),
+        );
+
+        assert_eq!(
+            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+                &RecordElementOperation::new(
+                    record_type.clone(),
+                    "foo",
+                    RecordConstruction::new(
+                        record_type.clone(),
+                        vec![(
+                            "foo".into(),
+                            Number::new(42.0, SourceInformation::dummy()).into()
+                        )]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy()
+                    ),
+                    "bar",
+                    Operation::with_type(
+                        types::Number::new(SourceInformation::dummy()),
+                        Operator::LessThan,
+                        Variable::new("bar", SourceInformation::dummy()),
+                        Variable::new("bar", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into(),
+                &Default::default(),
+            ),
+            Ok(types::Boolean::new(SourceInformation::dummy()).into())
         );
     }
 }

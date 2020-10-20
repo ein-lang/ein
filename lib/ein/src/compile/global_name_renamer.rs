@@ -245,7 +245,7 @@ impl<'a> GlobalNameRenamer<'a> {
                 self.rename_expression(operation.argument(), names),
                 operation.variable(),
                 {
-                    let names = names.clone();
+                    let mut names = names.clone();
                     names.remove(operation.variable());
                     self.rename_expression(operation.expression(), &names)
                 },

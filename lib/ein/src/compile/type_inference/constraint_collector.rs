@@ -308,7 +308,14 @@ impl ConstraintCollector {
                 self.solved_subsumption_set
                     .add(argument, operation.type_().clone());
 
-                Ok(record_type.elements()[operation.key()].clone())
+                let mut variables = variables.clone();
+
+                variables.insert(
+                    operation.variable().into(),
+                    record_type.elements()[operation.key()].clone(),
+                );
+
+                self.infer_expression(operation.expression(), &variables)
             }
             Expression::Variable(variable) => variables
                 .get(variable.name())

@@ -174,7 +174,7 @@ impl ExpressionCompiler {
                         .keys()
                         .map(|key| {
                             if key == operation.key() {
-                                operation.variable()
+                                operation.variable().into()
                             } else {
                                 format!("${}", key)
                             }
