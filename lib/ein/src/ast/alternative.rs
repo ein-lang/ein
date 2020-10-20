@@ -23,23 +23,23 @@ impl Alternative {
         &self.expression
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.type_.clone(),
-            self.expression.convert_expressions(convert)?,
+            self.expression.transform_expressions(transform)?,
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.type_.convert_types(convert)?,
-            self.expression.convert_types(convert)?,
+            self.type_.transform_types(transform)?,
+            self.expression.transform_types(transform)?,
         ))
     }
 }

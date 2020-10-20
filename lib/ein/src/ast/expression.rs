@@ -33,48 +33,48 @@ pub enum Expression {
 }
 
 impl Expression {
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         let expression = match self {
-            Self::Application(application) => application.convert_expressions(convert)?.into(),
-            Self::Case(case) => case.convert_expressions(convert)?.into(),
+            Self::Application(application) => application.transform_expressions(transform)?.into(),
+            Self::Case(case) => case.transform_expressions(transform)?.into(),
             Self::RecordConstruction(record_construction) => {
-                record_construction.convert_expressions(convert)?.into()
+                record_construction.transform_expressions(transform)?.into()
             }
             Self::RecordElementOperation(operation) => {
-                operation.convert_expressions(convert)?.into()
+                operation.transform_expressions(transform)?.into()
             }
-            Self::RecordUpdate(record_update) => record_update.convert_expressions(convert)?.into(),
-            Self::If(if_) => if_.convert_expressions(convert)?.into(),
-            Self::Let(let_) => let_.convert_expressions(convert)?.into(),
-            Self::List(list) => list.convert_expressions(convert)?.into(),
-            Self::Operation(operation) => operation.convert_expressions(convert)?.into(),
-            Self::TypeCoercion(coercion) => coercion.convert_expressions(convert)?.into(),
+            Self::RecordUpdate(record_update) => record_update.transform_expressions(transform)?.into(),
+            Self::If(if_) => if_.transform_expressions(transform)?.into(),
+            Self::Let(let_) => let_.transform_expressions(transform)?.into(),
+            Self::List(list) => list.transform_expressions(transform)?.into(),
+            Self::Operation(operation) => operation.transform_expressions(transform)?.into(),
+            Self::TypeCoercion(coercion) => coercion.transform_expressions(transform)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         };
 
-        convert(&expression)
+        transform(&expression)
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(match self {
-            Self::Application(application) => application.convert_types(convert)?.into(),
-            Self::Case(case) => case.convert_types(convert)?.into(),
+            Self::Application(application) => application.transform_types(transform)?.into(),
+            Self::Case(case) => case.transform_types(transform)?.into(),
             Self::RecordConstruction(record_construction) => {
-                record_construction.convert_types(convert)?.into()
+                record_construction.transform_types(transform)?.into()
             }
-            Self::RecordElementOperation(operation) => operation.convert_types(convert)?.into(),
-            Self::RecordUpdate(record_update) => record_update.convert_types(convert)?.into(),
-            Self::If(if_) => if_.convert_types(convert)?.into(),
-            Self::Let(let_) => let_.convert_types(convert)?.into(),
-            Self::List(list) => list.convert_types(convert)?.into(),
-            Self::Operation(operation) => operation.convert_types(convert)?.into(),
-            Self::TypeCoercion(coercion) => coercion.convert_types(convert)?.into(),
+            Self::RecordElementOperation(operation) => operation.transform_types(transform)?.into(),
+            Self::RecordUpdate(record_update) => record_update.transform_types(transform)?.into(),
+            Self::If(if_) => if_.transform_types(transform)?.into(),
+            Self::Let(let_) => let_.transform_types(transform)?.into(),
+            Self::List(list) => list.transform_types(transform)?.into(),
+            Self::Operation(operation) => operation.transform_types(transform)?.into(),
+            Self::TypeCoercion(coercion) => coercion.transform_types(transform)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
         })
     }

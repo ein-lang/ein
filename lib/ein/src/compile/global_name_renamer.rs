@@ -14,7 +14,7 @@ impl<'a> GlobalNameRenamer<'a> {
 
     pub fn rename(&self, module: &Module) -> Module {
         let module = module
-            .convert_definitions(&mut |definition| -> Result<_, ()> {
+            .transform_definitions(&mut |definition| -> Result<_, ()> {
                 Ok(match definition {
                     Definition::FunctionDefinition(function_definition) => self
                         .rename_function_definition(function_definition, &self.names)
@@ -25,7 +25,7 @@ impl<'a> GlobalNameRenamer<'a> {
                 })
             })
             .unwrap()
-            .convert_types(&mut |type_| -> Result<_, ()> {
+            .transform_types(&mut |type_| -> Result<_, ()> {
                 Ok(match type_ {
                     Type::Record(record) => types::Record::new(
                         self.rename_name(record.name(), &self.names),
@@ -97,7 +97,7 @@ impl<'a> GlobalNameRenamer<'a> {
             function_definition.arguments().to_vec(),
             function_definition
                 .body()
-                .convert_expressions(&mut |expression| -> Result<_, ()> {
+                .transform_expressions(&mut |expression| -> Result<_, ()> {
                     Ok(self.rename_expression(expression, &names))
                 })
                 .unwrap(),
@@ -115,7 +115,7 @@ impl<'a> GlobalNameRenamer<'a> {
             value_definition.name(),
             value_definition
                 .body()
-                .convert_expressions(&mut |expression| -> Result<_, CompileError> {
+                .transform_expressions(&mut |expression| -> Result<_, CompileError> {
                     Ok(self.rename_expression(expression, &names))
                 })
                 .unwrap(),

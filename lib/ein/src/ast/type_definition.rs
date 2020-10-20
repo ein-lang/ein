@@ -22,13 +22,13 @@ impl TypeDefinition {
         &self.type_
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.name.clone(),
-            self.type_.convert_types(convert)?,
+            self.type_.transform_types(transform)?,
         ))
     }
 }

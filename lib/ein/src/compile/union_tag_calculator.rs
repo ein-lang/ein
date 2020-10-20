@@ -18,10 +18,10 @@ impl UnionTagCalculator {
     }
 
     pub fn calculate(&self, type_: &Type) -> Result<u64, CompileError> {
-        Ok(self.convert_type_id_to_tag(&self.calculate_type_id(&type_)?))
+        Ok(self.transform_type_id_to_tag(&self.calculate_type_id(&type_)?))
     }
 
-    fn convert_type_id_to_tag(&self, type_id: &str) -> u64 {
+    fn transform_type_id_to_tag(&self, type_id: &str) -> u64 {
         // TODO Use safer Hasher.
         let mut hasher = DefaultHasher::new();
 

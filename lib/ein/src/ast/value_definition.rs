@@ -42,26 +42,26 @@ impl ValueDefinition {
         &self.source_information
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.name.clone(),
-            self.body.convert_expressions(convert)?,
+            self.body.transform_expressions(transform)?,
             self.type_.clone(),
             self.source_information.clone(),
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.name.clone(),
-            self.body.convert_types(convert)?,
-            self.type_.convert_types(convert)?,
+            self.body.transform_types(transform)?,
+            self.type_.transform_types(transform)?,
             self.source_information.clone(),
         ))
     }

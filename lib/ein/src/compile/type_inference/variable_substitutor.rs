@@ -22,7 +22,7 @@ impl VariableSubstitutor {
     }
 
     pub fn substitute(&self, type_: &Type) -> Result<Type, CompileError> {
-        type_.convert_types(&mut |type_| self.substitute_shallowly(type_))
+        type_.transform_types(&mut |type_| self.substitute_shallowly(type_))
     }
 
     fn substitute_shallowly(&self, type_: &Type) -> Result<Type, CompileError> {

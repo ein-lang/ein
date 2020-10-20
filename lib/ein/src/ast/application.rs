@@ -35,24 +35,24 @@ impl Application {
         &self.source_information
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.function.convert_expressions(convert)?,
-            self.argument.convert_expressions(convert)?,
+            self.function.transform_expressions(transform)?,
+            self.argument.transform_expressions(transform)?,
             self.source_information.clone(),
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.function.convert_types(convert)?,
-            self.argument.convert_types(convert)?,
+            self.function.transform_types(transform)?,
+            self.argument.transform_types(transform)?,
             self.source_information.clone(),
         ))
     }

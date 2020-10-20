@@ -67,28 +67,28 @@ impl Operation {
         &self.source_information
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::with_type(
             self.type_.clone(),
             self.operator,
-            self.lhs.convert_expressions(convert)?,
-            self.rhs.convert_expressions(convert)?,
+            self.lhs.transform_expressions(transform)?,
+            self.rhs.transform_expressions(transform)?,
             self.source_information.clone(),
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::with_type(
-            self.type_.convert_types(convert)?,
+            self.type_.transform_types(transform)?,
             self.operator,
-            self.lhs.convert_types(convert)?,
-            self.rhs.convert_types(convert)?,
+            self.lhs.transform_types(transform)?,
+            self.rhs.transform_types(transform)?,
             self.source_information.clone(),
         ))
     }

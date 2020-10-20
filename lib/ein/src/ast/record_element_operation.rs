@@ -56,30 +56,30 @@ impl RecordElementOperation {
         &self.source_information
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
             self.type_.clone(),
             &self.key,
-            self.argument.convert_expressions(convert)?,
+            self.argument.transform_expressions(transform)?,
             &self.variable,
-            self.expression.convert_expressions(convert)?,
+            self.expression.transform_expressions(transform)?,
             self.source_information.clone(),
         ))
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(Self::new(
-            self.type_.convert_types(convert)?,
+            self.type_.transform_types(transform)?,
             &self.key,
-            self.argument.convert_types(convert)?,
+            self.argument.transform_types(transform)?,
             &self.variable,
-            self.expression.convert_types(convert)?,
+            self.expression.transform_types(transform)?,
             self.source_information.clone(),
         ))
     }

@@ -9,7 +9,7 @@ impl NotEqualOperationTransformer {
     }
 
     pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
-        module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
+        module.transform_expressions(&mut |expression| -> Result<Expression, CompileError> {
             Ok(self.transform_expression(expression))
         })
     }

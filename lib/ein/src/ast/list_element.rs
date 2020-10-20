@@ -8,23 +8,23 @@ pub enum ListElement {
 }
 
 impl ListElement {
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(match self {
-            Self::Multiple(expression) => Self::Multiple(expression.convert_expressions(convert)?),
-            Self::Single(expression) => Self::Single(expression.convert_expressions(convert)?),
+            Self::Multiple(expression) => Self::Multiple(expression.transform_expressions(transform)?),
+            Self::Single(expression) => Self::Single(expression.transform_expressions(transform)?),
         })
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(match self {
-            Self::Multiple(expression) => Self::Multiple(expression.convert_types(convert)?),
-            Self::Single(expression) => Self::Single(expression.convert_types(convert)?),
+            Self::Multiple(expression) => Self::Multiple(expression.transform_types(transform)?),
+            Self::Single(expression) => Self::Single(expression.transform_types(transform)?),
         })
     }
 }

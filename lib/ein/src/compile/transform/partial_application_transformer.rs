@@ -17,14 +17,14 @@ impl PartialApplicationTransformer {
 
     pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
         module
-            .convert_definitions(&mut |definition| -> Result<_, CompileError> {
+            .transform_definitions(&mut |definition| -> Result<_, CompileError> {
                 if let Definition::ValueDefinition(value_definition) = definition {
                     Ok(self.transform_value_definition(value_definition))
                 } else {
                     Ok(definition.clone())
                 }
             })?
-            .convert_definitions(&mut |definition| -> Result<_, CompileError> {
+            .transform_definitions(&mut |definition| -> Result<_, CompileError> {
                 if let Definition::FunctionDefinition(function_definition) = definition {
                     Ok(self
                         .transform_function_definition(function_definition)

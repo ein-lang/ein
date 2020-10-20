@@ -51,7 +51,7 @@ impl Type {
     }
 
     pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
-        self.convert_types(&mut |type_| -> Result<_, ()> {
+        self.transform_types(&mut |type_| -> Result<_, ()> {
             Ok(match type_ {
                 Self::Variable(variable) => match substitutions.get(&variable.id()) {
                     Some(type_) => type_.clone(),
@@ -63,15 +63,15 @@ impl Type {
         .unwrap()
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Self) -> Result<Self, E>,
+        transform: &mut impl FnMut(&Self) -> Result<Self, E>,
     ) -> Result<Self, E> {
         let type_ = match self {
-            Self::Function(function) => function.convert_types(convert)?.into(),
-            Self::List(list) => list.convert_types(convert)?.into(),
-            Self::Record(record) => record.convert_types(convert)?.into(),
-            Self::Union(union) => union.convert_types(convert)?.into(),
+            Self::Function(function) => function.transform_types(transform)?.into(),
+            Self::List(list) => list.transform_types(transform)?.into(),
+            Self::Record(record) => record.transform_types(transform)?.into(),
+            Self::Union(union) => union.transform_types(transform)?.into(),
             Self::Any(_)
             | Self::Boolean(_)
             | Self::None(_)
@@ -81,7 +81,7 @@ impl Type {
             | Self::Variable(_) => self.clone(),
         };
 
-        convert(&type_)
+        transform(&type_)
     }
 
     pub fn to_function(&self) -> Option<&Function> {

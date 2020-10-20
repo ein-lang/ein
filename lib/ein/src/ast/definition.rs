@@ -24,30 +24,30 @@ impl Definition {
         }
     }
 
-    pub fn convert_expressions<E>(
+    pub fn transform_expressions<E>(
         &self,
-        convert: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(match self {
             Self::FunctionDefinition(function_definition) => {
-                function_definition.convert_expressions(convert)?.into()
+                function_definition.transform_expressions(transform)?.into()
             }
             Self::ValueDefinition(value_definition) => {
-                value_definition.convert_expressions(convert)?.into()
+                value_definition.transform_expressions(transform)?.into()
             }
         })
     }
 
-    pub fn convert_types<E>(
+    pub fn transform_types<E>(
         &self,
-        convert: &mut impl FnMut(&Type) -> Result<Type, E>,
+        transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(match self {
             Self::FunctionDefinition(function_definition) => {
-                function_definition.convert_types(convert)?.into()
+                function_definition.transform_types(transform)?.into()
             }
             Self::ValueDefinition(value_definition) => {
-                value_definition.convert_types(convert)?.into()
+                value_definition.transform_types(transform)?.into()
             }
         })
     }

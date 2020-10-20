@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use std::transform::TryFrom;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Operator {
