@@ -13,7 +13,9 @@ impl ListElement {
         transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(match self {
-            Self::Multiple(expression) => Self::Multiple(expression.transform_expressions(transform)?),
+            Self::Multiple(expression) => {
+                Self::Multiple(expression.transform_expressions(transform)?)
+            }
             Self::Single(expression) => Self::Single(expression.transform_expressions(transform)?),
         })
     }

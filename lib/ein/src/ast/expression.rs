@@ -46,7 +46,9 @@ impl Expression {
             Self::RecordElementOperation(operation) => {
                 operation.transform_expressions(transform)?.into()
             }
-            Self::RecordUpdate(record_update) => record_update.transform_expressions(transform)?.into(),
+            Self::RecordUpdate(record_update) => {
+                record_update.transform_expressions(transform)?.into()
+            }
             Self::If(if_) => if_.transform_expressions(transform)?.into(),
             Self::Let(let_) => let_.transform_expressions(transform)?.into(),
             Self::List(list) => list.transform_expressions(transform)?.into(),
