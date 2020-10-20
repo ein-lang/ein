@@ -8,7 +8,7 @@ use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::ast::*;
 use crate::types::{self, Type};
-use std::transform::TryInto;
+use std::convert::TryInto;
 use std::sync::Arc;
 
 pub struct ExpressionCompiler {
