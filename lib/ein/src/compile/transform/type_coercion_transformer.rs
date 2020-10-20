@@ -10,9 +10,8 @@ use crate::types::{self, Type};
 use std::collections::HashMap;
 use std::sync::Arc;
 
-/// TypeCoercionTransformer transforms value-to-union, function-to-union and
-/// value-to-any type coercions.
-/// Note that it does not transform function-to-function ones.
+/// TypeCoercionTransformer transforms value-to-union, function-to-union,
+/// value-to-any, function-to-any and function-to-function type coercions.
 pub struct TypeCoercionTransformer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
