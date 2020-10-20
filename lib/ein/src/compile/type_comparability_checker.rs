@@ -9,10 +9,11 @@ pub struct TypeComparabilityChecker {
 }
 
 impl TypeComparabilityChecker {
-    pub fn new(reference_type_resolver: impl Into<Arc<ReferenceTypeResolver>>) -> Self {
+    pub fn new(reference_type_resolver: impl Into<Arc<ReferenceTypeResolver>>) -> Arc<Self> {
         Self {
             reference_type_resolver: reference_type_resolver.into(),
         }
+        .into()
     }
 
     pub fn check(&self, type_: &Type) -> Result<bool, CompileError> {

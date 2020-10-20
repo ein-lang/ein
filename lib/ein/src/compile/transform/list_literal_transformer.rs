@@ -1,41 +1,33 @@
-use super::super::error::CompileError;
 use super::super::list_type_configuration::ListTypeConfiguration;
 use crate::ast::*;
 use crate::debug::*;
+use crate::types;
 use std::sync::Arc;
 
 pub struct ListLiteralTransformer {
     configuration: Arc<ListTypeConfiguration>,
 }
 
-/// Transforms list literals into generic list functions and variables.
-/// Types are consistent after transforming as all `List a` types are converted
-/// into `List Any`.
 impl ListLiteralTransformer {
-    pub fn new(configuration: Arc<ListTypeConfiguration>) -> Self {
-        Self { configuration }
+    pub fn new(configuration: Arc<ListTypeConfiguration>) -> Arc<Self> {
+        Self { configuration }.into()
     }
 
-    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
-        module.convert_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            Ok(self.transform_expression(expression))
-        })
-    }
-
-    fn transform_expression(&mut self, expression: &Expression) -> Expression {
-        if let Expression::List(list) = expression {
-            self.transform_list(list.elements(), list.source_information())
-        } else {
-            expression.clone()
-        }
+    pub fn transform(&self, list: &List) -> Expression {
+        self.transform_list(
+            list.type_().to_list().unwrap(),
+            list.elements(),
+            list.source_information(),
+        )
     }
 
     fn transform_list(
         &self,
+        type_: &types::List,
         elements: &[ListElement],
         source_information: &Arc<SourceInformation>,
     ) -> Expression {
-        let rest_expression = || self.transform_list(&elements[1..], source_information);
+        let rest_expression = || self.transform_list(type_, &elements[1..], source_information);
 
         match elements {
             [] => Variable::new(
@@ -62,7 +54,12 @@ impl ListLiteralTransformer {
                         self.configuration.prepend_function_name(),
                         source_information.clone(),
                     ),
-                    expression.clone(),
+                    TypeCoercion::new(
+                        expression.clone(),
+                        type_.element().clone(),
+                        types::Any::new(source_information.clone()),
+                        source_information.clone(),
+                    ),
                     source_information.clone(),
                 ),
                 rest_expression(),

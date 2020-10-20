@@ -1,9 +1,9 @@
 use crate::ast::*;
 use crate::types::{self, Type};
 
-pub struct RecordFunctionTransformer {}
+pub struct RecordElementFunctionTransformer {}
 
-impl RecordFunctionTransformer {
+impl RecordElementFunctionTransformer {
     pub fn new() -> Self {
         Self {}
     }
@@ -81,7 +81,7 @@ mod tests {
         );
 
         assert_eq!(
-            RecordFunctionTransformer::new().transform(
+            RecordElementFunctionTransformer::new().transform(
                 &Module::from_definitions_and_type_definitions(
                     vec![TypeDefinition::new("Foo", record_type.clone())],
                     vec![]

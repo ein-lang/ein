@@ -49,20 +49,15 @@ impl TypeCoercionTransformer {
         )?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
 
-        // If "from" types are not able to be coerced to "to" types, they should be equal already
-        // due to type inference.
-        if !to_type.is_union()
-            && !to_type.is_any()
-            && !self.type_equality_checker.equal(&from_type, &to_type)?
-        {
-            unreachable!()
-        }
-
-        Ok(if self.type_equality_checker.equal(&from_type, &to_type)? {
-            expression.clone()
-        } else {
-            TypeCoercion::new(expression.clone(), from_type, to_type, source_information).into()
-        })
+        Ok(
+            if self.type_equality_checker.equal(&from_type, &to_type)?
+                || from_type.is_list() && to_type.is_list()
+            {
+                expression.clone()
+            } else {
+                TypeCoercion::new(expression.clone(), from_type, to_type, source_information).into()
+            },
+        )
     }
 }
 
@@ -266,13 +261,12 @@ impl TypedTransformer for TypeCoercionTransformer {
             }
             Expression::Boolean(_)
             | Expression::Let(_)
+            | Expression::List(_)
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::RecordElementOperation(_)
             | Expression::Variable(_) => Ok(expression.clone()),
-            Expression::List(_) | Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => {
-                unreachable!()
-            }
+            Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }
     }
 }
