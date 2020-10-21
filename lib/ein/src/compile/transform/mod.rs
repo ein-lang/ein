@@ -24,7 +24,7 @@ use elementless_record_transformer::ElementlessRecordTransformer;
 pub use equal_operation_transformer::EqualOperationTransformer;
 use function_type_argument_transformer::FunctionTypeArgumentTransformer;
 pub use list_literal_transformer::ListLiteralTransformer;
-use not_equal_operation_transformer::NotEqualOperationTransformer;
+pub use not_equal_operation_transformer::NotEqualOperationTransformer;
 use partial_application_transformer::PartialApplicationTransformer;
 use record_element_function_transformer::RecordElementFunctionTransformer;
 use record_equal_function_transformer::RecordEqualFunctionTransformer;
@@ -67,7 +67,6 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
         ),
         reference_type_resolver.clone(),
     );
-    let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let mut function_type_argument_transformer = TypedMetaTransformer::new(
         FunctionTypeArgumentTransformer::new(
             reference_type_resolver.clone(),
@@ -78,7 +77,6 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     );
     let partial_application_transformer = PartialApplicationTransformer::new();
 
-    let module = not_equal_operation_transformer.transform(&module)?;
     let module = function_type_argument_transformer.transform(&module)?;
     let module = partial_application_transformer.transform(&module)?;
     let module = type_coercion_transformer.transform(&module)?;

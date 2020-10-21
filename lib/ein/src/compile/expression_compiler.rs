@@ -3,6 +3,7 @@ use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
+    NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -13,6 +14,7 @@ use std::sync::Arc;
 
 pub struct ExpressionCompiler {
     equal_operation_transformer: Arc<EqualOperationTransformer>,
+    not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
     list_literal_transformer: Arc<ListLiteralTransformer>,
     boolean_operation_transformer: Arc<BooleanOperationTransformer>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -24,6 +26,7 @@ pub struct ExpressionCompiler {
 impl ExpressionCompiler {
     pub fn new(
         equal_operation_transformer: Arc<EqualOperationTransformer>,
+        not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
         list_literal_transformer: Arc<ListLiteralTransformer>,
         boolean_operation_transformer: Arc<BooleanOperationTransformer>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -33,6 +36,7 @@ impl ExpressionCompiler {
     ) -> Arc<Self> {
         Self {
             equal_operation_transformer,
+            not_equal_operation_transformer,
             list_literal_transformer,
             boolean_operation_transformer,
             reference_type_resolver,
@@ -101,6 +105,8 @@ impl ExpressionCompiler {
 
                 if operation.operator() == Operator::Equal && !matches!(type_, Type::Number(_)) {
                     self.compile(&self.equal_operation_transformer.transform(operation)?)?
+                } else if operation.operator() == Operator::NotEqual {
+                    self.compile(&self.not_equal_operation_transformer.transform(operation))?
                 } else {
                     match operation.operator() {
                         Operator::Add
@@ -441,6 +447,7 @@ mod tests {
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::transform::{
         BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
+        NotEqualOperationTransformer,
     };
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_compiler::TypeCompiler;
@@ -490,12 +497,14 @@ mod tests {
             type_equality_checker.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
         );
+        let not_equal_operation_transformer = NotEqualOperationTransformer::new();
         let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
         let boolean_operation_transformer = BooleanOperationTransformer::new();
 
         (
             ExpressionCompiler::new(
                 equal_operation_transformer,
+                not_equal_operation_transformer,
                 list_literal_transformer,
                 boolean_operation_transformer,
                 reference_type_resolver,

@@ -35,6 +35,7 @@ use std::sync::Arc;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
+    NotEqualOperationTransformer,
 };
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
@@ -75,11 +76,13 @@ pub fn compile(
         type_equality_checker,
         list_type_configuration.clone(),
     );
+    let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
     let boolean_operation_transformer = BooleanOperationTransformer::new();
 
     let expression_compiler = ExpressionCompiler::new(
         equal_operation_transformer,
+        not_equal_operation_transformer,
         list_literal_transformer,
         boolean_operation_transformer,
         reference_type_resolver,
