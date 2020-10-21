@@ -467,7 +467,7 @@ mod tests {
     use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::super::union_tag_calculator::UnionTagCalculator;
-    use super::*;
+    use super::{ExpressionCompiler, ExpressionTransformerSet};
     use crate::ast::*;
     use crate::debug::SourceInformation;
     use crate::types;
