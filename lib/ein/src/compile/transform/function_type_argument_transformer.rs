@@ -144,12 +144,12 @@ impl TypedTransformer for FunctionTypeArgumentTransformer {
             | Expression::Case(_) // TODO Transform case expression arguments.
             | Expression::If(_)
             | Expression::Let(_)
-            | Expression::List(_)// TODO Transform list elements.
+            | Expression::List(_) // TODO Transform list elements.
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Operation(_) // There is no operation applicable to functions.
             | Expression::RecordElementOperation(_)
-            | Expression::TypeCoercion(_)
+            | Expression::TypeCoercion(_) // TODO Transform type coercions.
             | Expression::Variable(_) => Ok(expression.clone()),
             Expression::RecordUpdate(_)  => unreachable!(),
         }
