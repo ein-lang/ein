@@ -24,7 +24,7 @@ use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
-use expression_compiler::ExpressionCompiler;
+use expression_compiler::{ExpressionCompiler, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
 pub use list_type_configuration::ListTypeConfiguration;
@@ -35,6 +35,7 @@ use std::sync::Arc;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
+    NotEqualOperationTransformer,
 };
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
@@ -75,13 +76,18 @@ pub fn compile(
         type_equality_checker,
         list_type_configuration.clone(),
     );
+    let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
     let boolean_operation_transformer = BooleanOperationTransformer::new();
 
     let expression_compiler = ExpressionCompiler::new(
-        equal_operation_transformer,
-        list_literal_transformer,
-        boolean_operation_transformer,
+        ExpressionTransformerSet {
+            equal_operation_transformer,
+            not_equal_operation_transformer,
+            list_literal_transformer,
+            boolean_operation_transformer,
+        }
+        .into(),
         reference_type_resolver,
         union_tag_calculator,
         type_compiler.clone(),

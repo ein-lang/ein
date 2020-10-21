@@ -15,7 +15,7 @@ impl PartialApplicationTransformer {
         }
     }
 
-    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&self, module: &Module) -> Result<Module, CompileError> {
         module
             .transform_definitions(&mut |definition| -> Result<_, CompileError> {
                 if let Definition::ValueDefinition(value_definition) = definition {
@@ -35,7 +35,7 @@ impl PartialApplicationTransformer {
             })
     }
 
-    fn transform_value_definition(&mut self, value_definition: &ValueDefinition) -> Definition {
+    fn transform_value_definition(&self, value_definition: &ValueDefinition) -> Definition {
         if let Type::Function(_) = value_definition.type_() {
             FunctionDefinition::new(
                 value_definition.name(),
@@ -51,7 +51,7 @@ impl PartialApplicationTransformer {
     }
 
     fn transform_function_definition(
-        &mut self,
+        &self,
         function_definition: &FunctionDefinition,
     ) -> FunctionDefinition {
         let function_type = function_definition.type_().to_function().unwrap();
