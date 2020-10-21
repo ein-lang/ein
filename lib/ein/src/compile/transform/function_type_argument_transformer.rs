@@ -2,7 +2,6 @@ use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
 use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_equality_checker::TypeEqualityChecker;
 use super::typed_meta_transformer::TypedTransformer;
 use crate::ast::*;
 use crate::debug::SourceInformation;
@@ -15,20 +14,17 @@ use std::sync::Arc;
 pub struct FunctionTypeArgumentTransformer {
     name_generator: NameGenerator,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    type_equality_checker: Arc<TypeEqualityChecker>,
     expression_type_extractor: Arc<ExpressionTypeExtractor>,
 }
 
 impl FunctionTypeArgumentTransformer {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
-        type_equality_checker: Arc<TypeEqualityChecker>,
         expression_type_extractor: Arc<ExpressionTypeExtractor>,
     ) -> Self {
         Self {
             name_generator: NameGenerator::new("fta_function_"),
             reference_type_resolver,
-            type_equality_checker,
             expression_type_extractor,
         }
     }
@@ -38,37 +34,26 @@ impl FunctionTypeArgumentTransformer {
         expression: &Expression,
         to_type: &Type,
         source_information: Arc<SourceInformation>,
-        variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
-        let from_type = self.reference_type_resolver.resolve(
-            &self
-                .expression_type_extractor
-                .extract(&expression, variables)?,
-        )?;
         let to_type = self.reference_type_resolver.resolve(to_type)?;
 
-        Ok(
-            if to_type.is_function()
-                && (!self.type_equality_checker.equal(&from_type, &to_type)?
-                    || !expression.is_variable())
-            {
-                let name = self.name_generator.generate();
+        Ok(if to_type.is_function() && !expression.is_variable() {
+            let name = self.name_generator.generate();
 
-                Let::new(
-                    vec![ValueDefinition::new(
-                        &name,
-                        expression.clone(),
-                        to_type,
-                        source_information.clone(),
-                    )
-                    .into()],
-                    Variable::new(name, source_information),
+            Let::new(
+                vec![ValueDefinition::new(
+                    &name,
+                    expression.clone(),
+                    to_type,
+                    source_information.clone(),
                 )
-                .into()
-            } else {
-                expression.clone()
-            },
-        )
+                .into()],
+                Variable::new(name, source_information),
+            )
+            .into()
+        } else {
+            expression.clone()
+        })
     }
 }
 
@@ -107,7 +92,6 @@ impl TypedTransformer for FunctionTypeArgumentTransformer {
                         application.argument(),
                         function_type.to_function().unwrap().argument(),
                         source_information.clone(),
-                        variables,
                     )?,
                     source_information.clone(),
                 )
@@ -131,7 +115,6 @@ impl TypedTransformer for FunctionTypeArgumentTransformer {
                                     expression,
                                     &record_type.elements()[key],
                                     record_construction.source_information().clone(),
-                                    variables,
                                 )?,
                             ))
                         })

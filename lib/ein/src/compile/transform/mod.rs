@@ -70,7 +70,6 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     let mut function_type_argument_transformer = TypedMetaTransformer::new(
         FunctionTypeArgumentTransformer::new(
             reference_type_resolver.clone(),
-            type_equality_checker,
             expression_type_extractor,
         ),
         reference_type_resolver,
