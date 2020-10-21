@@ -24,7 +24,7 @@ use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
-use expression_compiler::ExpressionCompiler;
+use expression_compiler::{ExpressionCompiler, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
 pub use list_type_configuration::ListTypeConfiguration;
@@ -81,10 +81,13 @@ pub fn compile(
     let boolean_operation_transformer = BooleanOperationTransformer::new();
 
     let expression_compiler = ExpressionCompiler::new(
-        equal_operation_transformer,
-        not_equal_operation_transformer,
-        list_literal_transformer,
-        boolean_operation_transformer,
+        ExpressionTransformerSet {
+            equal_operation_transformer,
+            not_equal_operation_transformer,
+            list_literal_transformer,
+            boolean_operation_transformer,
+        }
+        .into(),
         reference_type_resolver,
         union_tag_calculator,
         type_compiler.clone(),

@@ -12,11 +12,15 @@ use crate::types::{self, Type};
 use std::convert::TryInto;
 use std::sync::Arc;
 
+pub struct ExpressionTransformerSet {
+    pub equal_operation_transformer: Arc<EqualOperationTransformer>,
+    pub not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
+    pub list_literal_transformer: Arc<ListLiteralTransformer>,
+    pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
+}
+
 pub struct ExpressionCompiler {
-    equal_operation_transformer: Arc<EqualOperationTransformer>,
-    not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
-    list_literal_transformer: Arc<ListLiteralTransformer>,
-    boolean_operation_transformer: Arc<BooleanOperationTransformer>,
+    expression_transformer_set: Arc<ExpressionTransformerSet>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
@@ -25,20 +29,14 @@ pub struct ExpressionCompiler {
 
 impl ExpressionCompiler {
     pub fn new(
-        equal_operation_transformer: Arc<EqualOperationTransformer>,
-        not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
-        list_literal_transformer: Arc<ListLiteralTransformer>,
-        boolean_operation_transformer: Arc<BooleanOperationTransformer>,
+        expression_transformer_set: Arc<ExpressionTransformerSet>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
         boolean_compiler: Arc<BooleanCompiler>,
     ) -> Arc<Self> {
         Self {
-            equal_operation_transformer,
-            not_equal_operation_transformer,
-            list_literal_transformer,
-            boolean_operation_transformer,
+            expression_transformer_set,
             reference_type_resolver,
             union_tag_calculator,
             type_compiler,
@@ -96,17 +94,30 @@ impl ExpressionCompiler {
                 vec![],
             )
             .into(),
-            Expression::List(list) => {
-                self.compile(&self.list_literal_transformer.transform(list))?
-            }
+            Expression::List(list) => self.compile(
+                &self
+                    .expression_transformer_set
+                    .list_literal_transformer
+                    .transform(list),
+            )?,
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;
 
                 if operation.operator() == Operator::Equal && !matches!(type_, Type::Number(_)) {
-                    self.compile(&self.equal_operation_transformer.transform(operation)?)?
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .equal_operation_transformer
+                            .transform(operation)?,
+                    )?
                 } else if operation.operator() == Operator::NotEqual {
-                    self.compile(&self.not_equal_operation_transformer.transform(operation))?
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .not_equal_operation_transformer
+                            .transform(operation),
+                    )?
                 } else {
                     match operation.operator() {
                         Operator::Add
@@ -137,9 +148,12 @@ impl ExpressionCompiler {
                                 self.boolean_compiler.compile_conversion(compiled)
                             }
                         }
-                        Operator::And | Operator::Or => {
-                            self.compile(&self.boolean_operation_transformer.transform(operation))?
-                        }
+                        Operator::And | Operator::Or => self.compile(
+                            &self
+                                .expression_transformer_set
+                                .boolean_operation_transformer
+                                .transform(operation),
+                        )?,
                     }
                 }
             }
@@ -453,7 +467,7 @@ mod tests {
     use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::super::union_tag_calculator::UnionTagCalculator;
-    use super::ExpressionCompiler;
+    use super::*;
     use crate::ast::*;
     use crate::debug::SourceInformation;
     use crate::types;
@@ -503,10 +517,13 @@ mod tests {
 
         (
             ExpressionCompiler::new(
-                equal_operation_transformer,
-                not_equal_operation_transformer,
-                list_literal_transformer,
-                boolean_operation_transformer,
+                ExpressionTransformerSet {
+                    equal_operation_transformer,
+                    not_equal_operation_transformer,
+                    list_literal_transformer,
+                    boolean_operation_transformer,
+                }
+                .into(),
                 reference_type_resolver,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
