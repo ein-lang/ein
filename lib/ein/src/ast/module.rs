@@ -109,6 +109,7 @@ impl Module {
                                     .map(&mut transform)
                                     .collect::<Result<_, _>>()?,
                                 let_.expression().clone(),
+                                let_.source_information().clone(),
                             )
                             .into())
                         } else {

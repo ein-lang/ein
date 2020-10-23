@@ -55,6 +55,7 @@ impl RecordUpdateTransformer {
                             .collect(),
                         source_information.clone(),
                     ),
+                    source_information.clone(),
                 )
                 .into())
             } else {
@@ -147,6 +148,7 @@ mod tests {
                             .collect(),
                             SourceInformation::dummy()
                         ),
+                        SourceInformation::dummy(),
                     ),
                     reference_type.clone(),
                     SourceInformation::dummy(),

@@ -410,12 +410,15 @@ fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
 
 fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
     (
+        source_information(),
         keyword("let").expected("let keyword"),
         many1(choice!(definition(), untyped_definition())),
         keyword("in").expected("in keyword"),
         expression(),
     )
-        .map(|(_, definitions, _, expression)| Let::new(definitions, expression))
+        .map(|(source_information, _, definitions, _, expression)| {
+            Let::new(definitions, expression, source_information)
+        })
         .expected("let expression")
 }
 
@@ -1708,7 +1711,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
             assert_eq!(
@@ -1721,7 +1725,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
             assert_eq!(
@@ -1734,7 +1739,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
             assert_eq!(
@@ -1747,7 +1753,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
             assert_eq!(
@@ -1761,7 +1768,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("f", SourceInformation::dummy())
+                    Variable::new("f", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
             assert_eq!(
@@ -1804,7 +1812,8 @@ mod tests {
                         )
                         .into()
                     ],
-                    Variable::new("y", SourceInformation::dummy())
+                    Variable::new("y", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
             assert_eq!(
@@ -1835,7 +1844,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into(),],
-                    Variable::new("f", SourceInformation::dummy())
+                    Variable::new("f", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
             assert_eq!(
@@ -1881,7 +1891,8 @@ mod tests {
                         )
                         .into()
                     ],
-                    Variable::new("f", SourceInformation::dummy())
+                    Variable::new("f", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
             );
         }

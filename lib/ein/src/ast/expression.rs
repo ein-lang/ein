@@ -12,7 +12,9 @@ use super::record_element_operation::RecordElementOperation;
 use super::record_update::RecordUpdate;
 use super::type_coercion::TypeCoercion;
 use super::variable::Variable;
+use crate::debug::SourceInformation;
 use crate::types::Type;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
@@ -33,6 +35,27 @@ pub enum Expression {
 }
 
 impl Expression {
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
+        match self {
+            Self::Application(application) => application.source_information(),
+            Self::Boolean(boolean) => boolean.source_information(),
+            Self::Case(case) => case.source_information(),
+            Self::RecordConstruction(record_construction) => {
+                record_construction.source_information()
+            }
+            Self::RecordElementOperation(operation) => operation.source_information(),
+            Self::RecordUpdate(record_update) => record_update.source_information(),
+            Self::If(if_) => if_.source_information(),
+            Self::Let(let_) => let_.source_information(),
+            Self::List(list) => list.source_information(),
+            Self::Operation(operation) => operation.source_information(),
+            Self::TypeCoercion(coercion) => coercion.source_information(),
+            Self::None(none) => none.source_information(),
+            Self::Number(number) => number.source_information(),
+            Self::Variable(variable) => variable.source_information(),
+        }
+    }
+
     pub fn transform_expressions<E>(
         &self,
         transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,

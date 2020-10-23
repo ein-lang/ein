@@ -45,7 +45,10 @@ pub fn transform_before_name_qualification(module: &Module) -> Result<Module, Co
 }
 
 pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> {
-    RecordUpdateTransformer::new().transform(module)
+    let module = RecordUpdateTransformer::new().transform(module)?;
+    let module = FunctionTypeArgumentTransformer::new().transform(&module)?;
+
+    Ok(module)
 }
 
 pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
@@ -67,17 +70,8 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
         ),
         reference_type_resolver.clone(),
     );
-    let mut function_type_argument_transformer = TypedMetaTransformer::new(
-        FunctionTypeArgumentTransformer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker,
-            expression_type_extractor,
-        ),
-        reference_type_resolver,
-    );
     let partial_application_transformer = PartialApplicationTransformer::new();
 
-    let module = function_type_argument_transformer.transform(&module)?;
     let module = partial_application_transformer.transform(&module)?;
     let module = type_coercion_transformer.transform(&module)?;
 
@@ -280,6 +274,7 @@ mod tests {
                         )
                         .into()],
                         Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -343,6 +338,7 @@ mod tests {
                             )
                             .into()],
                             Number::new(42.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
                         ),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
@@ -512,7 +508,11 @@ mod tests {
                     .into(),
                     ValueDefinition::new(
                         "x",
-                        Let::new(vec![definition], None::new(SourceInformation::dummy())),
+                        Let::new(
+                            vec![definition],
+                            None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
                         types::None::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
@@ -559,100 +559,6 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         SourceInformation::dummy(),
-                    )
-                    .into()
-                ))
-            );
-        }
-
-        #[test]
-        fn transform_function_as_argument() {
-            let lower_type = types::None::new(SourceInformation::dummy());
-            let upper_type = types::Union::new(
-                vec![
-                    types::Boolean::new(SourceInformation::dummy()).into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ],
-                SourceInformation::dummy(),
-            );
-
-            let create_module = |expression: Expression| {
-                Module::from_definitions(vec![
-                    FunctionDefinition::new(
-                        "f",
-                        vec!["x".into()],
-                        None::new(SourceInformation::dummy()),
-                        types::Function::new(
-                            upper_type.clone(),
-                            lower_type.clone(),
-                            SourceInformation::dummy(),
-                        ),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                    FunctionDefinition::new(
-                        "g",
-                        vec!["x".into()],
-                        None::new(SourceInformation::dummy()),
-                        types::Function::new(
-                            types::Function::new(
-                                lower_type.clone(),
-                                upper_type.clone(),
-                                SourceInformation::dummy(),
-                            ),
-                            lower_type.clone(),
-                            SourceInformation::dummy(),
-                        ),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                    ValueDefinition::new(
-                        "x",
-                        Application::new(
-                            Variable::new("g", SourceInformation::dummy()),
-                            expression,
-                            SourceInformation::dummy(),
-                        ),
-                        lower_type.clone(),
-                        SourceInformation::dummy(),
-                    )
-                    .into(),
-                ])
-            };
-
-            assert_eq!(
-                transform_with_types(&create_module(
-                    Variable::new("f", SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(
-                    Let::new(
-                        vec![FunctionDefinition::new(
-                            "fta_function_0",
-                            vec!["pa_argument_0".into()],
-                            TypeCoercion::new(
-                                Application::new(
-                                    Variable::new("f", SourceInformation::dummy()),
-                                    TypeCoercion::new(
-                                        Variable::new("pa_argument_0", SourceInformation::dummy()),
-                                        lower_type.clone(),
-                                        upper_type.clone(),
-                                        SourceInformation::dummy(),
-                                    ),
-                                    SourceInformation::dummy()
-                                ),
-                                lower_type.clone(),
-                                upper_type.clone(),
-                                SourceInformation::dummy(),
-                            ),
-                            types::Function::new(
-                                lower_type.clone(),
-                                upper_type.clone(),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy(),
-                        )
-                        .into()],
-                        Variable::new("fta_function_0", SourceInformation::dummy())
                     )
                     .into()
                 ))

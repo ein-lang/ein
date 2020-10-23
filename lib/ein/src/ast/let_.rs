@@ -1,5 +1,6 @@
 use super::definition::*;
 use super::expression::*;
+use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::sync::Arc;
 
@@ -7,13 +8,19 @@ use std::sync::Arc;
 pub struct Let {
     definitions: Vec<Definition>,
     expression: Arc<Expression>,
+    source_information: Arc<SourceInformation>,
 }
 
 impl Let {
-    pub fn new(definitions: Vec<Definition>, expression: impl Into<Expression>) -> Self {
+    pub fn new(
+        definitions: Vec<Definition>,
+        expression: impl Into<Expression>,
+        source_information: impl Into<Arc<SourceInformation>>,
+    ) -> Self {
         Self {
             definitions,
             expression: Arc::new(expression.into()),
+            source_information: source_information.into(),
         }
     }
 
@@ -23,6 +30,10 @@ impl Let {
 
     pub fn expression(&self) -> &Expression {
         &self.expression
+    }
+
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
+        &self.source_information
     }
 
     pub fn has_functions(&self) -> bool {
@@ -42,6 +53,7 @@ impl Let {
                 .map(|definition| definition.transform_expressions(transform))
                 .collect::<Result<_, _>>()?,
             self.expression.transform_expressions(transform)?,
+            self.source_information.clone(),
         ))
     }
 
@@ -55,6 +67,7 @@ impl Let {
                 .map(|definition| definition.transform_types(transform))
                 .collect::<Result<_, _>>()?,
             self.expression.transform_types(transform)?,
+            self.source_information.clone(),
         ))
     }
 }

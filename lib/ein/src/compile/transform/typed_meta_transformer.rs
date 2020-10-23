@@ -199,6 +199,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 Let::new(
                     definitions,
                     self.transform_expression(let_.expression(), &variables)?,
+                    let_.source_information().clone(),
                 )
                 .into()
             }

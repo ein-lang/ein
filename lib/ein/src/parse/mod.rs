@@ -66,6 +66,7 @@ mod tests {
                         )
                         .into()],
                         Variable::new("x", SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -121,6 +122,7 @@ mod tests {
                             .into(),
                         ],
                         Variable::new("y", SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Function::new(
                         types::Number::new(SourceInformation::dummy()),
