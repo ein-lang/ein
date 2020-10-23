@@ -77,9 +77,9 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     );
     let partial_application_transformer = PartialApplicationTransformer::new();
 
-    let module = type_coercion_transformer.transform(&module)?;
     let module = function_type_argument_transformer.transform(&module)?;
     let module = partial_application_transformer.transform(&module)?;
+    let module = type_coercion_transformer.transform(&module)?;
 
     Ok(module)
 }
