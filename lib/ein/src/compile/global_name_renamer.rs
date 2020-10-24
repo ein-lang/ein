@@ -201,6 +201,7 @@ impl<'a> GlobalNameRenamer<'a> {
                 Let::new(
                     definitions,
                     self.rename_expression(let_.expression(), &names),
+                    let_.source_information().clone(),
                 )
                 .into()
             }

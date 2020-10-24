@@ -271,6 +271,7 @@ mod tests {
                 )
                 .into()],
                 Variable::new("y", SourceInformation::dummy()),
+                SourceInformation::dummy(),
             ),
             types::Number::new(SourceInformation::dummy()),
             SourceInformation::dummy(),
@@ -297,6 +298,7 @@ mod tests {
                 )
                 .into()],
                 Variable::new("y", SourceInformation::dummy()),
+                SourceInformation::dummy(),
             ),
             types::Number::new(SourceInformation::dummy()),
             SourceInformation::dummy(),
@@ -334,6 +336,7 @@ mod tests {
                     Number::new(42.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 ),
+                SourceInformation::dummy(),
             ),
             types::Number::new(SourceInformation::dummy()),
             SourceInformation::dummy(),
@@ -369,6 +372,7 @@ mod tests {
                     Number::new(42.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 ),
+                SourceInformation::dummy(),
             ),
             types::Number::new(SourceInformation::dummy()),
             SourceInformation::dummy(),
@@ -398,6 +402,7 @@ mod tests {
                     )
                     .into()],
                     Variable::new("y", SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
@@ -414,6 +419,7 @@ mod tests {
                     )
                     .into(),],
                     Variable::new("y", SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
@@ -503,6 +509,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
+                    SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
@@ -540,6 +547,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
+                    SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
@@ -579,6 +587,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
+                    SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
@@ -616,6 +625,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
+                    SourceInformation::dummy(),
                 ),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
@@ -656,6 +666,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
+                    SourceInformation::dummy(),
                 ),
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
@@ -698,6 +709,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
+                    SourceInformation::dummy(),
                 ),
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
@@ -732,6 +744,7 @@ mod tests {
                     .into(),
                 ],
                 Variable::new("a", SourceInformation::dummy()),
+                SourceInformation::dummy(),
             ),
             types::Number::new(SourceInformation::dummy()),
             SourceInformation::dummy(),
@@ -952,6 +965,7 @@ mod tests {
                         )
                         .into()],
                         Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -1000,6 +1014,7 @@ mod tests {
                         )
                         .into()],
                         Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -1794,6 +1809,7 @@ mod tests {
                         )
                         .into()],
                         Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -1828,6 +1844,7 @@ mod tests {
                         )
                         .into()],
                         Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),

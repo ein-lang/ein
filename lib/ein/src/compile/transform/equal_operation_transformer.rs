@@ -154,8 +154,9 @@ impl EqualOperationTransformer {
                             source_information.clone(),
                         ),
                         rhs.clone(),
-                        source_information,
+                        source_information.clone(),
                     ),
+                    source_information,
                 )
                 .into()
             }

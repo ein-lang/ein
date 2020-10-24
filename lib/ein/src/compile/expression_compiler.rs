@@ -655,7 +655,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
                 .into(),
             ),
@@ -690,7 +691,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
                 .into(),
             ),
@@ -730,7 +732,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
                 .into(),
             ),
@@ -773,7 +776,8 @@ mod tests {
                                 SourceInformation::dummy()
                             )
                             .into()],
-                            Variable::new("x", SourceInformation::dummy())
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy()
                         ),
                         types::Function::new(
                             types::Number::new(SourceInformation::dummy()),
@@ -783,7 +787,8 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Variable::new("x", SourceInformation::dummy())
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
                 )
                 .into(),
             ),
@@ -835,8 +840,10 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into()],
-                        Variable::new("y", SourceInformation::dummy())
-                    )
+                        Variable::new("y", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
                 )
                 .into(),
             ),
