@@ -280,6 +280,7 @@ mod tests {
                         )
                         .into()],
                         Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
                     ),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -343,6 +344,7 @@ mod tests {
                             )
                             .into()],
                             Number::new(42.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
                         ),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
@@ -512,7 +514,11 @@ mod tests {
                     .into(),
                     ValueDefinition::new(
                         "x",
-                        Let::new(vec![definition], None::new(SourceInformation::dummy())),
+                        Let::new(
+                            vec![definition],
+                            None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
                         types::None::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
@@ -652,7 +658,8 @@ mod tests {
                             SourceInformation::dummy(),
                         )
                         .into()],
-                        Variable::new("fta_function_0", SourceInformation::dummy())
+                        Variable::new("fta_function_0", SourceInformation::dummy()),
+                        SourceInformation::dummy()
                     )
                     .into()
                 ))

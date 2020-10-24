@@ -131,6 +131,7 @@ impl PartialApplicationTransformer {
             Expression::Let(let_) => Let::new(
                 let_.definitions().to_vec(),
                 self.apply_arguments_recursively(let_.expression(), arguments),
+                let_.source_information().clone(),
             )
             .into(),
             Expression::RecordElementOperation(operation) => RecordElementOperation::new(

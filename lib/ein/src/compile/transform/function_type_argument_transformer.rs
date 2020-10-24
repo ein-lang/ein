@@ -62,7 +62,8 @@ impl FunctionTypeArgumentTransformer {
                         source_information.clone(),
                     )
                     .into()],
-                    Variable::new(name, source_information),
+                    Variable::new(name, source_information.clone()),
+                    source_information,
                 )
                 .into()
             } else {
