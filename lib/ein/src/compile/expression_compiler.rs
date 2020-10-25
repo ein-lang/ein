@@ -57,7 +57,10 @@ impl ExpressionCompiler {
                 }
 
                 ssf::ir::FunctionApplication::new(
-                    self.compile(function)?,
+                    self.compile(function)?
+                        .to_variable()
+                        .expect("variable")
+                        .clone(),
                     arguments
                         .iter()
                         .rev()
@@ -532,51 +535,6 @@ mod tests {
             type_compiler,
             union_tag_calculator,
         )
-    }
-
-    #[test]
-    fn compile_non_variable_function_applications() {
-        let (expression_compiler, type_compiler, _) = create_expression_compiler(&Module::dummy());
-        let boolean_type = type_compiler.compile_boolean();
-
-        assert_eq!(
-            expression_compiler.compile(
-                &Application::new(
-                    If::new(
-                        Boolean::new(true, SourceInformation::dummy()),
-                        Variable::new("f", SourceInformation::dummy()),
-                        Variable::new("g", SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
-                    Number::new(42.0, SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                )
-                .into(),
-            ),
-            Ok(ssf::ir::FunctionApplication::new(
-                ssf::ir::AlgebraicCase::new(
-                    ssf::ir::ConstructorApplication::new(
-                        ssf::ir::Constructor::new(boolean_type.clone(), 1),
-                        vec![]
-                    ),
-                    vec![
-                        ssf::ir::AlgebraicAlternative::new(
-                            ssf::ir::Constructor::new(boolean_type.clone(), 0),
-                            vec![],
-                            ssf::ir::Variable::new("g")
-                        ),
-                        ssf::ir::AlgebraicAlternative::new(
-                            ssf::ir::Constructor::new(boolean_type, 1),
-                            vec![],
-                            ssf::ir::Variable::new("f")
-                        )
-                    ],
-                    None
-                ),
-                vec![42.0.into()]
-            )
-            .into())
-        );
     }
 
     mod operation {
