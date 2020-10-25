@@ -64,11 +64,11 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     let mut type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
-            expression_type_extractor.clone(),
+            type_equality_checker,
+            expression_type_extractor,
             type_canonicalizer,
         ),
-        reference_type_resolver.clone(),
+        reference_type_resolver,
     );
     let partial_application_transformer = PartialApplicationTransformer::new();
 
