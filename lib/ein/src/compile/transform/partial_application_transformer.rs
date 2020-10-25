@@ -146,7 +146,7 @@ impl PartialApplicationTransformer {
             | Expression::Operation(_)
             | Expression::RecordConstruction(_)
             | Expression::RecordUpdate(_)
-            | Expression::TypeCoercion(_) => unreachable!(),
+            | Expression::TypeCoercion(_) => expression.clone(),
         }
     }
 
