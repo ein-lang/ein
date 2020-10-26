@@ -56,39 +56,32 @@ impl PartialApplicationTransformer {
     ) -> FunctionDefinition {
         let function_type = function_definition.type_().to_function().unwrap();
 
-        if function_definition.arguments().len() == function_type.arguments().len() {
-            function_definition.clone()
-        } else {
-            let omitted_arguments = (0..(function_type.arguments().len()
-                - function_definition.arguments().len()))
-                .map(|_| self.name_generator.generate())
-                .collect::<Vec<_>>();
+        let omitted_arguments = (0..(function_type.arguments().len()
+            - function_definition.arguments().len()))
+            .map(|_| self.name_generator.generate())
+            .collect::<Vec<_>>();
 
-            FunctionDefinition::new(
-                function_definition.name(),
-                function_definition
-                    .arguments()
-                    .iter()
-                    .chain(&omitted_arguments)
-                    .cloned()
-                    .collect(),
-                self.apply_arguments_recursively(
-                    function_definition.body(),
-                    &omitted_arguments
-                        .into_iter()
-                        .map(|argument| {
-                            Variable::new(
-                                argument,
-                                function_definition.source_information().clone(),
-                            )
+        FunctionDefinition::new(
+            function_definition.name(),
+            function_definition
+                .arguments()
+                .iter()
+                .chain(&omitted_arguments)
+                .cloned()
+                .collect(),
+            self.apply_arguments_recursively(
+                function_definition.body(),
+                &omitted_arguments
+                    .into_iter()
+                    .map(|argument| {
+                        Variable::new(argument, function_definition.source_information().clone())
                             .into()
-                        })
-                        .collect::<Vec<_>>(),
-                ),
-                function_definition.type_().clone(),
-                function_definition.source_information().clone(),
-            )
-        }
+                    })
+                    .collect::<Vec<_>>(),
+            ),
+            function_definition.type_().clone(),
+            function_definition.source_information().clone(),
+        )
     }
 
     fn apply_arguments_recursively(
@@ -153,7 +146,7 @@ impl PartialApplicationTransformer {
             | Expression::Operation(_)
             | Expression::RecordConstruction(_)
             | Expression::RecordUpdate(_)
-            | Expression::TypeCoercion(_) => unreachable!(),
+            | Expression::TypeCoercion(_) => expression.clone(),
         }
     }
 
