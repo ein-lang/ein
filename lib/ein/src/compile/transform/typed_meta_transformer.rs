@@ -219,7 +219,26 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 list.source_information().clone(),
             )
             .into(),
-            Expression::ListCase(_) => todo!(),
+            Expression::ListCase(case) => ListCase::new(
+                self.transform_expression(case.argument(), variables)?,
+                case.type_().clone(),
+                case.head_name(),
+                case.tail_name(),
+                self.transform_expression(case.empty_alternative(), &variables)?,
+                {
+                    let mut variables = variables.clone();
+
+                    variables.insert(
+                        case.head_name().into(),
+                        case.type_().to_list().unwrap().element().clone(),
+                    );
+                    variables.insert(case.tail_name().into(), case.type_().clone());
+
+                    self.transform_expression(case.non_empty_alternative(), &variables)?
+                },
+                case.source_information().clone(),
+            )
+            .into(),
             Expression::Operation(operation) => Operation::with_type(
                 operation.type_().clone(),
                 operation.operator(),
