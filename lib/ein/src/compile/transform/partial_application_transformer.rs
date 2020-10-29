@@ -127,6 +127,7 @@ impl PartialApplicationTransformer {
                 let_.source_information().clone(),
             )
             .into(),
+            Expression::ListCase(_) => todo!(),
             Expression::RecordElementOperation(operation) => RecordElementOperation::new(
                 operation.type_().clone(),
                 operation.key(),

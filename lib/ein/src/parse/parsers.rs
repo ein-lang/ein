@@ -400,7 +400,54 @@ fn case<'a>() -> impl Parser<Stream<'a>, Output = Case> {
                 Case::new(identifier, argument, alternatives, source_information)
             },
         )
-        .expected("case expression")
+        .expected("type case expression")
+}
+
+fn list_case<'a>() -> impl Parser<Stream<'a>, Output = ListCase> {
+    (
+        source_information(),
+        keyword("case").expected("case keyword"),
+        expression(),
+        sign("[]"),
+        sign("=>"),
+        expression(),
+        sign("["),
+        identifier(),
+        sign(","),
+        sign("..."),
+        identifier(),
+        sign("]"),
+        sign("=>"),
+        expression(),
+    )
+        .map(
+            |(
+                source_information,
+                _,
+                argument,
+                _,
+                _,
+                empty_alternative,
+                _,
+                head_name,
+                _,
+                _,
+                tail_name,
+                _,
+                _,
+                non_empty_alternative,
+            )| {
+                ListCase::new(
+                    argument,
+                    head_name,
+                    tail_name,
+                    empty_alternative,
+                    non_empty_alternative,
+                    source_information,
+                )
+            },
+        )
+        .expected("list case expression")
 }
 
 fn alternative<'a>() -> impl Parser<Stream<'a>, Output = Alternative> {
@@ -537,6 +584,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         application_or_atomic_expression(),
         if_().map(Expression::from),
         case().map(Expression::from),
+        list_case().map(Expression::from),
         let_().map(Expression::from),
     )
 }
@@ -1691,6 +1739,33 @@ mod tests {
                         )
                     ],
                     SourceInformation::dummy()
+                )
+            );
+        }
+
+        #[test]
+        fn parse_list_case() {
+            assert_eq!(
+                list_case()
+                    .parse(stream(
+                        indoc!(
+                            "
+                            case xs
+                                [] => None
+                                [ x, ...xs ] => None
+                            "
+                        ),
+                        ""
+                    ))
+                    .unwrap()
+                    .0,
+                ListCase::new(
+                    Variable::new("xs", SourceInformation::dummy()),
+                    "x",
+                    "xs",
+                    None::new(SourceInformation::dummy()),
+                    None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
                 )
             );
         }

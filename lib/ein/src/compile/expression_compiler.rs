@@ -103,6 +103,7 @@ impl ExpressionCompiler {
                     .list_literal_transformer
                     .transform(list),
             )?,
+            Expression::ListCase(_) => todo!(),
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;

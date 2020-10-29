@@ -219,6 +219,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 list.source_information().clone(),
             )
             .into(),
+            Expression::ListCase(_) => todo!(),
             Expression::Operation(operation) => Operation::with_type(
                 operation.type_().clone(),
                 operation.operator(),

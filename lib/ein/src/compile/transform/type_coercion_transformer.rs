@@ -198,6 +198,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                 )
                 .into())
             }
+            Expression::ListCase(_) => todo!(),
             Expression::Operation(operation) => {
                 let argument_type = self.type_canonicalizer.canonicalize(
                     &types::Union::new(

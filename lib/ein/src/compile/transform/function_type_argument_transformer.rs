@@ -145,7 +145,8 @@ impl TypedTransformer for FunctionTypeArgumentTransformer {
             | Expression::Case(_) // TODO Transform case expression arguments.
             | Expression::If(_)
             | Expression::Let(_)
-            | Expression::List(_)// TODO Transform list elements.
+            | Expression::List(_) // TODO Transform list elements.
+            | Expression::ListCase(_)
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::Operation(_) // There is no operation applicable to functions.

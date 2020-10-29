@@ -216,6 +216,27 @@ impl ConstraintCollector {
 
                 Ok(list_type.into())
             }
+            Expression::ListCase(case) => {
+                let element = types::Variable::new(case.source_information().clone());
+                let list = types::List::new(element.clone(), case.source_information().clone());
+                let result = types::Variable::new(case.source_information().clone());
+
+                let argument = self.infer_expression(case.argument(), variables)?;
+                self.solved_subsumption_set
+                    .add(argument.clone(), list.clone());
+
+                let type_ = self.infer_expression(case.emtpy_alternative(), &variables)?;
+                self.solved_subsumption_set.add(type_, result.clone());
+
+                let mut variables = variables.clone();
+                variables.insert(case.head_name().into(), element.clone().into());
+                variables.insert(case.tail_name().into(), list.clone().into());
+
+                let type_ = self.infer_expression(case.non_emtpy_alternative(), &variables)?;
+                self.solved_subsumption_set.add(type_, result.clone());
+
+                Ok(result.into())
+            }
             Expression::None(none) => {
                 Ok(types::None::new(none.source_information().clone()).into())
             }
