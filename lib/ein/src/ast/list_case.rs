@@ -85,7 +85,10 @@ impl ListCase {
             head_name: self.head_name.clone(),
             tail_name: self.tail_name.clone(),
             empty_alternative: self.empty_alternative.transform_types(transform)?.into(),
-            non_empty_alternative: self.non_empty_alternative.transform_types(transform)?.into(),
+            non_empty_alternative: self
+                .non_empty_alternative
+                .transform_types(transform)?
+                .into(),
             source_information: self.source_information.clone(),
         })
     }
