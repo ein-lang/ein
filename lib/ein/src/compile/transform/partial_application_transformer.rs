@@ -130,8 +130,8 @@ impl PartialApplicationTransformer {
             Expression::ListCase(case) => ListCase::new(
                 case.argument().clone(),
                 case.type_().clone(),
-                case.head_name().clone(),
-                case.tail_name().clone(),
+                case.head_name(),
+                case.tail_name(),
                 self.apply_arguments_recursively(case.empty_alternative(), arguments),
                 self.apply_arguments_recursively(case.non_empty_alternative(), arguments),
                 case.source_information().clone(),
