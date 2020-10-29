@@ -220,7 +220,23 @@ impl<'a> GlobalNameRenamer<'a> {
                 list.source_information().clone(),
             )
             .into(),
-            Expression::ListCase(_) => todo!(),
+            Expression::ListCase(case) => ListCase::new(
+                self.rename_expression(case.argument(), names),
+                case.type_().clone(),
+                case.head_name(),
+                case.tail_name(),
+                self.rename_expression(case.empty_alternative(), names),
+                {
+                    let mut names = names.clone();
+
+                    names.remove(case.head_name());
+                    names.remove(case.tail_name());
+
+                    self.rename_expression(case.non_empty_alternative(), &names)
+                },
+                case.source_information().clone(),
+            )
+            .into(),
             Expression::Operation(operation) => Operation::with_type(
                 operation.type_().clone(),
                 operation.operator(),
