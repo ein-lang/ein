@@ -225,14 +225,14 @@ impl ConstraintCollector {
                 self.solved_subsumption_set
                     .add(argument.clone(), list.clone());
 
-                let type_ = self.infer_expression(case.emtpy_alternative(), &variables)?;
+                let type_ = self.infer_expression(case.empty_alternative(), &variables)?;
                 self.solved_subsumption_set.add(type_, result.clone());
 
                 let mut variables = variables.clone();
                 variables.insert(case.head_name().into(), element.clone().into());
                 variables.insert(case.tail_name().into(), list.clone().into());
 
-                let type_ = self.infer_expression(case.non_emtpy_alternative(), &variables)?;
+                let type_ = self.infer_expression(case.non_empty_alternative(), &variables)?;
                 self.solved_subsumption_set.add(type_, result.clone());
 
                 Ok(result.into())

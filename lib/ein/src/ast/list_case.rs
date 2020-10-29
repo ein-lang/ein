@@ -8,8 +8,8 @@ pub struct ListCase {
     argument: Arc<Expression>,
     head_name: String,
     tail_name: String,
-    emtpy_alternative: Arc<Expression>,
-    non_emtpy_alternative: Arc<Expression>,
+    empty_alternative: Arc<Expression>,
+    non_empty_alternative: Arc<Expression>,
     source_information: Arc<SourceInformation>,
 }
 
@@ -18,16 +18,16 @@ impl ListCase {
         argument: impl Into<Expression>,
         head_name: impl Into<String>,
         tail_name: impl Into<String>,
-        emtpy_alternative: impl Into<Expression>,
-        non_emtpy_alternative: impl Into<Expression>,
+        empty_alternative: impl Into<Expression>,
+        non_empty_alternative: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>> + Clone,
     ) -> Self {
         Self {
             argument: Arc::new(argument.into()),
             head_name: head_name.into(),
             tail_name: tail_name.into(),
-            emtpy_alternative: Arc::new(emtpy_alternative.into()),
-            non_emtpy_alternative: Arc::new(non_emtpy_alternative.into()),
+            empty_alternative: Arc::new(empty_alternative.into()),
+            non_empty_alternative: Arc::new(non_empty_alternative.into()),
             source_information: source_information.into(),
         }
     }
@@ -44,12 +44,12 @@ impl ListCase {
         &self.tail_name
     }
 
-    pub fn emtpy_alternative(&self) -> &Expression {
-        &self.emtpy_alternative
+    pub fn empty_alternative(&self) -> &Expression {
+        &self.empty_alternative
     }
 
-    pub fn non_emtpy_alternative(&self) -> &Expression {
-        &self.non_emtpy_alternative
+    pub fn non_empty_alternative(&self) -> &Expression {
+        &self.non_empty_alternative
     }
 
     pub fn source_information(&self) -> &Arc<SourceInformation> {
@@ -64,12 +64,12 @@ impl ListCase {
             argument: self.argument.transform_expressions(transform)?.into(),
             head_name: self.head_name.clone(),
             tail_name: self.tail_name.clone(),
-            emtpy_alternative: self
-                .emtpy_alternative
+            empty_alternative: self
+                .empty_alternative
                 .transform_expressions(transform)?
                 .into(),
-            non_emtpy_alternative: self
-                .non_emtpy_alternative
+            non_empty_alternative: self
+                .non_empty_alternative
                 .transform_expressions(transform)?
                 .into(),
             source_information: self.source_information.clone(),
@@ -84,8 +84,8 @@ impl ListCase {
             argument: self.argument.transform_types(transform)?.into(),
             head_name: self.head_name.clone(),
             tail_name: self.tail_name.clone(),
-            emtpy_alternative: self.emtpy_alternative.transform_types(transform)?.into(),
-            non_emtpy_alternative: self.non_emtpy_alternative.transform_types(transform)?.into(),
+            empty_alternative: self.empty_alternative.transform_types(transform)?.into(),
+            non_empty_alternative: self.non_empty_alternative.transform_types(transform)?.into(),
             source_information: self.source_information.clone(),
         })
     }
