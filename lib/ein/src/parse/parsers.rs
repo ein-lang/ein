@@ -439,6 +439,7 @@ fn list_case<'a>() -> impl Parser<Stream<'a>, Output = ListCase> {
             )| {
                 ListCase::new(
                     argument,
+                    types::Unknown::new(source_information.clone()),
                     head_name,
                     tail_name,
                     empty_alternative,
@@ -1761,6 +1762,7 @@ mod tests {
                     .0,
                 ListCase::new(
                     Variable::new("xs", SourceInformation::dummy()),
+                    types::Unknown::new(SourceInformation::dummy()),
                     "x",
                     "xs",
                     None::new(SourceInformation::dummy()),

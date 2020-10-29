@@ -6,6 +6,7 @@ use std::sync::Arc;
 #[derive(Clone, Debug, PartialEq)]
 pub struct ListCase {
     argument: Arc<Expression>,
+    type_: Arc<Type>,
     head_name: String,
     tail_name: String,
     empty_alternative: Arc<Expression>,
@@ -16,6 +17,7 @@ pub struct ListCase {
 impl ListCase {
     pub fn new(
         argument: impl Into<Expression>,
+        type_: impl Into<Type>,
         head_name: impl Into<String>,
         tail_name: impl Into<String>,
         empty_alternative: impl Into<Expression>,
@@ -24,6 +26,7 @@ impl ListCase {
     ) -> Self {
         Self {
             argument: Arc::new(argument.into()),
+            type_: Arc::new(type_.into()),
             head_name: head_name.into(),
             tail_name: tail_name.into(),
             empty_alternative: Arc::new(empty_alternative.into()),
@@ -34,6 +37,10 @@ impl ListCase {
 
     pub fn argument(&self) -> &Expression {
         &self.argument
+    }
+
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
     pub fn head_name(&self) -> &str {
@@ -62,6 +69,7 @@ impl ListCase {
     ) -> Result<Self, E> {
         Ok(Self {
             argument: self.argument.transform_expressions(transform)?.into(),
+            type_: self.type_.clone(),
             head_name: self.head_name.clone(),
             tail_name: self.tail_name.clone(),
             empty_alternative: self
@@ -82,6 +90,7 @@ impl ListCase {
     ) -> Result<Self, E> {
         Ok(Self {
             argument: self.argument.transform_types(transform)?.into(),
+            type_: self.type_.transform_types(transform)?.into(),
             head_name: self.head_name.clone(),
             tail_name: self.tail_name.clone(),
             empty_alternative: self.empty_alternative.transform_types(transform)?.into(),

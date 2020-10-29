@@ -1191,6 +1191,45 @@ mod tests {
         }
     }
 
+    mod list_case {
+        use super::*;
+        use pretty_assertions::assert_eq;
+
+        #[test]
+        fn infer_types_of_list_case_expressions() {
+            let create_module = |type_: Type| {
+                Module::from_definitions(vec![ValueDefinition::new(
+                    "x",
+                    ListCase::new(
+                        List::with_type(type_.clone(), vec![], SourceInformation::dummy()),
+                        type_.clone(),
+                        "x",
+                        "xs",
+                        None::new(SourceInformation::dummy()),
+                        Variable::new("x", SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()])
+            };
+
+            assert_eq!(
+                infer_types(&create_module(
+                    types::Unknown::new(SourceInformation::dummy()).into()
+                )),
+                Ok(create_module(
+                    types::List::new(
+                        types::None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into()
+                ))
+            );
+        }
+    }
+
     mod record {
         use super::*;
         use pretty_assertions::assert_eq;

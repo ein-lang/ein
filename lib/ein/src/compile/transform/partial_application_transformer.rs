@@ -127,7 +127,16 @@ impl PartialApplicationTransformer {
                 let_.source_information().clone(),
             )
             .into(),
-            Expression::ListCase(_) => todo!(),
+            Expression::ListCase(case) => ListCase::new(
+                case.argument().clone(),
+                case.type_().clone(),
+                case.head_name().clone(),
+                case.tail_name().clone(),
+                self.apply_arguments_recursively(case.empty_alternative(), arguments),
+                self.apply_arguments_recursively(case.non_empty_alternative(), arguments),
+                case.source_information().clone(),
+            )
+            .into(),
             Expression::RecordElementOperation(operation) => RecordElementOperation::new(
                 operation.type_().clone(),
                 operation.key(),

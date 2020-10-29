@@ -87,7 +87,23 @@ impl ExpressionTypeExtractor {
                 self.extract(let_.expression(), &variables)?
             }
             Expression::List(list) => list.type_().clone(),
-            Expression::ListCase(_) => todo!(),
+            Expression::ListCase(case) => self.type_canonicalizer.canonicalize(
+                &types::Union::new(
+                    vec![self.extract(case.empty_alternative(), &variables)?, {
+                        let mut variables = variables.clone();
+
+                        variables.insert(
+                            case.head_name().into(),
+                            case.type_().to_list().unwrap().element().clone(),
+                        );
+                        variables.insert(case.tail_name().into(), case.type_().clone());
+
+                        self.extract(case.non_empty_alternative(), &variables)?
+                    }],
+                    case.source_information().clone(),
+                )
+                .into(),
+            )?,
             Expression::None(none) => types::None::new(none.source_information().clone()).into(),
             Expression::Number(number) => {
                 types::Number::new(number.source_information().clone()).into()
@@ -222,6 +238,67 @@ mod tests {
                 &Default::default(),
             ),
             Ok(types::Boolean::new(SourceInformation::dummy()).into())
+        );
+    }
+
+    #[test]
+    fn extract_type_of_list_case_expression_with_element() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer = TypeCanonicalizer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker.clone(),
+        );
+
+        assert_eq!(
+            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+                &ListCase::new(
+                    List::new(vec![], SourceInformation::dummy()),
+                    types::List::new(
+                        types::None::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    "x",
+                    "xs",
+                    None::new(SourceInformation::dummy()),
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+                &Default::default(),
+            ),
+            Ok(types::None::new(SourceInformation::dummy()).into())
+        );
+    }
+
+    #[test]
+    fn extract_type_of_list_case_expression_with_list() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer = TypeCanonicalizer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker.clone(),
+        );
+        let list_type = types::List::new(
+            types::None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        );
+
+        assert_eq!(
+            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+                &ListCase::new(
+                    List::new(vec![], SourceInformation::dummy()),
+                    list_type.clone(),
+                    "x",
+                    "xs",
+                    List::with_type(list_type.clone(), vec![], SourceInformation::dummy()),
+                    Variable::new("xs", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+                &Default::default(),
+            ),
+            Ok(list_type.into())
         );
     }
 }

@@ -221,6 +221,9 @@ impl ConstraintCollector {
                 let list = types::List::new(element.clone(), case.source_information().clone());
                 let result = types::Variable::new(case.source_information().clone());
 
+                self.solved_subsumption_set
+                    .add(list.clone(), case.type_().clone());
+
                 let argument = self.infer_expression(case.argument(), variables)?;
                 self.solved_subsumption_set.add(argument, list.clone());
 
