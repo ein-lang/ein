@@ -1,10 +1,14 @@
 export {
   AnyList,
+  Cons,
+  consFirst,
+  consRest,
   concatenateLists,
   emptyList,
   equalLists,
   getListLength,
   prependToList,
+  uncons,
 }
 
 type AnyList {
@@ -15,6 +19,26 @@ type Node {
   first : Any,
   rest : Node | None,
 }
+
+type Cons {
+  first : Any,
+  rest : AnyList,
+}
+
+consFirst : Cons -> Any
+consFirst = Cons.first
+
+consRest : Cons -> AnyList
+consRest = Cons.rest
+
+uncons : AnyList -> Cons | None
+uncons list =
+  case n = AnyList.node list
+    Node => Cons{
+        first = Node.first n,
+        rest = AnyList{ node = Node.rest n },
+      }
+    None => None
 
 emptyList : AnyList
 emptyList =

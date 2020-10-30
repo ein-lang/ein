@@ -1,0 +1,11 @@
+export { just, Just, value }
+
+type Just {
+  value : Any,
+}
+
+just : Any -> Just
+just x = Just{ value = x }
+
+value : Just -> Any
+value = Just.value
