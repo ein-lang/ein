@@ -56,6 +56,7 @@ impl<'a> ModulesBuilder<'a> {
             &self
                 .modules_finder
                 .find(package_configuration.directory_path())?,
+            package_configuration,
         )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
                 &source_file_path,
@@ -82,6 +83,7 @@ impl<'a> ModulesBuilder<'a> {
     fn sort_source_file_paths<'b>(
         &self,
         source_file_paths: &'b [FilePath],
+        package_configuration: &PackageConfiguration,
     ) -> Result<Vec<&'b FilePath>, Box<dyn std::error::Error>> {
         let mut graph = Graph::<&FilePath, ()>::new();
         let mut indices = HashMap::<&FilePath, _>::new();
@@ -101,9 +103,10 @@ impl<'a> ModulesBuilder<'a> {
                     import.module_path()
                 {
                     graph.add_edge(
-                        indices[&self
-                            .file_path_manager
-                            .resolve_to_source_file_path(internal_module_path)],
+                        indices[&self.file_path_manager.resolve_to_source_file_path(
+                            package_configuration.directory_path(),
+                            internal_module_path,
+                        )],
                         indices[&source_file_path],
                         (),
                     );
