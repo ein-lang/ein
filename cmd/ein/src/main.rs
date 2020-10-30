@@ -53,7 +53,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             "concatenateLists",
             "equalLists",
             "prependToList",
+            "uncons",
+            "consFirst",
+            "consRest",
             "AnyList",
+            "Cons",
         )
         .into(),
     );

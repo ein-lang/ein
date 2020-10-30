@@ -461,7 +461,7 @@ impl ExpressionCompiler {
 mod tests {
     use super::super::boolean_compiler::BooleanCompiler;
     use super::super::error::CompileError;
-    use super::super::list_type_configuration::ListTypeConfiguration;
+    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::transform::{
         BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
@@ -475,21 +475,8 @@ mod tests {
     use crate::ast::*;
     use crate::debug::SourceInformation;
     use crate::types;
-    use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
     use std::sync::Arc;
-
-    lazy_static! {
-        static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
-            ListTypeConfiguration::new(
-                "emptyList",
-                "concatenateLists",
-                "equalLists",
-                "prependToLists",
-                "GenericList",
-            )
-            .into();
-    }
 
     fn create_expression_compiler(
         module: &Module,

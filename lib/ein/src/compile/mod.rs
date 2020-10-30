@@ -136,7 +136,7 @@ fn transform_path_to_initializer_name(module_path: &ModulePath) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::list_type_configuration::ListTypeConfiguration;
+    use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
     use crate::types;
@@ -149,14 +149,7 @@ mod tests {
             "ein_init",
             "ein_malloc",
             "ein_panic",
-            ListTypeConfiguration::new(
-                "emptyList",
-                "concatenateLists",
-                "equalLists",
-                "prependToLists",
-                "GenericList"
-            )
-            .into()
+            LIST_TYPE_CONFIGURATION.clone()
         );
     }
 
