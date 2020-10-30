@@ -31,6 +31,7 @@ pub struct ListTypeConfiguration {
 }
 
 impl ListTypeConfiguration {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         empty_list_variable_name: impl Into<String>,
         concatenate_function_name: impl Into<String>,
