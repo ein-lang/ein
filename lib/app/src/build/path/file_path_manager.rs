@@ -18,10 +18,13 @@ impl<'a> FilePathManager<'a> {
 
     pub fn resolve_to_source_file_path(
         &self,
+        directory_path: &FilePath,
         internal_module_path: &ein::InternalUnresolvedModulePath,
     ) -> FilePath {
-        FilePath::new(internal_module_path.components())
-            .with_extension(self.file_path_configuration.source_file_extension())
+        directory_path.join(
+            &FilePath::new(internal_module_path.components())
+                .with_extension(self.file_path_configuration.source_file_extension()),
+        )
     }
 
     pub fn convert_to_module_path(
