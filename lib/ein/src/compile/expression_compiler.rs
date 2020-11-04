@@ -580,6 +580,7 @@ mod tests {
                     .into(),
                 ),
                 Ok(ssf::ir::PrimitiveCase::new(
+                    ssf::types::Primitive::Integer8,
                     ssf::ir::Operation::new(ssf::ir::Operator::LessThan, 1.0, 2.0),
                     vec![
                         ssf::ir::PrimitiveAlternative::new(
@@ -846,6 +847,7 @@ mod tests {
                 .into(),
             ),
             Ok(ssf::ir::AlgebraicCase::new(
+                boolean_type.clone(),
                 ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(boolean_type.clone(), 1),
                     vec![]
