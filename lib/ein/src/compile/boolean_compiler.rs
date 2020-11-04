@@ -22,6 +22,7 @@ impl BooleanCompiler {
         expression: impl Into<ssf::ir::Expression>,
     ) -> ssf::ir::Expression {
         ssf::ir::PrimitiveCase::new(
+            ssf::types::Primitive::Integer8,
             expression.into(),
             vec![
                 ssf::ir::PrimitiveAlternative::new(
