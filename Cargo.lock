@@ -728,7 +728,7 @@ checksum = "fbee7696b84bbf3d89a1c2eccff0850e3047ed46bfcd2e92c29a2d074d57e252"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#87a4e9d106e09af844e9a1d6210dc11e0a0a5b17"
+source = "git+https://github.com/raviqqe/ssf?branch=master#1d2f6347e85463623b62c684aecfe5aca2dac1dd"
 dependencies = [
  "petgraph",
  "pretty_assertions",
@@ -737,7 +737,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#87a4e9d106e09af844e9a1d6210dc11e0a0a5b17"
+source = "git+https://github.com/raviqqe/ssf?branch=master#1d2f6347e85463623b62c684aecfe5aca2dac1dd"
 dependencies = [
  "inkwell",
  "ssf",
