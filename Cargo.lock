@@ -738,7 +738,7 @@ checksum = "fbee7696b84bbf3d89a1c2eccff0850e3047ed46bfcd2e92c29a2d074d57e252"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#08852981f1e4629e8baab59c86ace5792abd6258"
+source = "git+https://github.com/raviqqe/ssf?branch=master#5379594e70a9f597218b90b630e2e962a1e1a163"
 dependencies = [
  "pretty_assertions",
 ]
@@ -746,7 +746,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#08852981f1e4629e8baab59c86ace5792abd6258"
+source = "git+https://github.com/raviqqe/ssf?branch=master#5379594e70a9f597218b90b630e2e962a1e1a163"
 dependencies = [
  "inkwell",
  "lazy_static",
