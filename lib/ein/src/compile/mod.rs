@@ -18,9 +18,9 @@ mod type_compiler;
 mod type_equality_checker;
 mod type_inference;
 mod union_tag_calculator;
+mod variable_compiler;
 
 use crate::ast::*;
-use crate::path::ModulePath;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
@@ -42,6 +42,7 @@ use type_compiler::TypeCompiler;
 use type_equality_checker::TypeEqualityChecker;
 use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
+use variable_compiler::VariableCompiler;
 
 pub fn compile(
     module: &Module,
@@ -70,6 +71,8 @@ pub fn compile(
         list_type_configuration.clone(),
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
+    let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
+
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
         type_comparability_checker,
@@ -92,10 +95,8 @@ pub fn compile(
         union_tag_calculator,
         type_compiler.clone(),
         boolean_compiler,
+        variable_compiler,
     );
-
-    let is_main_function =
-        |definition: &Definition| definition.name() == configuration.source_main_function_name();
 
     Ok((
         ssf_llvm::compile(
@@ -110,28 +111,12 @@ pub fn compile(
                     .collect(),
                 ),
             &ssf_llvm::CompileConfiguration::new(
-                if module.definitions().iter().any(is_main_function) {
-                    configuration.object_init_function_name().into()
-                } else {
-                    transform_path_to_initializer_name(module.path())
-                },
-                module
-                    .imports()
-                    .iter()
-                    .map(|import| {
-                        transform_path_to_initializer_name(import.module_interface().path())
-                    })
-                    .collect(),
                 Some(configuration.malloc_function_name().into()),
                 Some(configuration.panic_function_name().into()),
             ),
         )?,
         ModuleInterfaceCompiler::new().compile(&module)?,
     ))
-}
-
-fn transform_path_to_initializer_name(module_path: &ModulePath) -> String {
-    module_path.fully_qualify_name("$init")
 }
 
 #[cfg(test)]
