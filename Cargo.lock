@@ -90,9 +90,9 @@ checksum = "0e4cec68f03f32e44924783795810fa50a7035d8c8ebe78580ad7e6c703fba38"
 
 [[package]]
 name = "cc"
-version = "1.0.61"
+version = "1.0.62"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed67cbde08356238e75fc4656be4749481eeffb09e19f320a25237d5221c985d"
+checksum = "f1770ced377336a88a67c473594ccc14eca6f4559217c34f64aac8f83d641b40"
 dependencies = [
  "jobserver",
 ]
@@ -738,7 +738,7 @@ checksum = "fbee7696b84bbf3d89a1c2eccff0850e3047ed46bfcd2e92c29a2d074d57e252"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#1d2f6347e85463623b62c684aecfe5aca2dac1dd"
+source = "git+https://github.com/raviqqe/ssf?branch=master#95434b356ac364ddfb4fa01fceb500f6e6cd2c99"
 dependencies = [
  "petgraph",
  "pretty_assertions",
@@ -747,7 +747,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#1d2f6347e85463623b62c684aecfe5aca2dac1dd"
+source = "git+https://github.com/raviqqe/ssf?branch=master#95434b356ac364ddfb4fa01fceb500f6e6cd2c99"
 dependencies = [
  "inkwell",
  "ssf",
