@@ -259,7 +259,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values() {
+    fn infer_types_of_let() {
         let module = Module::from_definitions(vec![ValueDefinition::new(
             "x",
             Let::new(
@@ -282,7 +282,7 @@ mod tests {
     }
 
     #[test]
-    fn fail_to_infer_types_of_let_values() {
+    fn fail_to_infer_types_of_let() {
         let module = Module::from_definitions(vec![ValueDefinition::new(
             "x",
             Let::new(
@@ -315,7 +315,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_functions() {
+    fn infer_types_of_let_recursive() {
         let module = Module::from_definitions(vec![ValueDefinition::new(
             "x",
             Let::new(
@@ -347,7 +347,7 @@ mod tests {
     }
 
     #[test]
-    fn fail_to_infer_types_of_let_functions() {
+    fn fail_to_infer_types_of_let_recursive() {
         let module = Module::from_definitions(vec![ValueDefinition::new(
             "x",
             Let::new(
@@ -389,7 +389,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_with_type_variables() {
+    fn infer_types_of_let_with_type_variables() {
         assert_eq!(
             infer_types(&Module::from_definitions(vec![ValueDefinition::new(
                 "x",
@@ -479,7 +479,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_with_recursive_functions_and_the_latter_typed() {
+    fn infer_types_of_let_with_recursive_functions_and_the_latter_typed() {
         assert_eq!(
             infer_types(&Module::from_definitions(vec![ValueDefinition::new(
                 "x",
@@ -557,7 +557,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_with_recursive_functions_and_the_former_typed() {
+    fn infer_types_of_let_with_recursive_functions_and_the_former_typed() {
         assert_eq!(
             infer_types(&Module::from_definitions(vec![ValueDefinition::new(
                 "x",
@@ -635,7 +635,7 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_in_function_definition_with_recursive_functions() {
+    fn infer_types_of_let_in_function_definition_with_recursive_functions() {
         assert_eq!(
             infer_types(&Module::from_definitions(vec![FunctionDefinition::new(
                 "f",

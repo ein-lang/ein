@@ -90,8 +90,8 @@ impl ExpressionCompiler {
             )
             .into(),
             Expression::Let(let_) => match let_.definitions()[0] {
-                Definition::FunctionDefinition(_) => self.compile_let_functions(let_)?.into(),
-                Definition::ValueDefinition(_) => self.compile_let_values(let_)?.into(),
+                Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
+                Definition::ValueDefinition(_) => self.compile_let(let_)?,
             },
             Expression::None(_) => ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
@@ -274,7 +274,7 @@ impl ExpressionCompiler {
         })
     }
 
-    fn compile_let_functions(&self, let_: &Let) -> Result<ssf::ir::LetFunctions, CompileError> {
+    fn compile_let_recursive(&self, let_: &Let) -> Result<ssf::ir::LetRecursive, CompileError> {
         let function_definitions = let_
             .definitions()
             .iter()
@@ -288,7 +288,7 @@ impl ExpressionCompiler {
             })
             .collect::<Result<Vec<&FunctionDefinition>, _>>()?;
 
-        Ok(ssf::ir::LetFunctions::new(
+        Ok(ssf::ir::LetRecursive::new(
             function_definitions
                 .iter()
                 .map(|function_definition| {
@@ -319,7 +319,7 @@ impl ExpressionCompiler {
         ))
     }
 
-    fn compile_let_values(&self, let_: &Let) -> Result<ssf::ir::LetValues, CompileError> {
+    fn compile_let(&self, let_: &Let) -> Result<ssf::ir::Expression, CompileError> {
         let value_definitions = let_
             .definitions()
             .iter()
@@ -333,19 +333,18 @@ impl ExpressionCompiler {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        Ok(ssf::ir::LetValues::new(
-            value_definitions
-                .iter()
-                .map(|value_definition| {
-                    Ok(ssf::ir::ValueDefinition::new(
-                        value_definition.name(),
-                        self.compile(value_definition.body())?,
-                        self.type_compiler.compile_value(value_definition.type_())?,
-                    ))
-                })
-                .collect::<Result<Vec<_>, CompileError>>()?,
-            self.compile(let_.expression())?,
-        ))
+        value_definitions.iter().rev().fold(
+            self.compile(let_.expression()),
+            |expression, value_definition| {
+                Ok(ssf::ir::Let::new(
+                    value_definition.name(),
+                    self.type_compiler.compile_value(value_definition.type_())?,
+                    self.compile(value_definition.body())?,
+                    expression?,
+                )
+                .into())
+            },
+        )
     }
 
     fn compile_case(&self, case: &Case) -> Result<ssf::ir::Expression, CompileError> {
@@ -367,12 +366,10 @@ impl ExpressionCompiler {
                 .unwrap()
         };
 
-        Ok(ssf::ir::LetValues::new(
-            vec![ssf::ir::ValueDefinition::new(
-                case.name(),
-                self.compile(case.argument())?,
-                self.type_compiler.compile_value(case.type_())?,
-            )],
+        Ok(ssf::ir::Let::new(
+            case.name(),
+            self.type_compiler.compile_value(case.type_())?,
+            self.compile(case.argument())?,
             ssf::ir::AlgebraicCase::new(
                 argument_type.clone(),
                 if case.type_().is_any() {
@@ -415,20 +412,18 @@ impl ExpressionCompiler {
                                                 self.union_tag_calculator.calculate(type_)?,
                                             ),
                                             vec![case.name().into()],
-                                            ssf::ir::LetValues::new(
-                                                vec![ssf::ir::ValueDefinition::new(
-                                                    case.name(),
-                                                    ssf::ir::ConstructorApplication::new(
-                                                        ssf::ir::Constructor::new(
-                                                            alternative_type.clone(),
-                                                            self.union_tag_calculator
-                                                                .calculate(type_)?,
-                                                        ),
-                                                        vec![ssf::ir::Variable::new(case.name())
-                                                            .into()],
+                                            ssf::ir::Let::new(
+                                                case.name(),
+                                                alternative_type.clone(),
+                                                ssf::ir::ConstructorApplication::new(
+                                                    ssf::ir::Constructor::new(
+                                                        alternative_type.clone(),
+                                                        self.union_tag_calculator
+                                                            .calculate(type_)?,
                                                     ),
-                                                    alternative_type.clone(),
-                                                )],
+                                                    vec![ssf::ir::Variable::new(case.name())
+                                                        .into()],
+                                                ),
                                                 self.compile(alternative.expression())?,
                                             ),
                                         ))
@@ -606,7 +601,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_values() {
+    fn compile_let() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -624,12 +619,10 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetValues::new(
-                vec![ssf::ir::ValueDefinition::new(
-                    "x",
-                    42.0,
-                    ssf::types::Primitive::Float64,
-                )],
+            Ok(ssf::ir::Let::new(
+                "x",
+                ssf::types::Primitive::Float64,
+                42.0,
                 ssf::ir::Variable::new("x")
             )
             .into())
@@ -637,7 +630,50 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_functions() {
+    fn compile_let_with_multiple_definitions() {
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+
+        assert_eq!(
+            expression_compiler.compile(
+                &Let::new(
+                    vec![
+                        ValueDefinition::new(
+                            "x",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        ValueDefinition::new(
+                            "y",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    ],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+            ),
+            Ok(ssf::ir::Let::new(
+                "x",
+                ssf::types::Primitive::Float64,
+                42.0,
+                ssf::ir::Let::new(
+                    "y",
+                    ssf::types::Primitive::Float64,
+                    42.0,
+                    ssf::ir::Variable::new("x")
+                )
+            )
+            .into())
+        );
+    }
+
+    #[test]
+    fn compile_let_recursive() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -660,7 +696,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetFunctions::new(
+            Ok(ssf::ir::LetRecursive::new(
                 vec![ssf::ir::FunctionDefinition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
@@ -674,7 +710,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_functions_with_recursive_functions() {
+    fn compile_let_recursive_with_recursive_functions() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -701,7 +737,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetFunctions::new(
+            Ok(ssf::ir::LetRecursive::new(
                 vec![ssf::ir::FunctionDefinition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
@@ -718,7 +754,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_nested_let_functions() {
+    fn compile_nested_let_recursive() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -756,11 +792,11 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetFunctions::new(
+            Ok(ssf::ir::LetRecursive::new(
                 vec![ssf::ir::FunctionDefinition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
-                    ssf::ir::LetFunctions::new(
+                    ssf::ir::LetRecursive::new(
                         vec![ssf::ir::FunctionDefinition::new(
                             "g",
                             vec![ssf::ir::Argument::new("y", ssf::types::Primitive::Float64)],
@@ -778,7 +814,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_values_with_free_variables() {
+    fn compile_let_with_free_variables() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -811,13 +847,11 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetValues::new(
-                vec![ssf::ir::ValueDefinition::new(
-                    "y",
-                    42.0,
-                    ssf::types::Primitive::Float64,
-                )],
-                ssf::ir::LetFunctions::new(
+            Ok(ssf::ir::Let::new(
+                "y",
+                ssf::types::Primitive::Float64,
+                42.0,
+                ssf::ir::LetRecursive::new(
                     vec![ssf::ir::FunctionDefinition::new(
                         "f",
                         vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
