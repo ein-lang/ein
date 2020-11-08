@@ -113,7 +113,7 @@ mod tests {
                 )
             ),
             Ok(Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
                     Let::new(
@@ -150,7 +150,7 @@ mod tests {
                         ),
                         SourceInformation::dummy(),
                     ),
-                    reference_type.clone(),
+                    reference_type,
                     SourceInformation::dummy(),
                 )
                 .into()]

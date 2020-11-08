@@ -69,7 +69,6 @@ mod tests {
                     Boolean::new(false, SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
-                .into()
             ),
             If::new(
                 Boolean::new(false, SourceInformation::dummy()),

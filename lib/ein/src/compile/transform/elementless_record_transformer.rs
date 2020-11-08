@@ -77,7 +77,7 @@ mod tests {
                         Default::default(),
                         SourceInformation::dummy(),
                     ),
-                    record_type.clone(),
+                    record_type,
                     SourceInformation::dummy(),
                 )
                 .into()]

@@ -239,7 +239,7 @@ mod tests {
                     Variable::new("pa_argument_1", SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 ),
-                function_type.clone(),
+                function_type,
                 SourceInformation::dummy(),
             )
             .into()]))

@@ -204,7 +204,7 @@ mod tests {
                         .collect(),
                         SourceInformation::dummy(),
                     ),
-                    reference_type.clone(),
+                    reference_type,
                     SourceInformation::dummy(),
                 )
                 .into()],
@@ -238,7 +238,7 @@ mod tests {
                     Application::new(
                         Variable::new("Foo.foo", SourceInformation::dummy()),
                         RecordConstruction::new(
-                            reference_type.clone(),
+                            reference_type,
                             vec![(
                                 "foo".into(),
                                 Number::new(42.0, SourceInformation::dummy()).into(),
@@ -272,7 +272,7 @@ mod tests {
                 vec![ValueDefinition::new(
                     "x",
                     Variable::new("Foo", SourceInformation::dummy()),
-                    reference_type.clone(),
+                    reference_type,
                     SourceInformation::dummy(),
                 )
                 .into()],

@@ -139,7 +139,7 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
+            type_equality_checker,
         );
 
         assert_eq!(
@@ -179,7 +179,7 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
+            type_equality_checker,
         );
         let record_type = types::Record::new(
             "Foo",
@@ -198,7 +198,7 @@ mod tests {
                     record_type.clone(),
                     "foo",
                     RecordConstruction::new(
-                        record_type.clone(),
+                        record_type,
                         vec![(
                             "foo".into(),
                             Number::new(42.0, SourceInformation::dummy()).into()

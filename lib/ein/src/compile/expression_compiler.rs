@@ -516,8 +516,8 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let equal_operation_transformer = EqualOperationTransformer::new(
             reference_type_resolver.clone(),
-            type_comparability_checker.clone(),
-            type_equality_checker.clone(),
+            type_comparability_checker,
+            type_equality_checker,
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let not_equal_operation_transformer = NotEqualOperationTransformer::new();
@@ -948,7 +948,7 @@ mod tests {
         );
         let (expression_compiler, _, _) =
             create_expression_compiler(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", type_.clone())],
+                vec![TypeDefinition::new("Foo", type_)],
                 vec![],
             ));
 
@@ -1096,7 +1096,7 @@ mod tests {
                 expression_compiler.compile(
                     &TypeCoercion::new(
                         Variable::new("x", SourceInformation::dummy()),
-                        lower_union_type.clone(),
+                        lower_union_type,
                         upper_union_type.clone(),
                         SourceInformation::dummy(),
                     )
