@@ -131,7 +131,6 @@ mod tests {
         static ref COMPILE_CONFIGURATION: CompileConfiguration = CompileConfiguration::new(
             "main",
             "ein_main",
-            "ein_init",
             "ein_malloc",
             "ein_panic",
             ListTypeConfiguration::new(

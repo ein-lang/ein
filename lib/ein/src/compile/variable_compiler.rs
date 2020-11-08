@@ -1,5 +1,6 @@
 use super::type_compiler::TypeCompiler;
 use crate::ast::*;
+use crate::types::Type;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -14,14 +15,29 @@ impl VariableCompiler {
             type_compiler,
             // Assuming those names do not conflict with any local variables due to alpha conversion.
             names: module
-                .definitions()
+                .imports()
                 .iter()
-                .filter_map(|definition| match definition {
-                    Definition::FunctionDefinition(_) => None,
-                    Definition::ValueDefinition(value_definition) => {
-                        Some(value_definition.name().into())
-                    }
+                .flat_map(|import| {
+                    import
+                        .module_interface()
+                        .variables()
+                        .iter()
+                        .filter_map(|(name, type_)| match type_ {
+                            Type::Function(_) => None,
+                            _ => Some(name.into()),
+                        })
                 })
+                .chain(
+                    module
+                        .definitions()
+                        .iter()
+                        .filter_map(|definition| match definition {
+                            Definition::FunctionDefinition(_) => None,
+                            Definition::ValueDefinition(value_definition) => {
+                                Some(value_definition.name().into())
+                            }
+                        }),
+                )
                 .collect(),
         }
         .into()
