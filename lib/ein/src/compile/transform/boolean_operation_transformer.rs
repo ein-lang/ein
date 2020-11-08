@@ -61,15 +61,13 @@ mod tests {
     #[test]
     fn transform_or_operation() {
         assert_eq!(
-            BooleanOperationTransformer::new().transform(
-                &Operation::with_type(
-                    types::Boolean::new(SourceInformation::dummy()),
-                    Operator::Or,
-                    Boolean::new(false, SourceInformation::dummy()),
-                    Boolean::new(false, SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-            ),
+            BooleanOperationTransformer::new().transform(&Operation::with_type(
+                types::Boolean::new(SourceInformation::dummy()),
+                Operator::Or,
+                Boolean::new(false, SourceInformation::dummy()),
+                Boolean::new(false, SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )),
             If::new(
                 Boolean::new(false, SourceInformation::dummy()),
                 Boolean::new(true, SourceInformation::dummy()),

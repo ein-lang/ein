@@ -137,10 +137,8 @@ mod tests {
     fn extract_type_of_case_expression() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer = TypeCanonicalizer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker,
-        );
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
 
         assert_eq!(
             ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
@@ -177,10 +175,8 @@ mod tests {
     fn extract_type_of_record_element_operation() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer = TypeCanonicalizer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker,
-        );
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
         let record_type = types::Record::new(
             "Foo",
             vec![(

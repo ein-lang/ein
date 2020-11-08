@@ -49,8 +49,9 @@ impl ModuleCompiler {
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
-                    Definition::FunctionDefinition(function_definition) => Ok(self
-                        .compile_function_definition(function_definition)?),
+                    Definition::FunctionDefinition(function_definition) => {
+                        Ok(self.compile_function_definition(function_definition)?)
+                    }
                     Definition::ValueDefinition(value_definition) => {
                         Ok(self.compile_value_definition(value_definition)?)
                     }
