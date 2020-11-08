@@ -400,7 +400,7 @@ mod tests {
                         "Foo",
                         types::Record::new(
                             "Foo",
-                            vec![("foo".into(), union_type.clone().into())]
+                            vec![("foo".into(), union_type.into())]
                                 .into_iter()
                                 .collect(),
                             SourceInformation::dummy(),
@@ -418,7 +418,7 @@ mod tests {
                             .collect(),
                             SourceInformation::dummy(),
                         ),
-                        reference_type.clone(),
+                        reference_type,
                         SourceInformation::dummy(),
                     )
                     .into()],
@@ -716,7 +716,7 @@ mod tests {
             ValueDefinition::new(
                 "x",
                 Case::with_type(
-                    argument_union_type.clone(),
+                    argument_union_type,
                     "foo",
                     Boolean::new(false, SourceInformation::dummy()),
                     vec![
@@ -731,7 +731,7 @@ mod tests {
                     ],
                     SourceInformation::dummy(),
                 ),
-                result_union_type.clone(),
+                result_union_type,
                 SourceInformation::dummy(),
             )
             .into()

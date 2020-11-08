@@ -106,7 +106,7 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                     types::Function::new(
-                        record_type.clone(),
+                        record_type,
                         types::None::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),

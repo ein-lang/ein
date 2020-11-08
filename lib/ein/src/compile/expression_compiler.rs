@@ -1,5 +1,6 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
+use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
@@ -7,6 +8,7 @@ use super::transform::{
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
+use super::variable_compiler::VariableCompiler;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::convert::TryInto;
@@ -25,6 +27,8 @@ pub struct ExpressionCompiler {
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
     boolean_compiler: Arc<BooleanCompiler>,
+    none_compiler: Arc<NoneCompiler>,
+    variable_compiler: Arc<VariableCompiler>,
 }
 
 impl ExpressionCompiler {
@@ -34,6 +38,8 @@ impl ExpressionCompiler {
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
         boolean_compiler: Arc<BooleanCompiler>,
+        none_compiler: Arc<NoneCompiler>,
+        variable_compiler: Arc<VariableCompiler>,
     ) -> Arc<Self> {
         Self {
             expression_transformer_set,
@@ -41,6 +47,8 @@ impl ExpressionCompiler {
             union_tag_calculator,
             type_compiler,
             boolean_compiler,
+            none_compiler,
+            variable_compiler,
         }
         .into()
     }
@@ -93,11 +101,7 @@ impl ExpressionCompiler {
                 Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
                 Definition::ValueDefinition(_) => self.compile_let(let_)?,
             },
-            Expression::None(_) => ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
-                vec![],
-            )
-            .into(),
+            Expression::None(_) => self.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
                 &self
                     .expression_transformer_set
@@ -269,7 +273,7 @@ impl ExpressionCompiler {
                     Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 }
             }
-            Expression::Variable(variable) => ssf::ir::Variable::new(variable.name()).into(),
+            Expression::Variable(variable) => self.variable_compiler.compile(&variable),
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
@@ -297,7 +301,7 @@ impl ExpressionCompiler {
                         .to_function()
                         .expect("function type");
 
-                    Ok(ssf::ir::FunctionDefinition::new(
+                    Ok(ssf::ir::Definition::new(
                         function_definition.name(),
                         function_definition
                             .arguments()
@@ -461,6 +465,7 @@ mod tests {
     use super::super::boolean_compiler::BooleanCompiler;
     use super::super::error::CompileError;
     use super::super::list_type_configuration::ListTypeConfiguration;
+    use super::super::none_compiler::NoneCompiler;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::transform::{
         BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
@@ -470,6 +475,7 @@ mod tests {
     use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::super::union_tag_calculator::UnionTagCalculator;
+    use super::super::variable_compiler::VariableCompiler;
     use super::{ExpressionCompiler, ExpressionTransformerSet};
     use crate::ast::*;
     use crate::debug::SourceInformation;
@@ -505,13 +511,15 @@ mod tests {
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
+        let none_compiler = NoneCompiler::new(type_compiler.clone());
+        let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
         let type_comparability_checker =
             TypeComparabilityChecker::new(reference_type_resolver.clone());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let equal_operation_transformer = EqualOperationTransformer::new(
             reference_type_resolver.clone(),
-            type_comparability_checker.clone(),
-            type_equality_checker.clone(),
+            type_comparability_checker,
+            type_equality_checker,
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let not_equal_operation_transformer = NotEqualOperationTransformer::new();
@@ -531,6 +539,8 @@ mod tests {
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
                 boolean_compiler,
+                none_compiler,
+                variable_compiler,
             ),
             type_compiler,
             union_tag_calculator,
@@ -697,7 +707,7 @@ mod tests {
                 .into(),
             ),
             Ok(ssf::ir::LetRecursive::new(
-                vec![ssf::ir::FunctionDefinition::new(
+                vec![ssf::ir::Definition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                     42.0,
@@ -738,7 +748,7 @@ mod tests {
                 .into(),
             ),
             Ok(ssf::ir::LetRecursive::new(
-                vec![ssf::ir::FunctionDefinition::new(
+                vec![ssf::ir::Definition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                     ssf::ir::FunctionApplication::new(
@@ -793,11 +803,11 @@ mod tests {
                 .into(),
             ),
             Ok(ssf::ir::LetRecursive::new(
-                vec![ssf::ir::FunctionDefinition::new(
+                vec![ssf::ir::Definition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                     ssf::ir::LetRecursive::new(
-                        vec![ssf::ir::FunctionDefinition::new(
+                        vec![ssf::ir::Definition::new(
                             "g",
                             vec![ssf::ir::Argument::new("y", ssf::types::Primitive::Float64)],
                             ssf::ir::Variable::new("x"),
@@ -852,7 +862,7 @@ mod tests {
                 ssf::types::Primitive::Float64,
                 42.0,
                 ssf::ir::LetRecursive::new(
-                    vec![ssf::ir::FunctionDefinition::new(
+                    vec![ssf::ir::Definition::new(
                         "f",
                         vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                         ssf::ir::Variable::new("y"),
@@ -941,7 +951,7 @@ mod tests {
         );
         let (expression_compiler, _, _) =
             create_expression_compiler(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", type_.clone())],
+                vec![TypeDefinition::new("Foo", type_)],
                 vec![],
             ));
 
@@ -1089,7 +1099,7 @@ mod tests {
                 expression_compiler.compile(
                     &TypeCoercion::new(
                         Variable::new("x", SourceInformation::dummy()),
-                        lower_union_type.clone(),
+                        lower_union_type,
                         upper_union_type.clone(),
                         SourceInformation::dummy(),
                     )

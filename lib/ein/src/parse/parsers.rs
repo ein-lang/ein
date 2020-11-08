@@ -1356,7 +1356,7 @@ mod tests {
         fn parse_any_type() {
             assert_eq!(
                 any_type().parse(stream("Any", "")).unwrap().0,
-                types::Any::new(SourceInformation::dummy()).into()
+                types::Any::new(SourceInformation::dummy())
             );
         }
 

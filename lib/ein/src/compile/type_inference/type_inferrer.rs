@@ -1151,8 +1151,7 @@ mod tests {
                         vec![Alternative::new(
                             types::Any::new(SourceInformation::dummy()),
                             None::new(SourceInformation::dummy()),
-                        )
-                        .into()],
+                        )],
                         SourceInformation::dummy()
                     ),
                     types::None::new(SourceInformation::dummy()),
@@ -1179,8 +1178,7 @@ mod tests {
                         vec![Alternative::new(
                             types::Number::new(SourceInformation::dummy()),
                             None::new(SourceInformation::dummy()),
-                        )
-                        .into()],
+                        )],
                         SourceInformation::dummy()
                     ),
                     types::None::new(SourceInformation::dummy()),
@@ -1381,7 +1379,7 @@ mod tests {
             );
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
                     RecordElementOperation::new(
@@ -1426,7 +1424,7 @@ mod tests {
                         record_type.clone(),
                         "foo",
                         RecordConstruction::new(
-                            record_type.clone(),
+                            record_type,
                             vec![(
                                 "foo".into(),
                                 Number::new(42.0, SourceInformation::dummy()).into()
@@ -1520,7 +1518,7 @@ mod tests {
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
+                vec![TypeDefinition::new("Foo", record_type)],
                 vec![ValueDefinition::new(
                     "x",
                     Operation::with_type(
@@ -1532,7 +1530,7 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         RecordConstruction::new(
-                            reference_type.clone(),
+                            reference_type,
                             Default::default(),
                             SourceInformation::dummy(),
                         ),
@@ -1868,7 +1866,7 @@ mod tests {
                 ValueDefinition::new(
                     "x",
                     List::new(vec![], SourceInformation::dummy()),
-                    list_type.clone(),
+                    list_type,
                     SourceInformation::dummy(),
                 )
                 .into()
@@ -1891,7 +1889,7 @@ mod tests {
                         )],
                         SourceInformation::dummy(),
                     ),
-                    list_type.clone(),
+                    list_type,
                     SourceInformation::dummy(),
                 )
                 .into()

@@ -482,7 +482,7 @@ mod tests {
         assert_eq!(
             TypeCompiler::new(
                 reference_type_resolver.clone(),
-                UnionTagCalculator::new(reference_type_resolver.clone()),
+                UnionTagCalculator::new(reference_type_resolver),
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(&types::Reference::new("Bar", SourceInformation::dummy()).into()),
