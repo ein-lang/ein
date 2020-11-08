@@ -1,5 +1,6 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
+use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
@@ -26,6 +27,7 @@ pub struct ExpressionCompiler {
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
     boolean_compiler: Arc<BooleanCompiler>,
+    none_compiler: Arc<NoneCompiler>,
     variable_compiler: Arc<VariableCompiler>,
 }
 
@@ -36,6 +38,7 @@ impl ExpressionCompiler {
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
         boolean_compiler: Arc<BooleanCompiler>,
+        none_compiler: Arc<NoneCompiler>,
         variable_compiler: Arc<VariableCompiler>,
     ) -> Arc<Self> {
         Self {
@@ -44,6 +47,7 @@ impl ExpressionCompiler {
             union_tag_calculator,
             type_compiler,
             boolean_compiler,
+            none_compiler,
             variable_compiler,
         }
         .into()
@@ -97,11 +101,7 @@ impl ExpressionCompiler {
                 Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
                 Definition::ValueDefinition(_) => self.compile_let(let_)?,
             },
-            Expression::None(_) => ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
-                vec![],
-            )
-            .into(),
+            Expression::None(_) => self.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
                 &self
                     .expression_transformer_set
@@ -465,6 +465,7 @@ mod tests {
     use super::super::boolean_compiler::BooleanCompiler;
     use super::super::error::CompileError;
     use super::super::list_type_configuration::ListTypeConfiguration;
+    use super::super::none_compiler::NoneCompiler;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::transform::{
         BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
@@ -510,6 +511,7 @@ mod tests {
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
+        let none_compiler = NoneCompiler::new(type_compiler.clone());
         let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
         let type_comparability_checker =
             TypeComparabilityChecker::new(reference_type_resolver.clone());
@@ -537,6 +539,7 @@ mod tests {
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
                 boolean_compiler,
+                none_compiler,
                 variable_compiler,
             ),
             type_compiler,

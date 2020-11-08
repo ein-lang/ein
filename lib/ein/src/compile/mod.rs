@@ -10,6 +10,7 @@ mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
+mod none_compiler;
 mod reference_type_resolver;
 mod transform;
 mod type_canonicalizer;
@@ -30,6 +31,7 @@ use global_name_renamer::GlobalNameRenamer;
 pub use list_type_configuration::ListTypeConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
+use none_compiler::NoneCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 use transform::{
@@ -71,6 +73,7 @@ pub fn compile(
         list_type_configuration.clone(),
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
+    let none_compiler = NoneCompiler::new(type_compiler.clone());
     let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
 
     let equal_operation_transformer = EqualOperationTransformer::new(
@@ -95,6 +98,7 @@ pub fn compile(
         union_tag_calculator,
         type_compiler.clone(),
         boolean_compiler,
+        none_compiler,
         variable_compiler,
     );
 
