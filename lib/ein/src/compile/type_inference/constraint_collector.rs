@@ -277,8 +277,8 @@ impl ConstraintCollector {
                     )
                 })?;
 
-                if HashSet::<&String>::from_iter(record.elements().keys())
-                    != HashSet::from_iter(record_type.elements().keys())
+                if record.elements().keys().collect::<HashSet<_>>()
+                    != record_type.elements().keys().collect()
                 {
                     return Err(CompileError::TypesNotMatched(
                         record.source_information().clone(),
