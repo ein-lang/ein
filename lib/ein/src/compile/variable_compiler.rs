@@ -47,11 +47,10 @@ impl VariableCompiler {
         if self.names.contains(variable.name()) {
             ssf::ir::FunctionApplication::new(
                 ssf::ir::Variable::new(variable.name()),
-                vec![ssf::ir::ConstructorApplication::new(
+                ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
                     vec![],
-                )
-                .into()],
+                ),
             )
             .into()
         } else {
