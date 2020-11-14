@@ -5,7 +5,7 @@ use super::subsumption_set::SubsumptionSet;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
+
 use std::sync::Arc;
 
 pub struct ConstraintCollector {
