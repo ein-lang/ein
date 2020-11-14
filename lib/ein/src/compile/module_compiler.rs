@@ -50,8 +50,8 @@ impl ModuleCompiler {
                     Definition::FunctionDefinition(function_definition) => {
                         Ok(self.compile_function_definition(function_definition)?)
                     }
-                    Definition::ValueDefinition(value_definition) => {
-                        Ok(self.compile_value_definition(value_definition)?)
+                    Definition::VariableDefinition(variable_definition) => {
+                        Ok(self.compile_variable_definition(variable_definition)?)
                     }
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
@@ -83,18 +83,19 @@ impl ModuleCompiler {
         ))
     }
 
-    fn compile_value_definition(
+    fn compile_variable_definition(
         &self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
     ) -> Result<ssf::ir::Definition, CompileError> {
         Ok(ssf::ir::Definition::thunk(
-            value_definition.name(),
+            variable_definition.name(),
             vec![ssf::ir::Argument::new(
                 "$thunk_arg",
                 self.type_compiler.compile_none(),
             )],
-            self.expression_compiler.compile(value_definition.body())?,
-            self.type_compiler.compile(value_definition.type_())?,
+            self.expression_compiler
+                .compile(variable_definition.body())?,
+            self.type_compiler.compile(variable_definition.type_())?,
         ))
     }
 }

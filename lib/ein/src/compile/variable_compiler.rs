@@ -33,8 +33,8 @@ impl VariableCompiler {
                         .iter()
                         .filter_map(|definition| match definition {
                             Definition::FunctionDefinition(_) => None,
-                            Definition::ValueDefinition(value_definition) => {
-                                Some(value_definition.name().into())
+                            Definition::VariableDefinition(variable_definition) => {
+                                Some(variable_definition.name().into())
                             }
                         }),
                 )

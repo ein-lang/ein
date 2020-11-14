@@ -82,7 +82,7 @@ impl ExpressionCompiler {
             .into(),
             Expression::Let(let_) => match let_.definitions()[0] {
                 Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
-                Definition::ValueDefinition(_) => self.compile_let(let_)?,
+                Definition::VariableDefinition(_) => self.compile_let(let_)?,
             },
             Expression::None(_) => self.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
@@ -259,9 +259,9 @@ impl ExpressionCompiler {
             .iter()
             .map(|definition| match definition {
                 Definition::FunctionDefinition(function_definition) => Ok(function_definition),
-                Definition::ValueDefinition(value_definition) => {
+                Definition::VariableDefinition(variable_definition) => {
                     Err(CompileError::MixedDefinitionsInLet(
-                        value_definition.source_information().clone(),
+                        variable_definition.source_information().clone(),
                     ))
                 }
             })
@@ -304,7 +304,7 @@ impl ExpressionCompiler {
     }
 
     fn compile_let(&self, let_: &Let) -> Result<ssf::ir::Expression, CompileError> {
-        let value_definitions = let_
+        let variable_definitions = let_
             .definitions()
             .iter()
             .map(|definition| match definition {
@@ -313,17 +313,17 @@ impl ExpressionCompiler {
                         function_definition.source_information().clone(),
                     ))
                 }
-                Definition::ValueDefinition(value_definition) => Ok(value_definition),
+                Definition::VariableDefinition(variable_definition) => Ok(variable_definition),
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        value_definitions.iter().rev().fold(
+        variable_definitions.iter().rev().fold(
             self.compile(let_.expression()),
-            |expression, value_definition| {
+            |expression, variable_definition| {
                 Ok(ssf::ir::Let::new(
-                    value_definition.name(),
-                    self.type_compiler.compile(value_definition.type_())?,
-                    self.compile(value_definition.body())?,
+                    variable_definition.name(),
+                    self.type_compiler.compile(variable_definition.type_())?,
+                    self.compile(variable_definition.body())?,
                     expression?,
                 )
                 .into())
@@ -595,7 +595,7 @@ mod tests {
         assert_eq!(
             expression_compiler.compile(
                 &Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
@@ -625,14 +625,14 @@ mod tests {
             expression_compiler.compile(
                 &Let::new(
                     vec![
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "x",
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
@@ -808,7 +808,7 @@ mod tests {
         assert_eq!(
             expression_compiler.compile(
                 &Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),

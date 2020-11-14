@@ -75,10 +75,10 @@ impl ExpressionTypeExtractor {
                                 function_definition.type_().clone(),
                             );
                         }
-                        Definition::ValueDefinition(value_definition) => {
+                        Definition::VariableDefinition(variable_definition) => {
                             variables.insert(
-                                value_definition.name().into(),
-                                value_definition.type_().clone(),
+                                variable_definition.name().into(),
+                                variable_definition.type_().clone(),
                             );
                         }
                     }

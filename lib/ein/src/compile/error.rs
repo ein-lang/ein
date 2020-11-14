@@ -48,7 +48,7 @@ impl Display for CompileError {
             ),
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
-                "cannot mix function and value definitions in a let expression\n{}",
+                "cannot mix function and variable definitions in a let expression\n{}",
                 source_information
             ),
             Self::RecordEqualOperation(source_information) => write!(

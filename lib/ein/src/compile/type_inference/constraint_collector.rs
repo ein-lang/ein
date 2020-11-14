@@ -33,8 +33,8 @@ impl ConstraintCollector {
                 Definition::FunctionDefinition(function_definition) => {
                     self.infer_function_definition(function_definition, &variables)?;
                 }
-                Definition::ValueDefinition(value_definition) => {
-                    self.infer_value_definition(value_definition, &variables)?;
+                Definition::VariableDefinition(variable_definition) => {
+                    self.infer_variable_definition(variable_definition, &variables)?;
                 }
             };
         }
@@ -75,15 +75,15 @@ impl ConstraintCollector {
         Ok(())
     }
 
-    fn infer_value_definition(
+    fn infer_variable_definition(
         &mut self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<(), CompileError> {
-        let type_ = self.infer_expression(value_definition.body(), &variables)?;
+        let type_ = self.infer_expression(variable_definition.body(), &variables)?;
 
         self.solved_subsumption_set
-            .add(type_, value_definition.type_().clone());
+            .add(type_, variable_definition.type_().clone());
 
         Ok(())
     }
@@ -163,11 +163,11 @@ impl ConstraintCollector {
                                 function_definition.type_().clone(),
                             );
                         }
-                        Definition::ValueDefinition(value_definition) => {
+                        Definition::VariableDefinition(variable_definition) => {
                             if let_.has_functions() {
                                 variables.insert(
-                                    value_definition.name().into(),
-                                    value_definition.type_().clone(),
+                                    variable_definition.name().into(),
+                                    variable_definition.type_().clone(),
                                 );
                             }
                         }
@@ -179,12 +179,12 @@ impl ConstraintCollector {
                         Definition::FunctionDefinition(function_definition) => {
                             self.infer_function_definition(function_definition, &variables)?;
                         }
-                        Definition::ValueDefinition(value_definition) => {
-                            self.infer_value_definition(value_definition, &variables)?;
+                        Definition::VariableDefinition(variable_definition) => {
+                            self.infer_variable_definition(variable_definition, &variables)?;
 
                             variables.insert(
-                                value_definition.name().into(),
-                                value_definition.type_().clone(),
+                                variable_definition.name().into(),
+                                variable_definition.type_().clone(),
                             );
                         }
                     }

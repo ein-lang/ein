@@ -18,8 +18,8 @@ impl PartialApplicationTransformer {
     pub fn transform(&self, module: &Module) -> Result<Module, CompileError> {
         module
             .transform_definitions(&mut |definition| -> Result<_, CompileError> {
-                if let Definition::ValueDefinition(value_definition) = definition {
-                    Ok(self.transform_value_definition(value_definition))
+                if let Definition::VariableDefinition(variable_definition) = definition {
+                    Ok(self.transform_variable_definition(variable_definition))
                 } else {
                     Ok(definition.clone())
                 }
@@ -35,18 +35,21 @@ impl PartialApplicationTransformer {
             })
     }
 
-    fn transform_value_definition(&self, value_definition: &ValueDefinition) -> Definition {
-        if let Type::Function(_) = value_definition.type_() {
+    fn transform_variable_definition(
+        &self,
+        variable_definition: &VariableDefinition,
+    ) -> Definition {
+        if let Type::Function(_) = variable_definition.type_() {
             FunctionDefinition::new(
-                value_definition.name(),
+                variable_definition.name(),
                 vec![],
-                value_definition.body().clone(),
-                value_definition.type_().clone(),
-                value_definition.source_information().clone(),
+                variable_definition.body().clone(),
+                variable_definition.type_().clone(),
+                variable_definition.source_information().clone(),
             )
             .into()
         } else {
-            value_definition.clone().into()
+            variable_definition.clone().into()
         }
     }
 
@@ -171,10 +174,10 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn complement_an_omitted_argument_of_value_definition() {
+    fn complement_an_omitted_argument_of_variable_definition() {
         assert_eq!(
             PartialApplicationTransformer::new().transform(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "f",
                     Variable::new("g", SourceInformation::dummy()),
                     types::Function::new(
@@ -206,7 +209,7 @@ mod tests {
     }
 
     #[test]
-    fn complement_2_omitted_arguments_of_value_definition() {
+    fn complement_2_omitted_arguments_of_variable_definition() {
         let function_type = types::Function::new(
             types::Number::new(SourceInformation::dummy()),
             types::Function::new(
@@ -219,7 +222,7 @@ mod tests {
 
         assert_eq!(
             PartialApplicationTransformer::new().transform(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "f",
                     Variable::new("g", SourceInformation::dummy()),
                     function_type.clone(),

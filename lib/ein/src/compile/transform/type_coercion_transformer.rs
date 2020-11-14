@@ -96,21 +96,21 @@ impl TypedTransformer for TypeCoercionTransformer {
         ))
     }
 
-    fn transform_value_definition(
+    fn transform_variable_definition(
         &mut self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
-    ) -> Result<ValueDefinition, CompileError> {
-        Ok(ValueDefinition::new(
-            value_definition.name(),
+    ) -> Result<VariableDefinition, CompileError> {
+        Ok(VariableDefinition::new(
+            variable_definition.name(),
             self.coerce_type(
-                value_definition.body(),
-                value_definition.type_(),
-                value_definition.source_information().clone(),
+                variable_definition.body(),
+                variable_definition.type_(),
+                variable_definition.source_information().clone(),
                 &variables,
             )?,
-            value_definition.type_().clone(),
-            value_definition.source_information().clone(),
+            variable_definition.type_().clone(),
+            variable_definition.source_information().clone(),
         ))
     }
 
