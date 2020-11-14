@@ -5,6 +5,7 @@ pub trait FilePathDisplayer {
 }
 
 #[cfg(test)]
+#[derive(Default)]
 pub struct FakeFilePathDisplayer {}
 
 #[cfg(test)]

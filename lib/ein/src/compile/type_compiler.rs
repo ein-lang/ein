@@ -59,7 +59,7 @@ impl TypeCompiler {
             ))?,
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => self.compile_number().into(),
-            Type::Record(record) => self.compile_record_recursively(record)?.into(),
+            Type::Record(record) => self.compile_record_recursively(record)?,
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::Union(union) => self.compile_union(union)?.into(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
@@ -315,7 +315,7 @@ mod tests {
             .compile(&reference_type.into()),
             Ok(
                 ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                    vec![ssf::types::Type::Index(0).into()],
+                    vec![ssf::types::Type::Index(0)],
                     true
                 )])
                 .into()
@@ -368,7 +368,7 @@ mod tests {
                 ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
                     vec![
                         ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                            vec![ssf::types::Type::Index(1).into()],
+                            vec![ssf::types::Type::Index(1)],
                             true
                         )])
                         .into()
@@ -452,7 +452,7 @@ mod tests {
                                         (
                                             461893210254723387,
                                             ssf::types::Constructor::new(
-                                                vec![ssf::types::Type::Index(2).into()],
+                                                vec![ssf::types::Type::Index(2)],
                                                 false
                                             )
                                         )
@@ -499,7 +499,7 @@ mod tests {
                                     ssf::types::Constructor::new(
                                         vec![ssf::types::Algebraic::new(vec![
                                             ssf::types::Constructor::new(
-                                                vec![ssf::types::Type::Index(2).into()],
+                                                vec![ssf::types::Type::Index(2)],
                                                 true
                                             )
                                         ])

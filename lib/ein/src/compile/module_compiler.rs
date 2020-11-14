@@ -77,7 +77,7 @@ impl ModuleCompiler {
             self.expression_compiler
                 .compile(function_definition.body())?,
             (0..function_definition.arguments().len())
-                .fold(core_type.clone().into(), |type_: ssf::types::Type, _| {
+                .fold(core_type.into(), |type_: ssf::types::Type, _| {
                     type_.into_function().unwrap().result().clone()
                 }),
         ))

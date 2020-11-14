@@ -26,7 +26,7 @@ impl FilePath {
     }
 
     pub fn with_extension(&self, extension: &str) -> Self {
-        let replacement = if extension == "" {
+        let replacement = if extension.is_empty() {
             "".into()
         } else {
             format!(".{}", extension)
@@ -56,7 +56,7 @@ impl FilePath {
             let element = component.split('.').last()?;
 
             Some(if element == component {
-                file_extension == ""
+                file_extension.is_empty()
             } else {
                 element == file_extension
             })
