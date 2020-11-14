@@ -35,7 +35,10 @@ impl PartialApplicationTransformer {
             })
     }
 
-    fn transform_variable_definition(&self, variable_definition: &VariableDefinition) -> Definition {
+    fn transform_variable_definition(
+        &self,
+        variable_definition: &VariableDefinition,
+    ) -> Definition {
         if let Type::Function(_) = variable_definition.type_() {
             FunctionDefinition::new(
                 variable_definition.name(),

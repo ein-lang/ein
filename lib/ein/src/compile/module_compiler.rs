@@ -93,7 +93,8 @@ impl ModuleCompiler {
                 "$thunk_arg",
                 self.type_compiler.compile_none(),
             )],
-            self.expression_compiler.compile(variable_definition.body())?,
+            self.expression_compiler
+                .compile(variable_definition.body())?,
             self.type_compiler.compile(variable_definition.type_())?,
         ))
     }

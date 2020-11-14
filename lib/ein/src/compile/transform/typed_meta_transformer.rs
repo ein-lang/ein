@@ -183,8 +183,8 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                             .transform_function_definition(function_definition, &variables)?
                             .into(),
                         Definition::VariableDefinition(variable_definition) => {
-                            let definition =
-                                self.transform_variable_definition(variable_definition, &variables)?;
+                            let definition = self
+                                .transform_variable_definition(variable_definition, &variables)?;
 
                             variables.insert(
                                 variable_definition.name().into(),

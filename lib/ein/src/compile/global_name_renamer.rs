@@ -189,7 +189,8 @@ impl<'a> GlobalNameRenamer<'a> {
                             .rename_function_definition(function_definition, &names)
                             .into(),
                         Definition::VariableDefinition(variable_definition) => {
-                            let definition = self.rename_variable_definition(variable_definition, &names);
+                            let definition =
+                                self.rename_variable_definition(variable_definition, &names);
 
                             names.remove(variable_definition.name());
 
