@@ -96,8 +96,8 @@ Ok(
                     },
                 },
             ),
-            ValueDefinition(
-                ValueDefinition {
+            VariableDefinition(
+                VariableDefinition {
                     name: "x",
                     body: Application(
                         Application {

@@ -55,10 +55,10 @@ mod tests {
         assert_eq!(
             parse("x : Number\nx = (let x = 42\nin x)", ""),
             Ok(UnresolvedModule::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Let::new(
-                        vec![ValueDefinition::new(
+                        vec![VariableDefinition::new(
                             "x",
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
@@ -109,7 +109,7 @@ mod tests {
                                 SourceInformation::dummy(),
                             )
                             .into(),
-                            ValueDefinition::new(
+                            VariableDefinition::new(
                                 "y",
                                 Application::new(
                                     Variable::new("f", SourceInformation::dummy()),

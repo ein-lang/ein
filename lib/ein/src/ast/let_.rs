@@ -39,7 +39,7 @@ impl Let {
     pub fn has_functions(&self) -> bool {
         self.definitions.iter().any(|definition| match definition {
             Definition::FunctionDefinition(_) => true,
-            Definition::ValueDefinition(value_definition) => value_definition.type_().is_function(),
+            Definition::VariableDefinition(variable_definition) => variable_definition.type_().is_function(),
         })
     }
 

@@ -169,7 +169,7 @@ mod tests {
         }
 
         #[test]
-        fn transform_value_definition() {
+        fn transform_variable_definition() {
             let union_type = types::Union::new(
                 vec![
                     types::Number::new(SourceInformation::dummy()).into(),
@@ -179,7 +179,7 @@ mod tests {
             );
 
             let create_module = |expression: Expression| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     expression,
                     union_type.clone(),
@@ -228,7 +228,7 @@ mod tests {
                         SourceInformation::dummy(),
                     )
                     .into(),
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "x",
                         Application::new(
                             Variable::new("f", SourceInformation::dummy()),
@@ -269,10 +269,10 @@ mod tests {
             );
 
             let create_module = |expression: Expression| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     Let::new(
-                        vec![ValueDefinition::new(
+                        vec![VariableDefinition::new(
                             "y",
                             expression,
                             union_type.clone(),
@@ -328,7 +328,7 @@ mod tests {
                         SourceInformation::dummy(),
                     )
                     .into(),
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "x",
                         Let::new(
                             vec![FunctionDefinition::new(
@@ -406,7 +406,7 @@ mod tests {
                             SourceInformation::dummy(),
                         )
                     )],
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         RecordConstruction::new(
                             reference_type.clone(),
@@ -446,14 +446,14 @@ mod tests {
 
             let create_module = |expression1: Expression, expression2: Expression| {
                 Module::from_definitions(vec![
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "x",
                         expression1,
                         lower_union_type.clone(),
                         SourceInformation::dummy(),
                     )
                     .into(),
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "y",
                         expression2,
                         upper_union_type.clone(),
@@ -512,7 +512,7 @@ mod tests {
                         SourceInformation::dummy(),
                     )
                     .into(),
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "x",
                         Let::new(
                             vec![definition],
@@ -528,7 +528,7 @@ mod tests {
 
             assert_eq!(
                 transform_with_types(&create_module(
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "g",
                         Variable::new("f", SourceInformation::dummy()),
                         types::Function::new(
@@ -612,7 +612,7 @@ mod tests {
                         SourceInformation::dummy(),
                     )
                     .into(),
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "x",
                         Application::new(
                             Variable::new("g", SourceInformation::dummy()),
@@ -669,7 +669,7 @@ mod tests {
         #[test]
         fn transform_any() {
             let create_module = |expression: Expression| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     expression,
                     types::Any::new(SourceInformation::dummy()),
@@ -713,7 +713,7 @@ mod tests {
         );
 
         assert_debug_snapshot!(transform_with_types(&Module::from_definitions(vec![
-            ValueDefinition::new(
+            VariableDefinition::new(
                 "x",
                 Case::with_type(
                     argument_union_type,

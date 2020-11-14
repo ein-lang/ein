@@ -152,14 +152,14 @@ mod tests {
     fn compile_constant_initialized_with_operation() {
         assert!(compile(
             &Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Operation::new(
                         Operator::Add,
@@ -196,7 +196,7 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                 )],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     RecordConstruction::new(
                         reference_type.clone(),
@@ -237,7 +237,7 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                 )],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     Application::new(
                         Variable::new("Foo.foo", SourceInformation::dummy()),
@@ -273,7 +273,7 @@ mod tests {
                     "Foo",
                     types::Record::new("Foo", Default::default(), SourceInformation::dummy()),
                 )],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     Variable::new("Foo", SourceInformation::dummy()),
                     reference_type,
@@ -313,7 +313,7 @@ mod tests {
     #[test]
     fn compile_case_expression() {
         compile(
-            &Module::from_definitions(vec![ValueDefinition::new(
+            &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Case::new(
                     "x",
@@ -361,7 +361,7 @@ mod tests {
         );
 
         compile(
-            &Module::from_definitions(vec![ValueDefinition::new(
+            &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Case::new(
                     "y",
@@ -389,7 +389,7 @@ mod tests {
     #[test]
     fn compile_equal_operation_with_none_type() {
         compile(
-            &Module::from_definitions(vec![ValueDefinition::new(
+            &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Operation::new(
                     Operator::Equal,
@@ -409,7 +409,7 @@ mod tests {
     #[test]
     fn compile_equal_operation_with_boolean_type() {
         compile(
-            &Module::from_definitions(vec![ValueDefinition::new(
+            &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Operation::new(
                     Operator::Equal,
@@ -429,7 +429,7 @@ mod tests {
     #[test]
     fn compile_equal_operation_with_union_type() {
         compile(
-            &Module::from_definitions(vec![ValueDefinition::new(
+            &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Operation::new(
                     Operator::Equal,
@@ -449,7 +449,7 @@ mod tests {
     #[test]
     fn compile_any_type() {
         compile(
-            &Module::from_definitions(vec![ValueDefinition::new(
+            &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Any::new(SourceInformation::dummy()),
@@ -464,7 +464,7 @@ mod tests {
     #[test]
     fn compile_any_type_with_union_type() {
         compile(
-            &Module::from_definitions(vec![ValueDefinition::new(
+            &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 If::new(
                     Boolean::new(false, SourceInformation::dummy()),
@@ -485,14 +485,14 @@ mod tests {
     fn compile_case_expression_with_any_type() {
         compile(
             &Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Any::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Case::new(
                         "z",
@@ -573,7 +573,7 @@ mod tests {
     //     #[test]
     //     fn compile_empty_list() -> Result<(), CompileError> {
     //         compile(
-    //             &Module::from_definitions(vec![ValueDefinition::new(
+    //             &Module::from_definitions(vec![VariableDefinition::new(
     //                 "x",
     //                 List::new(vec![], SourceInformation::dummy()),
     //                 types::List::new(

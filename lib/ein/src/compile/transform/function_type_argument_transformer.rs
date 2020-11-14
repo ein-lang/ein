@@ -55,7 +55,7 @@ impl FunctionTypeArgumentTransformer {
                 let name = self.name_generator.generate();
 
                 Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         &name,
                         expression.clone(),
                         to_type,
@@ -82,12 +82,12 @@ impl TypedTransformer for FunctionTypeArgumentTransformer {
         Ok(function_definition.clone())
     }
 
-    fn transform_value_definition(
+    fn transform_variable_definition(
         &mut self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
         _: &HashMap<String, Type>,
-    ) -> Result<ValueDefinition, CompileError> {
-        Ok(value_definition.clone())
+    ) -> Result<VariableDefinition, CompileError> {
+        Ok(variable_definition.clone())
     }
 
     fn transform_expression(

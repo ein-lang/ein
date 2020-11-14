@@ -25,7 +25,7 @@ impl RecordUpdateTransformer {
                 let name = self.name_generator.generate();
 
                 Ok(Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         &name,
                         record_update.argument().clone(),
                         record_update.type_().clone(),
@@ -96,7 +96,7 @@ mod tests {
             RecordUpdateTransformer::new().transform(
                 &Module::from_definitions_and_type_definitions(
                     vec![TypeDefinition::new("Foo", record_type.clone())],
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         RecordUpdate::new(
                             reference_type.clone(),
@@ -114,10 +114,10 @@ mod tests {
             ),
             Ok(Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     Let::new(
-                        vec![ValueDefinition::new(
+                        vec![VariableDefinition::new(
                             "record_update_argument_0",
                             Variable::new("foo", SourceInformation::dummy()),
                             reference_type.clone(),

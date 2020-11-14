@@ -1,26 +1,26 @@
 use super::expression::Expression;
 use super::function_definition::*;
-use super::value_definition::*;
+use super::variable_definition::*;
 use crate::types::Type;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
     FunctionDefinition(FunctionDefinition),
-    ValueDefinition(ValueDefinition),
+    VariableDefinition(VariableDefinition),
 }
 
 impl Definition {
     pub fn name(&self) -> &str {
         match self {
             Self::FunctionDefinition(function_definition) => function_definition.name(),
-            Self::ValueDefinition(value_definition) => value_definition.name(),
+            Self::VariableDefinition(variable_definition) => variable_definition.name(),
         }
     }
 
     pub fn type_(&self) -> &Type {
         match self {
             Self::FunctionDefinition(function_definition) => function_definition.type_(),
-            Self::ValueDefinition(value_definition) => value_definition.type_(),
+            Self::VariableDefinition(variable_definition) => variable_definition.type_(),
         }
     }
 
@@ -32,8 +32,8 @@ impl Definition {
             Self::FunctionDefinition(function_definition) => {
                 function_definition.transform_expressions(transform)?.into()
             }
-            Self::ValueDefinition(value_definition) => {
-                value_definition.transform_expressions(transform)?.into()
+            Self::VariableDefinition(variable_definition) => {
+                variable_definition.transform_expressions(transform)?.into()
             }
         })
     }
@@ -46,8 +46,8 @@ impl Definition {
             Self::FunctionDefinition(function_definition) => {
                 function_definition.transform_types(transform)?.into()
             }
-            Self::ValueDefinition(value_definition) => {
-                value_definition.transform_types(transform)?.into()
+            Self::VariableDefinition(variable_definition) => {
+                variable_definition.transform_types(transform)?.into()
             }
         })
     }
@@ -59,8 +59,8 @@ impl From<FunctionDefinition> for Definition {
     }
 }
 
-impl From<ValueDefinition> for Definition {
-    fn from(function_definition: ValueDefinition) -> Self {
-        Definition::ValueDefinition(function_definition)
+impl From<VariableDefinition> for Definition {
+    fn from(function_definition: VariableDefinition) -> Self {
+        Definition::VariableDefinition(function_definition)
     }
 }

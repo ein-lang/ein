@@ -19,8 +19,8 @@ impl<'a> GlobalNameRenamer<'a> {
                     Definition::FunctionDefinition(function_definition) => self
                         .rename_function_definition(function_definition, &self.names)
                         .into(),
-                    Definition::ValueDefinition(value_definition) => self
-                        .rename_value_definition(value_definition, &self.names)
+                    Definition::VariableDefinition(variable_definition) => self
+                        .rename_variable_definition(variable_definition, &self.names)
                         .into(),
                 })
             })
@@ -69,11 +69,11 @@ impl<'a> GlobalNameRenamer<'a> {
                         function_definition.source_information().clone(),
                     )
                     .into(),
-                    Definition::ValueDefinition(value_definition) => ValueDefinition::new(
-                        self.rename_name(value_definition.name(), &self.names),
-                        value_definition.body().clone(),
-                        value_definition.type_().clone(),
-                        value_definition.source_information().clone(),
+                    Definition::VariableDefinition(variable_definition) => VariableDefinition::new(
+                        self.rename_name(variable_definition.name(), &self.names),
+                        variable_definition.body().clone(),
+                        variable_definition.type_().clone(),
+                        variable_definition.source_information().clone(),
                     )
                     .into(),
                 })
@@ -106,21 +106,21 @@ impl<'a> GlobalNameRenamer<'a> {
         )
     }
 
-    fn rename_value_definition(
+    fn rename_variable_definition(
         &self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
         names: &HashMap<String, String>,
-    ) -> ValueDefinition {
-        ValueDefinition::new(
-            value_definition.name(),
-            value_definition
+    ) -> VariableDefinition {
+        VariableDefinition::new(
+            variable_definition.name(),
+            variable_definition
                 .body()
                 .transform_expressions(&mut |expression| -> Result<_, CompileError> {
                     Ok(self.rename_expression(expression, &names))
                 })
                 .unwrap(),
-            value_definition.type_().clone(),
-            value_definition.source_information().clone(),
+            variable_definition.type_().clone(),
+            variable_definition.source_information().clone(),
         )
     }
 
@@ -173,9 +173,9 @@ impl<'a> GlobalNameRenamer<'a> {
                         Definition::FunctionDefinition(function_definition) => {
                             names.remove(function_definition.name());
                         }
-                        Definition::ValueDefinition(value_definition) => {
+                        Definition::VariableDefinition(variable_definition) => {
                             if let_.has_functions() {
-                                names.remove(value_definition.name());
+                                names.remove(variable_definition.name());
                             }
                         }
                     }
@@ -188,10 +188,10 @@ impl<'a> GlobalNameRenamer<'a> {
                         Definition::FunctionDefinition(function_definition) => self
                             .rename_function_definition(function_definition, &names)
                             .into(),
-                        Definition::ValueDefinition(value_definition) => {
-                            let definition = self.rename_value_definition(value_definition, &names);
+                        Definition::VariableDefinition(variable_definition) => {
+                            let definition = self.rename_variable_definition(variable_definition, &names);
 
-                            names.remove(value_definition.name());
+                            names.remove(variable_definition.name());
 
                             definition.into()
                         }
@@ -299,7 +299,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
-            vec![ValueDefinition::new(
+            vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -315,13 +315,13 @@ mod tests {
     }
 
     #[test]
-    fn rename_names_in_value_definitions() {
+    fn rename_names_in_variable_definitions() {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
             vec![],
-            vec![ValueDefinition::new(
+            vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -338,7 +338,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "y",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -411,7 +411,7 @@ mod tests {
                 "x",
                 types::Reference::new("z", SourceInformation::dummy()),
             )],
-            vec![ValueDefinition::new(
+            vec![VariableDefinition::new(
                 "y",
                 None::new(SourceInformation::dummy()),
                 types::Reference::new("z", SourceInformation::dummy()),
@@ -431,7 +431,7 @@ mod tests {
                     "x",
                     types::Reference::new("v", SourceInformation::dummy()),
                 )],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "y",
                     None::new(SourceInformation::dummy()),
                     types::Reference::new("v", SourceInformation::dummy()),

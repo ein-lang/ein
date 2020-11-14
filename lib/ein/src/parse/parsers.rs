@@ -122,7 +122,7 @@ fn path_component<'a>() -> impl Parser<Stream<'a>, Output = String> {
 fn definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
     choice!(
         function_definition().map(Definition::from),
-        value_definition().map(Definition::from),
+        variable_definition().map(Definition::from),
     )
     .expected("definition")
 }
@@ -154,7 +154,7 @@ fn function_definition<'a>() -> impl Parser<Stream<'a>, Output = FunctionDefinit
         )
 }
 
-fn value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefinition> {
+fn variable_definition<'a>() -> impl Parser<Stream<'a>, Output = VariableDefinition> {
     (
         source_information(),
         type_annotation(),
@@ -165,7 +165,7 @@ fn value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefinition> {
         .then(
             |(source_information, (typed_name, type_), name, _, expression)| {
                 if typed_name == name {
-                    value(ValueDefinition::new(
+                    value(VariableDefinition::new(
                         name,
                         expression,
                         type_,
@@ -186,7 +186,7 @@ fn type_annotation<'a>() -> impl Parser<Stream<'a>, Output = (String, Type)> {
 fn untyped_definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
     choice!(
         untyped_function_definition().map(Definition::from),
-        untyped_value_definition().map(Definition::from),
+        untyped_variable_definition().map(Definition::from),
     )
 }
 
@@ -210,11 +210,11 @@ fn untyped_function_definition<'a>() -> impl Parser<Stream<'a>, Output = Functio
         })
 }
 
-fn untyped_value_definition<'a>() -> impl Parser<Stream<'a>, Output = ValueDefinition> {
+fn untyped_variable_definition<'a>() -> impl Parser<Stream<'a>, Output = VariableDefinition> {
     (source_information(), identifier(), sign("="), expression()).map(
         |(source_information, name, _, expression)| {
             let source_information = Arc::new(source_information);
-            ValueDefinition::new(
+            VariableDefinition::new(
                 name,
                 expression,
                 types::Unknown::new(source_information.clone()),
@@ -790,7 +790,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -809,14 +809,14 @@ mod tests {
                 vec![],
                 vec![],
                 vec![
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
                     .into(),
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
@@ -961,7 +961,7 @@ mod tests {
                 .parse(stream("x : Number\nx = 0", ""))
                 .unwrap()
                 .0,
-            ValueDefinition::new(
+            VariableDefinition::new(
                 "x",
                 Number::new(0.0, SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -990,13 +990,13 @@ mod tests {
     }
 
     #[test]
-    fn parse_value_definition() {
+    fn parse_variable_definition() {
         assert_eq!(
-            value_definition()
+            variable_definition()
                 .parse(stream("x : Number\nx = 0", ""))
                 .unwrap()
                 .0,
-            ValueDefinition::new(
+            VariableDefinition::new(
                 "x",
                 Number::new(0.0, SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -1009,7 +1009,7 @@ mod tests {
     fn parse_untyped_definition() {
         assert_eq!(
             untyped_definition().parse(stream("x = 0", "")).unwrap().0,
-            ValueDefinition::new(
+            VariableDefinition::new(
                 "x",
                 Number::new(0.0, SourceInformation::dummy()),
                 types::Unknown::new(SourceInformation::dummy()),
@@ -1055,7 +1055,7 @@ mod tests {
                     SourceInformation::dummy()
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
@@ -1704,7 +1704,7 @@ mod tests {
                     .unwrap()
                     .0,
                 Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
@@ -1718,7 +1718,7 @@ mod tests {
             assert_eq!(
                 let_().parse(stream("let x = 42 in x", "")).unwrap().0,
                 Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
@@ -1732,7 +1732,7 @@ mod tests {
             assert_eq!(
                 let_().parse(stream("let\nx = 42 in x", "")).unwrap().0,
                 Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
@@ -1746,7 +1746,7 @@ mod tests {
             assert_eq!(
                 let_().parse(stream("let\n x = 42 in x", "")).unwrap().0,
                 Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
@@ -1800,7 +1800,7 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "y",
                             Application::new(
                                 Variable::new("f", SourceInformation::dummy()),

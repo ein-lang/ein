@@ -24,7 +24,7 @@ mod type_coercion;
 mod type_definition;
 mod unresolved_import;
 mod unresolved_module;
-mod value_definition;
+mod variable_definition;
 mod variable;
 
 pub use alternative::*;
@@ -53,5 +53,5 @@ pub use type_coercion::*;
 pub use type_definition::*;
 pub use unresolved_import::*;
 pub use unresolved_module::*;
-pub use value_definition::*;
+pub use variable_definition::*;
 pub use variable::*;

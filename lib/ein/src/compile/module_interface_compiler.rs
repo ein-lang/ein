@@ -48,7 +48,7 @@ impl ModuleInterfaceCompiler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::{Export, Number, ValueDefinition};
+    use crate::ast::{Export, Number, VariableDefinition};
     use crate::debug::SourceInformation;
     use crate::package::Package;
     use crate::path::ModulePath;
@@ -76,7 +76,7 @@ mod tests {
                 Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
                 vec![],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "P().M.x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),

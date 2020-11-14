@@ -29,8 +29,8 @@ Ok(
             },
         ],
         definitions: [
-            ValueDefinition(
-                ValueDefinition {
+            VariableDefinition(
+                VariableDefinition {
                     name: "x",
                     body: Number(
                         Number {

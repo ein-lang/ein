@@ -52,10 +52,10 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn create_name_map_from_value_definition() {
+    fn create_name_map_from_variable_definition() {
         assert_eq!(
             GlobalNameMapCreator::create(
-                &Module::from_definitions(vec![ValueDefinition::new(
+                &Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     None::new(SourceInformation::dummy()),
                     types::None::new(SourceInformation::dummy()),
@@ -94,7 +94,7 @@ mod tests {
     fn do_not_include_excluded_names() {
         assert_eq!(
             GlobalNameMapCreator::create(
-                &Module::from_definitions(vec![ValueDefinition::new(
+                &Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     None::new(SourceInformation::dummy()),
                     types::None::new(SourceInformation::dummy()),
