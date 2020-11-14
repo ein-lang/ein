@@ -49,12 +49,8 @@ impl TypeCompiler {
             Type::Any(_) => self.compile_any()?.into(),
             Type::Boolean(_) => self.compile_boolean().into(),
             Type::Function(function) => ssf::types::Function::new(
-                function
-                    .arguments()
-                    .iter()
-                    .map(|type_| self.compile(type_))
-                    .collect::<Result<_, _>>()?,
-                self.compile_value(function.last_result())?,
+                self.compile(function.argument())?,
+                self.compile(function.result())?,
             )
             .into(),
             Type::List(list) => self.compile_reference(&types::Reference::new(
@@ -63,7 +59,7 @@ impl TypeCompiler {
             ))?,
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => self.compile_number().into(),
-            Type::Record(record) => self.compile_record_recursively(record)?.into(),
+            Type::Record(record) => self.compile_record_recursively(record)?,
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::Union(union) => self.compile_union(union)?.into(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
@@ -104,7 +100,7 @@ impl TypeCompiler {
     fn compile_record_recursively(
         &self,
         record: &types::Record,
-    ) -> Result<ssf::types::Value, CompileError> {
+    ) -> Result<ssf::types::Type, CompileError> {
         Ok(
             if let Some(index) = self
                 .record_names
@@ -112,7 +108,7 @@ impl TypeCompiler {
                 .rev()
                 .position(|name| name.as_deref() == Some(record.name()))
             {
-                ssf::types::Value::Index(index)
+                ssf::types::Type::Index(index)
             } else {
                 self.compile_record(record)?.into()
             },
@@ -204,10 +200,6 @@ impl TypeCompiler {
             .collect())
     }
 
-    pub fn compile_value(&self, type_: &Type) -> Result<ssf::types::Value, CompileError> {
-        Ok(self.compile(type_)?.into_value().unwrap())
-    }
-
     pub fn compile_boolean(&self) -> ssf::types::Algebraic {
         ssf::types::Algebraic::new(vec![
             ssf::types::Constructor::unboxed(vec![]),
@@ -288,7 +280,7 @@ mod tests {
                 .into()
             ),
             Ok(ssf::types::Function::new(
-                vec![ssf::types::Primitive::Float64.into()],
+                ssf::types::Primitive::Float64,
                 ssf::types::Primitive::Float64
             )
             .into())
@@ -323,7 +315,7 @@ mod tests {
             .compile(&reference_type.into()),
             Ok(
                 ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                    vec![ssf::types::Value::Index(0).into()],
+                    vec![ssf::types::Type::Index(0)],
                     true
                 )])
                 .into()
@@ -376,7 +368,7 @@ mod tests {
                 ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
                     vec![
                         ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                            vec![ssf::types::Value::Index(1).into()],
+                            vec![ssf::types::Type::Index(1)],
                             true
                         )])
                         .into()
@@ -460,7 +452,7 @@ mod tests {
                                         (
                                             461893210254723387,
                                             ssf::types::Constructor::new(
-                                                vec![ssf::types::Value::Index(2).into()],
+                                                vec![ssf::types::Type::Index(2)],
                                                 false
                                             )
                                         )
@@ -507,7 +499,7 @@ mod tests {
                                     ssf::types::Constructor::new(
                                         vec![ssf::types::Algebraic::new(vec![
                                             ssf::types::Constructor::new(
-                                                vec![ssf::types::Value::Index(2).into()],
+                                                vec![ssf::types::Type::Index(2)],
                                                 true
                                             )
                                         ])

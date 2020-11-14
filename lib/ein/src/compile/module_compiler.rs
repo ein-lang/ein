@@ -34,12 +34,10 @@ impl ModuleCompiler {
                             Ok(ssf::ir::Declaration::new(name, {
                                 match self.type_compiler.compile(type_)? {
                                     ssf::types::Type::Function(function_type) => function_type,
-                                    ssf::types::Type::Value(value_type) => {
-                                        ssf::types::Function::new(
-                                            vec![self.type_compiler.compile_none().into()],
-                                            value_type,
-                                        )
-                                    }
+                                    type_ => ssf::types::Function::new(
+                                        self.type_compiler.compile_none(),
+                                        type_,
+                                    ),
                                 }
                             }))
                         })
@@ -78,7 +76,10 @@ impl ModuleCompiler {
                 .collect::<Vec<_>>(),
             self.expression_compiler
                 .compile(function_definition.body())?,
-            core_type.result().clone(),
+            (0..function_definition.arguments().len())
+                .fold(core_type.into(), |type_: ssf::types::Type, _| {
+                    type_.into_function().unwrap().result().clone()
+                }),
         ))
     }
 
@@ -93,7 +94,7 @@ impl ModuleCompiler {
                 self.type_compiler.compile_none(),
             )],
             self.expression_compiler.compile(value_definition.body())?,
-            self.type_compiler.compile_value(value_definition.type_())?,
+            self.type_compiler.compile(value_definition.type_())?,
         ))
     }
 }

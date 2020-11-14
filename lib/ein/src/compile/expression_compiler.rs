@@ -55,28 +55,11 @@ impl ExpressionCompiler {
 
     pub fn compile(&self, expression: &Expression) -> Result<ssf::ir::Expression, CompileError> {
         Ok(match expression {
-            Expression::Application(application) => {
-                let mut function = application.function();
-                let mut arguments = vec![application.argument()];
-
-                while let Expression::Application(application) = function {
-                    function = application.function();
-                    arguments.push(application.argument());
-                }
-
-                ssf::ir::FunctionApplication::new(
-                    self.compile(function)?
-                        .to_variable()
-                        .expect("variable")
-                        .clone(),
-                    arguments
-                        .iter()
-                        .rev()
-                        .map(|argument| self.compile(argument))
-                        .collect::<Result<_, _>>()?,
-                )
-                .into()
-            }
+            Expression::Application(application) => ssf::ir::FunctionApplication::new(
+                self.compile(application.function())?,
+                self.compile(application.argument())?,
+            )
+            .into(),
             Expression::Boolean(boolean) => self.boolean_compiler.compile(boolean.value()).into(),
             Expression::Case(case) => self.compile_case(case)?,
             Expression::If(if_) => ssf::ir::AlgebraicCase::new(
@@ -169,8 +152,6 @@ impl ExpressionCompiler {
                 ssf::ir::Constructor::new(
                     self.type_compiler
                         .compile(record.type_())?
-                        .into_value()
-                        .unwrap()
                         .into_algebraic()
                         .unwrap(),
                     0,
@@ -186,8 +167,6 @@ impl ExpressionCompiler {
                 let algebraic_type = self
                     .type_compiler
                     .compile(operation.type_())?
-                    .into_value()
-                    .unwrap()
                     .into_algebraic()
                     .unwrap();
 
@@ -221,8 +200,6 @@ impl ExpressionCompiler {
                 let to_type = self
                     .type_compiler
                     .compile(coercion.to())?
-                    .into_value()
-                    .unwrap()
                     .into_algebraic()
                     .unwrap();
                 let argument = self.compile(coercion.argument())?;
@@ -247,8 +224,6 @@ impl ExpressionCompiler {
                                                 )
                                                 .into(),
                                             )?
-                                            .into_value()
-                                            .unwrap()
                                             .into_algebraic()
                                             .unwrap(),
                                         self.union_tag_calculator.calculate(&from_type)?,
@@ -315,7 +290,12 @@ impl ExpressionCompiler {
                             })
                             .collect::<Result<_, CompileError>>()?,
                         self.compile(function_definition.body())?,
-                        self.type_compiler.compile_value(type_.last_result())?,
+                        self.type_compiler.compile(
+                            (0..function_definition.arguments().len())
+                                .fold(function_definition.type_(), |type_, _| {
+                                    type_.to_function().unwrap().result()
+                                }),
+                        )?,
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
@@ -342,7 +322,7 @@ impl ExpressionCompiler {
             |expression, value_definition| {
                 Ok(ssf::ir::Let::new(
                     value_definition.name(),
-                    self.type_compiler.compile_value(value_definition.type_())?,
+                    self.type_compiler.compile(value_definition.type_())?,
                     self.compile(value_definition.body())?,
                     expression?,
                 )
@@ -364,15 +344,13 @@ impl ExpressionCompiler {
         } else {
             self.type_compiler
                 .compile(case.type_())?
-                .into_value()
-                .unwrap()
                 .into_algebraic()
                 .unwrap()
         };
 
         Ok(ssf::ir::Let::new(
             case.name(),
-            self.type_compiler.compile_value(case.type_())?,
+            self.type_compiler.compile(case.type_())?,
             self.compile(case.argument())?,
             ssf::ir::AlgebraicCase::new(
                 argument_type.clone(),
@@ -753,7 +731,7 @@ mod tests {
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                     ssf::ir::FunctionApplication::new(
                         ssf::ir::Variable::new("f"),
-                        vec![ssf::ir::Variable::new("x").into()]
+                        ssf::ir::Variable::new("x"),
                     ),
                     ssf::types::Primitive::Float64,
                 )],
@@ -1014,8 +992,6 @@ mod tests {
                         type_compiler
                             .compile(&union_type.into())
                             .unwrap()
-                            .into_value()
-                            .unwrap()
                             .into_algebraic()
                             .unwrap(),
                         union_tag_calculator
@@ -1062,8 +1038,6 @@ mod tests {
                         type_compiler
                             .compile(&union_type.into())
                             .unwrap()
-                            .into_value()
-                            .unwrap()
                             .into_algebraic()
                             .unwrap(),
                         union_tag_calculator.calculate(&record_type.into()).unwrap()
@@ -1109,8 +1083,6 @@ mod tests {
                     ssf::ir::Variable::new("x"),
                     type_compiler
                         .compile(&upper_union_type.into())
-                        .unwrap()
-                        .into_value()
                         .unwrap()
                         .into_algebraic()
                         .unwrap(),
@@ -1166,8 +1138,6 @@ mod tests {
                                         .into()
                                     )
                                     .unwrap()
-                                    .into_value()
-                                    .unwrap()
                                     .into_algebraic()
                                     .unwrap(),
                                 union_tag_calculator
@@ -1180,8 +1150,6 @@ mod tests {
                         ),
                         type_compiler
                             .compile(&types::Any::new(SourceInformation::dummy()).into())
-                            .unwrap()
-                            .into_value()
                             .unwrap()
                             .into_algebraic()
                             .unwrap(),
@@ -1215,8 +1183,6 @@ mod tests {
                     ssf::ir::Variable::new("x"),
                     type_compiler
                         .compile(&types::Any::new(SourceInformation::dummy()).into())
-                        .unwrap()
-                        .into_value()
                         .unwrap()
                         .into_algebraic()
                         .unwrap(),

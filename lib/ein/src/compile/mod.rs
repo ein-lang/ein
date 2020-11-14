@@ -114,7 +114,7 @@ pub fn compile(
                     .into_iter()
                     .collect(),
                 ),
-            &ssf_llvm::CompileConfiguration::new(
+            ssf_llvm::CompileConfiguration::new(
                 Some(configuration.malloc_function_name().into()),
                 Some(configuration.panic_function_name().into()),
             ),
