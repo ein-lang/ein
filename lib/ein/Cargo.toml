@@ -8,7 +8,7 @@ edition = "2018"
 combine = { version = "4.3.2", features = ["regex"] }
 derivative = "2"
 indoc = "1.0"
-insta = { version = "1.1", features = ["backtrace"] }
+insta = { version = "1.2", features = ["backtrace"] }
 lazy_static = "1"
 regex = "1"
 serde = { version = "1", features = ["derive", "rc"] }
