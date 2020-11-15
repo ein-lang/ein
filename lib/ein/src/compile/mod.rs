@@ -6,6 +6,7 @@ mod expression_type_extractor;
 mod global_name_map_creator;
 mod global_name_renamer;
 mod list_type_configuration;
+mod main_function_definition_transformer;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
@@ -29,6 +30,7 @@ use expression_compiler::{ExpressionCompiler, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
 pub use list_type_configuration::ListTypeConfiguration;
+use main_function_definition_transformer::MainFunctionDefinitionTransformer;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use none_compiler::NoneCompiler;
@@ -46,19 +48,18 @@ use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
 use variable_compiler::VariableCompiler;
 
+// TODO Use Arc for compile_configuration.
 pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = transform_before_name_qualification(&module)?;
 
-    let names = GlobalNameMapCreator::create(
-        &module,
-        &vec![configuration.source_main_function_name().into()]
-            .into_iter()
-            .collect(),
-    );
-    let module = GlobalNameRenamer::new(&names).rename(&module);
+    let names = GlobalNameMapCreator::create(&module);
+    let module = GlobalNameRenamer::new(names.clone()).rename(&module);
+    let module =
+        MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone().into())
+            .transform(&module);
 
     let list_type_configuration = Arc::new(configuration.list_type_configuration().qualify(&names));
     let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
@@ -107,16 +108,7 @@ pub fn compile(
 
     Ok((
         ssf_llvm::compile(
-            &ModuleCompiler::new(expression_compiler, type_compiler)
-                .compile(&module)?
-                .rename_global_variables(
-                    &vec![(
-                        configuration.source_main_function_name().into(),
-                        configuration.object_main_function_name().into(),
-                    )]
-                    .into_iter()
-                    .collect(),
-                ),
+            &ModuleCompiler::new(expression_compiler, type_compiler).compile(&module)?,
             ssf_llvm::CompileConfiguration::new(
                 Some(configuration.malloc_function_name().into()),
                 Some(configuration.panic_function_name().into()),

@@ -2,13 +2,14 @@ use super::error::CompileError;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
+use std::sync::Arc;
 
-pub struct GlobalNameRenamer<'a> {
-    names: &'a HashMap<String, String>,
+pub struct GlobalNameRenamer {
+    names: Arc<HashMap<String, String>>,
 }
 
-impl<'a> GlobalNameRenamer<'a> {
-    pub fn new(names: &'a HashMap<String, String>) -> Self {
+impl GlobalNameRenamer {
+    pub fn new(names: Arc<HashMap<String, String>>) -> Self {
         Self { names }
     }
 
@@ -310,7 +311,7 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(&Default::default()).rename(&module),
+            GlobalNameRenamer::new(Default::default()).rename(&module),
             module
         );
     }
@@ -332,8 +333,13 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(&vec![("x".into(), "y".into())].into_iter().collect())
-                .rename(&module),
+            GlobalNameRenamer::new(
+                vec![("x".into(), "y".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
@@ -361,8 +367,13 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(&vec![("x".into(), "y".into())].into_iter().collect())
-                .rename(&module),
+            GlobalNameRenamer::new(
+                vec![("x".into(), "y".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(vec!["x".into()].into_iter().collect()),
@@ -387,8 +398,13 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(&vec![("x".into(), "y".into())].into_iter().collect())
-                .rename(&module),
+            GlobalNameRenamer::new(
+                vec![("x".into(), "y".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
@@ -422,8 +438,13 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(&vec![("z".into(), "v".into())].into_iter().collect())
-                .rename(&module),
+            GlobalNameRenamer::new(
+                vec![("z".into(), "v".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
@@ -457,8 +478,13 @@ mod tests {
         );
 
         assert_eq!(
-            GlobalNameRenamer::new(&vec![("y".into(), "z".into())].into_iter().collect())
-                .rename(&module),
+            GlobalNameRenamer::new(
+                vec![("y".into(), "z".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),

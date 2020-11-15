@@ -1,6 +1,7 @@
 use super::list_type_configuration::ListTypeConfiguration;
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct CompileConfiguration {
     source_main_function_name: String,
     object_main_function_name: String,
