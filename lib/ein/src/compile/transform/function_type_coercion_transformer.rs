@@ -94,11 +94,8 @@ impl FunctionTypeCoercionTransformer {
                                 )
                                 .into()],
                                 self.transform_function(
-                                    Variable::new(
-                                        from_function_name.clone(),
-                                        source_information.clone(),
-                                    )
-                                    .into(),
+                                    Variable::new(from_function_name, source_information.clone())
+                                        .into(),
                                     from_function_type.result(),
                                     to_function_type.result(),
                                     source_information.clone(),
@@ -110,7 +107,7 @@ impl FunctionTypeCoercionTransformer {
                         )
                         .into()],
                         Variable::new(to_function_name, source_information.clone()),
-                        source_information.clone(),
+                        source_information,
                     )
                     .into()
                 }
@@ -119,7 +116,7 @@ impl FunctionTypeCoercionTransformer {
                     argument,
                     from_type.clone(),
                     to_type.clone(),
-                    source_information.clone(),
+                    source_information,
                 )
                 .into(),
             },
