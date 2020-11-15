@@ -36,8 +36,8 @@ use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
-    BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-    NotEqualOperationTransformer,
+    BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
+    ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
@@ -85,6 +85,8 @@ pub fn compile(
     let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
     let boolean_operation_transformer = BooleanOperationTransformer::new();
+    let function_type_coercion_transformer =
+        FunctionTypeCoercionTransformer::new(reference_type_resolver.clone());
 
     let expression_compiler = ExpressionCompiler::new(
         ExpressionTransformerSet {
@@ -92,6 +94,7 @@ pub fn compile(
             not_equal_operation_transformer,
             list_literal_transformer,
             boolean_operation_transformer,
+            function_type_coercion_transformer,
         }
         .into(),
         reference_type_resolver,

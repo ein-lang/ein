@@ -3,8 +3,8 @@ use super::error::CompileError;
 use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
-    BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-    NotEqualOperationTransformer,
+    BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
+    ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -19,6 +19,7 @@ pub struct ExpressionTransformerSet {
     pub not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
     pub list_literal_transformer: Arc<ListLiteralTransformer>,
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
+    pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
 }
 
 pub struct ExpressionCompiler {
@@ -196,56 +197,65 @@ impl ExpressionCompiler {
                 .into()
             }
             Expression::TypeCoercion(coercion) => {
-                let from_type = self.reference_type_resolver.resolve(coercion.from())?;
-                let to_type = self
-                    .type_compiler
-                    .compile(coercion.to())?
-                    .into_algebraic()
-                    .unwrap();
-                let argument = self.compile(coercion.argument())?;
+                if coercion.to().is_function() {
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .function_type_coercion_transformer
+                            .transform(coercion)?,
+                    )?
+                } else {
+                    let from_type = self.reference_type_resolver.resolve(coercion.from())?;
+                    let to_type = self
+                        .type_compiler
+                        .compile(coercion.to())?
+                        .into_algebraic()
+                        .unwrap();
+                    let argument = self.compile(coercion.argument())?;
 
-                match &from_type {
-                    Type::Any(_) => argument,
-                    Type::Boolean(_)
-                    | Type::Function(_)
-                    | Type::List(_)
-                    | Type::None(_)
-                    | Type::Number(_)
-                    | Type::Record(_) => {
-                        if coercion.to().is_any() {
-                            ssf::ir::Bitcast::new(
+                    match &from_type {
+                        Type::Any(_) => argument,
+                        Type::Boolean(_)
+                        | Type::Function(_)
+                        | Type::List(_)
+                        | Type::None(_)
+                        | Type::Number(_)
+                        | Type::Record(_) => {
+                            if coercion.to().is_any() {
+                                ssf::ir::Bitcast::new(
+                                    ssf::ir::ConstructorApplication::new(
+                                        ssf::ir::Constructor::new(
+                                            self.type_compiler
+                                                .compile(
+                                                    &types::Union::new(
+                                                        vec![from_type.clone()],
+                                                        coercion.to().source_information().clone(),
+                                                    )
+                                                    .into(),
+                                                )?
+                                                .into_algebraic()
+                                                .unwrap(),
+                                            self.union_tag_calculator.calculate(&from_type)?,
+                                        ),
+                                        vec![argument],
+                                    ),
+                                    to_type,
+                                )
+                                .into()
+                            } else {
                                 ssf::ir::ConstructorApplication::new(
                                     ssf::ir::Constructor::new(
-                                        self.type_compiler
-                                            .compile(
-                                                &types::Union::new(
-                                                    vec![from_type.clone()],
-                                                    coercion.to().source_information().clone(),
-                                                )
-                                                .into(),
-                                            )?
-                                            .into_algebraic()
-                                            .unwrap(),
+                                        to_type,
                                         self.union_tag_calculator.calculate(&from_type)?,
                                     ),
                                     vec![argument],
-                                ),
-                                to_type,
-                            )
-                            .into()
-                        } else {
-                            ssf::ir::ConstructorApplication::new(
-                                ssf::ir::Constructor::new(
-                                    to_type,
-                                    self.union_tag_calculator.calculate(&from_type)?,
-                                ),
-                                vec![argument],
-                            )
-                            .into()
+                                )
+                                .into()
+                            }
                         }
+                        Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
+                        Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                     }
-                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
-                    Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 }
             }
             Expression::Variable(variable) => self.variable_compiler.compile(&variable),
@@ -440,27 +450,14 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
-    use super::super::boolean_compiler::BooleanCompiler;
-    use super::super::error::CompileError;
     use super::super::list_type_configuration::ListTypeConfiguration;
-    use super::super::none_compiler::NoneCompiler;
-    use super::super::reference_type_resolver::ReferenceTypeResolver;
-    use super::super::transform::{
-        BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-        NotEqualOperationTransformer,
-    };
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
-    use super::super::union_tag_calculator::UnionTagCalculator;
-    use super::super::variable_compiler::VariableCompiler;
-    use super::{ExpressionCompiler, ExpressionTransformerSet};
-    use crate::ast::*;
+    use super::*;
     use crate::debug::SourceInformation;
-    use crate::types;
     use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
-    use std::sync::Arc;
 
     lazy_static! {
         static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
@@ -503,6 +500,8 @@ mod tests {
         let not_equal_operation_transformer = NotEqualOperationTransformer::new();
         let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
         let boolean_operation_transformer = BooleanOperationTransformer::new();
+        let function_type_coercion_transformer =
+            FunctionTypeCoercionTransformer::new(reference_type_resolver.clone());
 
         (
             ExpressionCompiler::new(
@@ -511,6 +510,7 @@ mod tests {
                     not_equal_operation_transformer,
                     list_literal_transformer,
                     boolean_operation_transformer,
+                    function_type_coercion_transformer,
                 }
                 .into(),
                 reference_type_resolver,

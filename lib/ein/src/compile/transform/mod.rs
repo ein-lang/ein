@@ -1,6 +1,7 @@
 mod boolean_operation_transformer;
 mod elementless_record_transformer;
 mod equal_operation_transformer;
+mod function_type_coercion_transformer;
 mod list_literal_transformer;
 mod not_equal_operation_transformer;
 mod record_element_function_transformer;
@@ -20,6 +21,7 @@ use crate::ast::*;
 pub use boolean_operation_transformer::BooleanOperationTransformer;
 use elementless_record_transformer::ElementlessRecordTransformer;
 pub use equal_operation_transformer::EqualOperationTransformer;
+pub use function_type_coercion_transformer::FunctionTypeCoercionTransformer;
 pub use list_literal_transformer::ListLiteralTransformer;
 pub use not_equal_operation_transformer::NotEqualOperationTransformer;
 use record_element_function_transformer::RecordElementFunctionTransformer;
