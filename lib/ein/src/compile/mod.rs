@@ -80,14 +80,16 @@ pub fn compile(
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
         type_comparability_checker,
-        type_equality_checker,
+        type_equality_checker.clone(),
         list_type_configuration.clone(),
     );
     let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
     let boolean_operation_transformer = BooleanOperationTransformer::new();
-    let function_type_coercion_transformer =
-        FunctionTypeCoercionTransformer::new(reference_type_resolver.clone());
+    let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
+        type_equality_checker,
+        reference_type_resolver.clone(),
+    );
 
     let expression_compiler = ExpressionCompiler::new(
         ExpressionTransformerSet {

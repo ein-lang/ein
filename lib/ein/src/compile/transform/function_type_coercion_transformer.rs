@@ -1,6 +1,7 @@
 use super::super::error::CompileError;
 use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use crate::debug::SourceInformation;
 use crate::types::Type;
@@ -9,14 +10,19 @@ use std::sync::Arc;
 pub struct FunctionTypeCoercionTransformer {
     function_name_generator: NameGenerator,
     argument_name_generator: NameGenerator,
+    type_equality_checker: Arc<TypeEqualityChecker>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl FunctionTypeCoercionTransformer {
-    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Arc<Self> {
+    pub fn new(
+        type_equality_checker: Arc<TypeEqualityChecker>,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+    ) -> Arc<Self> {
         Self {
             function_name_generator: NameGenerator::new("$tc_func_"),
             argument_name_generator: NameGenerator::new("$tc_arg_"),
+            type_equality_checker,
             reference_type_resolver,
         }
         .into()
@@ -58,7 +64,9 @@ impl FunctionTypeCoercionTransformer {
         to_type: &Type,
         source_information: Arc<SourceInformation>,
     ) -> Result<Expression, CompileError> {
-        Ok(
+        Ok(if self.type_equality_checker.equal(from_type, to_type)? {
+            argument
+        } else {
             match (
                 self.reference_type_resolver.resolve(from_type)?,
                 self.reference_type_resolver.resolve(to_type)?,
@@ -78,15 +86,15 @@ impl FunctionTypeCoercionTransformer {
                                     from_function_name.clone(),
                                     Application::new(
                                         argument,
-                                        TypeCoercion::new(
+                                        self.coerce_type(
                                             Variable::new(
                                                 argument_name,
                                                 source_information.clone(),
                                             ),
-                                            to_function_type.argument().clone(),
-                                            from_function_type.argument().clone(),
+                                            to_function_type.argument(),
+                                            from_function_type.argument(),
                                             source_information.clone(),
-                                        ),
+                                        )?,
                                         source_information.clone(),
                                     ),
                                     from_function_type.result().clone(),
@@ -112,15 +120,29 @@ impl FunctionTypeCoercionTransformer {
                     .into()
                 }
                 (_, Type::Function(_)) => unreachable!(),
-                _ => TypeCoercion::new(
-                    argument,
-                    from_type.clone(),
-                    to_type.clone(),
-                    source_information,
-                )
-                .into(),
-            },
-        )
+                _ => self.coerce_type(argument, from_type, to_type, source_information)?,
+            }
+        })
+    }
+
+    fn coerce_type(
+        &self,
+        argument: impl Into<Expression>,
+        from_type: &Type,
+        to_type: &Type,
+        source_information: Arc<SourceInformation>,
+    ) -> Result<Expression, CompileError> {
+        Ok(if self.type_equality_checker.equal(from_type, to_type)? {
+            argument.into()
+        } else {
+            TypeCoercion::new(
+                argument,
+                from_type.clone(),
+                to_type.clone(),
+                source_information,
+            )
+            .into()
+        })
     }
 }
 
@@ -132,7 +154,10 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     fn create_function_type_coercion_transformer() -> Arc<FunctionTypeCoercionTransformer> {
-        FunctionTypeCoercionTransformer::new(ReferenceTypeResolver::new(&Module::dummy()))
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+
+        FunctionTypeCoercionTransformer::new(type_equality_checker, reference_type_resolver)
     }
 
     #[test]

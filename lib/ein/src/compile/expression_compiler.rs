@@ -494,14 +494,16 @@ mod tests {
         let equal_operation_transformer = EqualOperationTransformer::new(
             reference_type_resolver.clone(),
             type_comparability_checker,
-            type_equality_checker,
+            type_equality_checker.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let not_equal_operation_transformer = NotEqualOperationTransformer::new();
         let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
         let boolean_operation_transformer = BooleanOperationTransformer::new();
-        let function_type_coercion_transformer =
-            FunctionTypeCoercionTransformer::new(reference_type_resolver.clone());
+        let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
+            type_equality_checker,
+            reference_type_resolver.clone(),
+        );
 
         (
             ExpressionCompiler::new(
