@@ -83,11 +83,11 @@ impl TypedTransformer for TypeCoercionTransformer {
             function_definition.arguments().to_vec(),
             self.coerce_type(
                 function_definition.body(),
-                function_definition
-                    .type_()
+                self.reference_type_resolver
+                    .resolve(function_definition.type_())?
                     .to_function()
                     .unwrap()
-                    .last_result(),
+                    .last_result(function_definition.arguments().len()),
                 function_definition.source_information().clone(),
                 &variables,
             )?,

@@ -47,11 +47,10 @@ impl Function {
         arguments
     }
 
-    pub fn last_result(&self) -> &Type {
-        match self.result.as_ref() {
-            Type::Function(function) => function.last_result(),
-            _ => &self.result,
-        }
+    pub fn last_result(&self, argument_count: usize) -> &Type {
+        (0..argument_count - 1).fold(&self.result, |type_, _| {
+            type_.to_function().unwrap().result()
+        })
     }
 
     pub fn transform_types<E>(
@@ -79,7 +78,7 @@ mod tests {
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
-            .last_result(),
+            .last_result(1),
             &types::Number::new(SourceInformation::dummy()).into()
         );
 
@@ -93,8 +92,27 @@ mod tests {
                 ),
                 SourceInformation::dummy()
             )
-            .last_result(),
+            .last_result(2),
             &types::Number::new(SourceInformation::dummy()).into()
+        );
+
+        assert_eq!(
+            types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            )
+            .last_result(1),
+            &types::Function::new(
+                types::Number::new(SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy()
+            )
+            .into(),
         );
 
         assert_eq!(
@@ -111,7 +129,7 @@ mod tests {
                 ),
                 SourceInformation::dummy()
             )
-            .last_result(),
+            .last_result(3),
             &types::Number::new(SourceInformation::dummy()).into()
         );
     }
