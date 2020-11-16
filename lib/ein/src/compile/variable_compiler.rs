@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 pub struct VariableCompiler {
     type_compiler: Arc<TypeCompiler>,
-    names: HashSet<String>,
+    variable_names: HashSet<String>,
 }
 
 impl VariableCompiler {
@@ -14,7 +14,7 @@ impl VariableCompiler {
         Self {
             type_compiler,
             // Assuming those names do not conflict with any local variables due to alpha conversion.
-            names: module
+            variable_names: module
                 .imports()
                 .iter()
                 .flat_map(|import| {
@@ -44,7 +44,7 @@ impl VariableCompiler {
     }
 
     pub fn compile(&self, variable: &Variable) -> ssf::ir::Expression {
-        if self.names.contains(variable.name()) {
+        if self.variable_names.contains(variable.name()) {
             ssf::ir::FunctionApplication::new(
                 ssf::ir::Variable::new(variable.name()),
                 ssf::ir::ConstructorApplication::new(
