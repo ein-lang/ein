@@ -27,7 +27,7 @@ use crate::ast::*;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
-use expression_compiler::{ExpressionCompiler, ExpressionTransformerSet};
+use expression_compiler::{ExpressionCompiler, ExpressionCompilerSet, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
 use last_result_type_calculator::LastResultTypeCalculator;
@@ -96,6 +96,12 @@ pub fn compile(
     );
 
     let expression_compiler = ExpressionCompiler::new(
+        ExpressionCompilerSet {
+            boolean_compiler,
+            none_compiler,
+            variable_compiler,
+        }
+        .into(),
         ExpressionTransformerSet {
             equal_operation_transformer,
             not_equal_operation_transformer,
@@ -108,9 +114,6 @@ pub fn compile(
         last_result_type_calculator,
         union_tag_calculator,
         type_compiler.clone(),
-        boolean_compiler,
-        none_compiler,
-        variable_compiler,
     );
 
     Ok((

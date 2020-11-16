@@ -15,6 +15,12 @@ use crate::types::{self, Type};
 use std::convert::TryInto;
 use std::sync::Arc;
 
+pub struct ExpressionCompilerSet {
+    pub boolean_compiler: Arc<BooleanCompiler>,
+    pub none_compiler: Arc<NoneCompiler>,
+    pub variable_compiler: Arc<VariableCompiler>,
+}
+
 pub struct ExpressionTransformerSet {
     pub equal_operation_transformer: Arc<EqualOperationTransformer>,
     pub not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
@@ -24,36 +30,30 @@ pub struct ExpressionTransformerSet {
 }
 
 pub struct ExpressionCompiler {
+    expression_compiler_set: Arc<ExpressionCompilerSet>,
     expression_transformer_set: Arc<ExpressionTransformerSet>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     last_result_type_calculator: Arc<LastResultTypeCalculator>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
-    boolean_compiler: Arc<BooleanCompiler>,
-    none_compiler: Arc<NoneCompiler>,
-    variable_compiler: Arc<VariableCompiler>,
 }
 
 impl ExpressionCompiler {
     pub fn new(
+        expression_compiler_set: Arc<ExpressionCompilerSet>,
         expression_transformer_set: Arc<ExpressionTransformerSet>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         last_result_type_calculator: Arc<LastResultTypeCalculator>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
-        boolean_compiler: Arc<BooleanCompiler>,
-        none_compiler: Arc<NoneCompiler>,
-        variable_compiler: Arc<VariableCompiler>,
     ) -> Arc<Self> {
         Self {
+            expression_compiler_set,
             expression_transformer_set,
             reference_type_resolver,
             last_result_type_calculator,
             union_tag_calculator,
             type_compiler,
-            boolean_compiler,
-            none_compiler,
-            variable_compiler,
         }
         .into()
     }
@@ -65,7 +65,11 @@ impl ExpressionCompiler {
                 self.compile(application.argument())?,
             )
             .into(),
-            Expression::Boolean(boolean) => self.boolean_compiler.compile(boolean.value()).into(),
+            Expression::Boolean(boolean) => self
+                .expression_compiler_set
+                .boolean_compiler
+                .compile(boolean.value())
+                .into(),
             Expression::Case(case) => self.compile_case(case)?,
             Expression::If(if_) => ssf::ir::AlgebraicCase::new(
                 self.type_compiler.compile_boolean(),
@@ -89,7 +93,7 @@ impl ExpressionCompiler {
                 Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
                 Definition::VariableDefinition(_) => self.compile_let(let_)?,
             },
-            Expression::None(_) => self.none_compiler.compile().into(),
+            Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
                 &self
                     .expression_transformer_set
@@ -141,7 +145,9 @@ impl ExpressionCompiler {
                             ) {
                                 compiled.into()
                             } else {
-                                self.boolean_compiler.compile_conversion(compiled)
+                                self.expression_compiler_set
+                                    .boolean_compiler
+                                    .compile_conversion(compiled)
                             }
                         }
                         Operator::And | Operator::Or => self.compile(
@@ -262,7 +268,10 @@ impl ExpressionCompiler {
                     }
                 }
             }
-            Expression::Variable(variable) => self.variable_compiler.compile(&variable),
+            Expression::Variable(variable) => self
+                .expression_compiler_set
+                .variable_compiler
+                .compile(&variable),
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
@@ -513,6 +522,12 @@ mod tests {
 
         (
             ExpressionCompiler::new(
+                ExpressionCompilerSet {
+                    boolean_compiler,
+                    none_compiler,
+                    variable_compiler,
+                }
+                .into(),
                 ExpressionTransformerSet {
                     equal_operation_transformer,
                     not_equal_operation_transformer,
@@ -525,9 +540,6 @@ mod tests {
                 last_result_type_calculator,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
-                boolean_compiler,
-                none_compiler,
-                variable_compiler,
             ),
             type_compiler,
             union_tag_calculator,
