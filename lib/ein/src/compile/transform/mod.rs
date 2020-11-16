@@ -13,6 +13,7 @@ mod utilities;
 
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
+use super::last_result_type_calculator::LastResultTypeCalculator;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_canonicalizer::TypeCanonicalizer;
 use super::type_comparability_checker::TypeComparabilityChecker;
@@ -55,6 +56,8 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
     );
     let expression_type_extractor =
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
+    let last_result_type_calculator =
+        LastResultTypeCalculator::new(reference_type_resolver.clone());
 
     let mut type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
@@ -62,6 +65,7 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
             type_equality_checker,
             expression_type_extractor,
             type_canonicalizer,
+            last_result_type_calculator,
         ),
         reference_type_resolver,
     );

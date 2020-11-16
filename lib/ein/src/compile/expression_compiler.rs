@@ -1,5 +1,6 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
+use super::last_result_type_calculator::LastResultTypeCalculator;
 use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
@@ -25,6 +26,7 @@ pub struct ExpressionTransformerSet {
 pub struct ExpressionCompiler {
     expression_transformer_set: Arc<ExpressionTransformerSet>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
+    last_result_type_calculator: Arc<LastResultTypeCalculator>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
     boolean_compiler: Arc<BooleanCompiler>,
@@ -36,6 +38,7 @@ impl ExpressionCompiler {
     pub fn new(
         expression_transformer_set: Arc<ExpressionTransformerSet>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
+        last_result_type_calculator: Arc<LastResultTypeCalculator>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
         boolean_compiler: Arc<BooleanCompiler>,
@@ -45,6 +48,7 @@ impl ExpressionCompiler {
         Self {
             expression_transformer_set,
             reference_type_resolver,
+            last_result_type_calculator,
             union_tag_calculator,
             type_compiler,
             boolean_compiler,
@@ -301,10 +305,10 @@ impl ExpressionCompiler {
                             .collect::<Result<_, CompileError>>()?,
                         self.compile(function_definition.body())?,
                         self.type_compiler.compile(
-                            (0..function_definition.arguments().len())
-                                .fold(function_definition.type_(), |type_, _| {
-                                    type_.to_function().unwrap().result()
-                                }),
+                            &self.last_result_type_calculator.calculate(
+                                function_definition.type_(),
+                                function_definition.arguments().len(),
+                            )?,
                         )?,
                     ))
                 })
@@ -479,6 +483,8 @@ mod tests {
         Arc<UnionTagCalculator>,
     ) {
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
+        let last_result_type_calculator =
+            LastResultTypeCalculator::new(reference_type_resolver.clone());
         let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
@@ -516,6 +522,7 @@ mod tests {
                 }
                 .into(),
                 reference_type_resolver,
+                last_result_type_calculator,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
                 boolean_compiler,

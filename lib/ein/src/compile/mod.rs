@@ -5,6 +5,7 @@ mod expression_compiler;
 mod expression_type_extractor;
 mod global_name_map_creator;
 mod global_name_renamer;
+mod last_result_type_calculator;
 mod list_type_configuration;
 mod main_function_definition_transformer;
 mod module_compiler;
@@ -29,6 +30,7 @@ use error::CompileError;
 use expression_compiler::{ExpressionCompiler, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
+use last_result_type_calculator::LastResultTypeCalculator;
 pub use list_type_configuration::ListTypeConfiguration;
 use main_function_definition_transformer::MainFunctionDefinitionTransformer;
 use module_compiler::ModuleCompiler;
@@ -67,6 +69,8 @@ pub fn compile(
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+    let last_result_type_calculator =
+        LastResultTypeCalculator::new(reference_type_resolver.clone());
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
@@ -101,6 +105,7 @@ pub fn compile(
         }
         .into(),
         reference_type_resolver,
+        last_result_type_calculator,
         union_tag_calculator,
         type_compiler.clone(),
         boolean_compiler,
