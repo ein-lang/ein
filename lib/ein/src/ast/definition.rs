@@ -1,7 +1,9 @@
 use super::expression::Expression;
 use super::function_definition::*;
 use super::variable_definition::*;
+use crate::debug::SourceInformation;
 use crate::types::Type;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Definition {
@@ -21,6 +23,17 @@ impl Definition {
         match self {
             Self::FunctionDefinition(function_definition) => function_definition.type_(),
             Self::VariableDefinition(variable_definition) => variable_definition.type_(),
+        }
+    }
+
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
+        match self {
+            Self::FunctionDefinition(function_definition) => {
+                function_definition.source_information()
+            }
+            Self::VariableDefinition(variable_definition) => {
+                variable_definition.source_information()
+            }
         }
     }
 

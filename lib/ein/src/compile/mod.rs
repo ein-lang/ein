@@ -5,7 +5,9 @@ mod expression_compiler;
 mod expression_type_extractor;
 mod global_name_map_creator;
 mod global_name_renamer;
+mod last_result_type_calculator;
 mod list_type_configuration;
+mod main_function_definition_transformer;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
@@ -25,10 +27,12 @@ use crate::ast::*;
 use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
-use expression_compiler::{ExpressionCompiler, ExpressionTransformerSet};
+use expression_compiler::{ExpressionCompiler, ExpressionCompilerSet, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
+use last_result_type_calculator::LastResultTypeCalculator;
 pub use list_type_configuration::ListTypeConfiguration;
+use main_function_definition_transformer::MainFunctionDefinitionTransformer;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use none_compiler::NoneCompiler;
@@ -36,8 +40,8 @@ use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
-    BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-    NotEqualOperationTransformer,
+    BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
+    ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
@@ -46,19 +50,18 @@ use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
 use variable_compiler::VariableCompiler;
 
+// TODO Use Arc for compile_configuration.
 pub fn compile(
     module: &Module,
     configuration: &CompileConfiguration,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = transform_before_name_qualification(&module)?;
 
-    let names = GlobalNameMapCreator::create(
-        &module,
-        &vec![configuration.source_main_function_name().into()]
-            .into_iter()
-            .collect(),
-    );
-    let module = GlobalNameRenamer::new(&names).rename(&module);
+    let names = GlobalNameMapCreator::create(&module);
+    let module = GlobalNameRenamer::new(names.clone()).rename(&module);
+    let module =
+        MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone().into())
+            .transform(&module);
 
     let list_type_configuration = Arc::new(configuration.list_type_configuration().qualify(&names));
     let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
@@ -66,6 +69,8 @@ pub fn compile(
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+    let last_result_type_calculator =
+        LastResultTypeCalculator::new(reference_type_resolver.clone());
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
@@ -79,41 +84,41 @@ pub fn compile(
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
         type_comparability_checker,
-        type_equality_checker,
+        type_equality_checker.clone(),
         list_type_configuration.clone(),
     );
     let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
     let boolean_operation_transformer = BooleanOperationTransformer::new();
+    let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
+        type_equality_checker,
+        reference_type_resolver.clone(),
+    );
 
     let expression_compiler = ExpressionCompiler::new(
+        ExpressionCompilerSet {
+            boolean_compiler,
+            none_compiler,
+            variable_compiler,
+        }
+        .into(),
         ExpressionTransformerSet {
             equal_operation_transformer,
             not_equal_operation_transformer,
             list_literal_transformer,
             boolean_operation_transformer,
+            function_type_coercion_transformer,
         }
         .into(),
         reference_type_resolver,
+        last_result_type_calculator,
         union_tag_calculator,
         type_compiler.clone(),
-        boolean_compiler,
-        none_compiler,
-        variable_compiler,
     );
 
     Ok((
         ssf_llvm::compile(
-            &ModuleCompiler::new(expression_compiler, type_compiler)
-                .compile(&module)?
-                .rename_global_variables(
-                    &vec![(
-                        configuration.source_main_function_name().into(),
-                        configuration.object_main_function_name().into(),
-                    )]
-                    .into_iter()
-                    .collect(),
-                ),
+            &ModuleCompiler::new(expression_compiler, type_compiler).compile(&module)?,
             ssf_llvm::CompileConfiguration::new(
                 Some(configuration.malloc_function_name().into()),
                 Some(configuration.panic_function_name().into()),

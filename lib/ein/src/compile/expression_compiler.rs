@@ -1,10 +1,11 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
+use super::last_result_type_calculator::LastResultTypeCalculator;
 use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
-    BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-    NotEqualOperationTransformer,
+    BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
+    ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -14,41 +15,45 @@ use crate::types::{self, Type};
 use std::convert::TryInto;
 use std::sync::Arc;
 
+pub struct ExpressionCompilerSet {
+    pub boolean_compiler: Arc<BooleanCompiler>,
+    pub none_compiler: Arc<NoneCompiler>,
+    pub variable_compiler: Arc<VariableCompiler>,
+}
+
 pub struct ExpressionTransformerSet {
     pub equal_operation_transformer: Arc<EqualOperationTransformer>,
     pub not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
     pub list_literal_transformer: Arc<ListLiteralTransformer>,
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
+    pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
 }
 
 pub struct ExpressionCompiler {
+    expression_compiler_set: Arc<ExpressionCompilerSet>,
     expression_transformer_set: Arc<ExpressionTransformerSet>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
+    last_result_type_calculator: Arc<LastResultTypeCalculator>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
-    boolean_compiler: Arc<BooleanCompiler>,
-    none_compiler: Arc<NoneCompiler>,
-    variable_compiler: Arc<VariableCompiler>,
 }
 
 impl ExpressionCompiler {
     pub fn new(
+        expression_compiler_set: Arc<ExpressionCompilerSet>,
         expression_transformer_set: Arc<ExpressionTransformerSet>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
+        last_result_type_calculator: Arc<LastResultTypeCalculator>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
-        boolean_compiler: Arc<BooleanCompiler>,
-        none_compiler: Arc<NoneCompiler>,
-        variable_compiler: Arc<VariableCompiler>,
     ) -> Arc<Self> {
         Self {
+            expression_compiler_set,
             expression_transformer_set,
             reference_type_resolver,
+            last_result_type_calculator,
             union_tag_calculator,
             type_compiler,
-            boolean_compiler,
-            none_compiler,
-            variable_compiler,
         }
         .into()
     }
@@ -60,7 +65,11 @@ impl ExpressionCompiler {
                 self.compile(application.argument())?,
             )
             .into(),
-            Expression::Boolean(boolean) => self.boolean_compiler.compile(boolean.value()).into(),
+            Expression::Boolean(boolean) => self
+                .expression_compiler_set
+                .boolean_compiler
+                .compile(boolean.value())
+                .into(),
             Expression::Case(case) => self.compile_case(case)?,
             Expression::If(if_) => ssf::ir::AlgebraicCase::new(
                 self.type_compiler.compile_boolean(),
@@ -84,7 +93,7 @@ impl ExpressionCompiler {
                 Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
                 Definition::VariableDefinition(_) => self.compile_let(let_)?,
             },
-            Expression::None(_) => self.none_compiler.compile().into(),
+            Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
                 &self
                     .expression_transformer_set
@@ -136,7 +145,9 @@ impl ExpressionCompiler {
                             ) {
                                 compiled.into()
                             } else {
-                                self.boolean_compiler.compile_conversion(compiled)
+                                self.expression_compiler_set
+                                    .boolean_compiler
+                                    .compile_conversion(compiled)
                             }
                         }
                         Operator::And | Operator::Or => self.compile(
@@ -196,59 +207,71 @@ impl ExpressionCompiler {
                 .into()
             }
             Expression::TypeCoercion(coercion) => {
-                let from_type = self.reference_type_resolver.resolve(coercion.from())?;
-                let to_type = self
-                    .type_compiler
-                    .compile(coercion.to())?
-                    .into_algebraic()
-                    .unwrap();
-                let argument = self.compile(coercion.argument())?;
+                if coercion.to().is_function() {
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .function_type_coercion_transformer
+                            .transform(coercion)?,
+                    )?
+                } else {
+                    let from_type = self.reference_type_resolver.resolve(coercion.from())?;
+                    let to_type = self
+                        .type_compiler
+                        .compile(coercion.to())?
+                        .into_algebraic()
+                        .unwrap();
+                    let argument = self.compile(coercion.argument())?;
 
-                match &from_type {
-                    Type::Any(_) => argument,
-                    Type::Boolean(_)
-                    | Type::Function(_)
-                    | Type::List(_)
-                    | Type::None(_)
-                    | Type::Number(_)
-                    | Type::Record(_) => {
-                        if coercion.to().is_any() {
-                            ssf::ir::Bitcast::new(
+                    match &from_type {
+                        Type::Any(_) => argument,
+                        Type::Boolean(_)
+                        | Type::Function(_)
+                        | Type::List(_)
+                        | Type::None(_)
+                        | Type::Number(_)
+                        | Type::Record(_) => {
+                            if coercion.to().is_any() {
+                                ssf::ir::Bitcast::new(
+                                    ssf::ir::ConstructorApplication::new(
+                                        ssf::ir::Constructor::new(
+                                            self.type_compiler
+                                                .compile(
+                                                    &types::Union::new(
+                                                        vec![from_type.clone()],
+                                                        coercion.to().source_information().clone(),
+                                                    )
+                                                    .into(),
+                                                )?
+                                                .into_algebraic()
+                                                .unwrap(),
+                                            self.union_tag_calculator.calculate(&from_type)?,
+                                        ),
+                                        vec![argument],
+                                    ),
+                                    to_type,
+                                )
+                                .into()
+                            } else {
                                 ssf::ir::ConstructorApplication::new(
                                     ssf::ir::Constructor::new(
-                                        self.type_compiler
-                                            .compile(
-                                                &types::Union::new(
-                                                    vec![from_type.clone()],
-                                                    coercion.to().source_information().clone(),
-                                                )
-                                                .into(),
-                                            )?
-                                            .into_algebraic()
-                                            .unwrap(),
+                                        to_type,
                                         self.union_tag_calculator.calculate(&from_type)?,
                                     ),
                                     vec![argument],
-                                ),
-                                to_type,
-                            )
-                            .into()
-                        } else {
-                            ssf::ir::ConstructorApplication::new(
-                                ssf::ir::Constructor::new(
-                                    to_type,
-                                    self.union_tag_calculator.calculate(&from_type)?,
-                                ),
-                                vec![argument],
-                            )
-                            .into()
+                                )
+                                .into()
+                            }
                         }
+                        Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
+                        Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                     }
-                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
-                    Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 }
             }
-            Expression::Variable(variable) => self.variable_compiler.compile(&variable),
+            Expression::Variable(variable) => self
+                .expression_compiler_set
+                .variable_compiler
+                .compile(&variable),
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
@@ -291,10 +314,10 @@ impl ExpressionCompiler {
                             .collect::<Result<_, CompileError>>()?,
                         self.compile(function_definition.body())?,
                         self.type_compiler.compile(
-                            (0..function_definition.arguments().len())
-                                .fold(function_definition.type_(), |type_, _| {
-                                    type_.to_function().unwrap().result()
-                                }),
+                            &self.last_result_type_calculator.calculate(
+                                function_definition.type_(),
+                                function_definition.arguments().len(),
+                            )?,
                         )?,
                     ))
                 })
@@ -440,27 +463,14 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
-    use super::super::boolean_compiler::BooleanCompiler;
-    use super::super::error::CompileError;
     use super::super::list_type_configuration::ListTypeConfiguration;
-    use super::super::none_compiler::NoneCompiler;
-    use super::super::reference_type_resolver::ReferenceTypeResolver;
-    use super::super::transform::{
-        BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-        NotEqualOperationTransformer,
-    };
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
-    use super::super::union_tag_calculator::UnionTagCalculator;
-    use super::super::variable_compiler::VariableCompiler;
-    use super::{ExpressionCompiler, ExpressionTransformerSet};
-    use crate::ast::*;
+    use super::*;
     use crate::debug::SourceInformation;
-    use crate::types;
     use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
-    use std::sync::Arc;
 
     lazy_static! {
         static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
@@ -482,6 +492,8 @@ mod tests {
         Arc<UnionTagCalculator>,
     ) {
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
+        let last_result_type_calculator =
+            LastResultTypeCalculator::new(reference_type_resolver.clone());
         let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
@@ -497,28 +509,37 @@ mod tests {
         let equal_operation_transformer = EqualOperationTransformer::new(
             reference_type_resolver.clone(),
             type_comparability_checker,
-            type_equality_checker,
+            type_equality_checker.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let not_equal_operation_transformer = NotEqualOperationTransformer::new();
         let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
         let boolean_operation_transformer = BooleanOperationTransformer::new();
+        let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
+            type_equality_checker,
+            reference_type_resolver.clone(),
+        );
 
         (
             ExpressionCompiler::new(
+                ExpressionCompilerSet {
+                    boolean_compiler,
+                    none_compiler,
+                    variable_compiler,
+                }
+                .into(),
                 ExpressionTransformerSet {
                     equal_operation_transformer,
                     not_equal_operation_transformer,
                     list_literal_transformer,
                     boolean_operation_transformer,
+                    function_type_coercion_transformer,
                 }
                 .into(),
                 reference_type_resolver,
+                last_result_type_calculator,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
-                boolean_compiler,
-                none_compiler,
-                variable_compiler,
             ),
             type_compiler,
             union_tag_calculator,
