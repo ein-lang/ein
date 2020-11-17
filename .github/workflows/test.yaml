@@ -7,7 +7,6 @@ jobs:
     container:
       image: einlang/ci
     env:
-      HOME: /root
       RUST_MIN_STACK: 8388608
     steps:
       - uses: actions/checkout@v2
