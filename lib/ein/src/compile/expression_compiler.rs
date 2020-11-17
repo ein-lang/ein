@@ -464,11 +464,11 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
+    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::*;
     use crate::debug::SourceInformation;
-    use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
 
     fn create_expression_compiler(

@@ -1,7 +1,10 @@
+#[cfg(test)]
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+#[cfg(test)]
 use std::sync::Arc;
 
+#[cfg(test)]
 lazy_static! {
     pub static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
         ListTypeConfiguration::new(

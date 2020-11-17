@@ -1198,7 +1198,7 @@ mod tests {
         #[test]
         fn infer_types_of_list_case_expressions() {
             let create_module = |type_: Type| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     ListCase::new(
                         List::with_type(type_.clone(), vec![], SourceInformation::dummy()),
