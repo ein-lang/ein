@@ -457,6 +457,7 @@ mod tests {
                     ModulePath::new(Package::new("m", ""), vec![]),
                     Default::default(),
                     Default::default(),
+                    Default::default(),
                     vec![(
                         "x".into(),
                         types::Number::new(SourceInformation::dummy()).into(),
@@ -822,6 +823,7 @@ mod tests {
                     )]
                     .into_iter()
                     .collect(),
+                    Default::default(),
                     Default::default(),
                 ),
                 true,

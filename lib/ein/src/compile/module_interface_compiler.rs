@@ -80,7 +80,8 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Default::default(),
                 Default::default(),
-                Default::default()
+                Default::default(),
+                Default::default(),
             ))
         );
     }
@@ -104,6 +105,7 @@ mod tests {
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("P", ""), vec!["M".into()]),
                 vec!["x".into()].into_iter().collect(),
+                Default::default(),
                 Default::default(),
                 vec![(
                     "P().M.x".into(),
