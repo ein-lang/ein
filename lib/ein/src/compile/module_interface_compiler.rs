@@ -38,7 +38,24 @@ impl ModuleInterfaceCompiler {
                 module
                     .definitions()
                     .iter()
-                    .map(|definition| (definition.name().into(), definition.type_().clone()))
+                    .filter_map(|definition| match definition {
+                        Definition::FunctionDefinition(function_definition) => Some((
+                            function_definition.name().into(),
+                            function_definition.type_().clone(),
+                        )),
+                        Definition::VariableDefinition(_) => None,
+                    })
+                    .collect(),
+                module
+                    .definitions()
+                    .iter()
+                    .filter_map(|definition| match definition {
+                        Definition::FunctionDefinition(_) => None,
+                        Definition::VariableDefinition(variable_definition) => Some((
+                            variable_definition.name().into(),
+                            variable_definition.type_().clone(),
+                        )),
+                    })
                     .collect(),
             ))
         }
@@ -63,7 +80,8 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Default::default(),
                 Default::default(),
-                Default::default()
+                Default::default(),
+                Default::default(),
             ))
         );
     }
@@ -87,6 +105,7 @@ mod tests {
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("P", ""), vec!["M".into()]),
                 vec!["x".into()].into_iter().collect(),
+                Default::default(),
                 Default::default(),
                 vec![(
                     "P().M.x".into(),

@@ -81,6 +81,7 @@ Ok(
                             },
                         ),
                     },
+                    functions: {},
                     variables: {},
                 },
                 qualified: true,

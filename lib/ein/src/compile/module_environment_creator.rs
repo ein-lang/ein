@@ -9,6 +9,10 @@ impl ModuleEnvironmentCreator {
         let mut variables = HashMap::<String, Type>::new();
 
         for import in module.imports() {
+            for (name, type_) in import.module_interface().functions() {
+                variables.insert(name.into(), type_.clone());
+            }
+
             for (name, type_) in import.module_interface().variables() {
                 variables.insert(name.into(), type_.clone());
             }
