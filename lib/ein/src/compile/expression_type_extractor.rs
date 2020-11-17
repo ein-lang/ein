@@ -241,10 +241,8 @@ mod tests {
     fn extract_type_of_list_case_expression_with_element() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer = TypeCanonicalizer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker,
-        );
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
 
         assert_eq!(
             ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
@@ -271,10 +269,8 @@ mod tests {
     fn extract_type_of_list_case_expression_with_list() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer = TypeCanonicalizer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker,
-        );
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
         let list_type = types::List::new(
             types::None::new(SourceInformation::dummy()),
             SourceInformation::dummy(),
