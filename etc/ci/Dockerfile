@@ -1,8 +1,7 @@
-FROM archlinux/base
+FROM archlinux
 
 COPY Gemfile /Gemfile
 COPY Gemfile.lock /Gemfile.lock
 
-RUN pacman -Syu --noconfirm base-devel clang llvm npm ruby-bundler
+RUN pacman -Syu --noconfirm base-devel clang llvm ruby-bundler
 RUN bundler install
-RUN npm install -g cspell
