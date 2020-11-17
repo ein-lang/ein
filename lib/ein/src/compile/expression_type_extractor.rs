@@ -243,7 +243,7 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
+            type_equality_checker,
         );
 
         assert_eq!(
@@ -273,7 +273,7 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
+            type_equality_checker,
         );
         let list_type = types::List::new(
             types::None::new(SourceInformation::dummy()),

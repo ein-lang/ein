@@ -1202,7 +1202,7 @@ mod tests {
                     "x",
                     ListCase::new(
                         List::with_type(type_.clone(), vec![], SourceInformation::dummy()),
-                        type_.clone(),
+                        type_,
                         "x",
                         "xs",
                         None::new(SourceInformation::dummy()),
