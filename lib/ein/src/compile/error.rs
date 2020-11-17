@@ -82,9 +82,7 @@ impl Error for CompileError {}
 
 impl From<ssf::AnalysisError> for CompileError {
     fn from(error: ssf::AnalysisError) -> Self {
-        match error {
-            _ => Self::SsfAnalysis(error),
-        }
+        Self::SsfAnalysis(error)
     }
 }
 
