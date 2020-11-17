@@ -11,7 +11,6 @@ jobs:
       RUST_MIN_STACK: 8388608
     steps:
       - uses: actions/checkout@v2
-      - run: npx cspell '**/*.{feature,md,rs}'
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -40,6 +39,11 @@ jobs:
           command: build
           args: --release --package runtime
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
+  spell-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npx cspell '**/*.{feature,md,rs}'
   audit:
     runs-on: ubuntu-latest
     steps:
