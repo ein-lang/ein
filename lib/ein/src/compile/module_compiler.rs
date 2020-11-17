@@ -28,19 +28,29 @@ impl ModuleCompiler {
                 .flat_map(|import| {
                     import
                         .module_interface()
-                        .variables()
+                        .functions()
                         .iter()
-                        .map(move |(name, type_)| {
-                            Ok(ssf::ir::Declaration::new(name, {
-                                match self.type_compiler.compile(type_)? {
-                                    ssf::types::Type::Function(function_type) => function_type,
-                                    type_ => ssf::types::Function::new(
-                                        self.type_compiler.compile_none(),
-                                        type_,
-                                    ),
-                                }
-                            }))
+                        .map(|(name, type_)| {
+                            Ok(ssf::ir::Declaration::new(
+                                name,
+                                self.type_compiler.compile(type_)?.into_function().unwrap(),
+                            ))
                         })
+                        .chain(
+                            import
+                                .module_interface()
+                                .variables()
+                                .iter()
+                                .map(|(name, type_)| {
+                                    Ok(ssf::ir::Declaration::new(
+                                        name,
+                                        ssf::types::Function::new(
+                                            self.type_compiler.compile_none(),
+                                            self.type_compiler.compile(type_)?,
+                                        ),
+                                    ))
+                                }),
+                        )
                 })
                 .collect::<Result<_, CompileError>>()?,
             module
