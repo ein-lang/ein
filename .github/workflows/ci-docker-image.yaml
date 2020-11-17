@@ -1,6 +1,5 @@
 name: ci-docker-image
 on:
-  push:
   schedule:
     - cron: "0 0 * * *"
 jobs:
