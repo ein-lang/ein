@@ -75,10 +75,10 @@ impl ExpressionTypeExtractor {
                                 function_definition.type_().clone(),
                             );
                         }
-                        Definition::ValueDefinition(value_definition) => {
+                        Definition::VariableDefinition(variable_definition) => {
                             variables.insert(
-                                value_definition.name().into(),
-                                value_definition.type_().clone(),
+                                variable_definition.name().into(),
+                                variable_definition.type_().clone(),
                             );
                         }
                     }
@@ -154,10 +154,8 @@ mod tests {
     fn extract_type_of_case_expression() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer = TypeCanonicalizer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker.clone(),
-        );
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
 
         assert_eq!(
             ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
@@ -194,10 +192,8 @@ mod tests {
     fn extract_type_of_record_element_operation() {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer = TypeCanonicalizer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker.clone(),
-        );
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
         let record_type = types::Record::new(
             "Foo",
             vec![(
@@ -215,7 +211,7 @@ mod tests {
                     record_type.clone(),
                     "foo",
                     RecordConstruction::new(
-                        record_type.clone(),
+                        record_type,
                         vec![(
                             "foo".into(),
                             Number::new(42.0, SourceInformation::dummy()).into()

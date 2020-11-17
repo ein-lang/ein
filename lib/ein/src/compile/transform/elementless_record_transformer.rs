@@ -25,7 +25,7 @@ impl ElementlessRecordTransformer {
                         .map(|type_definition| {
                             if let Type::Record(record_type) = type_definition.type_() {
                                 if record_type.elements().is_empty() {
-                                    vec![ValueDefinition::new(
+                                    vec![VariableDefinition::new(
                                         type_definition.name(),
                                         RecordConstruction::new(
                                             record_type.clone(),
@@ -70,14 +70,14 @@ mod tests {
             ),
             Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "Foo",
                     RecordConstruction::new(
                         record_type.clone(),
                         Default::default(),
                         SourceInformation::dummy(),
                     ),
-                    record_type.clone(),
+                    record_type,
                     SourceInformation::dummy(),
                 )
                 .into()]

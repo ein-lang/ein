@@ -1,77 +1,78 @@
 use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
+use super::last_result_type_calculator::LastResultTypeCalculator;
+use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
-    BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-    NotEqualOperationTransformer,
+    BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
+    ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
+use super::variable_compiler::VariableCompiler;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::convert::TryInto;
 use std::sync::Arc;
+
+pub struct ExpressionCompilerSet {
+    pub boolean_compiler: Arc<BooleanCompiler>,
+    pub none_compiler: Arc<NoneCompiler>,
+    pub variable_compiler: Arc<VariableCompiler>,
+}
 
 pub struct ExpressionTransformerSet {
     pub equal_operation_transformer: Arc<EqualOperationTransformer>,
     pub not_equal_operation_transformer: Arc<NotEqualOperationTransformer>,
     pub list_literal_transformer: Arc<ListLiteralTransformer>,
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
+    pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
 }
 
 pub struct ExpressionCompiler {
+    expression_compiler_set: Arc<ExpressionCompilerSet>,
     expression_transformer_set: Arc<ExpressionTransformerSet>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
+    last_result_type_calculator: Arc<LastResultTypeCalculator>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
-    boolean_compiler: Arc<BooleanCompiler>,
 }
 
 impl ExpressionCompiler {
     pub fn new(
+        expression_compiler_set: Arc<ExpressionCompilerSet>,
         expression_transformer_set: Arc<ExpressionTransformerSet>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
+        last_result_type_calculator: Arc<LastResultTypeCalculator>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
-        boolean_compiler: Arc<BooleanCompiler>,
     ) -> Arc<Self> {
         Self {
+            expression_compiler_set,
             expression_transformer_set,
             reference_type_resolver,
+            last_result_type_calculator,
             union_tag_calculator,
             type_compiler,
-            boolean_compiler,
         }
         .into()
     }
 
     pub fn compile(&self, expression: &Expression) -> Result<ssf::ir::Expression, CompileError> {
         Ok(match expression {
-            Expression::Application(application) => {
-                let mut function = application.function();
-                let mut arguments = vec![application.argument()];
-
-                while let Expression::Application(application) = function {
-                    function = application.function();
-                    arguments.push(application.argument());
-                }
-
-                ssf::ir::FunctionApplication::new(
-                    self.compile(function)?
-                        .to_variable()
-                        .expect("variable")
-                        .clone(),
-                    arguments
-                        .iter()
-                        .rev()
-                        .map(|argument| self.compile(argument))
-                        .collect::<Result<_, _>>()?,
-                )
-                .into()
-            }
-            Expression::Boolean(boolean) => self.boolean_compiler.compile(boolean.value()).into(),
+            Expression::Application(application) => ssf::ir::FunctionApplication::new(
+                self.compile(application.function())?,
+                self.compile(application.argument())?,
+            )
+            .into(),
+            Expression::Boolean(boolean) => self
+                .expression_compiler_set
+                .boolean_compiler
+                .compile(boolean.value())
+                .into(),
             Expression::Case(case) => self.compile_case(case)?,
             Expression::If(if_) => ssf::ir::AlgebraicCase::new(
+                self.type_compiler.compile_boolean(),
                 self.compile(if_.condition())?,
                 vec![
                     ssf::ir::AlgebraicAlternative::new(
@@ -89,14 +90,10 @@ impl ExpressionCompiler {
             )
             .into(),
             Expression::Let(let_) => match let_.definitions()[0] {
-                Definition::FunctionDefinition(_) => self.compile_let_functions(let_)?.into(),
-                Definition::ValueDefinition(_) => self.compile_let_values(let_)?.into(),
+                Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
+                Definition::VariableDefinition(_) => self.compile_let(let_)?,
             },
-            Expression::None(_) => ssf::ir::ConstructorApplication::new(
-                ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
-                vec![],
-            )
-            .into(),
+            Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
                 &self
                     .expression_transformer_set
@@ -149,7 +146,9 @@ impl ExpressionCompiler {
                             ) {
                                 compiled.into()
                             } else {
-                                self.boolean_compiler.compile_conversion(compiled)
+                                self.expression_compiler_set
+                                    .boolean_compiler
+                                    .compile_conversion(compiled)
                             }
                         }
                         Operator::And | Operator::Or => self.compile(
@@ -165,8 +164,6 @@ impl ExpressionCompiler {
                 ssf::ir::Constructor::new(
                     self.type_compiler
                         .compile(record.type_())?
-                        .into_value()
-                        .unwrap()
                         .into_algebraic()
                         .unwrap(),
                     0,
@@ -178,114 +175,123 @@ impl ExpressionCompiler {
                     .collect::<Result<_, _>>()?,
             )
             .into(),
-            Expression::RecordElementOperation(operation) => ssf::ir::AlgebraicCase::new(
-                self.compile(operation.argument())?,
-                vec![ssf::ir::AlgebraicAlternative::new(
-                    ssf::ir::Constructor::new(
-                        self.type_compiler
-                            .compile(operation.type_())?
-                            .into_value()
-                            .unwrap()
-                            .into_algebraic()
-                            .unwrap(),
-                        0,
-                    ),
-                    self.reference_type_resolver
-                        .resolve(operation.type_())?
-                        .to_record()
-                        .unwrap()
-                        .elements()
-                        .keys()
-                        .map(|key| {
-                            if key == operation.key() {
-                                operation.variable().into()
-                            } else {
-                                format!("${}", key)
-                            }
-                        })
-                        .collect(),
-                    self.compile(operation.expression())?,
-                )],
-                None,
-            )
-            .into(),
-            Expression::TypeCoercion(coercion) => {
-                let from_type = self.reference_type_resolver.resolve(coercion.from())?;
-                let to_type = self
+            Expression::RecordElementOperation(operation) => {
+                let algebraic_type = self
                     .type_compiler
-                    .compile(coercion.to())?
-                    .into_value()
-                    .unwrap()
+                    .compile(operation.type_())?
                     .into_algebraic()
                     .unwrap();
-                let argument = self.compile(coercion.argument())?;
 
-                match &from_type {
-                    Type::Any(_) => argument,
-                    Type::Boolean(_)
-                    | Type::Function(_)
-                    | Type::List(_)
-                    | Type::None(_)
-                    | Type::Number(_)
-                    | Type::Record(_) => {
-                        if coercion.to().is_any() {
-                            ssf::ir::Bitcast::new(
+                ssf::ir::AlgebraicCase::new(
+                    algebraic_type.clone(),
+                    self.compile(operation.argument())?,
+                    vec![ssf::ir::AlgebraicAlternative::new(
+                        ssf::ir::Constructor::new(algebraic_type, 0),
+                        self.reference_type_resolver
+                            .resolve(operation.type_())?
+                            .to_record()
+                            .unwrap()
+                            .elements()
+                            .keys()
+                            .map(|key| {
+                                if key == operation.key() {
+                                    operation.variable().into()
+                                } else {
+                                    format!("${}", key)
+                                }
+                            })
+                            .collect(),
+                        self.compile(operation.expression())?,
+                    )],
+                    None,
+                )
+                .into()
+            }
+            Expression::TypeCoercion(coercion) => {
+                if coercion.to().is_function() {
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .function_type_coercion_transformer
+                            .transform(coercion)?,
+                    )?
+                } else {
+                    let from_type = self.reference_type_resolver.resolve(coercion.from())?;
+                    let to_type = self
+                        .type_compiler
+                        .compile(coercion.to())?
+                        .into_algebraic()
+                        .unwrap();
+                    let argument = self.compile(coercion.argument())?;
+
+                    match &from_type {
+                        Type::Any(_) => argument,
+                        Type::Boolean(_)
+                        | Type::Function(_)
+                        | Type::List(_)
+                        | Type::None(_)
+                        | Type::Number(_)
+                        | Type::Record(_) => {
+                            if coercion.to().is_any() {
+                                ssf::ir::Bitcast::new(
+                                    ssf::ir::ConstructorApplication::new(
+                                        ssf::ir::Constructor::new(
+                                            self.type_compiler
+                                                .compile(
+                                                    &types::Union::new(
+                                                        vec![from_type.clone()],
+                                                        coercion.to().source_information().clone(),
+                                                    )
+                                                    .into(),
+                                                )?
+                                                .into_algebraic()
+                                                .unwrap(),
+                                            self.union_tag_calculator.calculate(&from_type)?,
+                                        ),
+                                        vec![argument],
+                                    ),
+                                    to_type,
+                                )
+                                .into()
+                            } else {
                                 ssf::ir::ConstructorApplication::new(
                                     ssf::ir::Constructor::new(
-                                        self.type_compiler
-                                            .compile(
-                                                &types::Union::new(
-                                                    vec![from_type.clone()],
-                                                    coercion.to().source_information().clone(),
-                                                )
-                                                .into(),
-                                            )?
-                                            .into_value()
-                                            .unwrap()
-                                            .into_algebraic()
-                                            .unwrap(),
+                                        to_type,
                                         self.union_tag_calculator.calculate(&from_type)?,
                                     ),
                                     vec![argument],
-                                ),
-                                to_type,
-                            )
-                            .into()
-                        } else {
-                            ssf::ir::ConstructorApplication::new(
-                                ssf::ir::Constructor::new(
-                                    to_type,
-                                    self.union_tag_calculator.calculate(&from_type)?,
-                                ),
-                                vec![argument],
-                            )
-                            .into()
+                                )
+                                .into()
+                            }
                         }
+                        Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
+                        Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                     }
-                    Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
-                    Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
                 }
             }
-            Expression::Variable(variable) => ssf::ir::Variable::new(variable.name()).into(),
+            Expression::Variable(variable) => self
+                .expression_compiler_set
+                .variable_compiler
+                .compile(&variable),
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
 
-    fn compile_let_functions(&self, let_: &Let) -> Result<ssf::ir::LetFunctions, CompileError> {
+    fn compile_let_recursive(&self, let_: &Let) -> Result<ssf::ir::LetRecursive, CompileError> {
         let function_definitions = let_
             .definitions()
             .iter()
             .map(|definition| match definition {
                 Definition::FunctionDefinition(function_definition) => Ok(function_definition),
-                Definition::ValueDefinition(value_definition) => {
+                Definition::VariableDefinition(variable_definition) => {
                     Err(CompileError::MixedDefinitionsInLet(
-                        value_definition.source_information().clone(),
+                        variable_definition.source_information().clone(),
                     ))
                 }
             })
             .collect::<Result<Vec<&FunctionDefinition>, _>>()?;
 
-        Ok(ssf::ir::LetFunctions::new(
+        Ok(ssf::ir::LetRecursive::new(
             function_definitions
                 .iter()
                 .map(|function_definition| {
@@ -294,7 +300,7 @@ impl ExpressionCompiler {
                         .to_function()
                         .expect("function type");
 
-                    Ok(ssf::ir::FunctionDefinition::new(
+                    Ok(ssf::ir::Definition::new(
                         function_definition.name(),
                         function_definition
                             .arguments()
@@ -308,7 +314,12 @@ impl ExpressionCompiler {
                             })
                             .collect::<Result<_, CompileError>>()?,
                         self.compile(function_definition.body())?,
-                        self.type_compiler.compile_value(type_.last_result())?,
+                        self.type_compiler.compile(
+                            &self.last_result_type_calculator.calculate(
+                                function_definition.type_(),
+                                function_definition.arguments().len(),
+                            )?,
+                        )?,
                     ))
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
@@ -316,8 +327,8 @@ impl ExpressionCompiler {
         ))
     }
 
-    fn compile_let_values(&self, let_: &Let) -> Result<ssf::ir::LetValues, CompileError> {
-        let value_definitions = let_
+    fn compile_let(&self, let_: &Let) -> Result<ssf::ir::Expression, CompileError> {
+        let variable_definitions = let_
             .definitions()
             .iter()
             .map(|definition| match definition {
@@ -326,23 +337,22 @@ impl ExpressionCompiler {
                         function_definition.source_information().clone(),
                     ))
                 }
-                Definition::ValueDefinition(value_definition) => Ok(value_definition),
+                Definition::VariableDefinition(variable_definition) => Ok(variable_definition),
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        Ok(ssf::ir::LetValues::new(
-            value_definitions
-                .iter()
-                .map(|value_definition| {
-                    Ok(ssf::ir::ValueDefinition::new(
-                        value_definition.name(),
-                        self.compile(value_definition.body())?,
-                        self.type_compiler.compile_value(value_definition.type_())?,
-                    ))
-                })
-                .collect::<Result<Vec<_>, CompileError>>()?,
-            self.compile(let_.expression())?,
-        ))
+        variable_definitions.iter().rev().fold(
+            self.compile(let_.expression()),
+            |expression, variable_definition| {
+                Ok(ssf::ir::Let::new(
+                    variable_definition.name(),
+                    self.type_compiler.compile(variable_definition.type_())?,
+                    self.compile(variable_definition.body())?,
+                    expression?,
+                )
+                .into())
+            },
+        )
     }
 
     fn compile_case(&self, case: &Case) -> Result<ssf::ir::Expression, CompileError> {
@@ -358,19 +368,16 @@ impl ExpressionCompiler {
         } else {
             self.type_compiler
                 .compile(case.type_())?
-                .into_value()
-                .unwrap()
                 .into_algebraic()
                 .unwrap()
         };
 
-        Ok(ssf::ir::LetValues::new(
-            vec![ssf::ir::ValueDefinition::new(
-                case.name(),
-                self.compile(case.argument())?,
-                self.type_compiler.compile_value(case.type_())?,
-            )],
+        Ok(ssf::ir::Let::new(
+            case.name(),
+            self.type_compiler.compile(case.type_())?,
+            self.compile(case.argument())?,
             ssf::ir::AlgebraicCase::new(
+                argument_type.clone(),
                 if case.type_().is_any() {
                     ssf::ir::Expression::from(ssf::ir::Bitcast::new(
                         ssf::ir::Variable::new(case.name()),
@@ -411,20 +418,18 @@ impl ExpressionCompiler {
                                                 self.union_tag_calculator.calculate(type_)?,
                                             ),
                                             vec![case.name().into()],
-                                            ssf::ir::LetValues::new(
-                                                vec![ssf::ir::ValueDefinition::new(
-                                                    case.name(),
-                                                    ssf::ir::ConstructorApplication::new(
-                                                        ssf::ir::Constructor::new(
-                                                            alternative_type.clone(),
-                                                            self.union_tag_calculator
-                                                                .calculate(type_)?,
-                                                        ),
-                                                        vec![ssf::ir::Variable::new(case.name())
-                                                            .into()],
+                                            ssf::ir::Let::new(
+                                                case.name(),
+                                                alternative_type.clone(),
+                                                ssf::ir::ConstructorApplication::new(
+                                                    ssf::ir::Constructor::new(
+                                                        alternative_type.clone(),
+                                                        self.union_tag_calculator
+                                                            .calculate(type_)?,
                                                     ),
-                                                    alternative_type.clone(),
-                                                )],
+                                                    vec![ssf::ir::Variable::new(case.name())
+                                                        .into()],
+                                                ),
                                                 self.compile(alternative.expression())?,
                                             ),
                                         ))
@@ -459,24 +464,12 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
-    use super::super::boolean_compiler::BooleanCompiler;
-    use super::super::error::CompileError;
-    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
-    use super::super::reference_type_resolver::ReferenceTypeResolver;
-    use super::super::transform::{
-        BooleanOperationTransformer, EqualOperationTransformer, ListLiteralTransformer,
-        NotEqualOperationTransformer,
-    };
     use super::super::type_comparability_checker::TypeComparabilityChecker;
-    use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
-    use super::super::union_tag_calculator::UnionTagCalculator;
-    use super::{ExpressionCompiler, ExpressionTransformerSet};
-    use crate::ast::*;
+    use super::*;
     use crate::debug::SourceInformation;
-    use crate::types;
+    use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
-    use std::sync::Arc;
 
     fn create_expression_compiler(
         module: &Module,
@@ -486,6 +479,8 @@ mod tests {
         Arc<UnionTagCalculator>,
     ) {
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
+        let last_result_type_calculator =
+            LastResultTypeCalculator::new(reference_type_resolver.clone());
         let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
@@ -493,32 +488,45 @@ mod tests {
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
+        let none_compiler = NoneCompiler::new(type_compiler.clone());
+        let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
         let type_comparability_checker =
             TypeComparabilityChecker::new(reference_type_resolver.clone());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let equal_operation_transformer = EqualOperationTransformer::new(
             reference_type_resolver.clone(),
-            type_comparability_checker.clone(),
+            type_comparability_checker,
             type_equality_checker.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let not_equal_operation_transformer = NotEqualOperationTransformer::new();
         let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
         let boolean_operation_transformer = BooleanOperationTransformer::new();
+        let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
+            type_equality_checker,
+            reference_type_resolver.clone(),
+        );
 
         (
             ExpressionCompiler::new(
+                ExpressionCompilerSet {
+                    boolean_compiler,
+                    none_compiler,
+                    variable_compiler,
+                }
+                .into(),
                 ExpressionTransformerSet {
                     equal_operation_transformer,
                     not_equal_operation_transformer,
                     list_literal_transformer,
                     boolean_operation_transformer,
+                    function_type_coercion_transformer,
                 }
                 .into(),
                 reference_type_resolver,
+                last_result_type_calculator,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
-                boolean_compiler,
             ),
             type_compiler,
             union_tag_calculator,
@@ -563,6 +571,7 @@ mod tests {
                     .into(),
                 ),
                 Ok(ssf::ir::PrimitiveCase::new(
+                    ssf::types::Primitive::Integer8,
                     ssf::ir::Operation::new(ssf::ir::Operator::LessThan, 1.0, 2.0),
                     vec![
                         ssf::ir::PrimitiveAlternative::new(
@@ -588,13 +597,13 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_values() {
+    fn compile_let() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
                 &Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "x",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
@@ -606,12 +615,10 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetValues::new(
-                vec![ssf::ir::ValueDefinition::new(
-                    "x",
-                    42.0,
-                    ssf::types::Primitive::Float64,
-                )],
+            Ok(ssf::ir::Let::new(
+                "x",
+                ssf::types::Primitive::Float64,
+                42.0,
                 ssf::ir::Variable::new("x")
             )
             .into())
@@ -619,7 +626,50 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_functions() {
+    fn compile_let_with_multiple_definitions() {
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+
+        assert_eq!(
+            expression_compiler.compile(
+                &Let::new(
+                    vec![
+                        VariableDefinition::new(
+                            "x",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into(),
+                        VariableDefinition::new(
+                            "y",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    ],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+            ),
+            Ok(ssf::ir::Let::new(
+                "x",
+                ssf::types::Primitive::Float64,
+                42.0,
+                ssf::ir::Let::new(
+                    "y",
+                    ssf::types::Primitive::Float64,
+                    42.0,
+                    ssf::ir::Variable::new("x")
+                )
+            )
+            .into())
+        );
+    }
+
+    #[test]
+    fn compile_let_recursive() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -642,8 +692,8 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetFunctions::new(
-                vec![ssf::ir::FunctionDefinition::new(
+            Ok(ssf::ir::LetRecursive::new(
+                vec![ssf::ir::Definition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                     42.0,
@@ -656,7 +706,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_functions_with_recursive_functions() {
+    fn compile_let_recursive_with_recursive_functions() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -683,13 +733,13 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetFunctions::new(
-                vec![ssf::ir::FunctionDefinition::new(
+            Ok(ssf::ir::LetRecursive::new(
+                vec![ssf::ir::Definition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                     ssf::ir::FunctionApplication::new(
                         ssf::ir::Variable::new("f"),
-                        vec![ssf::ir::Variable::new("x").into()]
+                        ssf::ir::Variable::new("x"),
                     ),
                     ssf::types::Primitive::Float64,
                 )],
@@ -700,7 +750,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_nested_let_functions() {
+    fn compile_nested_let_recursive() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
@@ -738,12 +788,12 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetFunctions::new(
-                vec![ssf::ir::FunctionDefinition::new(
+            Ok(ssf::ir::LetRecursive::new(
+                vec![ssf::ir::Definition::new(
                     "f",
                     vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
-                    ssf::ir::LetFunctions::new(
-                        vec![ssf::ir::FunctionDefinition::new(
+                    ssf::ir::LetRecursive::new(
+                        vec![ssf::ir::Definition::new(
                             "g",
                             vec![ssf::ir::Argument::new("y", ssf::types::Primitive::Float64)],
                             ssf::ir::Variable::new("x"),
@@ -760,13 +810,13 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_values_with_free_variables() {
+    fn compile_let_with_free_variables() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
                 &Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
@@ -793,14 +843,12 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(ssf::ir::LetValues::new(
-                vec![ssf::ir::ValueDefinition::new(
-                    "y",
-                    42.0,
-                    ssf::types::Primitive::Float64,
-                )],
-                ssf::ir::LetFunctions::new(
-                    vec![ssf::ir::FunctionDefinition::new(
+            Ok(ssf::ir::Let::new(
+                "y",
+                ssf::types::Primitive::Float64,
+                42.0,
+                ssf::ir::LetRecursive::new(
+                    vec![ssf::ir::Definition::new(
                         "f",
                         vec![ssf::ir::Argument::new("x", ssf::types::Primitive::Float64)],
                         ssf::ir::Variable::new("y"),
@@ -829,6 +877,7 @@ mod tests {
                 .into(),
             ),
             Ok(ssf::ir::AlgebraicCase::new(
+                boolean_type.clone(),
                 ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(boolean_type.clone(), 1),
                     vec![]
@@ -888,7 +937,7 @@ mod tests {
         );
         let (expression_compiler, _, _) =
             create_expression_compiler(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", type_.clone())],
+                vec![TypeDefinition::new("Foo", type_)],
                 vec![],
             ));
 
@@ -951,8 +1000,6 @@ mod tests {
                         type_compiler
                             .compile(&union_type.into())
                             .unwrap()
-                            .into_value()
-                            .unwrap()
                             .into_algebraic()
                             .unwrap(),
                         union_tag_calculator
@@ -999,8 +1046,6 @@ mod tests {
                         type_compiler
                             .compile(&union_type.into())
                             .unwrap()
-                            .into_value()
-                            .unwrap()
                             .into_algebraic()
                             .unwrap(),
                         union_tag_calculator.calculate(&record_type.into()).unwrap()
@@ -1036,7 +1081,7 @@ mod tests {
                 expression_compiler.compile(
                     &TypeCoercion::new(
                         Variable::new("x", SourceInformation::dummy()),
-                        lower_union_type.clone(),
+                        lower_union_type,
                         upper_union_type.clone(),
                         SourceInformation::dummy(),
                     )
@@ -1046,8 +1091,6 @@ mod tests {
                     ssf::ir::Variable::new("x"),
                     type_compiler
                         .compile(&upper_union_type.into())
-                        .unwrap()
-                        .into_value()
                         .unwrap()
                         .into_algebraic()
                         .unwrap(),
@@ -1103,8 +1146,6 @@ mod tests {
                                         .into()
                                     )
                                     .unwrap()
-                                    .into_value()
-                                    .unwrap()
                                     .into_algebraic()
                                     .unwrap(),
                                 union_tag_calculator
@@ -1117,8 +1158,6 @@ mod tests {
                         ),
                         type_compiler
                             .compile(&types::Any::new(SourceInformation::dummy()).into())
-                            .unwrap()
-                            .into_value()
                             .unwrap()
                             .into_algebraic()
                             .unwrap(),
@@ -1152,8 +1191,6 @@ mod tests {
                     ssf::ir::Variable::new("x"),
                     type_compiler
                         .compile(&types::Any::new(SourceInformation::dummy()).into())
-                        .unwrap()
-                        .into_value()
                         .unwrap()
                         .into_algebraic()
                         .unwrap(),

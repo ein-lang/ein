@@ -2,28 +2,70 @@ name: test
 on:
   - push
 jobs:
-  test:
+  unit-test:
     runs-on: ubuntu-latest
     container:
       image: einlang/ci
-    env:
-      HOME: /root
-      RUST_MIN_STACK: 8388608
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+        env:
+          RUST_MIN_STACK: 8388608
+  integration-test:
+    runs-on: ubuntu-latest
+    container:
+      image: einlang/ci
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
+  lint:
+    runs-on: ubuntu-latest
+    container:
+      image: einlang/ci
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+      - name: cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
+      - name: cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+  spell-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
       - run: npx cspell '**/*.{feature,md,rs}'
-      - run: cargo build
-      - run: cargo fmt -- --check
-      - run: cargo clippy -- -D warnings
-      - run: cargo audit
-      - run: cargo test
-      - run: cargo build --release --package runtime
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
   code-coverage:
     runs-on: ubuntu-latest
     steps:
       - run: curl -f https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 10
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly

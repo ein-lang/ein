@@ -95,7 +95,7 @@ mod tests {
 
     #[test]
     fn infer_types_of_none_literals() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             None::new(SourceInformation::dummy()),
             types::None::new(SourceInformation::dummy()),
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn infer_types_of_variables() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Number::new(42.0, SourceInformation::dummy()),
             types::Number::new(SourceInformation::dummy()),
@@ -119,7 +119,7 @@ mod tests {
 
     #[test]
     fn fail_to_infer_types_of_variables() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Number::new(42.0, SourceInformation::dummy()),
             types::Function::new(
@@ -201,7 +201,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into(),
-            ValueDefinition::new(
+            VariableDefinition::new(
                 "x",
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),
@@ -232,7 +232,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into(),
-            ValueDefinition::new(
+            VariableDefinition::new(
                 "x",
                 Application::new(
                     Application::new(
@@ -259,11 +259,11 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+    fn infer_types_of_let() {
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Let::new(
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "y",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -282,11 +282,11 @@ mod tests {
     }
 
     #[test]
-    fn fail_to_infer_types_of_let_values() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+    fn fail_to_infer_types_of_let() {
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Let::new(
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "y",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Function::new(
@@ -315,8 +315,8 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_functions() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+    fn infer_types_of_let_recursive() {
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Let::new(
                 vec![FunctionDefinition::new(
@@ -347,8 +347,8 @@ mod tests {
     }
 
     #[test]
-    fn fail_to_infer_types_of_let_functions() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+    fn fail_to_infer_types_of_let_recursive() {
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Let::new(
                 vec![FunctionDefinition::new(
@@ -389,12 +389,12 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_with_type_variables() {
+    fn infer_types_of_let_with_type_variables() {
         assert_eq!(
-            infer_types(&Module::from_definitions(vec![ValueDefinition::new(
+            infer_types(&Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
@@ -408,10 +408,10 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Ok(Module::from_definitions(vec![ValueDefinition::new(
+            Ok(Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Let::new(
-                    vec![ValueDefinition::new(
+                    vec![VariableDefinition::new(
                         "y",
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
@@ -430,7 +430,7 @@ mod tests {
 
     #[test]
     fn fail_to_infer_types_with_missing_variables() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Variable::new("y", SourceInformation::dummy()),
             types::Number::new(SourceInformation::dummy()),
@@ -457,6 +457,7 @@ mod tests {
                     ModulePath::new(Package::new("m", ""), vec![]),
                     Default::default(),
                     Default::default(),
+                    Default::default(),
                     vec![(
                         "x".into(),
                         types::Number::new(SourceInformation::dummy()).into(),
@@ -467,7 +468,7 @@ mod tests {
                 true,
             )],
             vec![],
-            vec![ValueDefinition::new(
+            vec![VariableDefinition::new(
                 "y",
                 Variable::new("x", SourceInformation::dummy()),
                 types::Number::new(SourceInformation::dummy()),
@@ -479,20 +480,20 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_with_recursive_functions_and_the_latter_typed() {
+    fn infer_types_of_let_with_recursive_functions_and_the_latter_typed() {
         assert_eq!(
-            infer_types(&Module::from_definitions(vec![ValueDefinition::new(
+            infer_types(&Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Let::new(
                     vec![
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
                             types::Function::new(
@@ -515,11 +516,11 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Ok(Module::from_definitions(vec![ValueDefinition::new(
+            Ok(Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Let::new(
                     vec![
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
                             types::Function::new(
@@ -530,7 +531,7 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
                             types::Function::new(
@@ -557,13 +558,13 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_with_recursive_functions_and_the_former_typed() {
+    fn infer_types_of_let_with_recursive_functions_and_the_former_typed() {
         assert_eq!(
-            infer_types(&Module::from_definitions(vec![ValueDefinition::new(
+            infer_types(&Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Let::new(
                     vec![
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
                             types::Function::new(
@@ -574,7 +575,7 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
@@ -593,11 +594,11 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()])),
-            Ok(Module::from_definitions(vec![ValueDefinition::new(
+            Ok(Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Let::new(
                     vec![
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
                             types::Function::new(
@@ -608,7 +609,7 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
                             types::Function::new(
@@ -635,21 +636,21 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_let_values_in_function_definition_with_recursive_functions() {
+    fn infer_types_of_let_in_function_definition_with_recursive_functions() {
         assert_eq!(
             infer_types(&Module::from_definitions(vec![FunctionDefinition::new(
                 "f",
                 vec!["x".into()],
                 Let::new(
                     vec![
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
                             types::Function::new(
@@ -681,7 +682,7 @@ mod tests {
                 vec!["x".into()],
                 Let::new(
                     vec![
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "f",
                             Variable::new("g", SourceInformation::dummy()),
                             types::Function::new(
@@ -692,7 +693,7 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into(),
-                        ValueDefinition::new(
+                        VariableDefinition::new(
                             "g",
                             Variable::new("f", SourceInformation::dummy()),
                             types::Function::new(
@@ -723,19 +724,19 @@ mod tests {
     }
 
     #[test]
-    fn fail_to_infer_types_of_recursive_value_definitions() {
-        let module = Module::from_definitions(vec![ValueDefinition::new(
+    fn fail_to_infer_types_of_recursive_variable_definitions() {
+        let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
             Let::new(
                 vec![
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "a",
                         Variable::new("b", SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
                     .into(),
-                    ValueDefinition::new(
+                    VariableDefinition::new(
                         "b",
                         Variable::new("a", SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
@@ -770,7 +771,7 @@ mod tests {
                 "Foo",
                 types::Number::new(SourceInformation::dummy()),
             )],
-            vec![ValueDefinition::new(
+            vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Reference::new("Foo", SourceInformation::dummy()),
@@ -789,7 +790,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
-            vec![ValueDefinition::new(
+            vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Reference::new("Foo", SourceInformation::dummy()),
@@ -823,11 +824,12 @@ mod tests {
                     .into_iter()
                     .collect(),
                     Default::default(),
+                    Default::default(),
                 ),
                 true,
             )],
             vec![],
-            vec![ValueDefinition::new(
+            vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
                 types::Reference::new("Foo", SourceInformation::dummy()),
@@ -862,7 +864,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
@@ -885,7 +887,7 @@ mod tests {
 
         #[test]
         fn infer_types_of_if_expressions() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
+            let module = Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 If::new(
                     Boolean::new(true, SourceInformation::dummy()),
@@ -902,7 +904,7 @@ mod tests {
 
         #[test]
         fn fail_to_infer_types_of_if_expressions_with_invalid_condition_type() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
+            let module = Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 If::new(
                     None::new(SourceInformation::dummy()),
@@ -925,7 +927,7 @@ mod tests {
 
         #[test]
         fn fail_to_infer_types_of_if_expressions_with_unmatched_branch_types() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
+            let module = Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 If::new(
                     Boolean::new(true, SourceInformation::dummy()),
@@ -949,10 +951,10 @@ mod tests {
         #[test]
         fn infer_types_of_if_expressions_with_unmatched_branch_types_in_let_expressions() {
             let create_module = |type_: Type| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     Let::new(
-                        vec![ValueDefinition::new(
+                        vec![VariableDefinition::new(
                             "y",
                             If::new(
                                 Boolean::new(true, SourceInformation::dummy()),
@@ -993,10 +995,10 @@ mod tests {
         #[test]
         fn infer_types_of_nested_if_expressions_with_unmatched_branch_types_in_let_expressions() {
             let create_module = |type_: Type| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     Let::new(
-                        vec![ValueDefinition::new(
+                        vec![VariableDefinition::new(
                             "y",
                             If::new(
                                 Boolean::new(true, SourceInformation::dummy()),
@@ -1048,7 +1050,7 @@ mod tests {
         #[test]
         fn infer_types_of_case_expressions() {
             let create_module = |type_: Type| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     Case::with_type(
                         type_,
@@ -1103,7 +1105,7 @@ mod tests {
         #[test]
         fn fail_to_infer_case_expressions_with_wrong_argument() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Boolean::new(true, SourceInformation::dummy()),
                     types::Union::new(
@@ -1116,7 +1118,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Case::new(
                         "z",
@@ -1143,7 +1145,7 @@ mod tests {
         #[test]
         fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Case::new(
                         "y",
@@ -1151,8 +1153,7 @@ mod tests {
                         vec![Alternative::new(
                             types::Any::new(SourceInformation::dummy()),
                             None::new(SourceInformation::dummy()),
-                        )
-                        .into()],
+                        )],
                         SourceInformation::dummy()
                     ),
                     types::None::new(SourceInformation::dummy()),
@@ -1166,7 +1167,7 @@ mod tests {
         fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type_inferred_from_if_expression(
         ) {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Case::new(
                         "y",
@@ -1179,8 +1180,7 @@ mod tests {
                         vec![Alternative::new(
                             types::Number::new(SourceInformation::dummy()),
                             None::new(SourceInformation::dummy()),
-                        )
-                        .into()],
+                        )],
                         SourceInformation::dummy()
                     ),
                     types::None::new(SourceInformation::dummy()),
@@ -1242,7 +1242,7 @@ mod tests {
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     RecordConstruction::new(
                         reference_type.clone(),
@@ -1272,7 +1272,7 @@ mod tests {
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     RecordConstruction::new(
                         reference_type.clone(),
@@ -1299,7 +1299,7 @@ mod tests {
 
             let module = Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     RecordConstruction::new(
                         reference_type.clone(),
@@ -1341,7 +1341,7 @@ mod tests {
 
             let module = Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     RecordConstruction::new(
                         reference_type.clone(),
@@ -1379,7 +1379,7 @@ mod tests {
                     TypeDefinition::new("Foo", foo_type),
                     TypeDefinition::new("Bar", bar_type),
                 ],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     RecordConstruction::new(
                         types::Reference::new("Foo", SourceInformation::dummy()),
@@ -1420,8 +1420,8 @@ mod tests {
             );
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![ValueDefinition::new(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![VariableDefinition::new(
                     "x",
                     RecordElementOperation::new(
                         types::Reference::new("Foo", SourceInformation::dummy()),
@@ -1459,13 +1459,13 @@ mod tests {
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "x",
                     RecordElementOperation::new(
                         record_type.clone(),
                         "foo",
                         RecordConstruction::new(
-                            record_type.clone(),
+                            record_type,
                             vec![(
                                 "foo".into(),
                                 Number::new(42.0, SourceInformation::dummy()).into()
@@ -1499,7 +1499,7 @@ mod tests {
         #[test]
         fn infer_types_of_arithmetic_operations() {
             let create_module = |type_: Type| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     Operation::with_type(
                         type_,
@@ -1527,7 +1527,7 @@ mod tests {
         #[test]
         fn infer_types_of_number_comparison_operations() {
             let create_module = |type_: Type| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     Operation::with_type(
                         type_,
@@ -1559,8 +1559,8 @@ mod tests {
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![ValueDefinition::new(
+                vec![TypeDefinition::new("Foo", record_type)],
+                vec![VariableDefinition::new(
                     "x",
                     Operation::with_type(
                         types::Unknown::new(SourceInformation::dummy()),
@@ -1571,7 +1571,7 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         RecordConstruction::new(
-                            reference_type.clone(),
+                            reference_type,
                             Default::default(),
                             SourceInformation::dummy(),
                         ),
@@ -1587,7 +1587,7 @@ mod tests {
         #[test]
         fn infer_types_of_boolean_operation() {
             let create_module = |type_: Type| {
-                Module::from_definitions(vec![ValueDefinition::new(
+                Module::from_definitions(vec![VariableDefinition::new(
                     "x",
                     Operation::with_type(
                         type_,
@@ -1619,7 +1619,7 @@ mod tests {
 
         #[test]
         fn infer_casting_of_non_union_types_to_union_types() {
-            let module = Module::from_definitions(vec![ValueDefinition::new(
+            let module = Module::from_definitions(vec![VariableDefinition::new(
                 "x",
                 Boolean::new(true, SourceInformation::dummy()),
                 types::Union::new(
@@ -1639,7 +1639,7 @@ mod tests {
         #[test]
         fn infer_casting_of_lower_union_types_to_upper_union_types() {
             let module = Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Boolean::new(true, SourceInformation::dummy()),
                     types::Union::new(
@@ -1652,7 +1652,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Variable::new("x", SourceInformation::dummy()),
                     types::Union::new(
@@ -1674,7 +1674,7 @@ mod tests {
         #[test]
         fn fail_to_infer_casting_of_upper_union_types_to_lower_union_types() {
             let module = Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Boolean::new(true, SourceInformation::dummy()),
                     types::Union::new(
@@ -1688,7 +1688,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Variable::new("x", SourceInformation::dummy()),
                     types::Union::new(
@@ -1733,7 +1733,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "g",
                     Variable::new("f", SourceInformation::dummy()),
                     types::Function::new(
@@ -1791,7 +1791,7 @@ mod tests {
         #[test]
         fn infer_casting_of_non_union_types_to_any_types() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Boolean::new(true, SourceInformation::dummy()),
                     types::Any::new(SourceInformation::dummy()),
@@ -1804,7 +1804,7 @@ mod tests {
         #[test]
         fn infer_casting_of_union_types_to_any_types() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Boolean::new(true, SourceInformation::dummy()),
                     types::Union::new(
@@ -1817,7 +1817,7 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Variable::new("x", SourceInformation::dummy()),
                     types::Any::new(SourceInformation::dummy(),),
@@ -1830,17 +1830,17 @@ mod tests {
         #[test]
         fn infer_any_types_from_any_types() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Any::new(SourceInformation::dummy(),),
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Let::new(
-                        vec![ValueDefinition::new(
+                        vec![VariableDefinition::new(
                             "z",
                             Variable::new("x", SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
@@ -1860,17 +1860,17 @@ mod tests {
         #[test]
         fn infer_any_types_from_union_of_concrete_type_and_any_type() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Any::new(SourceInformation::dummy(),),
                     SourceInformation::dummy(),
                 )
                 .into(),
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "y",
                     Let::new(
-                        vec![ValueDefinition::new(
+                        vec![VariableDefinition::new(
                             "z",
                             If::new(
                                 Boolean::new(true, SourceInformation::dummy()),
@@ -1904,10 +1904,10 @@ mod tests {
             );
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     List::new(vec![], SourceInformation::dummy()),
-                    list_type.clone(),
+                    list_type,
                     SourceInformation::dummy(),
                 )
                 .into()
@@ -1922,7 +1922,7 @@ mod tests {
             );
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     List::new(
                         vec![ListElement::Single(
@@ -1930,7 +1930,7 @@ mod tests {
                         )],
                         SourceInformation::dummy(),
                     ),
-                    list_type.clone(),
+                    list_type,
                     SourceInformation::dummy(),
                 )
                 .into()
@@ -1945,7 +1945,7 @@ mod tests {
             );
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
-                ValueDefinition::new(
+                VariableDefinition::new(
                     "x",
                     List::new(
                         vec![ListElement::Multiple(

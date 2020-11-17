@@ -1,5 +1,6 @@
 use super::super::error::CompileError;
 use super::super::expression_type_extractor::ExpressionTypeExtractor;
+use super::super::last_result_type_calculator::LastResultTypeCalculator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::super::type_canonicalizer::TypeCanonicalizer;
 use super::super::type_equality_checker::TypeEqualityChecker;
@@ -17,6 +18,7 @@ pub struct TypeCoercionTransformer {
     type_equality_checker: Arc<TypeEqualityChecker>,
     expression_type_extractor: Arc<ExpressionTypeExtractor>,
     type_canonicalizer: Arc<TypeCanonicalizer>,
+    last_result_type_calculator: Arc<LastResultTypeCalculator>,
 }
 
 impl TypeCoercionTransformer {
@@ -25,12 +27,14 @@ impl TypeCoercionTransformer {
         type_equality_checker: Arc<TypeEqualityChecker>,
         expression_type_extractor: Arc<ExpressionTypeExtractor>,
         type_canonicalizer: Arc<TypeCanonicalizer>,
+        last_result_type_calculator: Arc<LastResultTypeCalculator>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
             expression_type_extractor,
             type_canonicalizer,
+            last_result_type_calculator,
         }
     }
 
@@ -83,11 +87,10 @@ impl TypedTransformer for TypeCoercionTransformer {
             function_definition.arguments().to_vec(),
             self.coerce_type(
                 function_definition.body(),
-                function_definition
-                    .type_()
-                    .to_function()
-                    .unwrap()
-                    .last_result(),
+                &self.last_result_type_calculator.calculate(
+                    function_definition.type_(),
+                    function_definition.arguments().len(),
+                )?,
                 function_definition.source_information().clone(),
                 &variables,
             )?,
@@ -96,21 +99,21 @@ impl TypedTransformer for TypeCoercionTransformer {
         ))
     }
 
-    fn transform_value_definition(
+    fn transform_variable_definition(
         &mut self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
-    ) -> Result<ValueDefinition, CompileError> {
-        Ok(ValueDefinition::new(
-            value_definition.name(),
+    ) -> Result<VariableDefinition, CompileError> {
+        Ok(VariableDefinition::new(
+            variable_definition.name(),
             self.coerce_type(
-                value_definition.body(),
-                value_definition.type_(),
-                value_definition.source_information().clone(),
+                variable_definition.body(),
+                variable_definition.type_(),
+                variable_definition.source_information().clone(),
                 &variables,
             )?,
-            value_definition.type_().clone(),
-            value_definition.source_information().clone(),
+            variable_definition.type_().clone(),
+            variable_definition.source_information().clone(),
         ))
     }
 

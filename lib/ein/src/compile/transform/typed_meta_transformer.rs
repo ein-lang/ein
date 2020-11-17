@@ -12,11 +12,11 @@ pub trait TypedTransformer {
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError>;
-    fn transform_value_definition(
+    fn transform_variable_definition(
         &mut self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
-    ) -> Result<ValueDefinition, CompileError>;
+    ) -> Result<VariableDefinition, CompileError>;
     fn transform_expression(
         &mut self,
         expression: &Expression,
@@ -56,8 +56,8 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                         Definition::FunctionDefinition(function_definition) => self
                             .transform_function_definition(function_definition, &variables)?
                             .into(),
-                        Definition::ValueDefinition(value_definition) => self
-                            .transform_value_definition(value_definition, &variables)?
+                        Definition::VariableDefinition(variable_definition) => self
+                            .transform_variable_definition(variable_definition, &variables)?
                             .into(),
                     })
                 })
@@ -96,19 +96,19 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
         )?)
     }
 
-    fn transform_value_definition(
+    fn transform_variable_definition(
         &mut self,
-        value_definition: &ValueDefinition,
+        variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
-    ) -> Result<ValueDefinition, CompileError> {
-        let body = self.transform_expression(value_definition.body(), variables)?;
+    ) -> Result<VariableDefinition, CompileError> {
+        let body = self.transform_expression(variable_definition.body(), variables)?;
 
-        Ok(self.component_transformer.transform_value_definition(
-            &ValueDefinition::new(
-                value_definition.name(),
+        Ok(self.component_transformer.transform_variable_definition(
+            &VariableDefinition::new(
+                variable_definition.name(),
                 body,
-                value_definition.type_().clone(),
-                value_definition.source_information().clone(),
+                variable_definition.type_().clone(),
+                variable_definition.source_information().clone(),
             ),
             variables,
         )?)
@@ -164,11 +164,11 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                                 function_definition.type_().clone(),
                             );
                         }
-                        Definition::ValueDefinition(value_definition) => {
+                        Definition::VariableDefinition(variable_definition) => {
                             if let_.has_functions() {
                                 variables.insert(
-                                    value_definition.name().into(),
-                                    value_definition.type_().clone(),
+                                    variable_definition.name().into(),
+                                    variable_definition.type_().clone(),
                                 );
                             }
                         }
@@ -182,13 +182,13 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                         Definition::FunctionDefinition(function_definition) => self
                             .transform_function_definition(function_definition, &variables)?
                             .into(),
-                        Definition::ValueDefinition(value_definition) => {
-                            let definition =
-                                self.transform_value_definition(value_definition, &variables)?;
+                        Definition::VariableDefinition(variable_definition) => {
+                            let definition = self
+                                .transform_variable_definition(variable_definition, &variables)?;
 
                             variables.insert(
-                                value_definition.name().into(),
-                                value_definition.type_().clone(),
+                                variable_definition.name().into(),
+                                variable_definition.type_().clone(),
                             );
 
                             definition.into()

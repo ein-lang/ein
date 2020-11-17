@@ -9,7 +9,6 @@ use std::sync::Arc;
 pub enum CompileError {
     AnyEqualOperation(Arc<SourceInformation>),
     CaseArgumentTypeInvalid(Arc<SourceInformation>),
-    CircularInitialization,
     ExportedNameNotFound { name: String },
     FunctionEqualOperation(Arc<SourceInformation>),
     MixedDefinitionsInLet(Arc<SourceInformation>),
@@ -35,9 +34,6 @@ impl Display for CompileError {
                 "invalid argument type of case expression\n{}",
                 source_information
             ),
-            Self::CircularInitialization => {
-                write!(formatter, "circular variable initialization detected")
-            }
             Self::ExportedNameNotFound { name } => {
                 write!(formatter, "exported name \"{}\" not found", name)
             }
@@ -48,7 +44,7 @@ impl Display for CompileError {
             ),
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
-                "cannot mix function and value definitions in a let expression\n{}",
+                "cannot mix function and variable definitions in a let expression\n{}",
                 source_information
             ),
             Self::RecordEqualOperation(source_information) => write!(
@@ -86,10 +82,7 @@ impl Error for CompileError {}
 
 impl From<ssf::AnalysisError> for CompileError {
     fn from(error: ssf::AnalysisError) -> Self {
-        match error {
-            ssf::AnalysisError::CircularInitialization => Self::CircularInitialization,
-            _ => Self::SsfAnalysis(error),
-        }
+        Self::SsfAnalysis(error)
     }
 }
 

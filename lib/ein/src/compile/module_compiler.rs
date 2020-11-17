@@ -28,25 +28,40 @@ impl ModuleCompiler {
                 .flat_map(|import| {
                     import
                         .module_interface()
-                        .variables()
+                        .functions()
                         .iter()
-                        .map(move |(name, type_)| {
+                        .map(|(name, type_)| {
                             Ok(ssf::ir::Declaration::new(
                                 name,
-                                self.type_compiler.compile(type_)?,
+                                self.type_compiler.compile(type_)?.into_function().unwrap(),
                             ))
                         })
+                        .chain(
+                            import
+                                .module_interface()
+                                .variables()
+                                .iter()
+                                .map(|(name, type_)| {
+                                    Ok(ssf::ir::Declaration::new(
+                                        name,
+                                        ssf::types::Function::new(
+                                            self.type_compiler.compile_none(),
+                                            self.type_compiler.compile(type_)?,
+                                        ),
+                                    ))
+                                }),
+                        )
                 })
                 .collect::<Result<_, CompileError>>()?,
             module
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
-                    Definition::FunctionDefinition(function_definition) => Ok(self
-                        .compile_function_definition(function_definition)?
-                        .into()),
-                    Definition::ValueDefinition(value_definition) => {
-                        Ok(self.compile_value_definition(value_definition)?.into())
+                    Definition::FunctionDefinition(function_definition) => {
+                        Ok(self.compile_function_definition(function_definition)?)
+                    }
+                    Definition::VariableDefinition(variable_definition) => {
+                        Ok(self.compile_variable_definition(variable_definition)?)
                     }
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
@@ -56,12 +71,12 @@ impl ModuleCompiler {
     fn compile_function_definition(
         &self,
         function_definition: &FunctionDefinition,
-    ) -> Result<ssf::ir::FunctionDefinition, CompileError> {
+    ) -> Result<ssf::ir::Definition, CompileError> {
         let core_type = self
             .type_compiler
             .compile_function(function_definition.type_())?;
 
-        Ok(ssf::ir::FunctionDefinition::new(
+        Ok(ssf::ir::Definition::new(
             function_definition.name(),
             function_definition
                 .arguments()
@@ -71,18 +86,26 @@ impl ModuleCompiler {
                 .collect::<Vec<_>>(),
             self.expression_compiler
                 .compile(function_definition.body())?,
-            core_type.result().clone(),
+            (0..function_definition.arguments().len())
+                .fold(core_type.into(), |type_: ssf::types::Type, _| {
+                    type_.into_function().unwrap().result().clone()
+                }),
         ))
     }
 
-    fn compile_value_definition(
+    fn compile_variable_definition(
         &self,
-        value_definition: &ValueDefinition,
-    ) -> Result<ssf::ir::ValueDefinition, CompileError> {
-        Ok(ssf::ir::ValueDefinition::new(
-            value_definition.name(),
-            self.expression_compiler.compile(value_definition.body())?,
-            self.type_compiler.compile_value(value_definition.type_())?,
+        variable_definition: &VariableDefinition,
+    ) -> Result<ssf::ir::Definition, CompileError> {
+        Ok(ssf::ir::Definition::thunk(
+            variable_definition.name(),
+            vec![ssf::ir::Argument::new(
+                "$thunk_arg",
+                self.type_compiler.compile_none(),
+            )],
+            self.expression_compiler
+                .compile(variable_definition.body())?,
+            self.type_compiler.compile(variable_definition.type_())?,
         ))
     }
 }

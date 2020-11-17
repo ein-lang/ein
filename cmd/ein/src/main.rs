@@ -45,7 +45,6 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let compile_configuration = app::CompileConfiguration::new(
         "main",
         "ein_main",
-        "ein_init",
         "malloc",
         "ein_panic",
         app::ListTypeConfiguration::new(

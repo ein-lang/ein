@@ -38,7 +38,24 @@ impl ModuleInterfaceCompiler {
                 module
                     .definitions()
                     .iter()
-                    .map(|definition| (definition.name().into(), definition.type_().clone()))
+                    .filter_map(|definition| match definition {
+                        Definition::FunctionDefinition(function_definition) => Some((
+                            function_definition.name().into(),
+                            function_definition.type_().clone(),
+                        )),
+                        Definition::VariableDefinition(_) => None,
+                    })
+                    .collect(),
+                module
+                    .definitions()
+                    .iter()
+                    .filter_map(|definition| match definition {
+                        Definition::FunctionDefinition(_) => None,
+                        Definition::VariableDefinition(variable_definition) => Some((
+                            variable_definition.name().into(),
+                            variable_definition.type_().clone(),
+                        )),
+                    })
                     .collect(),
             ))
         }
@@ -48,7 +65,7 @@ impl ModuleInterfaceCompiler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::{Export, Number, ValueDefinition};
+    use crate::ast::{Export, Number, VariableDefinition};
     use crate::debug::SourceInformation;
     use crate::package::Package;
     use crate::path::ModulePath;
@@ -63,7 +80,8 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Default::default(),
                 Default::default(),
-                Default::default()
+                Default::default(),
+                Default::default(),
             ))
         );
     }
@@ -76,7 +94,7 @@ mod tests {
                 Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
                 vec![],
-                vec![ValueDefinition::new(
+                vec![VariableDefinition::new(
                     "P().M.x",
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
@@ -87,6 +105,7 @@ mod tests {
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("P", ""), vec!["M".into()]),
                 vec!["x".into()].into_iter().collect(),
+                Default::default(),
                 Default::default(),
                 vec![(
                     "P().M.x".into(),

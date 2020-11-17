@@ -1,10 +1,11 @@
 use crate::ast::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
+use std::sync::Arc;
 
 pub struct GlobalNameMapCreator {}
 
 impl GlobalNameMapCreator {
-    pub fn create(module: &Module, excluded_names: &HashSet<String>) -> HashMap<String, String> {
+    pub fn create(module: &Module) -> Arc<HashMap<String, String>> {
         let mut names = HashMap::new();
 
         for import in module.imports() {
@@ -34,11 +35,7 @@ impl GlobalNameMapCreator {
             );
         }
 
-        for name in excluded_names {
-            names.remove(name);
-        }
-
-        names
+        names.into()
     }
 }
 
@@ -52,135 +49,120 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[test]
-    fn create_name_map_from_value_definition() {
+    fn create_name_map_from_variable_definition() {
         assert_eq!(
-            GlobalNameMapCreator::create(
-                &Module::from_definitions(vec![ValueDefinition::new(
-                    "x",
-                    None::new(SourceInformation::dummy()),
-                    types::None::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()]),
-                &Default::default()
-            ),
-            vec![("x".into(), "().x".into())].into_iter().collect()
+            GlobalNameMapCreator::create(&Module::from_definitions(vec![VariableDefinition::new(
+                "x",
+                None::new(SourceInformation::dummy()),
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()])),
+            vec![("x".into(), "().x".into())]
+                .into_iter()
+                .collect::<HashMap<_, _>>()
+                .into()
         );
     }
 
     #[test]
     fn create_name_map_from_function_definition() {
         assert_eq!(
-            GlobalNameMapCreator::create(
-                &Module::from_definitions(vec![FunctionDefinition::new(
-                    "f",
-                    vec!["x".into()],
-                    None::new(SourceInformation::dummy()),
-                    types::Function::new(
-                        types::None::new(SourceInformation::dummy()),
-                        types::None::new(SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    SourceInformation::dummy(),
-                )
-                .into()]),
-                &Default::default()
-            ),
-            vec![("f".into(), "().f".into())].into_iter().collect()
-        );
-    }
-
-    #[test]
-    fn do_not_include_excluded_names() {
-        assert_eq!(
-            GlobalNameMapCreator::create(
-                &Module::from_definitions(vec![ValueDefinition::new(
-                    "x",
-                    None::new(SourceInformation::dummy()),
+            GlobalNameMapCreator::create(&Module::from_definitions(vec![FunctionDefinition::new(
+                "f",
+                vec!["x".into()],
+                None::new(SourceInformation::dummy()),
+                types::Function::new(
+                    types::None::new(SourceInformation::dummy()),
                     types::None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()]),
-                &vec!["x".into()].into_iter().collect()
-            ),
-            Default::default(),
+                ),
+                SourceInformation::dummy(),
+            )
+            .into()]),),
+            vec![("f".into(), "().f".into())]
+                .into_iter()
+                .collect::<HashMap<_, _>>()
+                .into()
         );
     }
 
     #[test]
     fn create_name_map_from_type_definition() {
         assert_eq!(
-            GlobalNameMapCreator::create(
-                &Module::from_definitions_and_type_definitions(
-                    vec![TypeDefinition::new(
-                        "x",
-                        types::None::new(SourceInformation::dummy())
-                    )],
-                    vec![]
-                ),
-                &Default::default()
-            ),
-            vec![("x".into(), "().x".into())].into_iter().collect()
+            GlobalNameMapCreator::create(&Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "x",
+                    types::None::new(SourceInformation::dummy())
+                )],
+                vec![]
+            ),),
+            vec![("x".into(), "().x".into())]
+                .into_iter()
+                .collect::<HashMap<_, _>>()
+                .into()
         );
     }
 
     #[test]
     fn create_name_map_from_qualified_import() {
         assert_eq!(
-            GlobalNameMapCreator::create(
-                &Module::new(
-                    ModulePath::dummy(),
-                    Export::new(Default::default()),
-                    vec![Import::new(
-                        ModuleInterface::new(
-                            ModulePath::new(Package::new("p", ""), vec!["m".into()]),
-                            vec!["x".into()].into_iter().collect(),
-                            Default::default(),
-                            vec![(
-                                "x".into(),
-                                types::None::new(SourceInformation::dummy()).into(),
-                            )]
-                            .into_iter()
-                            .collect(),
-                        ),
-                        true,
-                    )],
-                    vec![],
-                    vec![]
-                ),
-                &Default::default()
-            ),
-            vec![("m.x".into(), "p().m.x".into())].into_iter().collect()
+            GlobalNameMapCreator::create(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("p", ""), vec!["m".into()]),
+                        vec!["x".into()].into_iter().collect(),
+                        Default::default(),
+                        Default::default(),
+                        vec![(
+                            "x".into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                    ),
+                    true,
+                )],
+                vec![],
+                vec![]
+            )),
+            vec![("m.x".into(), "p().m.x".into())]
+                .into_iter()
+                .collect::<HashMap<_, _>>()
+                .into()
         );
     }
 
     #[test]
     fn create_name_map_from_unqualified_import() {
         assert_eq!(
-            GlobalNameMapCreator::create(
-                &Module::new(
-                    ModulePath::dummy(),
-                    Export::new(Default::default()),
-                    vec![Import::new(
-                        ModuleInterface::new(
-                            ModulePath::new(Package::new("p", ""), vec!["m".into()]),
-                            vec!["x".into()].into_iter().collect(),
-                            Default::default(),
-                            vec![(
-                                "x".into(),
-                                types::None::new(SourceInformation::dummy()).into(),
-                            )]
-                            .into_iter()
-                            .collect(),
-                        ),
-                        false,
-                    )],
-                    vec![],
-                    vec![]
-                ),
-                &Default::default()
-            ),
-            vec![("x".into(), "p().m.x".into())].into_iter().collect()
+            GlobalNameMapCreator::create(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("p", ""), vec!["m".into()]),
+                        vec!["x".into()].into_iter().collect(),
+                        Default::default(),
+                        Default::default(),
+                        vec![(
+                            "x".into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                    ),
+                    false,
+                )],
+                vec![],
+                vec![]
+            )),
+            vec![("x".into(), "p().m.x".into())]
+                .into_iter()
+                .collect::<HashMap<_, _>>()
+                .into()
         );
     }
 }

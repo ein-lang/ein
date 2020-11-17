@@ -4,14 +4,14 @@ use crate::types::Type;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ValueDefinition {
+pub struct VariableDefinition {
     name: String,
     body: Expression,
     type_: Type,
     source_information: Arc<SourceInformation>,
 }
 
-impl ValueDefinition {
+impl VariableDefinition {
     pub fn new(
         name: impl Into<String>,
         body: impl Into<Expression>,
