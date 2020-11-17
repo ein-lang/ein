@@ -10,22 +10,35 @@ jobs:
       HOME: /root
       RUST_MIN_STACK: 8388608
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - run: npx cspell '**/*.{feature,md,rs}'
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
+      - name: cargo build
+        uses: actions-rs/cargo@v1
         with:
           command: build
-      - uses: actions-rs/cargo@v1
+      - name: cargo fmt
+        uses: actions-rs/cargo@v1
         with:
           command: fmt
           args: --check
-      - run: cargo clippy -- -D warnings
-      - run: cargo test
-      - run: cargo build --release --package runtime
+      - name: cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
+      - name: cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+      - name: cargo build (runtime)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --package runtime
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
   audit:
     runs-on: ubuntu-latest
