@@ -12,23 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
       - name: cargo build
         uses: actions-rs/cargo@v1
         with:
           command: build
-      - name: cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
-      - name: cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
       - name: cargo test
         uses: actions-rs/cargo@v1
         with:
@@ -39,6 +26,21 @@ jobs:
           command: build
           args: --release --package runtime
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+      - name: cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
+      - name: cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
   spell-check:
     runs-on: ubuntu-latest
     steps:
