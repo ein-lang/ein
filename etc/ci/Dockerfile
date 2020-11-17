@@ -1,4 +1,4 @@
-FROM archlinux
+FROM archlinux/base
 
 COPY Gemfile /Gemfile
 COPY Gemfile.lock /Gemfile.lock
