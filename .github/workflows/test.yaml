@@ -63,8 +63,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
   code-coverage:
     runs-on: ubuntu-latest
-    container:
-      image: einlang/ci
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
