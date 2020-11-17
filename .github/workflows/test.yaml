@@ -30,6 +30,17 @@ jobs:
           command: build
           args: --release
       - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: -- --check
   lint:
     runs-on: ubuntu-latest
     container:
@@ -39,13 +50,7 @@ jobs:
       - uses: actions-rs/toolchain@v1
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-      - name: cargo fmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
-      - name: cargo clippy
-        uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v1
         with:
           command: clippy
           args: -- -D warnings
@@ -63,18 +68,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
   code-coverage:
     runs-on: ubuntu-latest
+    container:
+      image: einlang/ci
     steps:
-      - run: curl -f https://apt.llvm.org/llvm.sh | sudo bash /dev/stdin 10
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         with:
           toolchain: nightly
           override: true
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --all-features --no-fail-fast -- --test-threads=1
+          args: --all-features --no-fail-fast
         env:
+          RUST_MIN_STACK: 8388608
           CARGO_INCREMENTAL: "0"
           RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off"
       - id: coverage
