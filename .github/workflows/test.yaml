@@ -10,7 +10,7 @@ jobs:
       RUST_MIN_STACK: 8388608
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@dependabot/npm_and_yarn/actions/core-1.2.6
+      - uses: actions-rs/toolchain@v1
       - name: cargo build
         uses: actions-rs/cargo@v1
         with:
@@ -31,7 +31,7 @@ jobs:
       image: einlang/ci
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@dependabot/npm_and_yarn/actions/core-1.2.6
+      - uses: actions-rs/toolchain@v1
       - name: cargo fmt
         uses: actions-rs/cargo@v1
         with:
