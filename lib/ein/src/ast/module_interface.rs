@@ -42,7 +42,7 @@ impl ModuleInterface {
     }
 
     pub fn functions(&self) -> &BTreeMap<String, Type> {
-        &self.variables
+        &self.functions
     }
 
     pub fn variables(&self) -> &BTreeMap<String, Type> {
