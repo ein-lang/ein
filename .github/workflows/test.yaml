@@ -27,6 +27,8 @@ jobs:
       - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
   lint:
     runs-on: ubuntu-latest
+    container:
+      image: einlang/ci
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
