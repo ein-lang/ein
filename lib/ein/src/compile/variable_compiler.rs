@@ -1,6 +1,5 @@
 use super::type_compiler::TypeCompiler;
 use crate::ast::*;
-use crate::types::Type;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -17,16 +16,7 @@ impl VariableCompiler {
             variable_names: module
                 .imports()
                 .iter()
-                .flat_map(|import| {
-                    import
-                        .module_interface()
-                        .variables()
-                        .iter()
-                        .filter_map(|(name, type_)| match type_ {
-                            Type::Function(_) => None,
-                            _ => Some(name.into()),
-                        })
-                })
+                .flat_map(|import| import.module_interface().variables().keys().cloned())
                 .chain(
                     module
                         .definitions()
