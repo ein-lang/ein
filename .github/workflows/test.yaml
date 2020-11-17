@@ -25,16 +25,11 @@ jobs:
       - uses: actions-rs/toolchain@v1
         env:
           ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
-      - name: build command
-        uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v1
         with:
           command: build
-      - name: build runtime
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --package runtime
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/debug:$PATH cucumber
+          args: --release
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
   lint:
     runs-on: ubuntu-latest
     container:
