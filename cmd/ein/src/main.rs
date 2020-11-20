@@ -53,10 +53,10 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             "equalLists",
             "prependToList",
             "uncons",
-            "consFirst",
-            "consRest",
+            "first",
+            "rest",
             "AnyList",
-            "Cons",
+            "FirstRest",
         )
         .into(),
     );

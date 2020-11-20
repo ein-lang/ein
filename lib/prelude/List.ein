@@ -1,8 +1,8 @@
 export {
   AnyList,
-  Cons,
-  consFirst,
-  consRest,
+  FirstRest,
+  first,
+  rest,
   concatenateLists,
   emptyList,
   equalLists,
@@ -20,21 +20,21 @@ type Node {
   rest : Node | None,
 }
 
-type Cons {
+type FirstRest {
   first : Any,
   rest : AnyList,
 }
 
-consFirst : Cons -> Any
-consFirst = Cons.first
+first : FirstRest -> Any
+first = FirstRest.first
 
-consRest : Cons -> AnyList
-consRest = Cons.rest
+rest : FirstRest -> AnyList
+rest = FirstRest.rest
 
-uncons : AnyList -> Cons | None
+uncons : AnyList -> FirstRest | None
 uncons list =
   case n = AnyList.node list
-    Node => Cons{
+    Node => FirstRest{
         first = Node.first n,
         rest = AnyList{ node = Node.rest n },
       }
