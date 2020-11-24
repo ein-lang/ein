@@ -1,4 +1,4 @@
-Feature: Records
+Feature: Lists
   Background:
     Given a file named "ein.json" with:
     """
