@@ -230,8 +230,8 @@ impl ConstraintCollector {
                 self.solved_subsumption_set.add(type_, result.clone());
 
                 let mut variables = variables.clone();
-                variables.insert(case.head_name().into(), element.into());
-                variables.insert(case.tail_name().into(), list.into());
+                variables.insert(case.first_name().into(), element.into());
+                variables.insert(case.rest_name().into(), list.into());
 
                 let type_ = self.infer_expression(case.non_empty_alternative(), &variables)?;
                 self.solved_subsumption_set.add(type_, result.clone());

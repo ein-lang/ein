@@ -93,10 +93,10 @@ impl ExpressionTypeExtractor {
                         let mut variables = variables.clone();
 
                         variables.insert(
-                            case.head_name().into(),
+                            case.first_name().into(),
                             case.type_().to_list().unwrap().element().clone(),
                         );
-                        variables.insert(case.tail_name().into(), case.type_().clone());
+                        variables.insert(case.rest_name().into(), case.type_().clone());
 
                         self.extract(case.non_empty_alternative(), &variables)?
                     }],

@@ -7,8 +7,8 @@ use std::sync::Arc;
 pub struct ListCase {
     argument: Arc<Expression>,
     type_: Arc<Type>,
-    head_name: String,
-    tail_name: String,
+    first_name: String,
+    rest_name: String,
     empty_alternative: Arc<Expression>,
     non_empty_alternative: Arc<Expression>,
     source_information: Arc<SourceInformation>,
@@ -18,8 +18,8 @@ impl ListCase {
     pub fn new(
         argument: impl Into<Expression>,
         type_: impl Into<Type>,
-        head_name: impl Into<String>,
-        tail_name: impl Into<String>,
+        first_name: impl Into<String>,
+        rest_name: impl Into<String>,
         empty_alternative: impl Into<Expression>,
         non_empty_alternative: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>> + Clone,
@@ -27,8 +27,8 @@ impl ListCase {
         Self {
             argument: Arc::new(argument.into()),
             type_: Arc::new(type_.into()),
-            head_name: head_name.into(),
-            tail_name: tail_name.into(),
+            first_name: first_name.into(),
+            rest_name: rest_name.into(),
             empty_alternative: Arc::new(empty_alternative.into()),
             non_empty_alternative: Arc::new(non_empty_alternative.into()),
             source_information: source_information.into(),
@@ -43,12 +43,12 @@ impl ListCase {
         &self.type_
     }
 
-    pub fn head_name(&self) -> &str {
-        &self.head_name
+    pub fn first_name(&self) -> &str {
+        &self.first_name
     }
 
-    pub fn tail_name(&self) -> &str {
-        &self.tail_name
+    pub fn rest_name(&self) -> &str {
+        &self.rest_name
     }
 
     pub fn empty_alternative(&self) -> &Expression {
@@ -70,8 +70,8 @@ impl ListCase {
         Ok(Self {
             argument: self.argument.transform_expressions(transform)?.into(),
             type_: self.type_.clone(),
-            head_name: self.head_name.clone(),
-            tail_name: self.tail_name.clone(),
+            first_name: self.first_name.clone(),
+            rest_name: self.rest_name.clone(),
             empty_alternative: self
                 .empty_alternative
                 .transform_expressions(transform)?
@@ -91,8 +91,8 @@ impl ListCase {
         Ok(Self {
             argument: self.argument.transform_types(transform)?.into(),
             type_: self.type_.transform_types(transform)?.into(),
-            head_name: self.head_name.clone(),
-            tail_name: self.tail_name.clone(),
+            first_name: self.first_name.clone(),
+            rest_name: self.rest_name.clone(),
             empty_alternative: self.empty_alternative.transform_types(transform)?.into(),
             non_empty_alternative: self
                 .non_empty_alternative

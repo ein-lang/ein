@@ -214,8 +214,8 @@ impl TypedTransformer for TypeCoercionTransformer {
                         &variables,
                     )?,
                     case.type_().clone(),
-                    case.head_name(),
-                    case.tail_name(),
+                    case.first_name(),
+                    case.rest_name(),
                     self.coerce_type(
                         case.empty_alternative(),
                         &result_type,
@@ -226,10 +226,10 @@ impl TypedTransformer for TypeCoercionTransformer {
                         let mut variables = variables.clone();
 
                         variables.insert(
-                            case.head_name().into(),
+                            case.first_name().into(),
                             case.type_().to_list().unwrap().element().clone(),
                         );
-                        variables.insert(case.tail_name().into(), case.type_().clone());
+                        variables.insert(case.rest_name().into(), case.type_().clone());
 
                         self.coerce_type(
                             case.non_empty_alternative(),

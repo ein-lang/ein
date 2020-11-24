@@ -225,14 +225,14 @@ impl GlobalNameRenamer {
             Expression::ListCase(case) => ListCase::new(
                 self.rename_expression(case.argument(), names),
                 case.type_().clone(),
-                case.head_name(),
-                case.tail_name(),
+                case.first_name(),
+                case.rest_name(),
                 self.rename_expression(case.empty_alternative(), names),
                 {
                     let mut names = names.clone();
 
-                    names.remove(case.head_name());
-                    names.remove(case.tail_name());
+                    names.remove(case.first_name());
+                    names.remove(case.rest_name());
 
                     self.rename_expression(case.non_empty_alternative(), &names)
                 },
