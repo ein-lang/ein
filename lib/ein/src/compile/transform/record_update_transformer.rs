@@ -19,8 +19,9 @@ impl RecordUpdateTransformer {
 
         module.transform_expressions(&mut |expression| -> Result<Expression, CompileError> {
             if let Expression::RecordUpdate(record_update) = expression {
-                let type_ = reference_type_resolver.resolve(record_update.type_())?;
-                let record_type = type_.to_record().unwrap();
+                let record_type = reference_type_resolver
+                    .resolve_to_record(record_update.type_())?
+                    .unwrap();
                 let source_information = record_update.source_information();
                 let name = self.name_generator.generate();
 

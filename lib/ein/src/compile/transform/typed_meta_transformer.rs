@@ -73,9 +73,8 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
         let mut variables = variables.clone();
 
         for (name, type_) in function_definition.arguments().iter().zip(
-            function_definition
-                .type_()
-                .to_function()
+            self.reference_type_resolver
+                .resolve_to_function(function_definition.type_())?
                 .unwrap()
                 .arguments(),
         ) {
@@ -277,8 +276,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                     variables.insert(
                         operation.variable().into(),
                         self.reference_type_resolver
-                            .resolve(operation.type_())?
-                            .to_record()
+                            .resolve_to_record(operation.type_())?
                             .unwrap()
                             .elements()[operation.key()]
                         .clone(),

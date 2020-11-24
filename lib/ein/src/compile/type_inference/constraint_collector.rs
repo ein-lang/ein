@@ -290,41 +290,45 @@ impl ConstraintCollector {
                     }
                 })
             }
-            Expression::RecordConstruction(record) => {
-                let type_ = self.reference_type_resolver.resolve(record.type_())?;
-                let record_type = type_.to_record().ok_or_else(|| {
-                    CompileError::TypesNotMatched(
-                        record.source_information().clone(),
-                        type_.source_information().clone(),
-                    )
-                })?;
+            Expression::RecordConstruction(construction) => {
+                let record_type = self
+                    .reference_type_resolver
+                    .resolve_to_record(construction.type_())?
+                    .ok_or_else(|| {
+                        CompileError::TypesNotMatched(
+                            construction.source_information().clone(),
+                            construction.type_().source_information().clone(),
+                        )
+                    })?;
 
-                if record.elements().keys().collect::<HashSet<_>>()
+                if construction.elements().keys().collect::<HashSet<_>>()
                     != record_type.elements().keys().collect()
                 {
                     return Err(CompileError::TypesNotMatched(
-                        record.source_information().clone(),
+                        construction.source_information().clone(),
                         record_type.source_information().clone(),
                     ));
                 }
 
-                for (key, expression) in record.elements() {
+                for (key, expression) in construction.elements() {
                     let type_ = self.infer_expression(expression, variables)?;
 
                     self.solved_subsumption_set
                         .add(type_, record_type.elements()[key].clone());
                 }
 
-                Ok(record.type_().clone())
+                Ok(construction.type_().clone())
             }
             Expression::RecordElementOperation(operation) => {
-                let type_ = self.reference_type_resolver.resolve(operation.type_())?;
-                let record_type = type_.to_record().ok_or_else(|| {
-                    CompileError::TypesNotMatched(
-                        operation.source_information().clone(),
-                        type_.source_information().clone(),
-                    )
-                })?;
+                let record_type = self
+                    .reference_type_resolver
+                    .resolve_to_record(operation.type_())?
+                    .ok_or_else(|| {
+                        CompileError::TypesNotMatched(
+                            operation.source_information().clone(),
+                            operation.type_().source_information().clone(),
+                        )
+                    })?;
 
                 let argument = self.infer_expression(operation.argument(), variables)?;
                 self.solved_subsumption_set

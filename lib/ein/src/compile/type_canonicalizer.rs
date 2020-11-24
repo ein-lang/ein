@@ -173,29 +173,32 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker)
-                .canonicalize(
-                    &types::Record::new(
-                        "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Union::new(
-                                vec![
-                                    types::None::new(SourceInformation::dummy()).into(),
-                                    types::None::new(SourceInformation::dummy()).into()
-                                ],
+            reference_type_resolver
+                .resolve_to_record(
+                    &TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker)
+                        .canonicalize(
+                            &types::Record::new(
+                                "Foo",
+                                vec![(
+                                    "foo".into(),
+                                    types::Union::new(
+                                        vec![
+                                            types::None::new(SourceInformation::dummy()).into(),
+                                            types::None::new(SourceInformation::dummy()).into()
+                                        ],
+                                        SourceInformation::dummy()
+                                    )
+                                    .into(),
+                                )]
+                                .into_iter()
+                                .collect(),
                                 SourceInformation::dummy()
                             )
-                            .into(),
-                        )]
-                        .into_iter()
-                        .collect(),
-                        SourceInformation::dummy()
-                    )
-                    .into()
+                            .into()
+                        )
+                        .unwrap()
                 )
                 .unwrap()
-                .to_record()
                 .unwrap()
                 .elements(),
             &vec![(

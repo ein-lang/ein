@@ -21,8 +21,7 @@ impl LastResultTypeCalculator {
         } else {
             self.calculate(
                 self.reference_type_resolver
-                    .resolve(type_)?
-                    .to_function()
+                    .resolve_to_function(type_)?
                     .unwrap()
                     .result(),
                 argument_count - 1,

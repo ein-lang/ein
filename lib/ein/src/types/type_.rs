@@ -84,30 +84,6 @@ impl Type {
         transform(&type_)
     }
 
-    pub fn to_function(&self) -> Option<&Function> {
-        if let Self::Function(function) = self {
-            Some(&function)
-        } else {
-            None
-        }
-    }
-
-    pub fn to_record(&self) -> Option<&Record> {
-        if let Self::Record(record) = self {
-            Some(&record)
-        } else {
-            None
-        }
-    }
-
-    pub fn to_union(&self) -> Option<&Union> {
-        if let Self::Union(union) = self {
-            Some(union)
-        } else {
-            None
-        }
-    }
-
     pub fn is_any(&self) -> bool {
         matches!(self, Self::Any(_))
     }

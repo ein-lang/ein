@@ -73,9 +73,8 @@ impl TypedTransformer for TypeCoercionTransformer {
         let mut variables = variables.clone();
 
         for (name, type_) in function_definition.arguments().iter().zip(
-            function_definition
-                .type_()
-                .to_function()
+            self.reference_type_resolver
+                .resolve_to_function(function_definition.type_())?
                 .unwrap()
                 .arguments(),
         ) {
@@ -130,9 +129,12 @@ impl TypedTransformer for TypeCoercionTransformer {
                     application.function().clone(),
                     self.coerce_type(
                         application.argument(),
-                        self.expression_type_extractor
-                            .extract(application.function(), variables)?
-                            .to_function()
+                        self.reference_type_resolver
+                            .resolve_to_function(
+                                &self
+                                    .expression_type_extractor
+                                    .extract(application.function(), variables)?,
+                            )?
                             .unwrap()
                             .argument(),
                         source_information.clone(),
@@ -280,10 +282,10 @@ impl TypedTransformer for TypeCoercionTransformer {
                 .into())
             }
             Expression::RecordConstruction(record_construction) => {
-                let type_ = self
+                let record_type = self
                     .reference_type_resolver
-                    .resolve(record_construction.type_())?;
-                let record_type = type_.to_record().unwrap();
+                    .resolve_to_record(record_construction.type_())?
+                    .unwrap();
 
                 Ok(RecordConstruction::new(
                     record_construction.type_().clone(),

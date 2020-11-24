@@ -57,9 +57,26 @@ impl ReferenceTypeResolver {
         }
     }
 
+    pub fn resolve_to_function(
+        &self,
+        type_: &Type,
+    ) -> Result<Option<types::Function>, CompileError> {
+        Ok(match self.resolve(type_)? {
+            Type::Function(function) => Some(function),
+            _ => None,
+        })
+    }
+
     pub fn resolve_to_list(&self, type_: &Type) -> Result<Option<types::List>, CompileError> {
         Ok(match self.resolve(type_)? {
             Type::List(list) => Some(list),
+            _ => None,
+        })
+    }
+
+    pub fn resolve_to_record(&self, type_: &Type) -> Result<Option<types::Record>, CompileError> {
+        Ok(match self.resolve(type_)? {
+            Type::Record(record) => Some(record),
             _ => None,
         })
     }

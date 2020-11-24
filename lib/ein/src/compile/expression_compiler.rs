@@ -194,8 +194,7 @@ impl ExpressionCompiler {
                     vec![ssf::ir::AlgebraicAlternative::new(
                         ssf::ir::Constructor::new(algebraic_type, 0),
                         self.reference_type_resolver
-                            .resolve(operation.type_())?
-                            .to_record()
+                            .resolve_to_record(operation.type_())?
                             .unwrap()
                             .elements()
                             .keys()
@@ -301,10 +300,10 @@ impl ExpressionCompiler {
             function_definitions
                 .iter()
                 .map(|function_definition| {
-                    let type_ = function_definition
-                        .type_()
-                        .to_function()
-                        .expect("function type");
+                    let type_ = self
+                        .reference_type_resolver
+                        .resolve_to_function(function_definition.type_())?
+                        .unwrap();
 
                     Ok(ssf::ir::Definition::new(
                         function_definition.name(),
