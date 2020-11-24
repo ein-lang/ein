@@ -94,10 +94,8 @@ pub fn compile(
         type_equality_checker,
         reference_type_resolver.clone(),
     );
-    let list_case_transformer = ListCaseTransformer::new(
-        reference_type_resolver.clone(),
-        list_type_configuration,
-    );
+    let list_case_transformer =
+        ListCaseTransformer::new(reference_type_resolver.clone(), list_type_configuration);
 
     let expression_compiler = ExpressionCompiler::new(
         ExpressionCompilerSet {
