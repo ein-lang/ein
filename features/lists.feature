@@ -52,3 +52,20 @@ Feature: Lists
     When I run `sh -c ./foo`
     Then stdout from "sh -c ./foo" should contain exactly "42"
     And the exit status should be 0
+
+  Scenario: Use a list case expression
+    Given a file named "Main.ein" with:
+    """
+    main : Number -> Number
+    main z =
+      case [ 29, 13 ]
+        [] => 13
+        [ x, ...xs ] =>
+          case xs
+            [] => 13
+            [ y, ...ys ] => x + y
+    """
+    And I successfully run `ein build`
+    When I run `sh -c ./foo`
+    Then stdout from "sh -c ./foo" should contain exactly "42"
+    And the exit status should be 0
