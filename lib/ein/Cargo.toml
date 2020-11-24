@@ -5,10 +5,10 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-combine = { version = "4.3.2", features = ["regex"] }
+combine = { version = "4.4.0", features = ["regex"] }
 derivative = "2"
 indoc = "1.0"
-insta = { version = "1.2", features = ["backtrace"] }
+insta = { version = "1.3", features = ["backtrace"] }
 lazy_static = "1"
 regex = "1"
 serde = { version = "1", features = ["derive", "rc"] }

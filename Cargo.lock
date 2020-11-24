@@ -135,9 +135,9 @@ dependencies = [
 
 [[package]]
 name = "combine"
-version = "4.3.2"
+version = "4.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2809f67365382d65fd2b6d9c22577231b954ed27400efeafbe687bda75abcc0b"
+checksum = "b9417a0c314565e2abffaece67e95a8cb51f9238cd39f3764d9dfdf09e72b20c"
 dependencies = [
  "bytes",
  "memchr",
@@ -327,7 +327,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell#18886e5601296ce46671ed35389abc4f5e042d03"
+source = "git+https://github.com/TheDan64/inkwell#30e9f576a564e90c9e967cb5c46288743324df15"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -341,7 +341,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.2.0"
-source = "git+https://github.com/TheDan64/inkwell#18886e5601296ce46671ed35389abc4f5e042d03"
+source = "git+https://github.com/TheDan64/inkwell#30e9f576a564e90c9e967cb5c46288743324df15"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -350,9 +350,9 @@ dependencies = [
 
 [[package]]
 name = "insta"
-version = "1.2.0"
+version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02da3dc37ef840c304daca59a47197bbd7da007116b2244754d5bbf07dc0abb7"
+checksum = "863bf97e7130bf788f29a99bc4073735af6b8ecc3da6a39c23b3a688d2d3109a"
 dependencies = [
  "backtrace",
  "console",
@@ -738,7 +738,7 @@ checksum = "fbee7696b84bbf3d89a1c2eccff0850e3047ed46bfcd2e92c29a2d074d57e252"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#0762c2002094c18f4f0f402e5cb1d702fbe3aa76"
+source = "git+https://github.com/raviqqe/ssf?branch=master#10997ab3e74319478395a4f7c6fc34d0a4198520"
 dependencies = [
  "pretty_assertions",
 ]
@@ -746,7 +746,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#0762c2002094c18f4f0f402e5cb1d702fbe3aa76"
+source = "git+https://github.com/raviqqe/ssf?branch=master#10997ab3e74319478395a4f7c6fc34d0a4198520"
 dependencies = [
  "inkwell",
  "lazy_static",
@@ -772,9 +772,9 @@ dependencies = [
 
 [[package]]
 name = "termcolor"
-version = "1.1.0"
+version = "1.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb6bfa289a4d7c5766392812c0a1f4c1ba45afa1ad47803c11e1f407d846d75f"
+checksum = "2dfed899f0eb03f32ee8c6a0aabdb8a7949659e3466561fc0adf54e26d88c5f4"
 dependencies = [
  "winapi-util",
 ]
