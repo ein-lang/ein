@@ -56,6 +56,13 @@ impl ReferenceTypeResolver {
             | Type::Variable(_) => Ok(type_.clone()),
         }
     }
+
+    pub fn resolve_to_list(&self, type_: &Type) -> Result<Option<types::List>, CompileError> {
+        Ok(match self.resolve(type_)? {
+            Type::List(list) => Some(list),
+            _ => None,
+        })
+    }
 }
 
 #[cfg(test)]

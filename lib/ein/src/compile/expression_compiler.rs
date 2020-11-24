@@ -5,7 +5,7 @@ use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    ListLiteralTransformer, NotEqualOperationTransformer,
+    ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -27,6 +27,7 @@ pub struct ExpressionTransformerSet {
     pub list_literal_transformer: Arc<ListLiteralTransformer>,
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
     pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
+    pub list_case_transformer: Arc<ListCaseTransformer>,
 }
 
 pub struct ExpressionCompiler {
@@ -100,7 +101,12 @@ impl ExpressionCompiler {
                     .list_literal_transformer
                     .transform(list),
             )?,
-            Expression::ListCase(_) => todo!(),
+            Expression::ListCase(case) => self.compile(
+                &self
+                    .expression_transformer_set
+                    .list_case_transformer
+                    .transform(case)?,
+            )?,
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;
