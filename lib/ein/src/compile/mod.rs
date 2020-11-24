@@ -41,7 +41,7 @@ use std::sync::Arc;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    ListLiteralTransformer, NotEqualOperationTransformer,
+    ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
@@ -88,12 +88,14 @@ pub fn compile(
         list_type_configuration.clone(),
     );
     let not_equal_operation_transformer = NotEqualOperationTransformer::new();
-    let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration);
+    let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration.clone());
     let boolean_operation_transformer = BooleanOperationTransformer::new();
     let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
         type_equality_checker,
         reference_type_resolver.clone(),
     );
+    let list_case_transformer =
+        ListCaseTransformer::new(reference_type_resolver.clone(), list_type_configuration);
 
     let expression_compiler = ExpressionCompiler::new(
         ExpressionCompilerSet {
@@ -108,6 +110,7 @@ pub fn compile(
             list_literal_transformer,
             boolean_operation_transformer,
             function_type_coercion_transformer,
+            list_case_transformer,
         }
         .into(),
         reference_type_resolver,
@@ -130,7 +133,7 @@ pub fn compile(
 
 #[cfg(test)]
 mod tests {
-    use super::list_type_configuration::ListTypeConfiguration;
+    use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
     use crate::types;
@@ -142,14 +145,7 @@ mod tests {
             "ein_main",
             "ein_malloc",
             "ein_panic",
-            ListTypeConfiguration::new(
-                "emptyList",
-                "concatenateLists",
-                "equalLists",
-                "prependToLists",
-                "GenericList"
-            )
-            .into()
+            LIST_TYPE_CONFIGURATION.clone()
         );
     }
 

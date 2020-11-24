@@ -201,6 +201,47 @@ impl TypedTransformer for TypeCoercionTransformer {
                 )
                 .into())
             }
+            Expression::ListCase(case) => {
+                let result_type = self
+                    .expression_type_extractor
+                    .extract(expression, variables)?;
+
+                Ok(ListCase::new(
+                    self.coerce_type(
+                        case.argument(),
+                        case.type_(),
+                        case.source_information().clone(),
+                        &variables,
+                    )?,
+                    case.type_().clone(),
+                    case.first_name(),
+                    case.rest_name(),
+                    self.coerce_type(
+                        case.empty_alternative(),
+                        &result_type,
+                        case.source_information().clone(),
+                        &variables,
+                    )?,
+                    {
+                        let mut variables = variables.clone();
+
+                        variables.insert(
+                            case.first_name().into(),
+                            case.type_().to_list().unwrap().element().clone(),
+                        );
+                        variables.insert(case.rest_name().into(), case.type_().clone());
+
+                        self.coerce_type(
+                            case.non_empty_alternative(),
+                            &result_type,
+                            case.source_information().clone(),
+                            &variables,
+                        )?
+                    },
+                    case.source_information().clone(),
+                )
+                .into())
+            }
             Expression::Operation(operation) => {
                 let argument_type = self.type_canonicalizer.canonicalize(
                     &types::Union::new(

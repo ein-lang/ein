@@ -5,7 +5,7 @@ use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    ListLiteralTransformer, NotEqualOperationTransformer,
+    ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -27,6 +27,7 @@ pub struct ExpressionTransformerSet {
     pub list_literal_transformer: Arc<ListLiteralTransformer>,
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
     pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
+    pub list_case_transformer: Arc<ListCaseTransformer>,
 }
 
 pub struct ExpressionCompiler {
@@ -99,6 +100,12 @@ impl ExpressionCompiler {
                     .expression_transformer_set
                     .list_literal_transformer
                     .transform(list),
+            )?,
+            Expression::ListCase(case) => self.compile(
+                &self
+                    .expression_transformer_set
+                    .list_case_transformer
+                    .transform(case)?,
             )?,
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => {
@@ -463,26 +470,12 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
-    use super::super::list_type_configuration::ListTypeConfiguration;
+    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::super::type_comparability_checker::TypeComparabilityChecker;
-    use super::super::type_compiler::TypeCompiler;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::*;
     use crate::debug::SourceInformation;
-    use lazy_static::lazy_static;
     use pretty_assertions::assert_eq;
-
-    lazy_static! {
-        static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
-            ListTypeConfiguration::new(
-                "emptyList",
-                "concatenateLists",
-                "equalLists",
-                "prependToLists",
-                "GenericList",
-            )
-            .into();
-    }
 
     fn create_expression_compiler(
         module: &Module,
@@ -519,6 +512,10 @@ mod tests {
             type_equality_checker,
             reference_type_resolver.clone(),
         );
+        let list_case_transformer = ListCaseTransformer::new(
+            reference_type_resolver.clone(),
+            LIST_TYPE_CONFIGURATION.clone(),
+        );
 
         (
             ExpressionCompiler::new(
@@ -534,6 +531,7 @@ mod tests {
                     list_literal_transformer,
                     boolean_operation_transformer,
                     function_type_coercion_transformer,
+                    list_case_transformer,
                 }
                 .into(),
                 reference_type_resolver,

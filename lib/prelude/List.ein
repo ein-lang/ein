@@ -1,10 +1,14 @@
 export {
   AnyList,
+  FirstRest,
+  first,
+  rest,
   concatenateLists,
   emptyList,
   equalLists,
   getListLength,
   prependToList,
+  firstRest,
 }
 
 type AnyList {
@@ -15,6 +19,26 @@ type Node {
   first : Any,
   rest : Node | None,
 }
+
+type FirstRest {
+  first : Any,
+  rest : AnyList,
+}
+
+first : FirstRest -> Any
+first = FirstRest.first
+
+rest : FirstRest -> AnyList
+rest = FirstRest.rest
+
+firstRest : AnyList -> FirstRest | None
+firstRest list =
+  case n = AnyList.node list
+    Node => FirstRest{
+        first = Node.first n,
+        rest = AnyList{ node = Node.rest n },
+      }
+    None => None
 
 emptyList : AnyList
 emptyList =
