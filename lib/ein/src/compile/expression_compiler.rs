@@ -99,7 +99,7 @@ impl ExpressionCompiler {
                 &self
                     .expression_transformer_set
                     .list_literal_transformer
-                    .transform(list),
+                    .transform(list)?,
             )?,
             Expression::ListCase(case) => self.compile(
                 &self
@@ -506,7 +506,10 @@ mod tests {
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let not_equal_operation_transformer = NotEqualOperationTransformer::new();
-        let list_literal_transformer = ListLiteralTransformer::new(LIST_TYPE_CONFIGURATION.clone());
+        let list_literal_transformer = ListLiteralTransformer::new(
+            reference_type_resolver.clone(),
+            LIST_TYPE_CONFIGURATION.clone(),
+        );
         let boolean_operation_transformer = BooleanOperationTransformer::new();
         let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
             type_equality_checker,

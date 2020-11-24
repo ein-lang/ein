@@ -230,7 +230,11 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
 
                     variables.insert(
                         case.first_name().into(),
-                        case.type_().to_list().unwrap().element().clone(),
+                        self.reference_type_resolver
+                            .resolve_to_list(case.type_())?
+                            .unwrap()
+                            .element()
+                            .clone(),
                     );
                     variables.insert(case.rest_name().into(), case.type_().clone());
 

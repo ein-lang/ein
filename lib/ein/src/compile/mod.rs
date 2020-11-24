@@ -88,7 +88,10 @@ pub fn compile(
         list_type_configuration.clone(),
     );
     let not_equal_operation_transformer = NotEqualOperationTransformer::new();
-    let list_literal_transformer = ListLiteralTransformer::new(list_type_configuration.clone());
+    let list_literal_transformer = ListLiteralTransformer::new(
+        reference_type_resolver.clone(),
+        list_type_configuration.clone(),
+    );
     let boolean_operation_transformer = BooleanOperationTransformer::new();
     let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
         type_equality_checker,
