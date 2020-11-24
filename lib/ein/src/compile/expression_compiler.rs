@@ -512,6 +512,10 @@ mod tests {
             type_equality_checker,
             reference_type_resolver.clone(),
         );
+        let list_case_transformer = ListCaseTransformer::new(
+            reference_type_resolver.clone(),
+            LIST_TYPE_CONFIGURATION.clone(),
+        );
 
         (
             ExpressionCompiler::new(
@@ -527,6 +531,7 @@ mod tests {
                     list_literal_transformer,
                     boolean_operation_transformer,
                     function_type_coercion_transformer,
+                    list_case_transformer,
                 }
                 .into(),
                 reference_type_resolver,
