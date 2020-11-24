@@ -104,3 +104,33 @@ impl ListCaseTransformer {
         .into())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
+    use super::*;
+    use crate::debug::*;
+
+    fn create_list_case_transformer() -> Arc<ListCaseTransformer> {
+        ListCaseTransformer::new(
+            ReferenceTypeResolver::new(&Module::dummy()),
+            LIST_TYPE_CONFIGURATION.clone(),
+        )
+    }
+
+    #[test]
+    fn transform() {
+        insta::assert_debug_snapshot!(create_list_case_transformer().transform(&ListCase::new(
+            Variable::new("xs", SourceInformation::dummy()),
+            types::List::new(
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            ),
+            "y",
+            "ys",
+            None::new(SourceInformation::dummy()),
+            None::new(SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )));
+    }
+}
