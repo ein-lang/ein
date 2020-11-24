@@ -4,6 +4,7 @@ use super::case::Case;
 use super::if_::If;
 use super::let_::Let;
 use super::list::List;
+use super::list_case::ListCase;
 use super::none::None;
 use super::number::Number;
 use super::operation::Operation;
@@ -24,6 +25,7 @@ pub enum Expression {
     If(If),
     Let(Let),
     List(List),
+    ListCase(ListCase),
     None(None),
     Number(Number),
     Operation(Operation),
@@ -48,6 +50,7 @@ impl Expression {
             Self::If(if_) => if_.source_information(),
             Self::Let(let_) => let_.source_information(),
             Self::List(list) => list.source_information(),
+            Self::ListCase(case) => case.source_information(),
             Self::Operation(operation) => operation.source_information(),
             Self::TypeCoercion(coercion) => coercion.source_information(),
             Self::None(none) => none.source_information(),
@@ -75,6 +78,7 @@ impl Expression {
             Self::If(if_) => if_.transform_expressions(transform)?.into(),
             Self::Let(let_) => let_.transform_expressions(transform)?.into(),
             Self::List(list) => list.transform_expressions(transform)?.into(),
+            Self::ListCase(case) => case.transform_expressions(transform)?.into(),
             Self::Operation(operation) => operation.transform_expressions(transform)?.into(),
             Self::TypeCoercion(coercion) => coercion.transform_expressions(transform)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
@@ -98,6 +102,7 @@ impl Expression {
             Self::If(if_) => if_.transform_types(transform)?.into(),
             Self::Let(let_) => let_.transform_types(transform)?.into(),
             Self::List(list) => list.transform_types(transform)?.into(),
+            Self::ListCase(case) => case.transform_types(transform)?.into(),
             Self::Operation(operation) => operation.transform_types(transform)?.into(),
             Self::TypeCoercion(coercion) => coercion.transform_types(transform)?.into(),
             Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
@@ -160,6 +165,12 @@ impl From<Let> for Expression {
 impl From<List> for Expression {
     fn from(list: List) -> Expression {
         Self::List(list)
+    }
+}
+
+impl From<ListCase> for Expression {
+    fn from(case: ListCase) -> Expression {
+        Self::ListCase(case)
     }
 }
 

@@ -52,7 +52,11 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             "concatenateLists",
             "equalLists",
             "prependToList",
+            "firstRest",
+            "first",
+            "rest",
             "AnyList",
+            "FirstRest",
         )
         .into(),
     );

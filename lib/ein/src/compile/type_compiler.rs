@@ -232,22 +232,11 @@ impl TypeCompiler {
 
 #[cfg(test)]
 mod tests {
+    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::*;
     use crate::ast::*;
     use crate::debug::SourceInformation;
     use pretty_assertions::assert_eq;
-
-    lazy_static! {
-        static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
-            ListTypeConfiguration::new(
-                "emptyList",
-                "concatenateLists",
-                "equalLists",
-                "prependToLists",
-                "GenericList",
-            )
-            .into();
-    }
 
     fn create_type_compiler() -> Arc<TypeCompiler> {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
