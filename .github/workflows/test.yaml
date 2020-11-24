@@ -9,8 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
       - uses: actions-rs/cargo@v1
         with:
           command: test
@@ -23,8 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
       - uses: actions-rs/cargo@v1
         with:
           command: build
@@ -35,8 +31,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
@@ -48,8 +42,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
@@ -73,8 +65,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
         with:
           toolchain: nightly
           override: true
