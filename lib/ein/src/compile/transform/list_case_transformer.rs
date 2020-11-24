@@ -51,9 +51,9 @@ impl ListCaseTransformer {
                 source_information.clone(),
             ),
             vec![
-                Alternative::new(none_type.clone(), case.empty_alternative().clone()),
+                Alternative::new(none_type, case.empty_alternative().clone()),
                 Alternative::new(
-                    first_rest_type.clone(),
+                    first_rest_type,
                     Let::new(
                         vec![
                             VariableDefinition::new(
@@ -75,7 +75,7 @@ impl ListCaseTransformer {
                                     )],
                                     source_information.clone(),
                                 ),
-                                element_type.clone(),
+                                element_type,
                                 source_information.clone(),
                             )
                             .into(),

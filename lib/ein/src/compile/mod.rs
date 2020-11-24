@@ -96,7 +96,7 @@ pub fn compile(
     );
     let list_case_transformer = ListCaseTransformer::new(
         reference_type_resolver.clone(),
-        list_type_configuration.clone(),
+        list_type_configuration,
     );
 
     let expression_compiler = ExpressionCompiler::new(
