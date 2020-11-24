@@ -55,7 +55,6 @@
     "termcolor",
     "toposort",
     "uint",
-    "uncons",
     "uninit"
   ]
 }

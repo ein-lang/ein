@@ -8,7 +8,7 @@ export {
   equalLists,
   getListLength,
   prependToList,
-  uncons,
+  firstRest,
 }
 
 type AnyList {
@@ -31,8 +31,8 @@ first = FirstRest.first
 rest : FirstRest -> AnyList
 rest = FirstRest.rest
 
-uncons : AnyList -> FirstRest | None
-uncons list =
+firstRest : AnyList -> FirstRest | None
+firstRest list =
   case n = AnyList.node list
     Node => FirstRest{
         first = Node.first n,
