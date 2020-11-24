@@ -9,8 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
-        env:
-          ACTIONS_ALLOW_UNSECURE_COMMANDS: "true"
       - uses: actions-rs/cargo@v1
         with:
           command: test
