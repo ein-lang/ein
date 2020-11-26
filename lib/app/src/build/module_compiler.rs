@@ -7,13 +7,14 @@ use crate::infra::{FilePath, FileStorage, Logger};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
 pub struct ModuleCompiler<'a> {
     module_parser: &'a ModuleParser<'a>,
     file_path_manager: &'a FilePathManager<'a>,
     file_storage: &'a dyn FileStorage,
     logger: &'a dyn Logger,
-    compile_configuration: &'a ein::CompileConfiguration,
+    compile_configuration: Arc<ein::CompileConfiguration>,
 }
 
 impl<'a> ModuleCompiler<'a> {
@@ -22,7 +23,7 @@ impl<'a> ModuleCompiler<'a> {
         file_path_manager: &'a FilePathManager<'a>,
         file_storage: &'a dyn FileStorage,
         logger: &'a dyn Logger,
-        compile_configuration: &'a ein::CompileConfiguration,
+        compile_configuration: Arc<ein::CompileConfiguration>,
     ) -> Self {
         Self {
             module_parser,
@@ -103,7 +104,7 @@ impl<'a> ModuleCompiler<'a> {
                     })
                     .collect(),
             ),
-            &self.compile_configuration,
+            self.compile_configuration.clone(),
         )?;
 
         self.file_storage.write(&object_file_path, &bitcode)?;

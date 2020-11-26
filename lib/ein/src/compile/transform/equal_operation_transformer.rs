@@ -144,7 +144,7 @@ impl EqualOperationTransformer {
                         Application::new(
                             Application::new(
                                 Variable::new(
-                                    self.list_type_configuration.equal_function_name(),
+                                    &self.list_type_configuration.equal_function_name,
                                     source_information.clone(),
                                 ),
                                 Variable::new("$equalElements", source_information.clone()),

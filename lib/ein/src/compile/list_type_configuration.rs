@@ -6,95 +6,33 @@ use std::sync::Arc;
 
 #[cfg(test)]
 lazy_static! {
-    pub static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> =
-        ListTypeConfiguration::new(
-            "emptyList",
-            "concatenateLists",
-            "equalLists",
-            "prependToLists",
-            "deconstruct",
-            "first",
-            "rest",
-            "GenericList",
-            "FirstRest",
-        )
-        .into();
+    pub static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> = ListTypeConfiguration {
+        empty_list_variable_name: "emptyList".into(),
+        concatenate_function_name: "concatenateLists".into(),
+        equal_function_name: "equalLists".into(),
+        prepend_function_name: "prependToLists".into(),
+        deconstruct_function_name: "deconstruct".into(),
+        first_function_name: "first".into(),
+        rest_function_name: "rest".into(),
+        list_type_name: "GenericList".into(),
+        first_rest_type_name: "FirstRest".into(),
+    }
+    .into();
 }
 
 pub struct ListTypeConfiguration {
-    empty_list_variable_name: String,
-    concatenate_function_name: String,
-    equal_function_name: String,
-    prepend_function_name: String,
-    deconstruct_function_name: String,
-    first_function_name: String,
-    rest_function_name: String,
-    list_type_name: String,
-    first_rest_type_name: String,
+    pub empty_list_variable_name: String,
+    pub concatenate_function_name: String,
+    pub equal_function_name: String,
+    pub prepend_function_name: String,
+    pub deconstruct_function_name: String,
+    pub first_function_name: String,
+    pub rest_function_name: String,
+    pub list_type_name: String,
+    pub first_rest_type_name: String,
 }
 
 impl ListTypeConfiguration {
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        empty_list_variable_name: impl Into<String>,
-        concatenate_function_name: impl Into<String>,
-        equal_function_name: impl Into<String>,
-        prepend_function_name: impl Into<String>,
-        deconstruct_function_name: impl Into<String>,
-        first_function_name: impl Into<String>,
-        rest_function_name: impl Into<String>,
-        list_type_name: impl Into<String>,
-        first_rest_type_name: impl Into<String>,
-    ) -> Self {
-        Self {
-            empty_list_variable_name: empty_list_variable_name.into(),
-            concatenate_function_name: concatenate_function_name.into(),
-            equal_function_name: equal_function_name.into(),
-            prepend_function_name: prepend_function_name.into(),
-            deconstruct_function_name: deconstruct_function_name.into(),
-            first_function_name: first_function_name.into(),
-            rest_function_name: rest_function_name.into(),
-            list_type_name: list_type_name.into(),
-            first_rest_type_name: first_rest_type_name.into(),
-        }
-    }
-
-    pub fn empty_list_variable_name(&self) -> &str {
-        &self.empty_list_variable_name
-    }
-
-    pub fn concatenate_function_name(&self) -> &str {
-        &self.concatenate_function_name
-    }
-
-    pub fn equal_function_name(&self) -> &str {
-        &self.equal_function_name
-    }
-
-    pub fn prepend_function_name(&self) -> &str {
-        &self.prepend_function_name
-    }
-
-    pub fn deconstruct_function_name(&self) -> &str {
-        &self.deconstruct_function_name
-    }
-
-    pub fn first_function_name(&self) -> &str {
-        &self.first_function_name
-    }
-
-    pub fn rest_function_name(&self) -> &str {
-        &self.rest_function_name
-    }
-
-    pub fn list_type_name(&self) -> &str {
-        &self.list_type_name
-    }
-
-    pub fn first_rest_type_name(&self) -> &str {
-        &self.first_rest_type_name
-    }
-
     pub fn qualify(&self, names: &HashMap<String, String>) -> Self {
         Self {
             empty_list_variable_name: self.qualify_name(&self.empty_list_variable_name, &names),

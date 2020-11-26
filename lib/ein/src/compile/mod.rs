@@ -50,20 +50,18 @@ use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
 use variable_compiler::VariableCompiler;
 
-// TODO Use Arc for compile_configuration.
 pub fn compile(
     module: &Module,
-    configuration: &CompileConfiguration,
+    configuration: Arc<CompileConfiguration>,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = transform_before_name_qualification(&module)?;
 
     let names = GlobalNameMapCreator::create(&module);
     let module = GlobalNameRenamer::new(names.clone()).rename(&module);
-    let module =
-        MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone().into())
-            .transform(&module);
+    let module = MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone())
+        .transform(&module);
 
-    let list_type_configuration = Arc::new(configuration.list_type_configuration().qualify(&names));
+    let list_type_configuration = Arc::new(configuration.list_type_configuration.qualify(&names));
     let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
@@ -126,8 +124,8 @@ pub fn compile(
         ssf_llvm::compile(
             &ModuleCompiler::new(expression_compiler, type_compiler).compile(&module)?,
             ssf_llvm::CompileConfiguration::new(
-                Some(configuration.malloc_function_name().into()),
-                Some(configuration.panic_function_name().into()),
+                Some(configuration.malloc_function_name.clone()),
+                Some(configuration.panic_function_name.clone()),
             ),
         )?,
         ModuleInterfaceCompiler::new().compile(&module)?,
@@ -143,13 +141,14 @@ mod tests {
     use lazy_static::lazy_static;
 
     lazy_static! {
-        static ref COMPILE_CONFIGURATION: CompileConfiguration = CompileConfiguration::new(
-            "main",
-            "ein_main",
-            "ein_malloc",
-            "ein_panic",
-            LIST_TYPE_CONFIGURATION.clone()
-        );
+        static ref COMPILE_CONFIGURATION: Arc<CompileConfiguration> = CompileConfiguration {
+            source_main_function_name: "main".into(),
+            object_main_function_name: "ein_main".into(),
+            malloc_function_name: "ein_malloc".into(),
+            panic_function_name: "ein_panic".into(),
+            list_type_configuration: LIST_TYPE_CONFIGURATION.clone()
+        }
+        .into();
     }
 
     #[test]
@@ -176,7 +175,7 @@ mod tests {
                 )
                 .into()
             ]),
-            &COMPILE_CONFIGURATION
+            COMPILE_CONFIGURATION.clone(),
         )
         .is_ok());
     }
@@ -217,7 +216,7 @@ mod tests {
                 )
                 .into()],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -262,7 +261,7 @@ mod tests {
                 )
                 .into()],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -285,7 +284,7 @@ mod tests {
                 )
                 .into()],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -309,7 +308,7 @@ mod tests {
                 )],
                 vec![],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -349,7 +348,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -385,7 +384,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -405,7 +404,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -425,7 +424,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -445,7 +444,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -460,7 +459,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -480,7 +479,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -528,7 +527,7 @@ mod tests {
                 )
                 .into(),
             ]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -565,7 +564,7 @@ mod tests {
                 )],
                 vec![],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
