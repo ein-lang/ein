@@ -54,7 +54,8 @@ impl TypeCoercionTransformer {
 
         Ok(
             if self.type_equality_checker.equal(&from_type, &to_type)?
-                || from_type.is_list() && to_type.is_list()
+                || self.reference_type_resolver.is_list(&from_type)?
+                    && self.reference_type_resolver.is_list(&to_type)?
             {
                 expression.clone()
             } else {

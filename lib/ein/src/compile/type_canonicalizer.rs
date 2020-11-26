@@ -37,8 +37,15 @@ impl TypeCanonicalizer {
     fn canonicalize_union_shallowly(&self, union: &types::Union) -> Result<Type, CompileError> {
         let all_types = self.get_member_types(union)?;
 
-        if let Some(type_) = all_types.iter().find(|type_| type_.is_any()) {
-            Ok(type_.clone())
+        if let Some(type_) = all_types
+            .iter()
+            .map(|type_| self.reference_type_resolver.resolve_to_any(type_))
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .filter_map(|type_| type_)
+            .next()
+        {
+            Ok(type_.into())
         } else {
             let mut types = vec![];
 

@@ -83,22 +83,6 @@ impl Type {
 
         transform(&type_)
     }
-
-    pub fn is_any(&self) -> bool {
-        matches!(self, Self::Any(_))
-    }
-
-    pub fn is_function(&self) -> bool {
-        matches!(self, Self::Function(_))
-    }
-
-    pub fn is_list(&self) -> bool {
-        matches!(self, Self::List(_))
-    }
-
-    pub fn is_union(&self) -> bool {
-        matches!(self, Self::Union(_))
-    }
 }
 
 impl From<Any> for Type {

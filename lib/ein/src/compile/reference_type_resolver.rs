@@ -57,6 +57,13 @@ impl ReferenceTypeResolver {
         }
     }
 
+    pub fn resolve_to_any(&self, type_: &Type) -> Result<Option<types::Any>, CompileError> {
+        Ok(match self.resolve(type_)? {
+            Type::Any(any) => Some(any),
+            _ => None,
+        })
+    }
+
     pub fn resolve_to_function(
         &self,
         type_: &Type,
@@ -79,6 +86,22 @@ impl ReferenceTypeResolver {
             Type::Record(record) => Some(record),
             _ => None,
         })
+    }
+
+    pub fn is_any(&self, type_: &Type) -> Result<bool, CompileError> {
+        Ok(matches!(self.resolve(type_)?, Type::Any(_)))
+    }
+
+    pub fn is_function(&self, type_: &Type) -> Result<bool, CompileError> {
+        Ok(matches!(self.resolve(type_)?, Type::Function(_)))
+    }
+
+    pub fn is_list(&self, type_: &Type) -> Result<bool, CompileError> {
+        Ok(matches!(self.resolve(type_)?, Type::List(_)))
+    }
+
+    pub fn is_union(&self, type_: &Type) -> Result<bool, CompileError> {
+        Ok(matches!(self.resolve(type_)?, Type::Union(_)))
     }
 }
 

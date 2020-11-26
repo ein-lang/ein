@@ -1,5 +1,6 @@
 use super::super::error::CompileError;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::constraint_converter::ConstraintConverter;
 use super::subsumption_set::SubsumptionSet;
 use super::variable_constraint_set::VariableConstraintSet;
 use crate::types::Type;
@@ -7,14 +8,20 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct ConstraintSolver {
+    constraint_converter: Arc<ConstraintConverter>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl ConstraintSolver {
-    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Self {
+    pub fn new(
+        constraint_converter: Arc<ConstraintConverter>,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+    ) -> Arc<Self> {
         Self {
+            constraint_converter,
             reference_type_resolver,
         }
+        .into()
     }
 
     pub fn solve(
@@ -70,6 +77,21 @@ impl ConstraintSolver {
             }
         }
 
-        Ok(variable_constraint_set.to_substitutions())
+        let mut substitutions = HashMap::<usize, Type>::new();
+
+        for (id, constraint) in variable_constraint_set.constraints() {
+            let constraint_type = self
+                .constraint_converter
+                .convert(constraint)?
+                .substitute_variables(&substitutions);
+
+            for type_ in substitutions.values_mut() {
+                *type_ = type_.substitute_variable(*id, &constraint_type);
+            }
+
+            substitutions.insert(*id, constraint_type);
+        }
+
+        Ok(substitutions)
     }
 }

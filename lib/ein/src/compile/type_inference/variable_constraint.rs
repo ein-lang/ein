@@ -1,5 +1,5 @@
 use crate::debug::SourceInformation;
-use crate::types::{self, Type};
+use crate::types::Type;
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
@@ -34,20 +34,7 @@ impl VariableConstraint {
         self.upper_types.insert(type_.clone());
     }
 
-    pub fn to_type(&self) -> Type {
-        if self.lower_types.iter().any(|type_| type_.is_any()) {
-            types::Any::new(self.source_information.clone()).into()
-        } else if !self.lower_types.is_empty() {
-            types::Union::new(
-                self.lower_types.iter().cloned().collect(),
-                self.source_information.clone(),
-            )
-            .into()
-        } else if !self.upper_types.is_empty() {
-            // TODO Calculate intersection types from upper types?
-            self.upper_types.iter().next().unwrap().clone()
-        } else {
-            types::Unknown::new(self.source_information.clone()).into()
-        }
+    pub fn source_information(&self) -> &Arc<SourceInformation> {
+        &self.source_information
     }
 }

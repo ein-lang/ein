@@ -14,6 +14,7 @@ pub struct TypeInferrer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
     type_canonicalizer: Arc<TypeCanonicalizer>,
+    constraint_solver: Arc<ConstraintSolver>,
 }
 
 impl TypeInferrer {
@@ -21,11 +22,13 @@ impl TypeInferrer {
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
         type_canonicalizer: Arc<TypeCanonicalizer>,
+        constraint_solver: Arc<ConstraintSolver>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
             type_canonicalizer,
+            constraint_solver,
         }
     }
 
@@ -42,7 +45,8 @@ impl TypeInferrer {
         let (solved_subsumption_set, mut checked_subsumption_set) =
             ConstraintCollector::new(self.reference_type_resolver.clone()).collect(&module)?;
 
-        let substitutions = ConstraintSolver::new(self.reference_type_resolver.clone())
+        let substitutions = self
+            .constraint_solver
             .solve(solved_subsumption_set, &mut checked_subsumption_set)?;
 
         let substitutor = VariableSubstitutor::new(self.type_canonicalizer.clone(), substitutions);
@@ -61,6 +65,7 @@ impl TypeInferrer {
 
 #[cfg(test)]
 mod tests {
+    use super::super::constraint_converter::ConstraintConverter;
     use super::*;
     use crate::debug::*;
     use crate::package::Package;
@@ -76,11 +81,15 @@ mod tests {
             reference_type_resolver.clone(),
             type_equality_checker.clone(),
         );
+        let constraint_converter = ConstraintConverter::new(reference_type_resolver.clone());
+        let constraint_solver =
+            ConstraintSolver::new(constraint_converter, reference_type_resolver.clone());
 
         TypeInferrer::new(
             reference_type_resolver,
             type_equality_checker,
             type_canonicalizer,
+            constraint_solver,
         )
         .infer(module)
     }
