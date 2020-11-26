@@ -73,9 +73,8 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
         let mut variables = variables.clone();
 
         for (name, type_) in function_definition.arguments().iter().zip(
-            function_definition
-                .type_()
-                .to_function()
+            self.reference_type_resolver
+                .resolve_to_function(function_definition.type_())?
                 .unwrap()
                 .arguments(),
         ) {
@@ -165,7 +164,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                             );
                         }
                         Definition::VariableDefinition(variable_definition) => {
-                            if let_.has_functions() {
+                            if let_.is_recursive() {
                                 variables.insert(
                                     variable_definition.name().into(),
                                     variable_definition.type_().clone(),
@@ -230,7 +229,11 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
 
                     variables.insert(
                         case.first_name().into(),
-                        case.type_().to_list().unwrap().element().clone(),
+                        self.reference_type_resolver
+                            .resolve_to_list(case.type_())?
+                            .unwrap()
+                            .element()
+                            .clone(),
                     );
                     variables.insert(case.rest_name().into(), case.type_().clone());
 
@@ -273,8 +276,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                     variables.insert(
                         operation.variable().into(),
                         self.reference_type_resolver
-                            .resolve(operation.type_())?
-                            .to_record()
+                            .resolve_to_record(operation.type_())?
                             .unwrap()
                             .elements()[operation.key()]
                         .clone(),

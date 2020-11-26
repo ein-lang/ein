@@ -1,24 +1,37 @@
+use super::super::error::CompileError;
 use super::super::list_type_configuration::ListTypeConfiguration;
+use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::debug::*;
 use crate::types;
 use std::sync::Arc;
 
 pub struct ListLiteralTransformer {
+    reference_type_resolver: Arc<ReferenceTypeResolver>,
     configuration: Arc<ListTypeConfiguration>,
 }
 
 impl ListLiteralTransformer {
-    pub fn new(configuration: Arc<ListTypeConfiguration>) -> Arc<Self> {
-        Self { configuration }.into()
+    pub fn new(
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        configuration: Arc<ListTypeConfiguration>,
+    ) -> Arc<Self> {
+        Self {
+            reference_type_resolver,
+            configuration,
+        }
+        .into()
     }
 
-    pub fn transform(&self, list: &List) -> Expression {
-        self.transform_list(
-            list.type_().to_list().unwrap(),
+    pub fn transform(&self, list: &List) -> Result<Expression, CompileError> {
+        Ok(self.transform_list(
+            &self
+                .reference_type_resolver
+                .resolve_to_list(list.type_())?
+                .unwrap(),
             list.elements(),
             list.source_information(),
-        )
+        ))
     }
 
     fn transform_list(

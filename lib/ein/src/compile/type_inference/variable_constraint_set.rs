@@ -50,19 +50,7 @@ impl VariableConstraintSet {
         self.constraints.get_mut(&id).unwrap()
     }
 
-    pub fn to_substitutions(&self) -> HashMap<usize, Type> {
-        let mut substitutions = HashMap::<usize, Type>::new();
-
-        for (id, constraint) in &self.constraints {
-            let constraint_type = constraint.to_type().substitute_variables(&substitutions);
-
-            for type_ in substitutions.values_mut() {
-                *type_ = type_.substitute_variable(*id, &constraint_type);
-            }
-
-            substitutions.insert(*id, constraint_type);
-        }
-
-        substitutions
+    pub fn constraints(&self) -> &HashMap<usize, VariableConstraint> {
+        &self.constraints
     }
 }

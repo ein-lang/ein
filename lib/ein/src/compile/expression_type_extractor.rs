@@ -30,8 +30,8 @@ impl ExpressionTypeExtractor {
     ) -> Result<Type, CompileError> {
         Ok(match expression {
             Expression::Application(application) => self
-                .extract(application.function(), variables)?
-                .to_function()
+                .reference_type_resolver
+                .resolve_to_function(&self.extract(application.function(), variables)?)?
                 .unwrap()
                 .result()
                 .clone(),
@@ -94,7 +94,11 @@ impl ExpressionTypeExtractor {
 
                         variables.insert(
                             case.first_name().into(),
-                            case.type_().to_list().unwrap().element().clone(),
+                            self.reference_type_resolver
+                                .resolve_to_list(case.type_())?
+                                .unwrap()
+                                .element()
+                                .clone(),
                         );
                         variables.insert(case.rest_name().into(), case.type_().clone());
 
@@ -125,13 +129,15 @@ impl ExpressionTypeExtractor {
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
             Expression::RecordElementOperation(operation) => {
-                let type_ = self.reference_type_resolver.resolve(operation.type_())?;
-
                 let mut variables = variables.clone();
 
                 variables.insert(
                     operation.variable().into(),
-                    type_.to_record().unwrap().elements()[operation.key()].clone(),
+                    self.reference_type_resolver
+                        .resolve_to_record(operation.type_())?
+                        .unwrap()
+                        .elements()[operation.key()]
+                    .clone(),
                 );
 
                 self.extract(operation.expression(), &variables)?

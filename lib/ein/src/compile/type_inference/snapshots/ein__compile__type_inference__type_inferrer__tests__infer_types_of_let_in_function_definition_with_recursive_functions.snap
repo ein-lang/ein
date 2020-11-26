@@ -1,0 +1,306 @@
+---
+source: lib/ein/src/compile/type_inference/type_inferrer.rs
+expression: "infer_types(&Module::from_definitions(vec![FunctionDefinition ::\n                                           new(\"f\", vec ! [\"x\" . into()], Let\n                                               ::\n                                               new(vec !\n                                                   [FunctionDefinition ::\n                                                    new(\"f\", vec !\n                                                        [\"x\" . into()],\n                                                        Application ::\n                                                        new(Variable ::\n                                                            new(\"g\",\n                                                                SourceInformation\n                                                                :: dummy()),\n                                                            Variable ::\n                                                            new(\"x\",\n                                                                SourceInformation\n                                                                :: dummy()),\n                                                            SourceInformation\n                                                            :: dummy(),),\n                                                        types :: Unknown ::\n                                                        new(SourceInformation\n                                                            :: dummy()),\n                                                        SourceInformation ::\n                                                        dummy()) . into(),\n                                                    FunctionDefinition ::\n                                                    new(\"g\", vec !\n                                                        [\"x\" . into()],\n                                                        Application ::\n                                                        new(Variable ::\n                                                            new(\"f\",\n                                                                SourceInformation\n                                                                :: dummy()),\n                                                            Variable ::\n                                                            new(\"x\",\n                                                                SourceInformation\n                                                                :: dummy()),\n                                                            SourceInformation\n                                                            :: dummy(),),\n                                                        types :: Function ::\n                                                        new(types :: Number ::\n                                                            new(SourceInformation\n                                                                :: dummy()),\n                                                            types :: Number ::\n                                                            new(SourceInformation\n                                                                :: dummy()),\n                                                            SourceInformation\n                                                            :: dummy(),),\n                                                        SourceInformation ::\n                                                        dummy()) . into()],\n                                                   Application ::\n                                                   new(Variable ::\n                                                       new(\"f\",\n                                                           SourceInformation\n                                                           :: dummy()), Number\n                                                       ::\n                                                       new(42.0,\n                                                           SourceInformation\n                                                           :: dummy()),\n                                                       SourceInformation ::\n                                                       dummy()),\n                                                   SourceInformation ::\n                                                   dummy(),), types ::\n                                               Function ::\n                                               new(types :: Number ::\n                                                   new(SourceInformation ::\n                                                       dummy()), types ::\n                                                   Number ::\n                                                   new(SourceInformation ::\n                                                       dummy()),\n                                                   SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into()]))"
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [],
+        definitions: [
+            FunctionDefinition(
+                FunctionDefinition {
+                    name: "f",
+                    arguments: [
+                        "x",
+                    ],
+                    body: Let(
+                        Let {
+                            definitions: [
+                                FunctionDefinition(
+                                    FunctionDefinition {
+                                        name: "f",
+                                        arguments: [
+                                            "x",
+                                        ],
+                                        body: Application(
+                                            Application {
+                                                function: Variable(
+                                                    Variable {
+                                                        name: "g",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                argument: Variable(
+                                                    Variable {
+                                                        name: "x",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        type_: Function(
+                                            Function {
+                                                argument: Number(
+                                                    Number {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                result: Number(
+                                                    Number {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                                FunctionDefinition(
+                                    FunctionDefinition {
+                                        name: "g",
+                                        arguments: [
+                                            "x",
+                                        ],
+                                        body: Application(
+                                            Application {
+                                                function: Variable(
+                                                    Variable {
+                                                        name: "f",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                argument: Variable(
+                                                    Variable {
+                                                        name: "x",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        type_: Function(
+                                            Function {
+                                                argument: Number(
+                                                    Number {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                result: Number(
+                                                    Number {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
+                                        },
+                                    },
+                                ),
+                            ],
+                            expression: Application(
+                                Application {
+                                    function: Variable(
+                                        Variable {
+                                            name: "f",
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    argument: Number(
+                                        Number {
+                                            value: 42.0,
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Function(
+                        Function {
+                            argument: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            result: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+        ],
+        export: Export {
+            names: {},
+        },
+        imports: [],
+    },
+)

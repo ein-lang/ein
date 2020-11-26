@@ -37,8 +37,15 @@ impl TypeCanonicalizer {
     fn canonicalize_union_shallowly(&self, union: &types::Union) -> Result<Type, CompileError> {
         let all_types = self.get_member_types(union)?;
 
-        if let Some(type_) = all_types.iter().find(|type_| type_.is_any()) {
-            Ok(type_.clone())
+        if let Some(type_) = all_types
+            .iter()
+            .map(|type_| self.reference_type_resolver.resolve_to_any(type_))
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .filter_map(|type_| type_)
+            .next()
+        {
+            Ok(type_.into())
         } else {
             let mut types = vec![];
 
@@ -173,29 +180,32 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
 
         assert_eq!(
-            TypeCanonicalizer::new(reference_type_resolver, type_equality_checker)
-                .canonicalize(
-                    &types::Record::new(
-                        "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Union::new(
-                                vec![
-                                    types::None::new(SourceInformation::dummy()).into(),
-                                    types::None::new(SourceInformation::dummy()).into()
-                                ],
+            reference_type_resolver
+                .resolve_to_record(
+                    &TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker)
+                        .canonicalize(
+                            &types::Record::new(
+                                "Foo",
+                                vec![(
+                                    "foo".into(),
+                                    types::Union::new(
+                                        vec![
+                                            types::None::new(SourceInformation::dummy()).into(),
+                                            types::None::new(SourceInformation::dummy()).into()
+                                        ],
+                                        SourceInformation::dummy()
+                                    )
+                                    .into(),
+                                )]
+                                .into_iter()
+                                .collect(),
                                 SourceInformation::dummy()
                             )
-                            .into(),
-                        )]
-                        .into_iter()
-                        .collect(),
-                        SourceInformation::dummy()
-                    )
-                    .into()
+                            .into()
+                        )
+                        .unwrap()
                 )
                 .unwrap()
-                .to_record()
                 .unwrap()
                 .elements(),
             &vec![(
