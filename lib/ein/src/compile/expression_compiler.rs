@@ -73,7 +73,6 @@ impl ExpressionCompiler {
                 .into(),
             Expression::Case(case) => self.compile_case(case)?,
             Expression::If(if_) => ssf::ir::AlgebraicCase::new(
-                self.type_compiler.compile_boolean(),
                 self.compile(if_.condition())?,
                 vec![
                     ssf::ir::AlgebraicAlternative::new(
@@ -189,7 +188,6 @@ impl ExpressionCompiler {
                     .unwrap();
 
                 ssf::ir::AlgebraicCase::new(
-                    algebraic_type.clone(),
                     self.compile(operation.argument())?,
                     vec![ssf::ir::AlgebraicAlternative::new(
                         ssf::ir::Constructor::new(algebraic_type, 0),
@@ -384,7 +382,6 @@ impl ExpressionCompiler {
             self.type_compiler.compile(case.type_())?,
             self.compile(case.argument())?,
             ssf::ir::AlgebraicCase::new(
-                argument_type.clone(),
                 if self.reference_type_resolver.is_any(case.type_())? {
                     ssf::ir::Expression::from(ssf::ir::Bitcast::new(
                         ssf::ir::Variable::new(case.name()),
@@ -464,10 +461,7 @@ impl ExpressionCompiler {
                     .map(|alternative| -> Result<_, CompileError> {
                         Ok(
                             if self.reference_type_resolver.is_any(alternative.type_())? {
-                                Some(ssf::ir::DefaultAlternative::new(
-                                    "",
-                                    self.compile(alternative.expression())?,
-                                ))
+                                Some(self.compile(alternative.expression())?)
                             } else {
                                 None
                             },
@@ -600,7 +594,6 @@ mod tests {
                     .into(),
                 ),
                 Ok(ssf::ir::PrimitiveCase::new(
-                    ssf::types::Primitive::Integer8,
                     ssf::ir::Operation::new(ssf::ir::Operator::LessThan, 1.0, 2.0),
                     vec![
                         ssf::ir::PrimitiveAlternative::new(
@@ -906,7 +899,6 @@ mod tests {
                 .into(),
             ),
             Ok(ssf::ir::AlgebraicCase::new(
-                boolean_type.clone(),
                 ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(boolean_type.clone(), 1),
                     vec![]
