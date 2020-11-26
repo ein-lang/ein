@@ -36,13 +36,10 @@ impl Let {
         &self.source_information
     }
 
-    pub fn has_functions(&self) -> bool {
-        self.definitions.iter().any(|definition| match definition {
-            Definition::FunctionDefinition(_) => true,
-            Definition::VariableDefinition(variable_definition) => {
-                variable_definition.type_().is_function()
-            }
-        })
+    pub fn is_recursive(&self) -> bool {
+        self.definitions
+            .iter()
+            .all(|definition| matches!(definition, Definition::FunctionDefinition(_)))
     }
 
     pub fn transform_expressions<E>(
