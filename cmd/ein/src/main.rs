@@ -66,7 +66,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_manager,
         &file_storage,
         &logger,
-        &compile_configuration,
+        compile_configuration,
     );
     let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_storage);
     let modules_builder = app::ModulesBuilder::new(
