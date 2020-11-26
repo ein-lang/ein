@@ -25,7 +25,7 @@ impl MainFunctionDefinitionTransformer {
     pub fn transform(&self, module: &Module) -> Module {
         if let Some(main_function_name) = self
             .global_names
-            .get(self.compile_configuration.source_main_function_name())
+            .get(&self.compile_configuration.source_main_function_name)
         {
             let main_function_definition = module
                 .definitions()
@@ -44,7 +44,7 @@ impl MainFunctionDefinitionTransformer {
                     .iter()
                     .cloned()
                     .chain(vec![FunctionDefinition::new(
-                        self.compile_configuration.object_main_function_name(),
+                        &self.compile_configuration.object_main_function_name,
                         vec![ARGUMENT_NAME.into()],
                         Application::new(
                             Variable::new(main_function_name, source_information.clone()),

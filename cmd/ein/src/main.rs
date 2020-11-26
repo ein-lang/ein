@@ -42,24 +42,24 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let module_objects_linker =
         infra::ModuleObjectsLinker::new(&command_runner, &file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
-    let compile_configuration = app::CompileConfiguration::new(
-        "main",
-        "ein_main",
-        "malloc",
-        "ein_panic",
-        app::ListTypeConfiguration::new(
-            "emptyList",
-            "concatenateLists",
-            "equalLists",
-            "prependToList",
-            "firstRest",
-            "first",
-            "rest",
-            "AnyList",
-            "FirstRest",
-        )
+    let compile_configuration = app::CompileConfiguration {
+        source_main_function_name: "main".into(),
+        object_main_function_name: "ein_main".into(),
+        malloc_function_name: "malloc".into(),
+        panic_function_name: "ein_panic".into(),
+        list_type_configuration: app::ListTypeConfiguration {
+            empty_list_variable_name: "emptyList".into(),
+            concatenate_function_name: "concatenateLists".into(),
+            equal_function_name: "equalLists".into(),
+            prepend_function_name: "prependToList".into(),
+            deconstruct_function_name: "firstRest".into(),
+            first_function_name: "first".into(),
+            rest_function_name: "rest".into(),
+            list_type_name: "AnyList".into(),
+            first_rest_type_name: "FirstRest".into(),
+        }
         .into(),
-    );
+    };
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
         &file_path_manager,

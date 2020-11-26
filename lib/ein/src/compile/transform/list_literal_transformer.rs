@@ -44,14 +44,14 @@ impl ListLiteralTransformer {
 
         match elements {
             [] => Variable::new(
-                self.configuration.empty_list_variable_name(),
+                &self.configuration.empty_list_variable_name,
                 source_information.clone(),
             )
             .into(),
             [ListElement::Multiple(expression), ..] => Application::new(
                 Application::new(
                     Variable::new(
-                        self.configuration.concatenate_function_name(),
+                        &self.configuration.concatenate_function_name,
                         source_information.clone(),
                     ),
                     expression.clone(),
@@ -64,7 +64,7 @@ impl ListLiteralTransformer {
             [ListElement::Single(expression), ..] => Application::new(
                 Application::new(
                     Variable::new(
-                        self.configuration.prepend_function_name(),
+                        &self.configuration.prepend_function_name,
                         source_information.clone(),
                     ),
                     TypeCoercion::new(

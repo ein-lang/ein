@@ -25,7 +25,7 @@ impl ListCaseTransformer {
     pub fn transform(&self, case: &ListCase) -> Result<Expression, CompileError> {
         let source_information = case.source_information();
         let first_rest_type = types::Reference::new(
-            self.configuration.first_rest_type_name(),
+            &self.configuration.first_rest_type_name,
             source_information.clone(),
         );
         let none_type = types::None::new(source_information.clone());
@@ -44,7 +44,7 @@ impl ListCaseTransformer {
             "$firstRest",
             Application::new(
                 Variable::new(
-                    self.configuration.deconstruct_function_name(),
+                    &self.configuration.deconstruct_function_name,
                     source_information.clone(),
                 ),
                 case.argument().clone(),
@@ -63,7 +63,7 @@ impl ListCaseTransformer {
                                     "$element",
                                     Application::new(
                                         Variable::new(
-                                            self.configuration.first_function_name(),
+                                            &self.configuration.first_function_name,
                                             source_information.clone(),
                                         ),
                                         Variable::new("$firstRest", source_information.clone()),
@@ -83,7 +83,7 @@ impl ListCaseTransformer {
                                 case.rest_name(),
                                 Application::new(
                                     Variable::new(
-                                        self.configuration.rest_function_name(),
+                                        &self.configuration.rest_function_name,
                                         source_information.clone(),
                                     ),
                                     Variable::new("$firstRest", source_information.clone()),

@@ -54,7 +54,7 @@ impl TypeCompiler {
             )
             .into(),
             Type::List(list) => self.compile_reference(&types::Reference::new(
-                self.list_type_configuration.list_type_name(),
+                &self.list_type_configuration.list_type_name,
                 list.source_information().clone(),
             ))?,
             Type::None(_) => self.compile_none().into(),

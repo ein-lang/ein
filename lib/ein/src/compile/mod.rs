@@ -63,7 +63,7 @@ pub fn compile(
         MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone().into())
             .transform(&module);
 
-    let list_type_configuration = Arc::new(configuration.list_type_configuration().qualify(&names));
+    let list_type_configuration = Arc::new(configuration.list_type_configuration.qualify(&names));
     let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
@@ -126,8 +126,8 @@ pub fn compile(
         ssf_llvm::compile(
             &ModuleCompiler::new(expression_compiler, type_compiler).compile(&module)?,
             ssf_llvm::CompileConfiguration::new(
-                Some(configuration.malloc_function_name().into()),
-                Some(configuration.panic_function_name().into()),
+                Some(configuration.malloc_function_name.clone()),
+                Some(configuration.panic_function_name.clone()),
             ),
         )?,
         ModuleInterfaceCompiler::new().compile(&module)?,
@@ -143,13 +143,13 @@ mod tests {
     use lazy_static::lazy_static;
 
     lazy_static! {
-        static ref COMPILE_CONFIGURATION: CompileConfiguration = CompileConfiguration::new(
-            "main",
-            "ein_main",
-            "ein_malloc",
-            "ein_panic",
-            LIST_TYPE_CONFIGURATION.clone()
-        );
+        static ref COMPILE_CONFIGURATION: CompileConfiguration = CompileConfiguration {
+            source_main_function_name: "main".into(),
+            object_main_function_name: "ein_main".into(),
+            malloc_function_name: "ein_malloc".into(),
+            panic_function_name: "ein_panic".into(),
+            list_type_configuration: LIST_TYPE_CONFIGURATION.clone()
+        };
     }
 
     #[test]
