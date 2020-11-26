@@ -29,7 +29,7 @@ impl ConstraintSolver {
         mut solved_subsumption_set: SubsumptionSet,
         checked_subsumption_set: &mut SubsumptionSet,
     ) -> Result<HashMap<usize, Type>, CompileError> {
-        let mut variable_constraint_set = VariableConstraintSet::new();
+        let mut constraint_set = VariableConstraintSet::new();
 
         while let Some(subsumption) = solved_subsumption_set.remove() {
             match subsumption {
@@ -40,18 +40,18 @@ impl ConstraintSolver {
                         }
                     }
 
-                    for type_ in variable_constraint_set.get_upper_types(variable.id()) {
+                    for type_ in constraint_set.get_upper_types(variable.id()) {
                         solved_subsumption_set.add(lower.clone(), type_.clone());
                     }
 
-                    variable_constraint_set.add_lower_type(&variable, &lower);
+                    constraint_set.add_lower_type(&variable, &lower);
                 }
                 (Type::Variable(variable), upper) => {
-                    for type_ in variable_constraint_set.get_lower_types(variable.id()) {
+                    for type_ in constraint_set.get_lower_types(variable.id()) {
                         solved_subsumption_set.add(type_.clone(), upper.clone());
                     }
 
-                    variable_constraint_set.add_upper_type(&variable, &upper);
+                    constraint_set.add_upper_type(&variable, &upper);
                 }
                 (Type::Reference(reference), other) => solved_subsumption_set.add(
                     self.reference_type_resolver.resolve_reference(&reference)?,
@@ -77,9 +77,16 @@ impl ConstraintSolver {
             }
         }
 
+        self.convert_to_substitutions(&constraint_set)
+    }
+
+    fn convert_to_substitutions(
+        &self,
+        constraint_set: &VariableConstraintSet,
+    ) -> Result<HashMap<usize, Type>, CompileError> {
         let mut substitutions = HashMap::<usize, Type>::new();
 
-        for (id, constraint) in variable_constraint_set.constraints() {
+        for (id, constraint) in constraint_set.constraints() {
             let constraint_type = self
                 .constraint_converter
                 .convert(constraint)?
