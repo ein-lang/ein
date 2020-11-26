@@ -59,7 +59,8 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             first_rest_type_name: "FirstRest".into(),
         }
         .into(),
-    };
+    }
+    .into();
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
         &file_path_manager,

@@ -50,10 +50,9 @@ use type_inference::infer_types;
 use union_tag_calculator::UnionTagCalculator;
 use variable_compiler::VariableCompiler;
 
-// TODO Use Arc for compile_configuration.
 pub fn compile(
     module: &Module,
-    configuration: &CompileConfiguration,
+    configuration: Arc<CompileConfiguration>,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
     let module = transform_before_name_qualification(&module)?;
 
@@ -143,13 +142,14 @@ mod tests {
     use lazy_static::lazy_static;
 
     lazy_static! {
-        static ref COMPILE_CONFIGURATION: CompileConfiguration = CompileConfiguration {
+        static ref COMPILE_CONFIGURATION: Arc<CompileConfiguration> = CompileConfiguration {
             source_main_function_name: "main".into(),
             object_main_function_name: "ein_main".into(),
             malloc_function_name: "ein_malloc".into(),
             panic_function_name: "ein_panic".into(),
             list_type_configuration: LIST_TYPE_CONFIGURATION.clone()
-        };
+        }
+        .into();
     }
 
     #[test]
@@ -176,7 +176,7 @@ mod tests {
                 )
                 .into()
             ]),
-            &COMPILE_CONFIGURATION
+            COMPILE_CONFIGURATION.clone(),
         )
         .is_ok());
     }
@@ -217,7 +217,7 @@ mod tests {
                 )
                 .into()],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -262,7 +262,7 @@ mod tests {
                 )
                 .into()],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -285,7 +285,7 @@ mod tests {
                 )
                 .into()],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -309,7 +309,7 @@ mod tests {
                 )],
                 vec![],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -349,7 +349,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -385,7 +385,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -405,7 +405,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -425,7 +425,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -445,7 +445,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -460,7 +460,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -480,7 +480,7 @@ mod tests {
                 SourceInformation::dummy(),
             )
             .into()]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -528,7 +528,7 @@ mod tests {
                 )
                 .into(),
             ]),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
@@ -565,7 +565,7 @@ mod tests {
                 )],
                 vec![],
             ),
-            &COMPILE_CONFIGURATION,
+            COMPILE_CONFIGURATION.clone(),
         )
         .unwrap();
     }
