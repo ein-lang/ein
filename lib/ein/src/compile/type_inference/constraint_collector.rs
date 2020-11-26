@@ -156,21 +156,11 @@ impl ConstraintCollector {
                 let mut variables = variables.clone();
 
                 for definition in let_.definitions() {
-                    match definition {
-                        Definition::FunctionDefinition(function_definition) => {
-                            variables.insert(
-                                function_definition.name().into(),
-                                function_definition.type_().clone(),
-                            );
-                        }
-                        Definition::VariableDefinition(variable_definition) => {
-                            if let_.is_recursive() {
-                                variables.insert(
-                                    variable_definition.name().into(),
-                                    variable_definition.type_().clone(),
-                                );
-                            }
-                        }
+                    if let Definition::FunctionDefinition(function_definition) = definition {
+                        variables.insert(
+                            function_definition.name().into(),
+                            function_definition.type_().clone(),
+                        );
                     }
                 }
 

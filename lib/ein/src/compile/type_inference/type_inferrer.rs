@@ -481,21 +481,31 @@ mod tests {
 
     #[test]
     fn infer_types_of_let_with_recursive_functions_and_the_latter_typed() {
-        assert_eq!(
-            infer_types(&Module::from_definitions(vec![VariableDefinition::new(
+        assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+            VariableDefinition::new(
                 "x",
                 Let::new(
                     vec![
-                        VariableDefinition::new(
+                        FunctionDefinition::new(
                             "f",
-                            Variable::new("g", SourceInformation::dummy()),
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("g", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into(),
-                        VariableDefinition::new(
+                        FunctionDefinition::new(
                             "g",
-                            Variable::new("f", SourceInformation::dummy()),
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("f", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             types::Function::new(
                                 types::Number::new(SourceInformation::dummy()),
                                 types::Number::new(SourceInformation::dummy()),
@@ -515,58 +525,25 @@ mod tests {
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
-            .into()])),
-            Ok(Module::from_definitions(vec![VariableDefinition::new(
-                "x",
-                Let::new(
-                    vec![
-                        VariableDefinition::new(
-                            "f",
-                            Variable::new("g", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy()
-                        )
-                        .into(),
-                        VariableDefinition::new(
-                            "g",
-                            Variable::new("f", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy()
-                        )
-                        .into()
-                    ],
-                    Application::new(
-                        Variable::new("f", SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
-                    SourceInformation::dummy(),
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()]))
-        );
+            .into()
+        ])));
     }
 
     #[test]
     fn infer_types_of_let_with_recursive_functions_and_the_former_typed() {
-        assert_eq!(
-            infer_types(&Module::from_definitions(vec![VariableDefinition::new(
+        assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+            VariableDefinition::new(
                 "x",
                 Let::new(
                     vec![
-                        VariableDefinition::new(
+                        FunctionDefinition::new(
                             "f",
-                            Variable::new("g", SourceInformation::dummy()),
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("g", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             types::Function::new(
                                 types::Number::new(SourceInformation::dummy()),
                                 types::Number::new(SourceInformation::dummy()),
@@ -575,9 +552,14 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into(),
-                        VariableDefinition::new(
+                        FunctionDefinition::new(
                             "g",
-                            Variable::new("f", SourceInformation::dummy()),
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("f", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
@@ -593,66 +575,38 @@ mod tests {
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
-            .into()])),
-            Ok(Module::from_definitions(vec![VariableDefinition::new(
-                "x",
-                Let::new(
-                    vec![
-                        VariableDefinition::new(
-                            "f",
-                            Variable::new("g", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy()
-                        )
-                        .into(),
-                        VariableDefinition::new(
-                            "g",
-                            Variable::new("f", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy()
-                        )
-                        .into()
-                    ],
-                    Application::new(
-                        Variable::new("f", SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
-                    SourceInformation::dummy(),
-                ),
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()]))
-        );
+            .into()
+        ])));
     }
 
     #[test]
     fn infer_types_of_let_in_function_definition_with_recursive_functions() {
-        assert_eq!(
-            infer_types(&Module::from_definitions(vec![FunctionDefinition::new(
+        assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+            FunctionDefinition::new(
                 "f",
                 vec!["x".into()],
                 Let::new(
                     vec![
-                        VariableDefinition::new(
+                        FunctionDefinition::new(
                             "f",
-                            Variable::new("g", SourceInformation::dummy()),
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("g", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
                         .into(),
-                        VariableDefinition::new(
+                        FunctionDefinition::new(
                             "g",
-                            Variable::new("f", SourceInformation::dummy()),
+                            vec!["x".into()],
+                            Application::new(
+                                Variable::new("f", SourceInformation::dummy()),
+                                Variable::new("x", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             types::Function::new(
                                 types::Number::new(SourceInformation::dummy()),
                                 types::Number::new(SourceInformation::dummy()),
@@ -676,51 +630,8 @@ mod tests {
                 ),
                 SourceInformation::dummy(),
             )
-            .into()])),
-            Ok(Module::from_definitions(vec![FunctionDefinition::new(
-                "f",
-                vec!["x".into()],
-                Let::new(
-                    vec![
-                        VariableDefinition::new(
-                            "f",
-                            Variable::new("g", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy()
-                        )
-                        .into(),
-                        VariableDefinition::new(
-                            "g",
-                            Variable::new("f", SourceInformation::dummy()),
-                            types::Function::new(
-                                types::Number::new(SourceInformation::dummy()),
-                                types::Number::new(SourceInformation::dummy()),
-                                SourceInformation::dummy(),
-                            ),
-                            SourceInformation::dummy()
-                        )
-                        .into()
-                    ],
-                    Application::new(
-                        Variable::new("f", SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
-                    SourceInformation::dummy(),
-                ),
-                types::Function::new(
-                    types::Number::new(SourceInformation::dummy()),
-                    types::Number::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                ),
-                SourceInformation::dummy(),
-            )
-            .into()]))
-        );
+            .into()
+        ])));
     }
 
     #[test]
