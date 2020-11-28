@@ -24,7 +24,7 @@ const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
 lazy_static! {
-    static ref RESERVED_IDENTIFIERS: Vec<&'static str> = KEYWORDS
+    static ref RESERVED_IDENTIFIERS: HashSet<&'static str> = KEYWORDS
         .iter()
         .cloned()
         .chain(vec![
@@ -698,10 +698,7 @@ fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 
 fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
     unchecked_identifier().then(|identifier| {
-        if RESERVED_IDENTIFIERS
-            .iter()
-            .any(|keyword| &identifier == keyword)
-        {
+        if RESERVED_IDENTIFIERS.contains(identifier.as_str()) {
             unexpected_any("keyword").left()
         } else {
             value(identifier).right()
