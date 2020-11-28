@@ -90,6 +90,7 @@ impl TypeCompiler {
             .iter()
             .map(|(_, type_)| other.compile(type_))
             .collect::<Result<Vec<_>, _>>()?;
+        // TODO Unbox small records.
         let boxed = !elements.is_empty();
 
         Ok(ssf::types::Algebraic::new(vec![
