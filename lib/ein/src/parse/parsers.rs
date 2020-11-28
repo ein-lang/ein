@@ -4,7 +4,7 @@ use crate::ast::*;
 use crate::debug::*;
 use crate::path::*;
 use crate::types::{self, Type};
-use combine::parser::char::{alpha_num, letter, string};
+use combine::parser::char::{alpha_num, char as character, letter, string};
 use combine::parser::combinator::{lazy, look_ahead, no_partial, not_followed_by};
 use combine::parser::regex::find;
 use combine::parser::sequence::between;
@@ -707,7 +707,11 @@ fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 }
 
 fn unchecked_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
-    (many1(letter()), many(alpha_num())).map(|(head, tail): (String, String)| [head, tail].concat())
+    choice!(
+        (letter(), many(alpha_num())).boxed(),
+        (character('$'), many(choice!(alpha_num(), character('$')))).boxed(),
+    )
+    .map(|(head, tail): (char, String)| [head.into(), tail].concat())
 }
 
 fn keyword<'a>(name: &'static str) -> impl Parser<Stream<'a>, Output = ()> {
