@@ -1,17 +1,17 @@
 export {
-  AnyList,
-  FirstRest,
-  first,
-  rest,
-  concatenateLists,
-  emptyList,
-  equalLists,
-  getListLength,
-  prependToList,
-  firstRest,
+  $AnyList,
+  $FirstRest,
+  $first,
+  $rest,
+  $concatenateLists,
+  $emptyList,
+  $equalLists,
+  $getListLength,
+  $prependToList,
+  $firstRest,
 }
 
-type AnyList {
+type $AnyList {
   node : Node | None,
 }
 
@@ -20,33 +20,33 @@ type Node {
   rest : Node | None,
 }
 
-type FirstRest {
+type $FirstRest {
   first : Any,
-  rest : AnyList,
+  rest : $AnyList,
 }
 
-first : FirstRest -> Any
-first = FirstRest.first
+$first : $FirstRest -> Any
+$first = $FirstRest.first
 
-rest : FirstRest -> AnyList
-rest = FirstRest.rest
+$rest : $FirstRest -> $AnyList
+$rest = $FirstRest.rest
 
-firstRest : AnyList -> FirstRest | None
-firstRest list =
-  case n = AnyList.node list
-    Node => FirstRest{
+$firstRest : $AnyList -> $FirstRest | None
+$firstRest list =
+  case n = $AnyList.node list
+    Node => $FirstRest{
         first = Node.first n,
-        rest = AnyList{ node = Node.rest n },
+        rest = $AnyList{ node = Node.rest n },
       }
     None => None
 
-emptyList : AnyList
-emptyList =
-  AnyList{ node = None }
+$emptyList : $AnyList
+$emptyList =
+  $AnyList{ node = None }
 
-getListLength : AnyList -> Number
-getListLength list =
-   getLengthFromNode (AnyList.node list)
+$getListLength : $AnyList -> Number
+$getListLength list =
+   getLengthFromNode ($AnyList.node list)
 
 getLengthFromNode : Node | None -> Number
 getLengthFromNode node =
@@ -54,9 +54,9 @@ getLengthFromNode node =
     Node => 1 + getLengthFromNode (Node.rest node)
     None => 0
 
-prependToList : Any -> AnyList -> AnyList
-prependToList element list =
-  AnyList{ node = prependToNode element (AnyList.node list) }
+$prependToList : Any -> $AnyList -> $AnyList
+$prependToList element list =
+  $AnyList{ node = prependToNode element ($AnyList.node list) }
 
 prependToNode : Any -> Node | None -> Node
 prependToNode element node =
@@ -65,10 +65,10 @@ prependToNode element node =
     rest = node,
   }
 
-concatenateLists : AnyList -> AnyList -> AnyList
-concatenateLists one other =
-  AnyList{
-    node = concatenateNodes (AnyList.node one) (AnyList.node other)
+$concatenateLists : $AnyList -> $AnyList -> $AnyList
+$concatenateLists one other =
+  $AnyList{
+    node = concatenateNodes ($AnyList.node one) ($AnyList.node other)
   }
 
 concatenateNodes : Node | None -> Node | None -> Node | None
@@ -85,9 +85,9 @@ concatenateNodes one other =
         Node => other
         None => None
 
-equalLists : (Any -> Any -> Boolean) -> AnyList -> AnyList -> Boolean
-equalLists equalElements one other =
-  equalNodes equalElements (AnyList.node one) (AnyList.node other)
+$equalLists : (Any -> Any -> Boolean) -> $AnyList -> $AnyList -> Boolean
+$equalLists equalElements one other =
+  equalNodes equalElements ($AnyList.node one) ($AnyList.node other)
 
 equalNodes : (Any -> Any -> Boolean) -> Node | None -> Node | None -> Boolean
 equalNodes equalElements one other =

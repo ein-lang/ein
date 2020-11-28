@@ -1,11 +1,14 @@
 use super::super::error::CompileError;
 use super::super::list_type_configuration::ListTypeConfiguration;
+use super::super::name_generator::NameGenerator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use crate::ast::*;
 use crate::types;
 use std::sync::Arc;
 
 pub struct ListCaseTransformer {
+    first_rest_name_generator: NameGenerator,
+    element_name_generator: NameGenerator,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     configuration: Arc<ListTypeConfiguration>,
 }
@@ -16,6 +19,8 @@ impl ListCaseTransformer {
         configuration: Arc<ListTypeConfiguration>,
     ) -> Arc<Self> {
         Self {
+            first_rest_name_generator: NameGenerator::new("$lc$firstRest"),
+            element_name_generator: NameGenerator::new("$lc$firstRest"),
             reference_type_resolver,
             configuration,
         }
@@ -36,12 +41,15 @@ impl ListCaseTransformer {
             .element()
             .clone();
 
+        let first_rest_name = self.first_rest_name_generator.generate();
+        let element_name = self.element_name_generator.generate();
+
         Ok(Case::with_type(
             types::Union::new(
                 vec![first_rest_type.clone().into(), none_type.clone().into()],
                 source_information.clone(),
             ),
-            "$firstRest",
+            &first_rest_name,
             Application::new(
                 Variable::new(
                     &self.configuration.deconstruct_function_name,
@@ -60,18 +68,18 @@ impl ListCaseTransformer {
                                 case.first_name(),
                                 Case::with_type(
                                     types::Any::new(source_information.clone()),
-                                    "$element",
+                                    &element_name,
                                     Application::new(
                                         Variable::new(
                                             &self.configuration.first_function_name,
                                             source_information.clone(),
                                         ),
-                                        Variable::new("$firstRest", source_information.clone()),
+                                        Variable::new(&first_rest_name, source_information.clone()),
                                         source_information.clone(),
                                     ),
                                     vec![Alternative::new(
                                         element_type.clone(),
-                                        Variable::new("$element", source_information.clone()),
+                                        Variable::new(&element_name, source_information.clone()),
                                     )],
                                     source_information.clone(),
                                 ),
@@ -86,7 +94,7 @@ impl ListCaseTransformer {
                                         &self.configuration.rest_function_name,
                                         source_information.clone(),
                                     ),
-                                    Variable::new("$firstRest", source_information.clone()),
+                                    Variable::new(&first_rest_name, source_information.clone()),
                                     source_information.clone(),
                                 ),
                                 case.type_().clone(),

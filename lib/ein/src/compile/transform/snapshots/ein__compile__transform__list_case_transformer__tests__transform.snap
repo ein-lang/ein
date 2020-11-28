@@ -44,7 +44,7 @@ Ok(
                     },
                 },
             ),
-            name: "$firstRest",
+            name: "$lc$firstRest0",
             argument: Application(
                 Application {
                     function: Variable(
@@ -144,7 +144,7 @@ Ok(
                                                         },
                                                     },
                                                 ),
-                                                name: "$element",
+                                                name: "$lc$firstRest0",
                                                 argument: Application(
                                                     Application {
                                                         function: Variable(
@@ -162,7 +162,7 @@ Ok(
                                                         ),
                                                         argument: Variable(
                                                             Variable {
-                                                                name: "$firstRest",
+                                                                name: "$lc$firstRest0",
                                                                 source_information: SourceInformation {
                                                                     source_name: "",
                                                                     location: Location {
@@ -199,7 +199,7 @@ Ok(
                                                         ),
                                                         expression: Variable(
                                                             Variable {
-                                                                name: "$element",
+                                                                name: "$lc$firstRest0",
                                                                 source_information: SourceInformation {
                                                                     source_name: "",
                                                                     location: Location {
@@ -264,7 +264,7 @@ Ok(
                                                 ),
                                                 argument: Variable(
                                                     Variable {
-                                                        name: "$firstRest",
+                                                        name: "$lc$firstRest0",
                                                         source_information: SourceInformation {
                                                             source_name: "",
                                                             location: Location {
