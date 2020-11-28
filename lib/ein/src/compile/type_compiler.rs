@@ -90,10 +90,10 @@ impl TypeCompiler {
             .iter()
             .map(|(_, type_)| other.compile(type_))
             .collect::<Result<Vec<_>, _>>()?;
-        let is_boxed = !elements.is_empty();
+        let boxed = !elements.is_empty();
 
         Ok(ssf::types::Algebraic::new(vec![
-            ssf::types::Constructor::new(elements, is_boxed),
+            ssf::types::Constructor::new(elements, boxed),
         ]))
     }
 
