@@ -1,0 +1,57 @@
+{
+  "modules": [
+    {
+      "path": {
+        "package": {
+          "name": "ein_string",
+          "version": ""
+        },
+        "components": ["String"]
+      },
+      "exported_names": ["concatenate"],
+      "types": {},
+      "functions": {
+        "ein_string().String.concatenate": {
+          "Function": {
+            "argument": {
+              "Record": {
+                "name": "/home/raviqqe/tmp/foo/.ein/packages/prelude().Error.Error",
+                "elements": {
+                  "error": {
+                    "Any": {
+                      "source_information": {
+                        "source_name": "",
+                        "location": { "line_number": 4, "column_number": 11 },
+                        "line": ""
+                      }
+                    }
+                  }
+                },
+                "source_information": {
+                  "source_name": "",
+                  "location": { "line_number": 3, "column_number": 6 },
+                  "line": ""
+                }
+              }
+            },
+            "result": {
+              "Any": {
+                "source_information": {
+                  "source_name": "",
+                  "location": { "line_number": 4, "column_number": 11 },
+                  "line": ""
+                }
+              }
+            },
+            "source_information": {
+              "source_name": "",
+              "location": { "line_number": 3, "column_number": 6 },
+              "line": ""
+            }
+          }
+        }
+      },
+      "variables": {}
+    }
+  ]
+}
