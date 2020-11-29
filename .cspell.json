@@ -5,6 +5,7 @@
     "anychar",
     "archiver",
     "ast",
+    "bdwgc",
     "bitcast",
     "bitcode",
     "canonicalize",
