@@ -2,9 +2,12 @@ use serde::{Deserialize, Serialize};
 
 // In the current design, there is no relationship between Package and
 // ExternalPackage as the former represents actual package information based on
-// repository origins, commit hashes, etc. while the latter does expected
-// package information which is used only for downloading the packages and
-// computing dependency graphs.
+// repository origins, commit hashes, etc. while the latter does package
+// information which is expected by a build system and used for downloading
+// the packages and computing dependency graphs.
+//
+// In the current design, we include versions in package data because we need
+// to calculate external package paths used in import statements from them.
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct Package {
     name: String,
