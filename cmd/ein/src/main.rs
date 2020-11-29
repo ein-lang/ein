@@ -45,7 +45,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
     let compile_configuration = app::CompileConfiguration {
         source_main_function_name: "main".into(),
         object_main_function_name: "ein_main".into(),
-        malloc_function_name: "malloc".into(),
+        malloc_function_name: "ein_malloc".into(),
         panic_function_name: "ein_panic".into(),
         list_type_configuration: app::ListTypeConfiguration {
             empty_list_variable_name: "$emptyList".into(),
