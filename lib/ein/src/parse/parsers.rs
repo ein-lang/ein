@@ -33,6 +33,8 @@ lazy_static! {
         .collect();
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
+    static ref STRING_REGEX: regex::Regex =
+        regex::Regex::new(r#"([^\\"]|\\\\|\\"|\\n|\\t)*"#).unwrap();
 }
 
 pub struct State<'a> {
@@ -657,6 +659,28 @@ fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
     token((source_information(), from_str(find(regex))))
         .map(|(source_information, number)| Number::new(number, source_information))
         .expected("number literal")
+}
+
+fn string_literal<'a>() -> impl Parser<Stream<'a>, Output = EinString> {
+    let regex: &'static regex::Regex = &STRING_REGEX;
+
+    token((
+        source_information(),
+        character('"'),
+        from_str(find(regex)),
+        character('"'),
+    ))
+    .map(|(source_information, _, string, _): (_, _, String, _)| {
+        EinString::new(
+            string
+                .replace("\\\\", "\\")
+                .replace("\\\"", "\"")
+                .replace("\\n", "\n")
+                .replace("\\t", "\t"),
+            source_information,
+        )
+    })
+    .expected("string literal")
 }
 
 fn list_literal<'a>() -> impl Parser<Stream<'a>, Output = List> {
@@ -2497,6 +2521,27 @@ mod tests {
                 assert_eq!(
                     number_literal().parse(stream(source, "")).unwrap().0,
                     Number::new(*value, SourceInformation::dummy())
+                );
+            }
+        }
+
+        #[test]
+        fn parse_string_literal() {
+            assert!(string_literal().parse(stream("", "")).is_err());
+            assert!(string_literal().parse(stream("foo", "")).is_err());
+
+            for (source, value) in &[
+                ("\"\"", ""),
+                ("\"foo\"", "foo"),
+                ("\"foo bar\"", "foo bar"),
+                ("\"\\\"\"", "\""),
+                ("\"\\n\"", "\n"),
+                ("\"\\t\"", "\t"),
+                ("\"\\\\\"", "\\"),
+            ] {
+                assert_eq!(
+                    string_literal().parse(stream(source, "")).unwrap().0,
+                    EinString::new(*value, SourceInformation::dummy())
                 );
             }
         }
