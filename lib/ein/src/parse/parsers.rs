@@ -33,8 +33,7 @@ lazy_static! {
         .collect();
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
-    static ref STRING_REGEX: regex::Regex =
-        regex::Regex::new(r#"([^\\"]|\\\\|\\"|\\n|\\t)*"#).unwrap();
+    static ref STRING_REGEX: regex::Regex = regex::Regex::new(r#"^[^\\"]"#).unwrap();
 }
 
 pub struct State<'a> {
@@ -676,19 +675,20 @@ fn string_literal<'a>() -> impl Parser<Stream<'a>, Output = EinString> {
     token((
         source_information(),
         character('"'),
-        from_str(find(regex)),
+        many(choice!(
+            from_str(find(regex)),
+            string("\\\\").map(|_| "\\".into()),
+            string("\\\"").map(|_| "\"".into()),
+            string("\\n").map(|_| "\n".into()),
+            string("\\t").map(|_| "\t".into())
+        )),
         character('"'),
     ))
-    .map(|(source_information, _, string, _): (_, _, String, _)| {
-        EinString::new(
-            string
-                .replace("\\\\", "\\")
-                .replace("\\\"", "\"")
-                .replace("\\n", "\n")
-                .replace("\\t", "\t"),
-            source_information,
-        )
-    })
+    .map(
+        |(source_information, _, strings, _): (_, _, Vec<String>, _)| {
+            EinString::new(strings.join(""), source_information)
+        },
+    )
     .expected("string literal")
 }
 
