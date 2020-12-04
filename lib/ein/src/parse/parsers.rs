@@ -2547,6 +2547,7 @@ mod tests {
                 ("\"\\n\"", "\n"),
                 ("\"\\t\"", "\t"),
                 ("\"\\\\\"", "\\"),
+                ("\"\\n\\n\"", "\n\n"),
             ] {
                 assert_eq!(
                     string_literal().parse(stream(source, "")).unwrap().0,
