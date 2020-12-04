@@ -367,6 +367,7 @@ fn strict_atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression
         boolean_literal().map(Expression::from),
         none_literal().map(Expression::from),
         number_literal().map(Expression::from),
+        string_literal().map(Expression::from),
         variable().map(Expression::from),
         between(sign("("), sign(")"), expression()),
     )

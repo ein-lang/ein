@@ -210,6 +210,7 @@ impl ExpressionCompiler {
                 )
                 .into()
             }
+            Expression::String(_) => todo!(),
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_function(coercion.to())? {
                     self.compile(
@@ -234,7 +235,8 @@ impl ExpressionCompiler {
                         | Type::List(_)
                         | Type::None(_)
                         | Type::Number(_)
-                        | Type::Record(_) => {
+                        | Type::Record(_)
+                        | Type::String(_) => {
                             if self.reference_type_resolver.is_any(coercion.to())? {
                                 ssf::ir::Bitcast::new(
                                     ssf::ir::ConstructorApplication::new(
@@ -400,7 +402,8 @@ impl ExpressionCompiler {
                             | Type::List(_)
                             | Type::None(_)
                             | Type::Number(_)
-                            | Type::Record(_) => {
+                            | Type::Record(_)
+                            | Type::String(_) => {
                                 Ok(Some(vec![ssf::ir::AlgebraicAlternative::new(
                                     ssf::ir::Constructor::new(
                                         argument_type.clone(),

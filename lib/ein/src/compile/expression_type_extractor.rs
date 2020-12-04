@@ -142,6 +142,9 @@ impl ExpressionTypeExtractor {
 
                 self.extract(operation.expression(), &variables)?
             }
+            Expression::String(none) => {
+                types::EinString::new(none.source_information().clone()).into()
+            }
             Expression::TypeCoercion(coercion) => coercion.to().clone(),
             Expression::Variable(variable) => variables[variable.name()].clone(),
             Expression::RecordUpdate(_) => unreachable!(),

@@ -43,6 +43,7 @@ impl UnionTagCalculator {
             Type::None(_) => "None".into(),
             Type::Number(_) => "Number".into(),
             Type::Record(record) => record.name().into(),
+            Type::String(_) => "String".into(),
             Type::Union(union) => format!(
                 "({})",
                 union

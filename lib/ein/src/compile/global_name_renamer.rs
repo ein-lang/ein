@@ -290,9 +290,10 @@ impl GlobalNameRenamer {
                 variable.source_information().clone(),
             )
             .into(),
-            Expression::Boolean(_) | Expression::None(_) | Expression::Number(_) => {
-                expression.clone()
-            }
+            Expression::Boolean(_)
+            | Expression::None(_)
+            | Expression::Number(_)
+            | Expression::String(_) => expression.clone(),
             Expression::TypeCoercion(_) => unreachable!(),
         }
     }

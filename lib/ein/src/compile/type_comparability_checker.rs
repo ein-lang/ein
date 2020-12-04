@@ -53,6 +53,7 @@ impl TypeComparabilityChecker {
                 &self.reference_type_resolver.resolve_reference(reference)?,
                 record_names,
             )?,
+            Type::String(_) => true,
             Type::Union(union) => union
                 .types()
                 .iter()
