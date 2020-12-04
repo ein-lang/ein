@@ -307,6 +307,7 @@ fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
         boolean_type().map(Type::from),
         none_type().map(Type::from),
         number_type().map(Type::from),
+        string_type().map(Type::from),
         any_type().map(Type::from),
         reference_type().map(Type::from),
         between(sign("("), sign(")"), type_()),
@@ -332,6 +333,13 @@ fn number_type<'a>() -> impl Parser<Stream<'a>, Output = types::Number> {
         .skip(keyword("Number"))
         .map(types::Number::new)
         .expected("number type")
+}
+
+fn string_type<'a>() -> impl Parser<Stream<'a>, Output = types::EinString> {
+    source_information()
+        .skip(keyword("String"))
+        .map(types::EinString::new)
+        .expected("string type")
 }
 
 fn any_type<'a>() -> impl Parser<Stream<'a>, Output = types::Any> {
