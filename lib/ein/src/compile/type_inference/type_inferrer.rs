@@ -1063,7 +1063,7 @@ mod tests {
         }
 
         #[test]
-        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
+        fn fail_to_infer_type_with_argument_type_of_neither_union_nor_any() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
                 VariableDefinition::new(
                     "x",
@@ -1072,6 +1072,68 @@ mod tests {
                         None::new(SourceInformation::dummy()),
                         vec![Alternative::new(
                             types::Any::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn fail_to_infer_type_with_alternatives_not_exhaustive_with_union() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                VariableDefinition::new(
+                    "x",
+                    None::new(SourceInformation::dummy()),
+                    types::Union::new(
+                        vec![
+                            types::Number::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "y",
+                    Case::new(
+                        "x",
+                        Variable::new("x", SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
+        fn fail_to_infer_type_with_alternatives_not_exhaustive_with_any() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                VariableDefinition::new(
+                    "x",
+                    None::new(SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "y",
+                    Case::new(
+                        "x",
+                        Variable::new("x", SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Number::new(SourceInformation::dummy()),
                             None::new(SourceInformation::dummy()),
                         )],
                         SourceInformation::dummy()

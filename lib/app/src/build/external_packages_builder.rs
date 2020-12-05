@@ -47,7 +47,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
                 external_package.clone(),
                 self.convert_package_interface(&serde_json::from_str::<PackageInterface>(
                     &self.file_storage.read_to_string(&interface_file_path)?,
-                )?)?,
+                )?),
             );
         }
 
@@ -57,11 +57,8 @@ impl<'a> ExternalPackagesBuilder<'a> {
     fn convert_package_interface(
         &self,
         package_interface: &PackageInterface,
-    ) -> Result<
-        HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
-        Box<dyn std::error::Error>,
-    > {
-        Ok(package_interface
+    ) -> HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface> {
+        package_interface
             .modules()
             .iter()
             .map(|module_interface| {
@@ -70,7 +67,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
                     module_interface.clone(),
                 )
             })
-            .collect())
+            .collect()
     }
 
     fn sort_external_packages(
