@@ -1,4 +1,4 @@
-Feature: Compile error
+Feature: Error
   Background:
     Given a file named "ein.json" with:
     """
@@ -20,6 +20,6 @@ Feature: Compile error
     main : Number -> Number
     main x = f x
     """
-    And I run `ein build`
+    When I run `ein build`
     Then stderr from "ein build" should contain "types not matched"
     And the exit status should not be 0
