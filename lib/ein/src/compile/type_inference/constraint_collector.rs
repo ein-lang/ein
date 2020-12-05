@@ -117,14 +117,16 @@ impl ConstraintCollector {
             Expression::Case(case) => {
                 let argument = self.infer_expression(case.argument(), variables)?;
 
-                self.solved_subsumption_set
+                self.checked_subsumption_set
                     .add(argument.clone(), case.type_().clone());
+                self.checked_subsumption_set
+                    .add(case.type_().clone(), argument.clone());
 
                 let result = types::Variable::new(case.source_information().clone());
 
                 for alternative in case.alternatives() {
-                    self.checked_subsumption_set
-                        .add(alternative.type_().clone(), argument.clone());
+                    self.solved_subsumption_set
+                        .add(alternative.type_().clone(), case.type_().clone());
 
                     let mut variables = variables.clone();
 
