@@ -36,12 +36,6 @@ impl Let {
         &self.source_information
     }
 
-    pub fn is_recursive(&self) -> bool {
-        self.definitions
-            .iter()
-            .all(|definition| matches!(definition, Definition::FunctionDefinition(_)))
-    }
-
     pub fn transform_expressions<E>(
         &self,
         transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,

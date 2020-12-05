@@ -9,6 +9,7 @@ use std::sync::Arc;
 pub enum CompileError {
     AnyEqualOperation(Arc<SourceInformation>),
     CaseArgumentTypeInvalid(Arc<SourceInformation>),
+    DuplicateNames(Arc<SourceInformation>, Arc<SourceInformation>),
     ExportedNameNotFound { name: String },
     FunctionEqualOperation(Arc<SourceInformation>),
     MixedDefinitionsInLet(Arc<SourceInformation>),
@@ -36,6 +37,9 @@ impl Display for CompileError {
             ),
             Self::ExportedNameNotFound { name } => {
                 write!(formatter, "exported name \"{}\" not found", name)
+            }
+            Self::DuplicateNames(one, other) => {
+                write!(formatter, "duplicate names\n{}\n{}", one, other)
             }
             Self::FunctionEqualOperation(source_information) => write!(
                 formatter,

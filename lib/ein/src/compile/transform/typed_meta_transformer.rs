@@ -163,14 +163,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                                 function_definition.type_().clone(),
                             );
                         }
-                        Definition::VariableDefinition(variable_definition) => {
-                            if let_.is_recursive() {
-                                variables.insert(
-                                    variable_definition.name().into(),
-                                    variable_definition.type_().clone(),
-                                );
-                            }
-                        }
+                        Definition::VariableDefinition(_) => {}
                     }
                 }
 
