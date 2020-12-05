@@ -1118,6 +1118,34 @@ mod tests {
         }
 
         #[test]
+        fn fail_to_infer_type_with_alternatives_not_exhaustive_with_any() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                VariableDefinition::new(
+                    "x",
+                    None::new(SourceInformation::dummy()),
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "y",
+                    Case::new(
+                        "x",
+                        Variable::new("x", SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            None::new(SourceInformation::dummy()),
+                        )],
+                        SourceInformation::dummy()
+                    ),
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
+
+        #[test]
         fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type_inferred_from_if_expression(
         ) {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
