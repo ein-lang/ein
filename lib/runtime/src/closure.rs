@@ -1,5 +1,6 @@
 use std::os::raw::c_void;
 
+#[repr(C)]
 pub struct Closure {
     #[allow(dead_code)]
     entry_pointer: *mut c_void,
