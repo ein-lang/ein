@@ -35,11 +35,11 @@ impl FileStorage for FakeFileStorage {
     }
 
     fn is_directory(&self, _: &FilePath) -> bool {
-        unimplemented!()
+        todo!()
     }
 
     fn read_directory(&self, _: &FilePath) -> Result<Vec<FilePath>, Box<dyn std::error::Error>> {
-        unimplemented!()
+        todo!()
     }
 
     fn read_repository(
