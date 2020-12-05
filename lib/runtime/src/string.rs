@@ -17,14 +17,14 @@ extern "C" fn ein_string_equal_entry(
     other: *const EinString,
 ) -> usize {
     unsafe {
-        let one_length = (&*one).length;
-        let other_length = (&*other).length;
+        let one_length = (*one).length;
+        let other_length = (*other).length;
 
         if one_length != other_length {
             0
         } else {
-            let one_slice_pointer = &(&*one).bytes[0];
-            let other_slice_pointer = &(&*other).bytes[0];
+            let one_slice_pointer = &(*one).bytes[0];
+            let other_slice_pointer = &(*other).bytes[0];
 
             (std::slice::from_raw_parts(one_slice_pointer, one_length)
                 == std::slice::from_raw_parts(other_slice_pointer, one_length)) as usize
@@ -35,6 +35,7 @@ extern "C" fn ein_string_equal_entry(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ptr::null;
 
     #[test]
     fn equal_empty_strings() {
@@ -47,7 +48,7 @@ mod tests {
             bytes: [0; 42],
         };
 
-        assert_eq!(ein_string_equal_entry(&one, &other), 1);
+        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
     }
 
     #[test]
@@ -61,7 +62,7 @@ mod tests {
             bytes: [0; 42],
         };
 
-        assert_eq!(ein_string_equal_entry(&one, &other), 1);
+        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
     }
 
     #[test]
@@ -75,7 +76,7 @@ mod tests {
             bytes: [0; 42],
         };
 
-        assert_eq!(ein_string_equal_entry(&one, &other), 0);
+        assert_eq!(ein_string_equal_entry(null(), &one, &other), 0);
     }
 
     #[test]
@@ -89,7 +90,7 @@ mod tests {
             bytes: [0; 42],
         };
 
-        assert_eq!(ein_string_equal_entry(&one, &other), 1);
+        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
     }
 
     #[test]
@@ -109,7 +110,7 @@ mod tests {
         };
         other.bytes[..LENGTH].copy_from_slice(TEXT.as_bytes());
 
-        assert_eq!(ein_string_equal_entry(&one, &other), 1);
+        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
     }
 
     #[test]
@@ -128,8 +129,8 @@ mod tests {
             bytes: [0; 42],
         };
         other.bytes[..LENGTH].copy_from_slice(TEXT.as_bytes());
-        other.bytes[0] = 'x' as u8;
+        other.bytes[0] = b'x';
 
-        assert_eq!(ein_string_equal_entry(&one, &other), 0);
+        assert_eq!(ein_string_equal_entry(null(), &one, &other), 0);
     }
 }
