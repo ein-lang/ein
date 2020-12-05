@@ -60,6 +60,10 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             first_rest_type_name: "$FirstRest".into(),
         }
         .into(),
+        string_type_configuration: app::StringTypeConfiguration {
+            equal_function_name: "ein_string_equal".into(),
+        }
+        .into(),
     }
     .into();
     let module_compiler = app::ModuleCompiler::new(

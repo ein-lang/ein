@@ -1,25 +1,32 @@
-#![cfg(not(test))]
+mod closure;
+mod string;
 
 use bdwgc_alloc::Allocator;
 use std::alloc::Layout;
 use std::io::Write;
-use std::os::raw::{c_int, c_void};
+use std::os::raw::c_void;
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
-
-extern "C" {
-    static ein_main: extern "C" fn(environment: *const u8, argument: f64) -> f64;
-}
 
 #[global_allocator]
 static GLOBAL_ALLOCATOR: Allocator = Allocator;
 
-#[no_mangle]
-pub extern "C" fn main() -> c_int {
-    unsafe { Allocator::initialize() }
+#[cfg(not(test))]
+mod main {
+    use super::*;
+    use std::os::raw::c_int;
 
-    println!("{}", unsafe { ein_main(std::ptr::null(), 42.0) });
+    extern "C" {
+        static ein_main: extern "C" fn(environment: *const u8, argument: f64) -> f64;
+    }
 
-    0
+    #[no_mangle]
+    pub extern "C" fn main() -> c_int {
+        unsafe { Allocator::initialize() }
+
+        println!("{}", unsafe { ein_main(std::ptr::null(), 42.0) });
+
+        0
+    }
 }
 
 #[no_mangle]
