@@ -25,8 +25,7 @@ impl RecordEqualFunctionTransformer {
                     .type_comparability_checker
                     .check(type_definition.type_())?
                 {
-                    equal_function_definitions
-                        .push(self.create_record_equal_function(record_type)?);
+                    equal_function_definitions.push(self.create_record_equal_function(record_type));
                 }
             }
         }
@@ -45,10 +44,7 @@ impl RecordEqualFunctionTransformer {
         ))
     }
 
-    fn create_record_equal_function(
-        &mut self,
-        record_type: &types::Record,
-    ) -> Result<FunctionDefinition, CompileError> {
+    fn create_record_equal_function(&mut self, record_type: &types::Record) -> FunctionDefinition {
         let source_information = record_type.source_information();
         let mut expression: Expression = Boolean::new(true, source_information.clone()).into();
 
@@ -82,7 +78,7 @@ impl RecordEqualFunctionTransformer {
             .into();
         }
 
-        Ok(FunctionDefinition::new(
+        FunctionDefinition::new(
             utilities::get_record_equal_function_name(record_type),
             vec!["lhs".into(), "rhs".into()],
             expression,
@@ -96,6 +92,6 @@ impl RecordEqualFunctionTransformer {
                 source_information.clone(),
             ),
             source_information.clone(),
-        ))
+        )
     }
 }

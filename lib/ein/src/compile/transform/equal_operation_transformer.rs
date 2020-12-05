@@ -188,6 +188,7 @@ impl EqualOperationTransformer {
                     return Err(CompileError::RecordEqualOperation(source_information));
                 }
             }
+            Type::String(_) => todo!(),
             Type::Union(union) => {
                 let lhs_name = self.name_generator.generate();
                 let rhs_name = self.name_generator.generate();

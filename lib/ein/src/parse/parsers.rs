@@ -33,6 +33,7 @@ lazy_static! {
         .collect();
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
+    static ref STRING_REGEX: regex::Regex = regex::Regex::new(r#"^[^\\"]"#).unwrap();
 }
 
 pub struct State<'a> {
@@ -305,6 +306,7 @@ fn atomic_type<'a>() -> impl Parser<Stream<'a>, Output = Type> {
         boolean_type().map(Type::from),
         none_type().map(Type::from),
         number_type().map(Type::from),
+        string_type().map(Type::from),
         any_type().map(Type::from),
         reference_type().map(Type::from),
         between(sign("("), sign(")"), type_()),
@@ -330,6 +332,13 @@ fn number_type<'a>() -> impl Parser<Stream<'a>, Output = types::Number> {
         .skip(keyword("Number"))
         .map(types::Number::new)
         .expected("number type")
+}
+
+fn string_type<'a>() -> impl Parser<Stream<'a>, Output = types::EinString> {
+    source_information()
+        .skip(keyword("String"))
+        .map(types::EinString::new)
+        .expected("string type")
 }
 
 fn any_type<'a>() -> impl Parser<Stream<'a>, Output = types::Any> {
@@ -365,6 +374,7 @@ fn strict_atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression
         boolean_literal().map(Expression::from),
         none_literal().map(Expression::from),
         number_literal().map(Expression::from),
+        string_literal().map(Expression::from),
         variable().map(Expression::from),
         between(sign("("), sign(")"), expression()),
     )
@@ -657,6 +667,29 @@ fn number_literal<'a>() -> impl Parser<Stream<'a>, Output = Number> {
     token((source_information(), from_str(find(regex))))
         .map(|(source_information, number)| Number::new(number, source_information))
         .expected("number literal")
+}
+
+fn string_literal<'a>() -> impl Parser<Stream<'a>, Output = EinString> {
+    let regex: &'static regex::Regex = &STRING_REGEX;
+
+    token((
+        source_information(),
+        character('"'),
+        many(choice!(
+            from_str(find(regex)),
+            string("\\\\").map(|_| "\\".into()),
+            string("\\\"").map(|_| "\"".into()),
+            string("\\n").map(|_| "\n".into()),
+            string("\\t").map(|_| "\t".into())
+        )),
+        character('"'),
+    ))
+    .map(
+        |(source_information, _, strings, _): (_, _, Vec<String>, _)| {
+            EinString::new(strings.join(""), source_information)
+        },
+    )
+    .expected("string literal")
 }
 
 fn list_literal<'a>() -> impl Parser<Stream<'a>, Output = List> {
@@ -2497,6 +2530,28 @@ mod tests {
                 assert_eq!(
                     number_literal().parse(stream(source, "")).unwrap().0,
                     Number::new(*value, SourceInformation::dummy())
+                );
+            }
+        }
+
+        #[test]
+        fn parse_string_literal() {
+            assert!(string_literal().parse(stream("", "")).is_err());
+            assert!(string_literal().parse(stream("foo", "")).is_err());
+
+            for (source, value) in &[
+                ("\"\"", ""),
+                ("\"foo\"", "foo"),
+                ("\"foo bar\"", "foo bar"),
+                ("\"\\\"\"", "\""),
+                ("\"\\n\"", "\n"),
+                ("\"\\t\"", "\t"),
+                ("\"\\\\\"", "\\"),
+                ("\"\\n\\n\"", "\n\n"),
+            ] {
+                assert_eq!(
+                    string_literal().parse(stream(source, "")).unwrap().0,
+                    EinString::new(*value, SourceInformation::dummy())
                 );
             }
         }

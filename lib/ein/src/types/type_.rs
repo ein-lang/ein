@@ -6,6 +6,7 @@ use super::none::None;
 use super::number::Number;
 use super::record::Record;
 use super::reference::Reference;
+use super::string::EinString;
 use super::union::Union;
 use super::unknown::Unknown;
 use super::variable::Variable;
@@ -24,6 +25,7 @@ pub enum Type {
     Number(Number),
     Record(Record),
     Reference(Reference),
+    String(EinString),
     Unknown(Unknown),
     Union(Union),
     Variable(Variable),
@@ -40,6 +42,7 @@ impl Type {
             Self::Number(number) => number.source_information(),
             Self::Record(record) => record.source_information(),
             Self::Reference(reference) => reference.source_information(),
+            Self::String(string) => string.source_information(),
             Self::Unknown(unknown) => unknown.source_information(),
             Self::Union(union) => union.source_information(),
             Self::Variable(variable) => variable.source_information(),
@@ -77,6 +80,7 @@ impl Type {
             | Self::None(_)
             | Self::Number(_)
             | Self::Reference(_)
+            | Self::String(_)
             | Self::Unknown(_)
             | Self::Variable(_) => self.clone(),
         };
@@ -94,6 +98,12 @@ impl From<Any> for Type {
 impl From<Boolean> for Type {
     fn from(boolean: Boolean) -> Self {
         Self::Boolean(boolean)
+    }
+}
+
+impl From<EinString> for Type {
+    fn from(string: EinString) -> Self {
+        Self::String(string)
     }
 }
 

@@ -11,6 +11,7 @@ use super::operation::Operation;
 use super::record_construction::RecordConstruction;
 use super::record_element_operation::RecordElementOperation;
 use super::record_update::RecordUpdate;
+use super::string::EinString;
 use super::type_coercion::TypeCoercion;
 use super::variable::Variable;
 use crate::debug::SourceInformation;
@@ -32,6 +33,7 @@ pub enum Expression {
     RecordConstruction(RecordConstruction),
     RecordElementOperation(RecordElementOperation),
     RecordUpdate(RecordUpdate),
+    String(EinString),
     TypeCoercion(TypeCoercion),
     Variable(Variable),
 }
@@ -52,6 +54,7 @@ impl Expression {
             Self::List(list) => list.source_information(),
             Self::ListCase(case) => case.source_information(),
             Self::Operation(operation) => operation.source_information(),
+            Self::String(string) => string.source_information(),
             Self::TypeCoercion(coercion) => coercion.source_information(),
             Self::None(none) => none.source_information(),
             Self::Number(number) => number.source_information(),
@@ -81,7 +84,11 @@ impl Expression {
             Self::ListCase(case) => case.transform_expressions(transform)?.into(),
             Self::Operation(operation) => operation.transform_expressions(transform)?.into(),
             Self::TypeCoercion(coercion) => coercion.transform_expressions(transform)?.into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::String(_)
+            | Self::Variable(_) => self.clone(),
         };
 
         transform(&expression)
@@ -105,101 +112,107 @@ impl Expression {
             Self::ListCase(case) => case.transform_types(transform)?.into(),
             Self::Operation(operation) => operation.transform_types(transform)?.into(),
             Self::TypeCoercion(coercion) => coercion.transform_types(transform)?.into(),
-            Self::Boolean(_) | Self::None(_) | Self::Number(_) | Self::Variable(_) => self.clone(),
+            Self::Boolean(_)
+            | Self::None(_)
+            | Self::Number(_)
+            | Self::String(_)
+            | Self::Variable(_) => self.clone(),
         })
-    }
-
-    pub fn is_variable(&self) -> bool {
-        matches!(self, Expression::Variable(_))
     }
 }
 
 impl From<Application> for Expression {
-    fn from(application: Application) -> Expression {
+    fn from(application: Application) -> Self {
         Self::Application(application)
     }
 }
 
 impl From<Boolean> for Expression {
-    fn from(boolean: Boolean) -> Expression {
+    fn from(boolean: Boolean) -> Self {
         Self::Boolean(boolean)
     }
 }
 
 impl From<Case> for Expression {
-    fn from(case: Case) -> Expression {
+    fn from(case: Case) -> Self {
         Self::Case(case)
     }
 }
 
+impl From<EinString> for Expression {
+    fn from(string: EinString) -> Self {
+        Self::String(string)
+    }
+}
+
 impl From<RecordConstruction> for Expression {
-    fn from(record_construction: RecordConstruction) -> Expression {
+    fn from(record_construction: RecordConstruction) -> Self {
         Self::RecordConstruction(record_construction)
     }
 }
 
 impl From<RecordElementOperation> for Expression {
-    fn from(operation: RecordElementOperation) -> Expression {
+    fn from(operation: RecordElementOperation) -> Self {
         Self::RecordElementOperation(operation)
     }
 }
 
 impl From<RecordUpdate> for Expression {
-    fn from(record_update: RecordUpdate) -> Expression {
+    fn from(record_update: RecordUpdate) -> Self {
         Self::RecordUpdate(record_update)
     }
 }
 
 impl From<If> for Expression {
-    fn from(if_: If) -> Expression {
+    fn from(if_: If) -> Self {
         Self::If(if_)
     }
 }
 
 impl From<Let> for Expression {
-    fn from(let_: Let) -> Expression {
+    fn from(let_: Let) -> Self {
         Self::Let(let_)
     }
 }
 
 impl From<List> for Expression {
-    fn from(list: List) -> Expression {
+    fn from(list: List) -> Self {
         Self::List(list)
     }
 }
 
 impl From<ListCase> for Expression {
-    fn from(case: ListCase) -> Expression {
+    fn from(case: ListCase) -> Self {
         Self::ListCase(case)
     }
 }
 
 impl From<None> for Expression {
-    fn from(none: None) -> Expression {
+    fn from(none: None) -> Self {
         Self::None(none)
     }
 }
 
 impl From<Number> for Expression {
-    fn from(number: Number) -> Expression {
+    fn from(number: Number) -> Self {
         Self::Number(number)
     }
 }
 
 impl From<Operation> for Expression {
-    fn from(operation: Operation) -> Expression {
+    fn from(operation: Operation) -> Self {
         Self::Operation(operation)
     }
 }
 
 impl From<TypeCoercion> for Expression {
-    fn from(coercion: TypeCoercion) -> Expression {
+    fn from(coercion: TypeCoercion) -> Self {
         Self::TypeCoercion(coercion)
     }
 }
 
 impl From<Variable> for Expression {
-    fn from(variable: Variable) -> Expression {
+    fn from(variable: Variable) -> Self {
         Self::Variable(variable)
     }
 }

@@ -315,6 +315,7 @@ impl TypedTransformer for TypeCoercionTransformer {
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::RecordElementOperation(_)
+            | Expression::String(_)
             | Expression::Variable(_) => Ok(expression.clone()),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         }

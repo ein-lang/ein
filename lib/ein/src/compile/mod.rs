@@ -569,6 +569,26 @@ mod tests {
         .unwrap();
     }
 
+    mod string {
+        use super::*;
+
+        #[test]
+        fn compile_string() -> Result<(), CompileError> {
+            compile(
+                &Module::from_definitions(vec![VariableDefinition::new(
+                    "x",
+                    EinString::new("foo", SourceInformation::dummy()),
+                    types::EinString::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()]),
+                COMPILE_CONFIGURATION.clone(),
+            )?;
+
+            Ok(())
+        }
+    }
+
     // TODO Enable this test by importing a fake prelude module.
     // mod list {
     //     use super::*;

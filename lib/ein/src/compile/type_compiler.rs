@@ -61,6 +61,7 @@ impl TypeCompiler {
             Type::Number(_) => self.compile_number().into(),
             Type::Record(record) => self.compile_record_recursively(record)?,
             Type::Reference(reference) => self.compile_reference(reference)?,
+            Type::String(_) => self.compile_string().into(),
             Type::Union(union) => self.compile_union(union)?.into(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
@@ -135,7 +136,8 @@ impl TypeCompiler {
                         | Type::None(_)
                         | Type::Number(_)
                         | Type::Record(_)
-                        | Type::Reference(_) => (
+                        | Type::Reference(_)
+                        | Type::String(_) => (
                             other.union_tag_calculator.calculate(&type_)?,
                             ssf::types::Constructor::unboxed(vec![other.compile(&type_)?]),
                         ),
@@ -182,7 +184,8 @@ impl TypeCompiler {
                             | Type::None(_)
                             | Type::Number(_)
                             | Type::Record(_)
-                            | Type::Reference(_) => vec![(
+                            | Type::Reference(_)
+                            | Type::String(_) => vec![(
                                 self.union_tag_calculator.calculate(&type_)?,
                                 ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
                             )]
@@ -214,6 +217,21 @@ impl TypeCompiler {
 
     fn compile_number(&self) -> ssf::types::Primitive {
         ssf::types::Primitive::Float64
+    }
+
+    pub fn compile_string(&self) -> ssf::types::Primitive {
+        // TODO Use a real pointer type.
+        // Word-sized pointer
+        ssf::types::Primitive::Integer64
+    }
+
+    pub fn compile_string_instance(&self, size: usize) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
+            vec![ssf::types::Primitive::Integer64.into()]
+                .into_iter()
+                .chain((0..size).map(|_| ssf::types::Primitive::Integer8.into()))
+                .collect(),
+        )])
     }
 
     fn push_record_name(&self, name: Option<String>) -> Self {

@@ -290,6 +290,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             Expression::Boolean(_)
             | Expression::None(_)
             | Expression::Number(_)
+            | Expression::String(_)
             | Expression::Variable(_) => expression.clone(),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         };
