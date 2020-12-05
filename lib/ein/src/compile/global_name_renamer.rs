@@ -158,11 +158,7 @@ impl GlobalNameRenamer {
                         Definition::FunctionDefinition(function_definition) => {
                             names.remove(function_definition.name());
                         }
-                        Definition::VariableDefinition(variable_definition) => {
-                            if let_.is_recursive() {
-                                names.remove(variable_definition.name());
-                            }
-                        }
+                        Definition::VariableDefinition(_) => {}
                     }
                 }
 
