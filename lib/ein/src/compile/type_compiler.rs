@@ -219,9 +219,19 @@ impl TypeCompiler {
         ssf::types::Primitive::Float64
     }
 
-    fn compile_string(&self) -> ssf::types::Primitive {
+    pub fn compile_string(&self) -> ssf::types::Primitive {
+        // TODO Use a real pointer type.
         // Word-sized pointer
         ssf::types::Primitive::Integer64
+    }
+
+    pub fn compile_string_instance(&self, size: usize) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
+            vec![ssf::types::Primitive::Integer64.into()]
+                .into_iter()
+                .chain((0..size).map(|_| ssf::types::Primitive::Integer8.into()))
+                .collect(),
+        )])
     }
 
     fn push_record_name(&self, name: Option<String>) -> Self {

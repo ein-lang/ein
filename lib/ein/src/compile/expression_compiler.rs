@@ -210,7 +210,30 @@ impl ExpressionCompiler {
                 )
                 .into()
             }
-            Expression::String(_) => todo!(),
+            Expression::String(string) => {
+                let length = string.value().as_bytes().len();
+
+                ssf::ir::Bitcast::new(
+                    ssf::ir::ConstructorApplication::new(
+                        ssf::ir::Constructor::new(
+                            self.type_compiler.compile_string_instance(length),
+                            0,
+                        ),
+                        vec![ssf::ir::Primitive::Integer64(length as u64).into()]
+                            .into_iter()
+                            .chain(
+                                string
+                                    .value()
+                                    .as_bytes()
+                                    .iter()
+                                    .map(|byte| ssf::ir::Primitive::Integer8(*byte).into()),
+                            )
+                            .collect(),
+                    ),
+                    self.type_compiler.compile_string(),
+                )
+                .into()
+            }
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_function(coercion.to())? {
                     self.compile(

@@ -70,6 +70,7 @@ impl ConstraintChecker {
                 (Type::Boolean(_), Type::Boolean(_)) => {}
                 (Type::None(_), Type::None(_)) => {}
                 (Type::Number(_), Type::Number(_)) => {}
+                (Type::String(_), Type::String(_)) => {}
                 (Type::Record(one), Type::Record(other)) => {
                     if one.name() != other.name() {
                         return Err(CompileError::TypesNotMatched(
