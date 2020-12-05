@@ -43,17 +43,14 @@ Feature: Case expressions
   Scenario: Use an argument of any type
     Given a file named "Main.ein" with:
     """
-    x : Any
-    x = 42
-
     y : Any
-    y =
-      case z = x
-        Number | None => z
-        Any => z
+    y = 42
 
     main : Number -> Number
-    main x = x
+    main x =
+      case y = y
+        Number => y
+        Any => 13
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`
