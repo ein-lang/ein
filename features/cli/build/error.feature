@@ -11,7 +11,7 @@ Feature: Error
     }
     """
 
-  Scenario: Fail to build a command
+  Scenario: Fail to build due to type check
     Given a file named "Main.ein" with:
     """
     f : Number
@@ -22,4 +22,20 @@ Feature: Error
     """
     When I run `ein build`
     Then stderr from "ein build" should contain "types not matched"
+    And the exit status should not be 0
+
+  Scenario: Fail to build due to duplicate names
+    Given a file named "Main.ein" with:
+    """
+    a : Number
+    a = 42
+
+    a : Number
+    a = 42
+
+    main : Number -> Number
+    main x = x
+    """
+    When I run `ein build`
+    Then stderr from "ein build" should contain "duplicate names"
     And the exit status should not be 0
