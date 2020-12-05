@@ -477,6 +477,7 @@ impl ExpressionCompiler {
                     })
                     .collect::<Result<Vec<Option<Vec<_>>>, CompileError>>()?
                     .into_iter()
+                    .take_while(Option::is_some)
                     .collect::<Option<Vec<Vec<_>>>>()
                     .unwrap_or_default()
                     .into_iter()
@@ -948,12 +949,48 @@ mod tests {
     }
 
     #[test]
+    fn compile_case_expression_with_any_type_argument() {
+        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+
+        insta::assert_debug_snapshot!(expression_compiler.compile(
+            &Case::with_type(
+                types::Any::new(SourceInformation::dummy()),
+                "x",
+                Let::new(
+                    vec![VariableDefinition::new(
+                        "y",
+                        None::new(SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()],
+                    Variable::new("y", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                vec![
+                    Alternative::new(
+                        types::None::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy())
+                    ),
+                    Alternative::new(
+                        types::Any::new(SourceInformation::dummy()),
+                        None::new(SourceInformation::dummy())
+                    )
+                ],
+                SourceInformation::dummy(),
+            )
+            .into(),
+        ));
+    }
+
+    #[test]
     fn fail_to_compile_case_expression_with_argument_type_invalid() {
         let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
-                &Case::new(
+                &Case::with_type(
+                    types::Boolean::new(SourceInformation::dummy()),
                     "x",
                     Boolean::new(true, SourceInformation::dummy()),
                     vec![Alternative::new(
