@@ -5,6 +5,7 @@ mod expression_compiler;
 mod expression_type_extractor;
 mod global_name_map_creator;
 mod global_name_renamer;
+mod global_name_validator;
 mod last_result_type_calculator;
 mod list_type_configuration;
 mod main_function_definition_transformer;
@@ -31,6 +32,7 @@ use error::CompileError;
 use expression_compiler::{ExpressionCompiler, ExpressionCompilerSet, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
+use global_name_validator::GlobalNameValidator;
 use last_result_type_calculator::LastResultTypeCalculator;
 pub use list_type_configuration::ListTypeConfiguration;
 use main_function_definition_transformer::MainFunctionDefinitionTransformer;
@@ -56,6 +58,8 @@ pub fn compile(
     module: &Module,
     configuration: Arc<CompileConfiguration>,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
+    GlobalNameValidator::new().validate(&module)?;
+
     let module = transform_before_name_qualification(&module)?;
 
     let names = GlobalNameMapCreator::create(&module);
