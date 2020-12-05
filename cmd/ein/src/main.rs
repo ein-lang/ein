@@ -9,9 +9,10 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     match clap::App::new("ein")
+        .version("0.1.0")
         .setting(clap::AppSettings::SubcommandRequired)
         .subcommand(clap::SubCommand::with_name("build"))
-        .get_matches_safe()?
+        .get_matches()
         .subcommand()
     {
         ("build", _) => build(),
