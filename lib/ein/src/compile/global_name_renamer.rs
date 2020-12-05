@@ -1,4 +1,3 @@
-use super::error::CompileError;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
@@ -14,36 +13,6 @@ impl GlobalNameRenamer {
     }
 
     pub fn rename(&self, module: &Module) -> Module {
-        let module = module
-            .transform_definitions(&mut |definition| -> Result<_, ()> {
-                Ok(match definition {
-                    Definition::FunctionDefinition(function_definition) => self
-                        .rename_function_definition(function_definition, &self.names)
-                        .into(),
-                    Definition::VariableDefinition(variable_definition) => self
-                        .rename_variable_definition(variable_definition, &self.names)
-                        .into(),
-                })
-            })
-            .unwrap()
-            .transform_types(&mut |type_| -> Result<_, ()> {
-                Ok(match type_ {
-                    Type::Record(record) => types::Record::new(
-                        self.rename_name(record.name(), &self.names),
-                        record.elements().clone(),
-                        record.source_information().clone(),
-                    )
-                    .into(),
-                    Type::Reference(reference) => types::Reference::new(
-                        self.rename_name(reference.name(), &self.names),
-                        reference.source_information().clone(),
-                    )
-                    .into(),
-                    _ => type_.clone(),
-                })
-            })
-            .unwrap();
-
         Module::new(
             module.path().clone(),
             module.export().clone(),
@@ -62,24 +31,49 @@ impl GlobalNameRenamer {
                 .definitions()
                 .iter()
                 .map(|definition| match definition {
-                    Definition::FunctionDefinition(function_definition) => FunctionDefinition::new(
-                        self.rename_name(function_definition.name(), &self.names),
-                        function_definition.arguments().to_vec(),
-                        function_definition.body().clone(),
-                        function_definition.type_().clone(),
-                        function_definition.source_information().clone(),
-                    )
-                    .into(),
-                    Definition::VariableDefinition(variable_definition) => VariableDefinition::new(
-                        self.rename_name(variable_definition.name(), &self.names),
-                        variable_definition.body().clone(),
-                        variable_definition.type_().clone(),
-                        variable_definition.source_information().clone(),
-                    )
-                    .into(),
+                    Definition::FunctionDefinition(function_definition) => self
+                        .rename_function_definition(
+                            &FunctionDefinition::new(
+                                self.rename_name(function_definition.name(), &self.names),
+                                function_definition.arguments().to_vec(),
+                                function_definition.body().clone(),
+                                function_definition.type_().clone(),
+                                function_definition.source_information().clone(),
+                            ),
+                            &self.names,
+                        )
+                        .into(),
+                    Definition::VariableDefinition(variable_definition) => self
+                        .rename_variable_definition(
+                            &VariableDefinition::new(
+                                self.rename_name(variable_definition.name(), &self.names),
+                                variable_definition.body().clone(),
+                                variable_definition.type_().clone(),
+                                variable_definition.source_information().clone(),
+                            ),
+                            &self.names,
+                        )
+                        .into(),
                 })
                 .collect(),
         )
+        .transform_types(&mut |type_| -> Result<_, ()> {
+            Ok(match type_ {
+                Type::Record(record) => types::Record::new(
+                    self.rename_name(record.name(), &self.names),
+                    record.elements().clone(),
+                    record.source_information().clone(),
+                )
+                .into(),
+                Type::Reference(reference) => types::Reference::new(
+                    self.rename_name(reference.name(), &self.names),
+                    reference.source_information().clone(),
+                )
+                .into(),
+                _ => type_.clone(),
+            })
+        })
+        .unwrap()
     }
 
     fn rename_function_definition(
@@ -96,12 +90,7 @@ impl GlobalNameRenamer {
         FunctionDefinition::new(
             function_definition.name(),
             function_definition.arguments().to_vec(),
-            function_definition
-                .body()
-                .transform_expressions(&mut |expression| -> Result<_, ()> {
-                    Ok(self.rename_expression(expression, &names))
-                })
-                .unwrap(),
+            self.rename_expression(function_definition.body(), &names),
             function_definition.type_().clone(),
             function_definition.source_information().clone(),
         )
@@ -114,12 +103,7 @@ impl GlobalNameRenamer {
     ) -> VariableDefinition {
         VariableDefinition::new(
             variable_definition.name(),
-            variable_definition
-                .body()
-                .transform_expressions(&mut |expression| -> Result<_, CompileError> {
-                    Ok(self.rename_expression(expression, &names))
-                })
-                .unwrap(),
+            self.rename_expression(variable_definition.body(), &names),
             variable_definition.type_().clone(),
             variable_definition.source_information().clone(),
         )
@@ -512,6 +496,62 @@ mod tests {
                     types::Record::new("z", Default::default(), SourceInformation::dummy()),
                 )],
                 vec![],
+            )
+        );
+    }
+
+    #[test]
+    fn do_not_rename_case_argument() {
+        let module = Module::new(
+            ModulePath::new(Package::new("M", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![],
+            vec![VariableDefinition::new(
+                "x",
+                Case::new(
+                    "y",
+                    Variable::new("y", SourceInformation::dummy()),
+                    vec![Alternative::new(
+                        types::Any::new(SourceInformation::dummy()),
+                        Variable::new("y", SourceInformation::dummy()),
+                    )],
+                    SourceInformation::dummy(),
+                ),
+                types::Any::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(
+                vec![("y".into(), "z".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
+            Module::new(
+                ModulePath::new(Package::new("M", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![],
+                vec![VariableDefinition::new(
+                    "x",
+                    Case::new(
+                        "y",
+                        Variable::new("z", SourceInformation::dummy()),
+                        vec![Alternative::new(
+                            types::Any::new(SourceInformation::dummy()),
+                            Variable::new("y", SourceInformation::dummy()),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
             )
         );
     }
