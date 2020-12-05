@@ -333,7 +333,9 @@ impl ConstraintCollector {
 
                 self.infer_expression(operation.expression(), &variables)
             }
-            Expression::String(_) => todo!(),
+            Expression::String(string) => {
+                Ok(types::String::new(string.source_information().clone()).into())
+            }
             Expression::Variable(variable) => variables
                 .get(variable.name())
                 .cloned()
