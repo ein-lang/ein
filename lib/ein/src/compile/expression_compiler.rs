@@ -3,6 +3,7 @@ use super::error::CompileError;
 use super::last_result_type_calculator::LastResultTypeCalculator;
 use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::string_type_configuration::StringTypeConfiguration;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
     ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
@@ -37,6 +38,7 @@ pub struct ExpressionCompiler {
     last_result_type_calculator: Arc<LastResultTypeCalculator>,
     union_tag_calculator: Arc<UnionTagCalculator>,
     type_compiler: Arc<TypeCompiler>,
+    string_type_configuration: Arc<StringTypeConfiguration>,
 }
 
 impl ExpressionCompiler {
@@ -47,6 +49,7 @@ impl ExpressionCompiler {
         last_result_type_calculator: Arc<LastResultTypeCalculator>,
         union_tag_calculator: Arc<UnionTagCalculator>,
         type_compiler: Arc<TypeCompiler>,
+        string_type_configuration: Arc<StringTypeConfiguration>,
     ) -> Arc<Self> {
         Self {
             expression_compiler_set,
@@ -55,6 +58,7 @@ impl ExpressionCompiler {
             last_result_type_calculator,
             union_tag_calculator,
             type_compiler,
+            string_type_configuration,
         }
         .into()
     }
@@ -110,19 +114,34 @@ impl ExpressionCompiler {
             Expression::Operation(operation) => {
                 let type_ = self.reference_type_resolver.resolve(operation.type_())?;
 
-                if operation.operator() == Operator::Equal && !matches!(type_, Type::Number(_)) {
-                    self.compile(
-                        &self
-                            .expression_transformer_set
-                            .equal_operation_transformer
-                            .transform(operation)?,
-                    )?
-                } else if operation.operator() == Operator::NotEqual {
+                if operation.operator() == Operator::NotEqual {
                     self.compile(
                         &self
                             .expression_transformer_set
                             .not_equal_operation_transformer
                             .transform(operation),
+                    )?
+                } else if operation.operator() == Operator::Equal
+                    && matches!(type_, Type::String(_))
+                {
+                    ssf::ir::FunctionApplication::new(
+                        ssf::ir::FunctionApplication::new(
+                            ssf::ir::Variable::new(
+                                &self.string_type_configuration.equal_function_name,
+                            ),
+                            self.compile(operation.lhs())?,
+                        ),
+                        self.compile(operation.rhs())?,
+                    )
+                    .into()
+                } else if operation.operator() == Operator::Equal
+                    && !matches!(type_, Type::Number(_))
+                {
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .equal_operation_transformer
+                            .transform(operation)?,
                     )?
                 } else {
                     match operation.operator() {
@@ -507,6 +526,7 @@ impl ExpressionCompiler {
 #[cfg(test)]
 mod tests {
     use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
+    use super::super::string_type_configuration::STRING_TYPE_CONFIGURATION;
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::*;
@@ -577,6 +597,7 @@ mod tests {
                 last_result_type_calculator,
                 union_tag_calculator.clone(),
                 type_compiler.clone(),
+                STRING_TYPE_CONFIGURATION.clone(),
             ),
             type_compiler,
             union_tag_calculator,

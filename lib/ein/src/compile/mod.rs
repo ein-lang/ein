@@ -14,6 +14,7 @@ mod module_interface_compiler;
 mod name_generator;
 mod none_compiler;
 mod reference_type_resolver;
+mod string_type_configuration;
 mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
@@ -38,6 +39,7 @@ use module_interface_compiler::ModuleInterfaceCompiler;
 use none_compiler::NoneCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
+pub use string_type_configuration::StringTypeConfiguration;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
@@ -118,11 +120,17 @@ pub fn compile(
         last_result_type_calculator,
         union_tag_calculator,
         type_compiler.clone(),
+        configuration.string_type_configuration.clone(),
     );
 
     Ok((
         ssf_llvm::compile(
-            &ModuleCompiler::new(expression_compiler, type_compiler).compile(&module)?,
+            &ModuleCompiler::new(
+                expression_compiler,
+                type_compiler,
+                configuration.string_type_configuration.clone(),
+            )
+            .compile(&module)?,
             ssf_llvm::CompileConfiguration::new(
                 Some(configuration.malloc_function_name.clone()),
                 Some(configuration.panic_function_name.clone()),
@@ -135,6 +143,7 @@ pub fn compile(
 #[cfg(test)]
 mod tests {
     use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
+    use super::string_type_configuration::STRING_TYPE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
     use crate::types;
@@ -146,7 +155,8 @@ mod tests {
             object_main_function_name: "ein_main".into(),
             malloc_function_name: "ein_malloc".into(),
             panic_function_name: "ein_panic".into(),
-            list_type_configuration: LIST_TYPE_CONFIGURATION.clone()
+            list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
+            string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
         }
         .into();
     }

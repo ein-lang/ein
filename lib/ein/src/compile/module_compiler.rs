@@ -1,5 +1,6 @@
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
+use super::string_type_configuration::StringTypeConfiguration;
 use super::type_compiler::TypeCompiler;
 use crate::ast::*;
 use std::sync::Arc;
@@ -7,16 +8,19 @@ use std::sync::Arc;
 pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,
     type_compiler: Arc<TypeCompiler>,
+    string_type_configuration: Arc<StringTypeConfiguration>,
 }
 
 impl ModuleCompiler {
     pub fn new(
         expression_compiler: Arc<ExpressionCompiler>,
         type_compiler: Arc<TypeCompiler>,
+        string_type_configuration: Arc<StringTypeConfiguration>,
     ) -> Self {
         Self {
             expression_compiler,
             type_compiler,
+            string_type_configuration,
         }
     }
 
@@ -52,7 +56,19 @@ impl ModuleCompiler {
                                 }),
                         )
                 })
-                .collect::<Result<_, CompileError>>()?,
+                .collect::<Result<Vec<_>, CompileError>>()?
+                .into_iter()
+                .chain(vec![ssf::ir::Declaration::new(
+                    &self.string_type_configuration.equal_function_name,
+                    ssf::types::Function::new(
+                        ssf::types::Primitive::Integer64,
+                        ssf::types::Function::new(
+                            ssf::types::Primitive::Integer64,
+                            self.type_compiler.compile_boolean(),
+                        ),
+                    ),
+                )])
+                .collect(),
             module
                 .definitions()
                 .iter()
