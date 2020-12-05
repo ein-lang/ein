@@ -120,7 +120,7 @@ impl ConstraintCollector {
                 self.checked_subsumption_set
                     .add(argument.clone(), case.type_().clone());
                 self.checked_subsumption_set
-                    .add(case.type_().clone(), argument.clone());
+                    .add(case.type_().clone(), argument);
 
                 let result = types::Variable::new(case.source_information().clone());
 
