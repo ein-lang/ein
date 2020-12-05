@@ -1063,7 +1063,7 @@ mod tests {
         }
 
         #[test]
-        fn fail_to_infer_type_of_case_expression_with_non_canonical_argument_type() {
+        fn fail_to_infer_type_with_argument_type_of_neither_union_nor_any() {
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
                 VariableDefinition::new(
                     "x",
