@@ -1,9 +1,9 @@
 #![cfg(not(test))]
 
-use std::os::raw::c_int;
+use std::os::raw::{c_int, c_void};
 
 extern "C" {
-    static ein_main: extern "C" fn(environment: *const u8, argument: f64) -> f64;
+    static ein_main: extern "C" fn(environment: *const c_void, argument: f64) -> f64;
 }
 
 #[no_mangle]
