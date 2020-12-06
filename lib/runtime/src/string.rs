@@ -56,9 +56,13 @@ mod tests {
         const TEXT: &[u8] = "hello".as_bytes();
         const OTHER_TEXT: &[u8] = "hell0".as_bytes();
 
-        let one = ffi::EinString::new(TEXT.as_ptr(), TEXT.len());
-        let other = ffi::EinString::new(OTHER_TEXT.as_ptr(), OTHER_TEXT.len());
-
-        assert_eq!(ein_string_equal_entry(null(), one, other), 0);
+        assert_eq!(
+            ein_string_equal_entry(
+                null(),
+                ffi::EinString::new(TEXT.as_ptr(), TEXT.len()),
+                ffi::EinString::new(OTHER_TEXT.as_ptr(), OTHER_TEXT.len()),
+            ),
+            0
+        );
     }
 }
