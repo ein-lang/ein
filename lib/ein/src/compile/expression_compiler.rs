@@ -496,10 +496,8 @@ impl ExpressionCompiler {
                     })
                     .collect::<Result<Vec<Option<Vec<_>>>, CompileError>>()?
                     .into_iter()
-                    .take_while(Option::is_some)
-                    .collect::<Option<Vec<Vec<_>>>>()
-                    .unwrap_or_default()
-                    .into_iter()
+                    .fuse()
+                    .flatten()
                     .flatten()
                     .collect(),
                 case.alternatives()
@@ -515,7 +513,7 @@ impl ExpressionCompiler {
                     })
                     .collect::<Result<Vec<Option<_>>, _>>()?
                     .into_iter()
-                    .filter_map(|default_alternative| default_alternative)
+                    .flatten()
                     .next(),
             ),
         )
