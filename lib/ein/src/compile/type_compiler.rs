@@ -136,10 +136,13 @@ impl TypeCompiler {
                         | Type::None(_)
                         | Type::Number(_)
                         | Type::Record(_)
-                        | Type::Reference(_)
-                        | Type::String(_) => (
+                        | Type::Reference(_) => (
                             other.union_tag_calculator.calculate(&type_)?,
                             ssf::types::Constructor::unboxed(vec![other.compile(&type_)?]),
+                        ),
+                        Type::String(_) => (
+                            other.union_tag_calculator.calculate(&type_)?,
+                            ssf::types::Constructor::boxed(vec![other.compile(&type_)?]),
                         ),
                         Type::Any(_) | Type::Union(_) | Type::Unknown(_) | Type::Variable(_) => {
                             unreachable!()
@@ -184,10 +187,15 @@ impl TypeCompiler {
                             | Type::None(_)
                             | Type::Number(_)
                             | Type::Record(_)
-                            | Type::Reference(_)
-                            | Type::String(_) => vec![(
+                            | Type::Reference(_) => vec![(
                                 self.union_tag_calculator.calculate(&type_)?,
                                 ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
+                            )]
+                            .into_iter()
+                            .collect(),
+                            Type::String(_) => vec![(
+                                self.union_tag_calculator.calculate(&type_)?,
+                                ssf::types::Constructor::boxed(vec![self.compile(&type_)?]),
                             )]
                             .into_iter()
                             .collect(),
@@ -219,17 +227,18 @@ impl TypeCompiler {
         ssf::types::Primitive::Float64
     }
 
-    pub fn compile_string(&self) -> ssf::types::Primitive {
+    pub fn compile_string(&self) -> ssf::types::Algebraic {
         // TODO Use a real pointer type.
-        // Word-sized pointer
-        ssf::types::Primitive::Integer64
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![
+            ssf::types::Primitive::Integer64.into(), // buffer pointer
+            ssf::types::Primitive::Integer64.into(), // buffer length in bytes
+        ])])
     }
 
-    pub fn compile_string_instance(&self, size: usize) -> ssf::types::Algebraic {
+    pub fn compile_string_buffer(&self, size: usize) -> ssf::types::Algebraic {
         ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
-            vec![ssf::types::Primitive::Integer64.into()]
-                .into_iter()
-                .chain((0..size).map(|_| ssf::types::Primitive::Integer8.into()))
+            (0..size)
+                .map(|_| ssf::types::Primitive::Integer8.into())
                 .collect(),
         )])
     }

@@ -232,24 +232,27 @@ impl ExpressionCompiler {
             Expression::String(string) => {
                 let length = string.value().as_bytes().len();
 
-                ssf::ir::Bitcast::new(
-                    ssf::ir::ConstructorApplication::new(
-                        ssf::ir::Constructor::new(
-                            self.type_compiler.compile_string_instance(length),
-                            0,
-                        ),
-                        vec![ssf::ir::Primitive::Integer64(length as u64).into()]
-                            .into_iter()
-                            .chain(
+                ssf::ir::ConstructorApplication::new(
+                    ssf::ir::Constructor::new(self.type_compiler.compile_string(), 0),
+                    vec![
+                        ssf::ir::Bitcast::new(
+                            ssf::ir::ConstructorApplication::new(
+                                ssf::ir::Constructor::new(
+                                    self.type_compiler.compile_string_buffer(length),
+                                    0,
+                                ),
                                 string
                                     .value()
                                     .as_bytes()
                                     .iter()
-                                    .map(|byte| ssf::ir::Primitive::Integer8(*byte).into()),
-                            )
-                            .collect(),
-                    ),
-                    self.type_compiler.compile_string(),
+                                    .map(|byte| ssf::ir::Primitive::Integer8(*byte).into())
+                                    .collect(),
+                            ),
+                            ssf::types::Primitive::Integer64,
+                        )
+                        .into(),
+                        ssf::ir::Primitive::Integer64(length as u64).into(),
+                    ],
                 )
                 .into()
             }
