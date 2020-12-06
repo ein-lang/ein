@@ -136,14 +136,8 @@ impl TypeCompiler {
                         | Type::None(_)
                         | Type::Number(_)
                         | Type::Record(_)
-                        | Type::Reference(_) => (
-                            other.union_tag_calculator.calculate(&type_)?,
-                            ssf::types::Constructor::unboxed(vec![other.compile(&type_)?]),
-                        ),
-                        Type::String(_) => (
-                            other.union_tag_calculator.calculate(&type_)?,
-                            ssf::types::Constructor::boxed(vec![other.compile(&type_)?]),
-                        ),
+                        | Type::Reference(_)
+                        | Type::String(_) => other.compile_union_type_member(type_)?,
                         Type::Any(_) | Type::Union(_) | Type::Unknown(_) | Type::Variable(_) => {
                             unreachable!()
                         }
@@ -187,18 +181,10 @@ impl TypeCompiler {
                             | Type::None(_)
                             | Type::Number(_)
                             | Type::Record(_)
-                            | Type::Reference(_) => vec![(
-                                self.union_tag_calculator.calculate(&type_)?,
-                                ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
-                            )]
-                            .into_iter()
-                            .collect(),
-                            Type::String(_) => vec![(
-                                self.union_tag_calculator.calculate(&type_)?,
-                                ssf::types::Constructor::boxed(vec![self.compile(&type_)?]),
-                            )]
-                            .into_iter()
-                            .collect(),
+                            | Type::Reference(_)
+                            | Type::String(_) => vec![self.compile_union_type_member(type_)?]
+                                .into_iter()
+                                .collect(),
                             Type::Union(union) => self.compile_union_type_members(union.types())?,
                             Type::Any(_) => Default::default(),
 
@@ -210,6 +196,19 @@ impl TypeCompiler {
                     .flatten(),
             )
             .collect())
+    }
+
+    fn compile_union_type_member(
+        &self,
+        type_: &Type,
+    ) -> Result<(u64, ssf::types::Constructor), CompileError> {
+        Ok((
+            self.union_tag_calculator.calculate(&type_)?,
+            match type_ {
+                Type::String(_) => ssf::types::Constructor::boxed(vec![self.compile(&type_)?]),
+                _ => ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
+            },
+        ))
     }
 
     pub fn compile_boolean(&self) -> ssf::types::Algebraic {
