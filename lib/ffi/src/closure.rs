@@ -1,6 +1,7 @@
 use std::os::raw::c_void;
 
 #[repr(C)]
+#[derive(Copy, Clone)]
 pub struct Closure {
     entry_pointer: *const c_void,
     arity: usize,

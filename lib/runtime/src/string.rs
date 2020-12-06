@@ -10,8 +10,8 @@ extern "C" fn ein_string_equal_entry(
     other: ffi::EinString,
 ) -> usize {
     unsafe {
-        (std::slice::from_raw_parts(one.bytes, one.length)
-            == std::slice::from_raw_parts(other.bytes, other.length)) as usize
+        (std::slice::from_raw_parts(one.bytes(), one.length())
+            == std::slice::from_raw_parts(other.bytes(), other.length())) as usize
     }
 }
 
@@ -22,81 +22,42 @@ mod tests {
 
     #[test]
     fn equal_empty_strings() {
-        let one = ffi::EinString {
-            length: 0,
-            bytes: null(),
-        };
-        let other = ffi::EinString {
-            length: 0,
-            bytes: null(),
-        };
+        let string = ffi::EinString::new(null(), 0);
 
-        assert_eq!(ein_string_equal_entry(null(), one, other), 1);
+        assert_eq!(ein_string_equal_entry(null(), string, string), 1);
     }
 
     #[test]
     fn equal_one_byte_strings() {
-        let buffer = [0u8];
-        let one = ffi::EinString {
-            length: 1,
-            bytes: &buffer as *const u8,
-        };
-        let other = ffi::EinString {
-            length: 1,
-            bytes: &buffer as *const u8,
-        };
+        let string = ffi::EinString::new([0u8].as_ptr(), 1);
 
-        assert_eq!(ein_string_equal_entry(null(), one, other), 1);
+        assert_eq!(ein_string_equal_entry(null(), string, string), 1);
     }
 
     #[test]
     fn not_equal_one_byte_strings() {
-        let buffer = [0u8];
-        let one = ffi::EinString {
-            length: 0,
-            bytes: null(),
-        };
-        let other = ffi::EinString {
-            length: 1,
-            bytes: &buffer as *const u8,
-        };
+        let one = ffi::EinString::new(null(), 0);
+        let other = ffi::EinString::new([0u8].as_ptr(), 1);
 
         assert_eq!(ein_string_equal_entry(null(), one, other), 0);
     }
 
     #[test]
     fn equal_text_strings() {
-        const TEXT: &str = "hello";
-        const LENGTH: usize = TEXT.as_bytes().len();
+        const TEXT: &[u8] = "hello".as_bytes();
 
-        let one = ffi::EinString {
-            bytes: TEXT.as_bytes().as_ptr(),
-            length: LENGTH,
-        };
+        let string = ffi::EinString::new(TEXT.as_ptr(), TEXT.len());
 
-        let other = ffi::EinString {
-            bytes: TEXT.as_bytes().as_ptr(),
-            length: LENGTH,
-        };
-
-        assert_eq!(ein_string_equal_entry(null(), one, other), 1);
+        assert_eq!(ein_string_equal_entry(null(), string, string), 1);
     }
 
     #[test]
     fn not_equal_text_strings() {
-        const TEXT: &str = "hello";
-        const OTHER_TEXT: &str = "hell0";
-        const LENGTH: usize = TEXT.as_bytes().len();
+        const TEXT: &[u8] = "hello".as_bytes();
+        const OTHER_TEXT: &[u8] = "hell0".as_bytes();
 
-        let one = ffi::EinString {
-            bytes: TEXT.as_bytes().as_ptr(),
-            length: LENGTH,
-        };
-
-        let other = ffi::EinString {
-            bytes: OTHER_TEXT.as_bytes().as_ptr(),
-            length: LENGTH,
-        };
+        let one = ffi::EinString::new(TEXT.as_ptr(), TEXT.len());
+        let other = ffi::EinString::new(OTHER_TEXT.as_ptr(), OTHER_TEXT.len());
 
         assert_eq!(ein_string_equal_entry(null(), one, other), 0);
     }
