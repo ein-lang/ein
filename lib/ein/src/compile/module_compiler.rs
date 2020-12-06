@@ -61,9 +61,9 @@ impl ModuleCompiler {
                 .chain(vec![ssf::ir::Declaration::new(
                     &self.string_type_configuration.equal_function_name,
                     ssf::types::Function::new(
-                        ssf::types::Primitive::Integer64,
+                        self.type_compiler.compile_string(),
                         ssf::types::Function::new(
-                            ssf::types::Primitive::Integer64,
+                            self.type_compiler.compile_string(),
                             self.type_compiler.compile_boolean(),
                         ),
                     ),

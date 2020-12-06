@@ -13,12 +13,12 @@ pub static ein_string_equal: Closure = Closure::new(ein_string_equal_entry as *m
 #[no_mangle]
 extern "C" fn ein_string_equal_entry(
     _environment: *const c_void,
-    one: *const EinString,
-    other: *const EinString,
+    one: EinString,
+    other: EinString,
 ) -> usize {
     unsafe {
-        (std::slice::from_raw_parts((*one).bytes, (*one).length)
-            == std::slice::from_raw_parts((*other).bytes, (*other).length)) as usize
+        (std::slice::from_raw_parts(one.bytes, one.length)
+            == std::slice::from_raw_parts(other.bytes, other.length)) as usize
     }
 }
 
@@ -38,7 +38,7 @@ mod tests {
             bytes: null(),
         };
 
-        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
+        assert_eq!(ein_string_equal_entry(null(), one, other), 1);
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod tests {
             bytes: &buffer as *const u8,
         };
 
-        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
+        assert_eq!(ein_string_equal_entry(null(), one, other), 1);
     }
 
     #[test]
@@ -68,7 +68,7 @@ mod tests {
             bytes: &buffer as *const u8,
         };
 
-        assert_eq!(ein_string_equal_entry(null(), &one, &other), 0);
+        assert_eq!(ein_string_equal_entry(null(), one, other), 0);
     }
 
     #[test]
@@ -86,7 +86,7 @@ mod tests {
             length: LENGTH,
         };
 
-        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
+        assert_eq!(ein_string_equal_entry(null(), one, other), 1);
     }
 
     #[test]
@@ -105,6 +105,6 @@ mod tests {
             length: LENGTH,
         };
 
-        assert_eq!(ein_string_equal_entry(null(), &one, &other), 0);
+        assert_eq!(ein_string_equal_entry(null(), one, other), 0);
     }
 }
