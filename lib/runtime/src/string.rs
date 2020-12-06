@@ -3,8 +3,8 @@ use std::os::raw::c_void;
 
 #[repr(C)]
 struct EinString {
+    bytes: *const u8, // variadic length array
     length: usize,
-    bytes: [u8; 42], // variadic length array
 }
 
 #[no_mangle]
@@ -17,18 +17,8 @@ extern "C" fn ein_string_equal_entry(
     other: *const EinString,
 ) -> usize {
     unsafe {
-        let one_length = (*one).length;
-        let other_length = (*other).length;
-
-        if one_length != other_length {
-            0
-        } else {
-            let one_slice_pointer = &(*one).bytes[0];
-            let other_slice_pointer = &(*other).bytes[0];
-
-            (std::slice::from_raw_parts(one_slice_pointer, one_length)
-                == std::slice::from_raw_parts(other_slice_pointer, one_length)) as usize
-        }
+        (std::slice::from_raw_parts((*one).bytes, (*one).length)
+            == std::slice::from_raw_parts((*other).bytes, (*other).length)) as usize
     }
 }
 
@@ -41,11 +31,11 @@ mod tests {
     fn equal_empty_strings() {
         let one = EinString {
             length: 0,
-            bytes: [0; 42],
+            bytes: null(),
         };
         let other = EinString {
             length: 0,
-            bytes: [0; 42],
+            bytes: null(),
         };
 
         assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
@@ -53,13 +43,14 @@ mod tests {
 
     #[test]
     fn equal_one_byte_strings() {
+        let buffer = [0u8];
         let one = EinString {
             length: 1,
-            bytes: [0; 42],
+            bytes: &buffer as *const u8,
         };
         let other = EinString {
             length: 1,
-            bytes: [0; 42],
+            bytes: &buffer as *const u8,
         };
 
         assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
@@ -67,30 +58,17 @@ mod tests {
 
     #[test]
     fn not_equal_one_byte_strings() {
+        let buffer = [0u8];
         let one = EinString {
             length: 0,
-            bytes: [0; 42],
+            bytes: null(),
         };
         let other = EinString {
             length: 1,
-            bytes: [0; 42],
+            bytes: &buffer as *const u8,
         };
 
         assert_eq!(ein_string_equal_entry(null(), &one, &other), 0);
-    }
-
-    #[test]
-    fn equal_full_length_strings() {
-        let one = EinString {
-            length: 42,
-            bytes: [0; 42],
-        };
-        let other = EinString {
-            length: 42,
-            bytes: [0; 42],
-        };
-
-        assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
     }
 
     #[test]
@@ -98,17 +76,15 @@ mod tests {
         const TEXT: &str = "hello";
         const LENGTH: usize = TEXT.as_bytes().len();
 
-        let mut one = EinString {
+        let one = EinString {
+            bytes: TEXT.as_bytes().as_ptr(),
             length: LENGTH,
-            bytes: [0; 42],
         };
-        one.bytes[..LENGTH].copy_from_slice(TEXT.as_bytes());
 
-        let mut other = EinString {
+        let other = EinString {
+            bytes: TEXT.as_bytes().as_ptr(),
             length: LENGTH,
-            bytes: [0; 42],
         };
-        other.bytes[..LENGTH].copy_from_slice(TEXT.as_bytes());
 
         assert_eq!(ein_string_equal_entry(null(), &one, &other), 1);
     }
@@ -116,20 +92,18 @@ mod tests {
     #[test]
     fn not_equal_text_strings() {
         const TEXT: &str = "hello";
+        const OTHER_TEXT: &str = "hell0";
         const LENGTH: usize = TEXT.as_bytes().len();
 
-        let mut one = EinString {
+        let one = EinString {
+            bytes: TEXT.as_bytes().as_ptr(),
             length: LENGTH,
-            bytes: [0; 42],
         };
-        one.bytes[..LENGTH].copy_from_slice(TEXT.as_bytes());
 
-        let mut other = EinString {
+        let other = EinString {
+            bytes: OTHER_TEXT.as_bytes().as_ptr(),
             length: LENGTH,
-            bytes: [0; 42],
         };
-        other.bytes[..LENGTH].copy_from_slice(TEXT.as_bytes());
-        other.bytes[0] = b'x';
 
         assert_eq!(ein_string_equal_entry(null(), &one, &other), 0);
     }
