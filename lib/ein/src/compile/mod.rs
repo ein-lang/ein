@@ -601,6 +601,88 @@ mod tests {
 
             Ok(())
         }
+
+        #[test]
+        fn compile_string_in_union_type() {
+            compile(
+                &Module::from_definitions(vec![
+                    VariableDefinition::new(
+                        "x",
+                        EinString::new("foo", SourceInformation::dummy()),
+                        types::Union::new(
+                            vec![
+                                types::EinString::new(SourceInformation::dummy()).into(),
+                                types::None::new(SourceInformation::dummy()).into(),
+                            ],
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    VariableDefinition::new(
+                        "y",
+                        Case::new(
+                            "z",
+                            Variable::new("x", SourceInformation::dummy()),
+                            vec![
+                                Alternative::new(
+                                    types::EinString::new(SourceInformation::dummy()),
+                                    Variable::new("z", SourceInformation::dummy()),
+                                ),
+                                Alternative::new(
+                                    types::None::new(SourceInformation::dummy()),
+                                    EinString::new("", SourceInformation::dummy()),
+                                ),
+                            ],
+                            SourceInformation::dummy(),
+                        ),
+                        types::EinString::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ]),
+                COMPILE_CONFIGURATION.clone(),
+            )
+            .unwrap();
+        }
+
+        #[test]
+        fn compile_string_in_any_type() {
+            compile(
+                &Module::from_definitions(vec![
+                    VariableDefinition::new(
+                        "x",
+                        EinString::new("foo", SourceInformation::dummy()),
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    VariableDefinition::new(
+                        "y",
+                        Case::new(
+                            "z",
+                            Variable::new("x", SourceInformation::dummy()),
+                            vec![
+                                Alternative::new(
+                                    types::EinString::new(SourceInformation::dummy()),
+                                    Variable::new("z", SourceInformation::dummy()),
+                                ),
+                                Alternative::new(
+                                    types::Any::new(SourceInformation::dummy()),
+                                    EinString::new("", SourceInformation::dummy()),
+                                ),
+                            ],
+                            SourceInformation::dummy(),
+                        ),
+                        types::EinString::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ]),
+                COMPILE_CONFIGURATION.clone(),
+            )
+            .unwrap();
+        }
     }
 
     // TODO Enable this test by importing a fake prelude module.
