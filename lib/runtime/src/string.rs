@@ -1,20 +1,13 @@
-use super::closure::Closure;
 use std::os::raw::c_void;
 
-#[repr(C)]
-struct EinString {
-    bytes: *const u8, // variadic length array
-    length: usize,
-}
-
 #[no_mangle]
-pub static ein_string_equal: Closure = Closure::new(ein_string_equal_entry as *mut c_void, 2);
+pub static ein_string_equal: ffi::Closure =
+    ffi::Closure::new(ein_string_equal_entry as *mut c_void, 2);
 
-#[no_mangle]
 extern "C" fn ein_string_equal_entry(
     _environment: *const c_void,
-    one: EinString,
-    other: EinString,
+    one: ffi::EinString,
+    other: ffi::EinString,
 ) -> usize {
     unsafe {
         (std::slice::from_raw_parts(one.bytes, one.length)
@@ -29,11 +22,11 @@ mod tests {
 
     #[test]
     fn equal_empty_strings() {
-        let one = EinString {
+        let one = ffi::EinString {
             length: 0,
             bytes: null(),
         };
-        let other = EinString {
+        let other = ffi::EinString {
             length: 0,
             bytes: null(),
         };
@@ -44,11 +37,11 @@ mod tests {
     #[test]
     fn equal_one_byte_strings() {
         let buffer = [0u8];
-        let one = EinString {
+        let one = ffi::EinString {
             length: 1,
             bytes: &buffer as *const u8,
         };
-        let other = EinString {
+        let other = ffi::EinString {
             length: 1,
             bytes: &buffer as *const u8,
         };
@@ -59,11 +52,11 @@ mod tests {
     #[test]
     fn not_equal_one_byte_strings() {
         let buffer = [0u8];
-        let one = EinString {
+        let one = ffi::EinString {
             length: 0,
             bytes: null(),
         };
-        let other = EinString {
+        let other = ffi::EinString {
             length: 1,
             bytes: &buffer as *const u8,
         };
@@ -76,12 +69,12 @@ mod tests {
         const TEXT: &str = "hello";
         const LENGTH: usize = TEXT.as_bytes().len();
 
-        let one = EinString {
+        let one = ffi::EinString {
             bytes: TEXT.as_bytes().as_ptr(),
             length: LENGTH,
         };
 
-        let other = EinString {
+        let other = ffi::EinString {
             bytes: TEXT.as_bytes().as_ptr(),
             length: LENGTH,
         };
@@ -95,12 +88,12 @@ mod tests {
         const OTHER_TEXT: &str = "hell0";
         const LENGTH: usize = TEXT.as_bytes().len();
 
-        let one = EinString {
+        let one = ffi::EinString {
             bytes: TEXT.as_bytes().as_ptr(),
             length: LENGTH,
         };
 
-        let other = EinString {
+        let other = ffi::EinString {
             bytes: OTHER_TEXT.as_bytes().as_ptr(),
             length: LENGTH,
         };
