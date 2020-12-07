@@ -52,7 +52,13 @@ impl MainFunctionDefinitionTransformer {
                             source_information.clone(),
                         ),
                         types::Function::new(
-                            types::Number::new(source_information.clone()),
+                            types::Reference::new(
+                                &self
+                                    .compile_configuration
+                                    .system_type_configuration
+                                    .system_type_name,
+                                source_information.clone(),
+                            ),
                             types::Number::new(source_information.clone()),
                             source_information.clone(),
                         ),

@@ -8,10 +8,7 @@ extern "C" fn equal_strings(
     one: ffi::EinString,
     other: ffi::EinString,
 ) -> usize {
-    unsafe {
-        (std::slice::from_raw_parts(one.bytes(), one.length())
-            == std::slice::from_raw_parts(other.bytes(), other.length())) as usize
-    }
+    (one.as_slice() == other.as_slice()) as usize
 }
 
 #[cfg(test)]

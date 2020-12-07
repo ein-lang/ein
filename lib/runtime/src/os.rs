@@ -1,6 +1,9 @@
 #![cfg(not(test))]
 
+use std::fs::File;
+use std::io::Write;
 use std::os::raw::c_void;
+use std::os::unix::io::FromRawFd;
 
 #[repr(C)]
 pub struct Os {
@@ -19,8 +22,10 @@ pub static OS: Os = Os {
 
 extern "C" fn os_fd_write(
     _environment: *const c_void,
-    _fd: ffi::Number,
-    _buffers: ffi::EinString,
+    fd: ffi::Number,
+    buffer: ffi::EinString,
 ) -> ffi::Number {
-    todo!()
+    let mut file = unsafe { File::from_raw_fd(fd as i32) };
+
+    file.write(buffer.as_slice()).unwrap() as ffi::Number
 }

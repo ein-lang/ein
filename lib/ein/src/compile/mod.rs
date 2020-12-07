@@ -16,6 +16,7 @@ mod name_generator;
 mod none_compiler;
 mod reference_type_resolver;
 mod string_type_configuration;
+mod system_type_configuration;
 mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
@@ -42,6 +43,7 @@ use none_compiler::NoneCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 pub use string_type_configuration::StringTypeConfiguration;
+pub use system_type_configuration::SystemTypeConfiguration;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
@@ -148,6 +150,7 @@ pub fn compile(
 mod tests {
     use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::string_type_configuration::STRING_TYPE_CONFIGURATION;
+    use super::system_type_configuration::SYSTEM_TYPE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
     use crate::types;
@@ -161,6 +164,7 @@ mod tests {
             panic_function_name: "ein_panic".into(),
             list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
             string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
+            system_type_configuration: SYSTEM_TYPE_CONFIGURATION.clone(),
         }
         .into();
     }

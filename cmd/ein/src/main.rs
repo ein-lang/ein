@@ -64,6 +64,10 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             equal_function_name: "ein_string_equal".into(),
         }
         .into(),
+        system_type_configuration: app::SystemTypeConfiguration {
+            system_type_name: "System".into(),
+        }
+        .into(),
     }
     .into();
     let module_compiler = app::ModuleCompiler::new(

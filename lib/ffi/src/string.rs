@@ -13,12 +13,8 @@ impl EinString {
         Self { bytes, length }
     }
 
-    pub fn bytes(&self) -> *const u8 {
-        self.bytes
-    }
-
-    pub fn length(&self) -> usize {
-        self.length
+    pub fn as_slice(&self) -> &[u8] {
+        unsafe { std::slice::from_raw_parts(self.bytes, self.length) }
     }
 }
 
