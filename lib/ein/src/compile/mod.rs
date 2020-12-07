@@ -65,11 +65,11 @@ pub fn compile(
     let module = transform_before_name_qualification(&module)?;
 
     let names = GlobalNameMapCreator::create(&module);
+    let configuration = Arc::new(configuration.qualify(&names));
     let module = GlobalNameRenamer::new(names.clone()).rename(&module);
     let module = MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone())
         .transform(&module);
 
-    let list_type_configuration = Arc::new(configuration.list_type_configuration.qualify(&names));
     let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
@@ -81,7 +81,7 @@ pub fn compile(
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
         union_tag_calculator.clone(),
-        list_type_configuration.clone(),
+        configuration.list_type_configuration.clone(),
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let none_compiler = NoneCompiler::new(type_compiler.clone());
@@ -91,20 +91,22 @@ pub fn compile(
         reference_type_resolver.clone(),
         type_comparability_checker,
         type_equality_checker.clone(),
-        list_type_configuration.clone(),
+        configuration.list_type_configuration.clone(),
     );
     let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let list_literal_transformer = ListLiteralTransformer::new(
         reference_type_resolver.clone(),
-        list_type_configuration.clone(),
+        configuration.list_type_configuration.clone(),
     );
     let boolean_operation_transformer = BooleanOperationTransformer::new();
     let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
         type_equality_checker,
         reference_type_resolver.clone(),
     );
-    let list_case_transformer =
-        ListCaseTransformer::new(reference_type_resolver.clone(), list_type_configuration);
+    let list_case_transformer = ListCaseTransformer::new(
+        reference_type_resolver.clone(),
+        configuration.list_type_configuration.clone(),
+    );
 
     let expression_compiler = ExpressionCompiler::new(
         ExpressionCompilerSet {
