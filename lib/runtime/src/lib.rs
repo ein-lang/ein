@@ -1,6 +1,6 @@
 mod main_;
-mod system;
 mod string;
+mod system;
 
 use std::alloc::Layout;
 use std::io::Write;
