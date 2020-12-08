@@ -67,7 +67,7 @@ pub fn compile(
     let names = GlobalNameMapCreator::create(&module);
     let configuration = Arc::new(configuration.qualify(&names));
     let module = GlobalNameRenamer::new(names.clone()).rename(&module);
-    let module = MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone())
+    let module = MainFunctionDefinitionTransformer::new(names, configuration.clone())
         .transform(&module);
 
     let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
