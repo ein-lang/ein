@@ -85,10 +85,9 @@ impl<'a> ExternalPackagesBuilder<'a> {
         }
 
         for (external_package, package_configuration) in package_configurations {
-            for (name, configuration) in package_configuration.build_configuration().dependencies()
-            {
+            for (name, configuration) in &package_configuration.build_configuration.dependencies {
                 graph.add_edge(
-                    indices[&ExternalPackage::new(name, configuration.version())],
+                    indices[&ExternalPackage::new(name, &configuration.version)],
                     indices[external_package],
                     (),
                 );

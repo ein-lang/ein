@@ -36,16 +36,16 @@ impl<'a> PackageBuilder<'a> {
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         self.logger.log(&format!(
             "building package {} {}",
-            package_configuration.package().name(),
-            package_configuration.package().version()
+            &package_configuration.package.name(),
+            &package_configuration.package.version()
         ))?;
 
         let external_module_interfaces = package_configuration
-            .build_configuration()
-            .dependencies()
+            .build_configuration
+            .dependencies
             .iter()
             .map(|(name, configuration)| {
-                external_module_interfaces[&ExternalPackage::new(name, configuration.version())]
+                external_module_interfaces[&ExternalPackage::new(name, &configuration.version)]
                     .iter()
                     .map(|(module_path, module_interface)| {
                         (module_path.clone(), module_interface.clone())
@@ -63,7 +63,7 @@ impl<'a> PackageBuilder<'a> {
         self.modules_linker.link(
             &object_file_paths,
             &interface_file_paths,
-            package_configuration.directory_path(),
+            &package_configuration.directory_path,
         )
     }
 }

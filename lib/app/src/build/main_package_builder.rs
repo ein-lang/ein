@@ -57,17 +57,17 @@ impl<'a> MainPackageBuilder<'a> {
             Some(&prelude_package_interface),
         )?;
 
-        match package_configuration.build_configuration().target() {
+        match &package_configuration.build_configuration.target {
             Target::Command(command_target) => {
                 self.logger
-                    .log(&format!("linking command {}", command_target.name()))?;
+                    .log(&format!("linking command {}", &command_target.name))?;
 
                 self.command_linker.link(
                     &vec![package_object_file_path, prelude_package_object_file_path]
                         .into_iter()
                         .chain(external_package_object_file_paths)
                         .collect::<Vec<_>>(),
-                    command_target.name(),
+                    &command_target.name,
                 )?;
             }
             Target::Library => {}

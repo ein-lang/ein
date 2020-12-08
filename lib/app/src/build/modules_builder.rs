@@ -55,7 +55,7 @@ impl<'a> ModulesBuilder<'a> {
         for source_file_path in self.sort_source_file_paths(
             &self
                 .modules_finder
-                .find(package_configuration.directory_path())?,
+                .find(&package_configuration.directory_path)?,
             package_configuration,
         )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
@@ -104,7 +104,7 @@ impl<'a> ModulesBuilder<'a> {
                 {
                     graph.add_edge(
                         indices[&self.file_path_manager.resolve_to_source_file_path(
-                            package_configuration.directory_path(),
+                            &package_configuration.directory_path,
                             internal_module_path,
                         )],
                         indices[&source_file_path],

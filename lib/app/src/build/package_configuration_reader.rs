@@ -27,8 +27,8 @@ impl<'a> PackageConfigurationReader<'a> {
     ) -> Result<PackageConfiguration, Box<dyn std::error::Error>> {
         let repository = self.file_storage.read_repository(directory_path)?;
 
-        Ok(PackageConfiguration::new(
-            if let Some(repository) = repository {
+        Ok(PackageConfiguration {
+            package: if let Some(repository) = repository {
                 // Normalize paths.
                 let path = repository
                     .url()
@@ -45,10 +45,10 @@ impl<'a> PackageConfigurationReader<'a> {
             } else {
                 ein::Package::new(self.file_path_displayer.display(directory_path), "")
             },
-            serde_json::from_str(&self.file_storage.read_to_string(
+            build_configuration: serde_json::from_str(&self.file_storage.read_to_string(
                 &directory_path.join(&self.file_path_configuration.build_configuration_file_path()),
             )?)?,
-            directory_path.clone(),
-        ))
+            directory_path: directory_path.clone(),
+        })
     }
 }

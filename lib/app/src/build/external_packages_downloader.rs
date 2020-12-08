@@ -36,11 +36,8 @@ impl<'a> ExternalPackagesDownloader<'a> {
     ) -> Result<HashMap<ExternalPackage, PackageConfiguration>, Box<dyn std::error::Error>> {
         let mut package_configurations = HashMap::new();
 
-        for (name, configuration) in main_package_configuration
-            .build_configuration()
-            .dependencies()
-        {
-            let external_package = ExternalPackage::new(name, configuration.version());
+        for (name, configuration) in &main_package_configuration.build_configuration.dependencies {
+            let external_package = ExternalPackage::new(name, &configuration.version);
             let directory_path = self
                 .file_path_manager
                 .resolve_to_external_package_directory_path(&external_package);

@@ -12,33 +12,7 @@ pub use target::Target;
 
 #[derive(Clone, Debug)]
 pub struct PackageConfiguration {
-    package: ein::Package,
-    build_configuration: BuildConfiguration,
-    directory_path: FilePath,
-}
-
-impl PackageConfiguration {
-    pub fn new(
-        package: ein::Package,
-        build_configuration: BuildConfiguration,
-        directory_path: FilePath,
-    ) -> Self {
-        Self {
-            package,
-            build_configuration,
-            directory_path,
-        }
-    }
-
-    pub fn package(&self) -> &ein::Package {
-        &self.package
-    }
-
-    pub fn build_configuration(&self) -> &BuildConfiguration {
-        &self.build_configuration
-    }
-
-    pub fn directory_path(&self) -> &FilePath {
-        &self.directory_path
-    }
+    pub package: ein::Package,
+    pub build_configuration: BuildConfiguration,
+    pub directory_path: FilePath,
 }

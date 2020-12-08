@@ -59,7 +59,7 @@ impl<'a> ModuleCompiler<'a> {
 
         let object_file_path =
             package_configuration
-                .directory_path()
+                .directory_path
                 .join(&self.generate_object_file_path(
                     source_file_path,
                     &source,
@@ -76,8 +76,8 @@ impl<'a> ModuleCompiler<'a> {
         }
 
         let module_path = self.file_path_manager.convert_to_module_path(
-            &source_file_path.relative_to(package_configuration.directory_path()),
-            package_configuration.package(),
+            &source_file_path.relative_to(&package_configuration.directory_path),
+            &package_configuration.package,
         );
 
         self.logger.log(&format!(
