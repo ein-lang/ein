@@ -16,7 +16,7 @@ mod tests {
     fn parse_command_target() {
         assert_eq!(
             serde_json::from_str::<Target>(r#"{"type":"Command","name":"foo"}"#).unwrap(),
-            Target::Command(CommandTarget::new("foo"))
+            Target::Command(CommandTarget { name: "foo".into() })
         );
     }
 
