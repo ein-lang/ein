@@ -5,16 +5,16 @@ const EXTERNAL_PACKAGES_DIRECTORY: &str = "packages";
 const PRELUDE_PACKAGE_DIRECTORY: &str = "prelude";
 
 pub struct FilePathConfiguration {
-    source_file_extension: String,
-    object_file_extension: String,
-    interface_file_extension: String,
-    build_configuration_file_path: FilePath,
-    output_directory_path: FilePath,
-    object_directory_path: FilePath,
-    package_object_file_path: FilePath,
-    package_interface_file_path: FilePath,
-    external_packages_directory_path: FilePath,
-    prelude_package_directory_path: FilePath,
+    pub source_file_extension: String,
+    pub object_file_extension: String,
+    pub interface_file_extension: String,
+    pub build_configuration_file_path: FilePath,
+    pub output_directory_path: FilePath,
+    pub object_directory_path: FilePath,
+    pub package_object_file_path: FilePath,
+    pub package_interface_file_path: FilePath,
+    pub external_packages_directory_path: FilePath,
+    pub prelude_package_directory_path: FilePath,
 }
 
 impl FilePathConfiguration {
@@ -49,45 +49,5 @@ impl FilePathConfiguration {
             output_directory_path,
             build_configuration_file_path: FilePath::new(&[build_configuration_filename.into()]),
         }
-    }
-
-    pub fn build_configuration_file_path(&self) -> &FilePath {
-        &self.build_configuration_file_path
-    }
-
-    pub fn source_file_extension(&self) -> &str {
-        &self.source_file_extension
-    }
-
-    pub fn object_file_extension(&self) -> &str {
-        &self.object_file_extension
-    }
-
-    pub fn interface_file_extension(&self) -> &str {
-        &self.interface_file_extension
-    }
-
-    pub fn output_directory_path(&self) -> &FilePath {
-        &self.output_directory_path
-    }
-
-    pub fn object_directory_path(&self) -> &FilePath {
-        &self.object_directory_path
-    }
-
-    pub fn package_object_file_path(&self) -> &FilePath {
-        &self.package_object_file_path
-    }
-
-    pub fn package_interface_file_path(&self) -> &FilePath {
-        &self.package_interface_file_path
-    }
-
-    pub fn external_packages_directory_path(&self) -> &FilePath {
-        &self.external_packages_directory_path
-    }
-
-    pub fn prelude_package_directory_path(&self) -> &FilePath {
-        &self.prelude_package_directory_path
     }
 }

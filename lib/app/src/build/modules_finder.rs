@@ -33,11 +33,9 @@ impl<'a> ModulesFinder<'a> {
             {
             } else if self.file_storage.is_directory(&path) {
                 source_file_paths.extend(self.find(&path)?);
-            } else if path.has_extension(
-                self.file_path_manager
-                    .configuration()
-                    .source_file_extension(),
-            ) {
+            } else if path
+                .has_extension(&self.file_path_manager.configuration().source_file_extension)
+            {
                 source_file_paths.push(path);
             }
         }

@@ -66,9 +66,10 @@ impl<'a> ModuleCompiler<'a> {
                     &imported_module_interfaces,
                 ));
         let interface_file_path = object_file_path.with_extension(
-            self.file_path_manager
+            &self
+                .file_path_manager
                 .configuration()
-                .interface_file_extension(),
+                .interface_file_extension,
         );
 
         if self.file_storage.exists(&object_file_path) {
@@ -133,12 +134,8 @@ impl<'a> ModuleCompiler<'a> {
 
         self.file_path_manager
             .configuration()
-            .object_directory_path()
+            .object_directory_path
             .join(&FilePath::new(&[&format!("{:x}", hasher.finish())]))
-            .with_extension(
-                self.file_path_manager
-                    .configuration()
-                    .object_file_extension(),
-            )
+            .with_extension(&self.file_path_manager.configuration().object_file_extension)
     }
 }

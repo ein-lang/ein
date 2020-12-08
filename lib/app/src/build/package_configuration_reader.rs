@@ -46,7 +46,7 @@ impl<'a> PackageConfigurationReader<'a> {
                 ein::Package::new(self.file_path_displayer.display(directory_path), "")
             },
             build_configuration: serde_json::from_str(&self.file_storage.read_to_string(
-                &directory_path.join(&self.file_path_configuration.build_configuration_file_path()),
+                &directory_path.join(&self.file_path_configuration.build_configuration_file_path),
             )?)?,
             directory_path: directory_path.clone(),
         })

@@ -30,10 +30,10 @@ impl<'a> PreludePackageBuilder<'a> {
     }
 
     pub fn build(&self) -> Result<(FilePath, PackageInterface), Box<dyn std::error::Error>> {
-        let directory_path = self
+        let directory_path = &self
             .file_path_manager
             .configuration()
-            .prelude_package_directory_path();
+            .prelude_package_directory_path;
 
         self.prelude_package_downloader.download(&directory_path)?;
 

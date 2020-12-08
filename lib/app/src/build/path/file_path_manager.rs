@@ -23,7 +23,7 @@ impl<'a> FilePathManager<'a> {
     ) -> FilePath {
         directory_path.join(
             &FilePath::new(internal_module_path.components())
-                .with_extension(self.file_path_configuration.source_file_extension()),
+                .with_extension(&self.file_path_configuration.source_file_extension),
         )
     }
 
@@ -47,7 +47,7 @@ impl<'a> FilePathManager<'a> {
         external_package: &ExternalPackage,
     ) -> FilePath {
         self.file_path_configuration
-            .external_packages_directory_path()
+            .external_packages_directory_path
             .join(
                 &external_package
                     .name()

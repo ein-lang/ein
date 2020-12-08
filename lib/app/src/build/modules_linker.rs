@@ -28,18 +28,20 @@ impl<'a> ModulesLinker<'a> {
         directory_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let package_object_file_path = directory_path.join(
-            self.file_path_manager
+            &self
+                .file_path_manager
                 .configuration()
-                .package_object_file_path(),
+                .package_object_file_path,
         );
 
         self.module_objects_linker
             .link(&object_file_paths, &package_object_file_path)?;
 
         let package_interface_file_path = directory_path.join(
-            self.file_path_manager
+            &self
+                .file_path_manager
                 .configuration()
-                .package_interface_file_path(),
+                .package_interface_file_path,
         );
 
         self.module_interfaces_linker
