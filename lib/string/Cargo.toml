@@ -1,0 +1,12 @@
+[package]
+name = "string"
+version = "0.1.0"
+publish = false
+edition = "2018"
+
+[lib]
+name = "string"
+crate-type = ["staticlib"]
+
+[dependencies]
+ffi = { path = "../ffi" }
