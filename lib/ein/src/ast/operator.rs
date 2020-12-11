@@ -16,21 +16,21 @@ pub enum Operator {
     Or,
 }
 
-impl TryFrom<Operator> for ssf::ir::Operator {
+impl TryFrom<Operator> for ssf::ir::PrimitiveOperator {
     type Error = ();
 
     fn try_from(operator: Operator) -> Result<Self, ()> {
         Ok(match operator {
-            Operator::Add => ssf::ir::Operator::Add,
-            Operator::Subtract => ssf::ir::Operator::Subtract,
-            Operator::Multiply => ssf::ir::Operator::Multiply,
-            Operator::Divide => ssf::ir::Operator::Divide,
-            Operator::Equal => ssf::ir::Operator::Equal,
-            Operator::NotEqual => ssf::ir::Operator::NotEqual,
-            Operator::LessThan => ssf::ir::Operator::LessThan,
-            Operator::LessThanOrEqual => ssf::ir::Operator::LessThanOrEqual,
-            Operator::GreaterThan => ssf::ir::Operator::GreaterThan,
-            Operator::GreaterThanOrEqual => ssf::ir::Operator::GreaterThanOrEqual,
+            Operator::Add => ssf::ir::PrimitiveOperator::Add,
+            Operator::Subtract => ssf::ir::PrimitiveOperator::Subtract,
+            Operator::Multiply => ssf::ir::PrimitiveOperator::Multiply,
+            Operator::Divide => ssf::ir::PrimitiveOperator::Divide,
+            Operator::Equal => ssf::ir::PrimitiveOperator::Equal,
+            Operator::NotEqual => ssf::ir::PrimitiveOperator::NotEqual,
+            Operator::LessThan => ssf::ir::PrimitiveOperator::LessThan,
+            Operator::LessThanOrEqual => ssf::ir::PrimitiveOperator::LessThanOrEqual,
+            Operator::GreaterThan => ssf::ir::PrimitiveOperator::GreaterThan,
+            Operator::GreaterThanOrEqual => ssf::ir::PrimitiveOperator::GreaterThanOrEqual,
             Operator::And | Operator::Or => return Err(()),
         })
     }
