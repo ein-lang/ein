@@ -629,7 +629,10 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(ssf::ir::PrimitiveOperation::new(ssf::ir::PrimitiveOperator::Add, 1.0, 2.0).into())
+                Ok(
+                    ssf::ir::PrimitiveOperation::new(ssf::ir::PrimitiveOperator::Add, 1.0, 2.0)
+                        .into()
+                )
             );
         }
 
@@ -649,7 +652,11 @@ mod tests {
                     .into(),
                 ),
                 Ok(ssf::ir::PrimitiveCase::new(
-                    ssf::ir::PrimitiveOperation::new(ssf::ir::PrimitiveOperator::LessThan, 1.0, 2.0),
+                    ssf::ir::PrimitiveOperation::new(
+                        ssf::ir::PrimitiveOperator::LessThan,
+                        1.0,
+                        2.0
+                    ),
                     vec![
                         ssf::ir::PrimitiveAlternative::new(
                             ssf::ir::Primitive::Integer8(0),
