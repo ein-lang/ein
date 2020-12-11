@@ -155,7 +155,7 @@ impl ExpressionCompiler {
                         | Operator::LessThanOrEqual
                         | Operator::GreaterThan
                         | Operator::GreaterThanOrEqual => {
-                            let compiled = ssf::ir::Operation::new(
+                            let compiled = ssf::ir::PrimitiveOperation::new(
                                 operation.operator().try_into().unwrap(),
                                 self.compile(operation.lhs())?,
                                 self.compile(operation.rhs())?,
@@ -629,7 +629,10 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(ssf::ir::Operation::new(ssf::ir::Operator::Add, 1.0, 2.0).into())
+                Ok(
+                    ssf::ir::PrimitiveOperation::new(ssf::ir::PrimitiveOperator::Add, 1.0, 2.0)
+                        .into()
+                )
             );
         }
 
@@ -649,7 +652,11 @@ mod tests {
                     .into(),
                 ),
                 Ok(ssf::ir::PrimitiveCase::new(
-                    ssf::ir::Operation::new(ssf::ir::Operator::LessThan, 1.0, 2.0),
+                    ssf::ir::PrimitiveOperation::new(
+                        ssf::ir::PrimitiveOperator::LessThan,
+                        1.0,
+                        2.0
+                    ),
                     vec![
                         ssf::ir::PrimitiveAlternative::new(
                             ssf::ir::Primitive::Integer8(0),
