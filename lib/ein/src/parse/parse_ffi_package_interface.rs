@@ -145,6 +145,9 @@ mod tests {
 
     #[test]
     fn fail_to_parse_interface_with_variable() {
-        assert!(matches!(parse_ffi_package_interface("foo : Number", ""), Err(_)));
+        assert!(matches!(
+            parse_ffi_package_interface("foo : Number", ""),
+            Err(_)
+        ));
     }
 }
