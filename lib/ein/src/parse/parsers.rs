@@ -74,6 +74,31 @@ pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
         })
 }
 
+pub fn ffi_module_interface<'a>() -> impl Parser<Stream<'a>, Output = FfiModuleInterface> {
+    (
+        many(type_definition()),
+        many((identifier(), sign(":").with(function_type()))),
+    )
+        .skip(blank())
+        .skip(eof())
+        .map(
+            |(type_definitions, function_declarations): (Vec<_>, Vec<_>)| {
+                FfiModuleInterface::new(
+                    type_definitions
+                        .iter()
+                        .map(|type_definition| {
+                            (
+                                type_definition.name().into(),
+                                type_definition.type_().clone(),
+                            )
+                        })
+                        .collect(),
+                    function_declarations.into_iter().collect(),
+                )
+            },
+        )
+}
+
 fn export<'a>() -> impl Parser<Stream<'a>, Output = Export> {
     keyword("export")
         .with(between(
