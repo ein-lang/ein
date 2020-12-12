@@ -1,0 +1,1 @@
+ein_string_equal : String -> String -> Boolean
