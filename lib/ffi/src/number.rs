@@ -1,3 +1,5 @@
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Number {
     value: f64,
 }
