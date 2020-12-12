@@ -5,7 +5,7 @@ pub struct Number {
 }
 
 impl Number {
-    pub fn new(value: f64) -> Self {
+    pub const fn new(value: f64) -> Self {
         Self { value }
     }
 }

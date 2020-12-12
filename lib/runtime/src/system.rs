@@ -17,7 +17,7 @@ static FD_WRITE: ffi::Closure = ffi::Closure::new(system_fd_write as *const c_vo
 
 pub static SYSTEM: System = System {
     fd_write: &FD_WRITE,
-    stdout: 1.0,
+    stdout: ffi::Number::new(1.0),
 };
 
 extern "C" fn system_fd_write(
@@ -25,7 +25,7 @@ extern "C" fn system_fd_write(
     fd: ffi::Number,
     buffer: ffi::EinString,
 ) -> ffi::Number {
-    let mut file = unsafe { File::from_raw_fd(fd as i32) };
+    let mut file = unsafe { File::from_raw_fd(f64::from(fd) as i32) };
 
-    file.write(buffer.as_slice()).unwrap() as ffi::Number
+    (file.write(buffer.as_slice()).unwrap() as f64).into()
 }
