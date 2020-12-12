@@ -126,6 +126,7 @@ mod tests {
                     true,
                 )],
                 vec![],
+                vec![],
                 vec![]
             )),
             vec![("m.x".into(), "p().m.x".into())]
@@ -156,6 +157,7 @@ mod tests {
                     ),
                     false,
                 )],
+                vec![],
                 vec![],
                 vec![]
             )),

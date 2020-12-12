@@ -87,5 +87,6 @@ Ok(
                 qualified: true,
             },
         ],
+        ffi_imports: [],
     },
 )

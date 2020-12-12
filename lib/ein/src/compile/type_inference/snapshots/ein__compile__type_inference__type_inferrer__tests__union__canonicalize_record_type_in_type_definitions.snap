@@ -48,5 +48,6 @@ Ok(
             names: {},
         },
         imports: [],
+        ffi_imports: [],
     },
 )
