@@ -47,14 +47,16 @@ impl<'a> MainPackageBuilder<'a> {
             .external_packages_downloader
             .download(&package_configuration)?;
 
-        let (external_package_object_file_paths, external_module_interfaces) = self
-            .external_packages_builder
-            .build(&external_package_configurations, &prelude_package_interface)?;
+        let (external_package_object_file_paths, external_module_interfaces) =
+            self.external_packages_builder.build(
+                &external_package_configurations,
+                &[&prelude_package_interface],
+            )?;
 
         let (package_object_file_path, _) = self.package_builder.build(
             &package_configuration,
             &external_module_interfaces,
-            Some(&prelude_package_interface),
+            &[&prelude_package_interface],
         )?;
 
         match package_configuration.build_configuration().target() {

@@ -38,7 +38,7 @@ impl<'a> ModuleCompiler<'a> {
         &self,
         source_file_path: &FilePath,
         module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>,
-        prelude_package_interface: Option<&PackageInterface>,
+        prelude_package_interfaces: &[&PackageInterface],
         package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_storage.read_to_string(source_file_path)?;
@@ -91,17 +91,16 @@ impl<'a> ModuleCompiler<'a> {
                 imported_module_interfaces
                     .into_iter()
                     .map(|module_interface| ein::Import::new(module_interface, true))
-                    .chain(if let Some(package_interface) = prelude_package_interface {
-                        package_interface
-                            .modules()
+                    .chain(
+                        prelude_package_interfaces
                             .iter()
-                            .map(|module_interface| {
-                                ein::Import::new(module_interface.clone(), false)
+                            .map(|package_interface| {
+                                package_interface.modules().iter().map(|module_interface| {
+                                    ein::Import::new(module_interface.clone(), false)
+                                })
                             })
-                            .collect()
-                    } else {
-                        vec![]
-                    })
+                            .flatten(),
+                    )
                     .collect(),
             ),
             self.compile_configuration.clone(),

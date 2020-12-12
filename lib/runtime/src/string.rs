@@ -7,8 +7,8 @@ extern "C" fn equal_strings(
     _environment: *const c_void,
     one: ffi::EinString,
     other: ffi::EinString,
-) -> usize {
-    (one.as_slice() == other.as_slice()) as usize
+) -> ffi::Boolean {
+    (one.as_slice() == other.as_slice()).into()
 }
 
 #[cfg(test)]
@@ -20,14 +20,14 @@ mod tests {
     fn equal_empty_strings() {
         let string = ffi::EinString::new(null(), 0);
 
-        assert_eq!(equal_strings(null(), string, string), 1);
+        assert_eq!(equal_strings(null(), string, string), true.into());
     }
 
     #[test]
     fn equal_one_byte_strings() {
         let string = ffi::EinString::new([0u8].as_ptr(), 1);
 
-        assert_eq!(equal_strings(null(), string, string), 1);
+        assert_eq!(equal_strings(null(), string, string), true.into());
     }
 
     #[test]
@@ -35,7 +35,7 @@ mod tests {
         let one = ffi::EinString::new(null(), 0);
         let other = ffi::EinString::new([0u8].as_ptr(), 1);
 
-        assert_eq!(equal_strings(null(), one, other), 0);
+        assert_eq!(equal_strings(null(), one, other), false.into());
     }
 
     #[test]
@@ -44,7 +44,7 @@ mod tests {
 
         let string = ffi::EinString::new(TEXT.as_ptr(), TEXT.len());
 
-        assert_eq!(equal_strings(null(), string, string), 1);
+        assert_eq!(equal_strings(null(), string, string), true.into());
     }
 
     #[test]
@@ -58,7 +58,7 @@ mod tests {
                 ffi::EinString::new(TEXT.as_ptr(), TEXT.len()),
                 ffi::EinString::new(OTHER_TEXT.as_ptr(), OTHER_TEXT.len()),
             ),
-            0
+            false.into()
         );
     }
 }
