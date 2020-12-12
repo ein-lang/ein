@@ -1,18 +1,14 @@
 use std::os::raw::c_void;
 
 #[no_mangle]
-pub static ein_string_equal: ffi::Closure =
-    ffi::Closure::new(ein_string_equal_entry as *mut c_void, 2);
+pub static ein_string_equal: ffi::Closure = ffi::Closure::new(equal_strings as *mut c_void, 2);
 
-extern "C" fn ein_string_equal_entry(
+extern "C" fn equal_strings(
     _environment: *const c_void,
     one: ffi::EinString,
     other: ffi::EinString,
 ) -> usize {
-    unsafe {
-        (std::slice::from_raw_parts(one.bytes(), one.length())
-            == std::slice::from_raw_parts(other.bytes(), other.length())) as usize
-    }
+    (one.as_slice() == other.as_slice()) as usize
 }
 
 #[cfg(test)]
@@ -24,14 +20,14 @@ mod tests {
     fn equal_empty_strings() {
         let string = ffi::EinString::new(null(), 0);
 
-        assert_eq!(ein_string_equal_entry(null(), string, string), 1);
+        assert_eq!(equal_strings(null(), string, string), 1);
     }
 
     #[test]
     fn equal_one_byte_strings() {
         let string = ffi::EinString::new([0u8].as_ptr(), 1);
 
-        assert_eq!(ein_string_equal_entry(null(), string, string), 1);
+        assert_eq!(equal_strings(null(), string, string), 1);
     }
 
     #[test]
@@ -39,7 +35,7 @@ mod tests {
         let one = ffi::EinString::new(null(), 0);
         let other = ffi::EinString::new([0u8].as_ptr(), 1);
 
-        assert_eq!(ein_string_equal_entry(null(), one, other), 0);
+        assert_eq!(equal_strings(null(), one, other), 0);
     }
 
     #[test]
@@ -48,7 +44,7 @@ mod tests {
 
         let string = ffi::EinString::new(TEXT.as_ptr(), TEXT.len());
 
-        assert_eq!(ein_string_equal_entry(null(), string, string), 1);
+        assert_eq!(equal_strings(null(), string, string), 1);
     }
 
     #[test]
@@ -57,7 +53,7 @@ mod tests {
         const OTHER_TEXT: &[u8] = "hell0".as_bytes();
 
         assert_eq!(
-            ein_string_equal_entry(
+            equal_strings(
                 null(),
                 ffi::EinString::new(TEXT.as_ptr(), TEXT.len()),
                 ffi::EinString::new(OTHER_TEXT.as_ptr(), OTHER_TEXT.len()),
