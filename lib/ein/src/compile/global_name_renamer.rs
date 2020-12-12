@@ -17,6 +17,7 @@ impl GlobalNameRenamer {
             module.path().clone(),
             module.export().clone(),
             module.imports().to_vec(),
+            module.ffi_imports().to_vec(),
             module
                 .type_definitions()
                 .iter()

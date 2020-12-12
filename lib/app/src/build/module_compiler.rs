@@ -102,6 +102,7 @@ impl<'a> ModuleCompiler<'a> {
                             .flatten(),
                     )
                     .collect(),
+                vec![], // TODO Import FFI packages.
             ),
             self.compile_configuration.clone(),
         )?;

@@ -1,5 +1,6 @@
 use super::definition::Definition;
 use super::export::Export;
+use super::ffi_package_interface::FfiPackageInterface;
 use super::import::Import;
 use super::module::Module;
 use super::type_definition::TypeDefinition;
@@ -29,11 +30,17 @@ impl UnresolvedModule {
         }
     }
 
-    pub fn resolve(self, path: ModulePath, imports: Vec<Import>) -> Module {
+    pub fn resolve(
+        self,
+        path: ModulePath,
+        imports: Vec<Import>,
+        ffi_imports: Vec<FfiPackageInterface>,
+    ) -> Module {
         Module::new(
             path,
             self.export,
             imports,
+            ffi_imports,
             self.type_definitions,
             self.definitions,
         )

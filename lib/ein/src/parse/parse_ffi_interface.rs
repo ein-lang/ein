@@ -1,13 +1,13 @@
 use super::error::ParseError;
-use super::parsers::{ffi_module_interface, stream};
+use super::parsers::{ffi_package_interface, stream};
 use crate::ast::*;
 use combine::Parser;
 
 pub fn parse_ffi_interface(
     source_content: &str,
     source_name: &str,
-) -> Result<FfiModuleInterface, ParseError> {
-    Ok(ffi_module_interface()
+) -> Result<FfiPackageInterface, ParseError> {
+    Ok(ffi_package_interface()
         .parse(stream(source_content, source_name))
         .map(|(module, _)| module)
         .map_err(|error| ParseError::new(source_name, &error))?)
@@ -23,7 +23,7 @@ mod tests {
     fn parse_empty_interface() {
         assert_eq!(
             parse_ffi_interface("", ""),
-            Ok(FfiModuleInterface::new(
+            Ok(FfiPackageInterface::new(
                 Default::default(),
                 Default::default()
             ))
@@ -34,7 +34,7 @@ mod tests {
     fn parse_function_declaration() {
         assert_eq!(
             parse_ffi_interface("foo : Number -> Number", ""),
-            Ok(FfiModuleInterface::new(
+            Ok(FfiPackageInterface::new(
                 Default::default(),
                 vec![(
                     "foo".into(),
@@ -54,7 +54,7 @@ mod tests {
     fn parse_function_declarations() {
         assert_eq!(
             parse_ffi_interface("foo : Number -> Number\nbar : Number -> Number", ""),
-            Ok(FfiModuleInterface::new(
+            Ok(FfiPackageInterface::new(
                 Default::default(),
                 vec![
                     (
@@ -84,7 +84,7 @@ mod tests {
     fn parse_type_definition() {
         assert_eq!(
             parse_ffi_interface("type foo = Number", ""),
-            Ok(FfiModuleInterface::new(
+            Ok(FfiPackageInterface::new(
                 vec![(
                     "foo".into(),
                     types::Number::new(SourceInformation::dummy()).into()
@@ -100,7 +100,7 @@ mod tests {
     fn parse_type_definitions() {
         assert_eq!(
             parse_ffi_interface("type foo = Number\ntype bar = Number", ""),
-            Ok(FfiModuleInterface::new(
+            Ok(FfiPackageInterface::new(
                 vec![
                     (
                         "foo".into(),
@@ -122,7 +122,7 @@ mod tests {
     fn parse_type_definition_and_function_declarations() {
         assert_eq!(
             parse_ffi_interface("type foo = Number\nbar : Number -> Number", ""),
-            Ok(FfiModuleInterface::new(
+            Ok(FfiPackageInterface::new(
                 vec![(
                     "foo".into(),
                     types::Number::new(SourceInformation::dummy()).into()

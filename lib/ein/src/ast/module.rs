@@ -1,6 +1,7 @@
 use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
+use super::ffi_package_interface::FfiPackageInterface;
 use super::import::Import;
 use super::let_::Let;
 use super::type_definition::TypeDefinition;
@@ -14,6 +15,7 @@ pub struct Module {
     definitions: Vec<Definition>,
     export: Export,
     imports: Vec<Import>,
+    ffi_imports: Vec<FfiPackageInterface>,
 }
 
 impl Module {
@@ -21,6 +23,7 @@ impl Module {
         path: ModulePath,
         export: Export,
         imports: Vec<Import>,
+        ffi_imports: Vec<FfiPackageInterface>,
         type_definitions: Vec<TypeDefinition>,
         definitions: Vec<Definition>,
     ) -> Self {
@@ -30,6 +33,7 @@ impl Module {
             definitions,
             export,
             imports,
+            ffi_imports,
         }
     }
 
@@ -41,6 +45,7 @@ impl Module {
             vec![],
             vec![],
             vec![],
+            vec![],
         )
     }
 
@@ -49,6 +54,7 @@ impl Module {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![],
             definitions,
@@ -63,6 +69,7 @@ impl Module {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             type_definitions,
             definitions,
@@ -89,6 +96,10 @@ impl Module {
         &self.imports
     }
 
+    pub fn ffi_imports(&self) -> &[FfiPackageInterface] {
+        &self.ffi_imports
+    }
+
     pub fn transform_definitions<E>(
         &self,
         mut transform: &mut impl FnMut(&Definition) -> Result<Definition, E>,
@@ -97,6 +108,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
+            self.ffi_imports.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
@@ -131,6 +143,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
+            self.ffi_imports.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
@@ -147,6 +160,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
+            self.ffi_imports.clone(),
             self.type_definitions
                 .iter()
                 .map(|type_definition| type_definition.transform_types(transform))
