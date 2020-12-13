@@ -11,4 +11,5 @@ path = "src/main.rs"
 [dependencies]
 app = { path = "../../lib/app" }
 clap = "2"
+ein = { path = "../../lib/ein" }
 infra = { path = "../../lib/infra" }

@@ -42,6 +42,10 @@ impl SourceInformation {
         }
     }
 
+    pub fn builtin() -> Self {
+        Self::new("<builtin>", Location::new(0, 0), "")
+    }
+
     #[cfg(test)]
     pub fn dummy() -> Self {
         Self::new("", Location::new(0, 0), "")

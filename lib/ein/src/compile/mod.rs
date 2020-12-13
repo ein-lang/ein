@@ -1,4 +1,5 @@
 mod boolean_compiler;
+mod builtin_function_set;
 mod compile_configuration;
 mod error;
 mod expression_compiler;

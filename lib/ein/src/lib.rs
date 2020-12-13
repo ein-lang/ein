@@ -1,10 +1,10 @@
 mod ast;
 mod compile;
-mod debug;
+pub mod debug;
 mod package;
 mod parse;
 mod path;
-mod types;
+pub mod types;
 
 pub use ast::{Import, ModuleInterface, UnresolvedModule};
 pub use compile::{compile, CompileConfiguration, ListTypeConfiguration, StringTypeConfiguration};

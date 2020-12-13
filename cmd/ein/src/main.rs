@@ -1,3 +1,7 @@
+use ein::debug::SourceInformation;
+use ein::types;
+use std::sync::Arc;
+
 const PACKAGE_CONFIGURATION_FILENAME: &str = "ein.json";
 
 fn main() {
@@ -64,6 +68,22 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             equal_function_name: "ein_string_equal".into(),
         }
         .into(),
+        builtin_function_set: Arc::new(
+            vec![(
+                "ein_string_join".into(),
+                types::Function::new(
+                    types::EinString::new(SourceInformation::builtin()),
+                    types::Function::new(
+                        types::EinString::new(SourceInformation::builtin()),
+                        types::EinString::new(SourceInformation::builtin()),
+                        SourceInformation::builtin(),
+                    ),
+                    SourceInformation::builtin(),
+                ),
+            )]
+            .into_iter()
+            .collect(),
+        ),
     }
     .into();
     let module_compiler = app::ModuleCompiler::new(
