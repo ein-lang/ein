@@ -13,7 +13,7 @@ impl ElementlessRecordTransformer {
             module.path().clone(),
             module.export().clone(),
             module.imports().to_vec(),
-            module.ffi_imports().to_vec(),
+            module.builtin_interface().clone(),
             module.type_definitions().to_vec(),
             module
                 .definitions()

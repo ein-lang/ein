@@ -1,6 +1,6 @@
 ---
 source: lib/ein/src/compile/type_inference/type_inferrer.rs
-expression: "infer_types(&Module::new(ModulePath::new(Package::new(\"\", \"\"), vec![]),\n                         Export::new(Default::default()), vec![],\n                         vec![BuiltinInterface ::\n                              new(Default :: default(), vec !\n                                  [(\"foo\" . into(), types :: Function ::\n                                    new(types :: Number ::\n                                        new(SourceInformation :: dummy()),\n                                        types :: Number ::\n                                        new(SourceInformation :: dummy()),\n                                        SourceInformation :: dummy()) .\n                                    into())] . into_iter() . collect(),)],\n                         vec![],\n                         vec![VariableDefinition ::\n                              new(\"x\", Application ::\n                                  new(Variable ::\n                                      new(\"foo\", SourceInformation ::\n                                          dummy()), Number ::\n                                      new(42.0, SourceInformation :: dummy()),\n                                      SourceInformation :: dummy(),), types ::\n                                  Number :: new(SourceInformation :: dummy()),\n                                  SourceInformation :: dummy(),) . into()]))"
+expression: "infer_types(&Module::new(ModulePath::new(Package::new(\"\", \"\"), vec![]),\n                         Export::new(Default::default()), vec![],\n                         BuiltinInterface::new(Default::default(),\n                                               vec![(\"foo\" . into(), types ::\n                                                     Function ::\n                                                     new(types :: Number ::\n                                                         new(SourceInformation\n                                                             :: dummy()),\n                                                         types :: Number ::\n                                                         new(SourceInformation\n                                                             :: dummy()),\n                                                         SourceInformation ::\n                                                         dummy()))].into_iter().collect()),\n                         vec![],\n                         vec![VariableDefinition ::\n                              new(\"x\", Application ::\n                                  new(Variable ::\n                                      new(\"foo\", SourceInformation ::\n                                          dummy()), Number ::\n                                      new(42.0, SourceInformation :: dummy()),\n                                      SourceInformation :: dummy(),), types ::\n                                  Number :: new(SourceInformation :: dummy()),\n                                  SourceInformation :: dummy(),) . into()]))"
 ---
 Ok(
     Module {
@@ -81,46 +81,44 @@ Ok(
             names: {},
         },
         imports: [],
-        ffi_imports: [
-            BuiltinInterface {
-                types: {},
-                functions: {
-                    "foo": Function {
-                        argument: Number(
-                            Number {
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
+        builtin_interface: BuiltinInterface {
+            types: {},
+            functions: {
+                "foo": Function {
+                    argument: Number(
+                        Number {
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
                                 },
+                                line: "",
                             },
-                        ),
-                        result: Number(
-                            Number {
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
-                                },
-                            },
-                        ),
-                        source_information: SourceInformation {
-                            source_name: "",
-                            location: Location {
-                                line_number: 0,
-                                column_number: 0,
-                            },
-                            line: "",
                         },
+                    ),
+                    result: Number(
+                        Number {
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
                     },
                 },
             },
-        ],
+        },
     },
 )

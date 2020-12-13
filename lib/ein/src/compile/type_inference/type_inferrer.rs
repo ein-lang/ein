@@ -476,7 +476,7 @@ mod tests {
                 ),
                 true,
             )],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             vec![VariableDefinition::new(
                 "y",
@@ -740,7 +740,7 @@ mod tests {
                 ),
                 true,
             )],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             vec![VariableDefinition::new(
                 "x",
@@ -760,7 +760,7 @@ mod tests {
             ModulePath::new(Package::new("", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![TypeDefinition::new(
                 "Foo",
                 types::Function::new(
@@ -1946,7 +1946,7 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![BuiltinInterface::new(
+                BuiltinInterface::new(
                     vec![(
                         "Foo".into(),
                         types::Number::new(SourceInformation::dummy()).into()
@@ -1954,7 +1954,7 @@ mod tests {
                     .into_iter()
                     .collect(),
                     Default::default()
-                )],
+                ),
                 vec![],
                 vec![VariableDefinition::new(
                     "x",
@@ -1972,7 +1972,7 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![BuiltinInterface::new(
+                BuiltinInterface::new(
                     Default::default(),
                     vec![(
                         "foo".into(),
@@ -1984,7 +1984,7 @@ mod tests {
                     )]
                     .into_iter()
                     .collect(),
-                )],
+                ),
                 vec![],
                 vec![VariableDefinition::new(
                     "x",

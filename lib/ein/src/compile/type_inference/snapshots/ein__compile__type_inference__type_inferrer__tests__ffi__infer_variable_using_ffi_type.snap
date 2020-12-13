@@ -1,6 +1,6 @@
 ---
 source: lib/ein/src/compile/type_inference/type_inferrer.rs
-expression: "infer_types(&Module::new(ModulePath::new(Package::new(\"\", \"\"), vec![]),\n                         Export::new(Default::default()), vec![],\n                         vec![BuiltinInterface ::\n                              new(vec !\n                                  [(\"Foo\" . into(), types :: Number ::\n                                    new(SourceInformation :: dummy()) .\n                                    into())] . into_iter() . collect(),\n                                  Default :: default())], vec![],\n                         vec![VariableDefinition ::\n                              new(\"x\", Number ::\n                                  new(42.0, SourceInformation :: dummy()),\n                                  types :: Reference ::\n                                  new(\"Foo\", SourceInformation :: dummy()),\n                                  SourceInformation :: dummy(),) . into()]))"
+expression: "infer_types(&Module::new(ModulePath::new(Package::new(\"\", \"\"), vec![]),\n                         Export::new(Default::default()), vec![],\n                         BuiltinInterface::new(vec![(\"Foo\" . into(), types ::\n                                                     Number ::\n                                                     new(SourceInformation ::\n                                                         dummy()) .\n                                                     into())].into_iter().collect(),\n                                               Default::default()), vec![],\n                         vec![VariableDefinition ::\n                              new(\"x\", Number ::\n                                  new(42.0, SourceInformation :: dummy()),\n                                  types :: Reference ::\n                                  new(\"Foo\", SourceInformation :: dummy()),\n                                  SourceInformation :: dummy(),) . into()]))"
 ---
 Ok(
     Module {
@@ -57,24 +57,22 @@ Ok(
             names: {},
         },
         imports: [],
-        ffi_imports: [
-            BuiltinInterface {
-                types: {
-                    "Foo": Number(
-                        Number {
-                            source_information: SourceInformation {
-                                source_name: "",
-                                location: Location {
-                                    line_number: 0,
-                                    column_number: 0,
-                                },
-                                line: "",
+        builtin_interface: BuiltinInterface {
+            types: {
+                "Foo": Number(
+                    Number {
+                        source_information: SourceInformation {
+                            source_name: "",
+                            location: Location {
+                                line_number: 0,
+                                column_number: 0,
                             },
+                            line: "",
                         },
-                    ),
-                },
-                functions: {},
+                    },
+                ),
             },
-        ],
+            functions: {},
+        },
     },
 )

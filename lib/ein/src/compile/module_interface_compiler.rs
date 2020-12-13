@@ -93,7 +93,7 @@ mod tests {
                 ModulePath::new(Package::new("P", ""), vec!["M".into()]),
                 Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![VariableDefinition::new(
                     "P().M.x",
@@ -125,7 +125,7 @@ mod tests {
                 ModulePath::new(Package::new("P", ""), vec!["M".into()]),
                 Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![],
             ),),

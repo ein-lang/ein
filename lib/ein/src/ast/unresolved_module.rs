@@ -34,13 +34,13 @@ impl UnresolvedModule {
         self,
         path: ModulePath,
         imports: Vec<Import>,
-        ffi_imports: Vec<BuiltinInterface>,
+        builtin_interface: BuiltinInterface,
     ) -> Module {
         Module::new(
             path,
             self.export,
             imports,
-            ffi_imports,
+            builtin_interface,
             self.type_definitions,
             self.definitions,
         )

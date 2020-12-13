@@ -15,6 +15,14 @@ impl BuiltinInterface {
         Self { types, functions }
     }
 
+    #[cfg(test)]
+    pub fn dummy() -> Self {
+        Self {
+            types: Default::default(),
+            functions: Default::default(),
+        }
+    }
+
     pub fn types(&self) -> &BTreeMap<String, Type> {
         &self.types
     }

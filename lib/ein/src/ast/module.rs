@@ -15,7 +15,7 @@ pub struct Module {
     definitions: Vec<Definition>,
     export: Export,
     imports: Vec<Import>,
-    ffi_imports: Vec<BuiltinInterface>,
+    builtin_interface: BuiltinInterface,
 }
 
 impl Module {
@@ -23,7 +23,7 @@ impl Module {
         path: ModulePath,
         export: Export,
         imports: Vec<Import>,
-        ffi_imports: Vec<BuiltinInterface>,
+        builtin_interface: BuiltinInterface,
         type_definitions: Vec<TypeDefinition>,
         definitions: Vec<Definition>,
     ) -> Self {
@@ -33,7 +33,7 @@ impl Module {
             definitions,
             export,
             imports,
-            ffi_imports,
+            builtin_interface,
         }
     }
 
@@ -43,7 +43,7 @@ impl Module {
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             vec![],
         )
@@ -55,7 +55,7 @@ impl Module {
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             definitions,
         )
@@ -70,7 +70,7 @@ impl Module {
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             type_definitions,
             definitions,
         )
@@ -96,8 +96,8 @@ impl Module {
         &self.imports
     }
 
-    pub fn ffi_imports(&self) -> &[BuiltinInterface] {
-        &self.ffi_imports
+    pub fn builtin_interface(&self) -> &BuiltinInterface {
+        &self.builtin_interface
     }
 
     pub fn transform_definitions<E>(
@@ -108,7 +108,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
-            self.ffi_imports.clone(),
+            self.builtin_interface.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
@@ -143,7 +143,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
-            self.ffi_imports.clone(),
+            self.builtin_interface.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
@@ -160,7 +160,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
-            self.ffi_imports.clone(),
+            self.builtin_interface.clone(),
             self.type_definitions
                 .iter()
                 .map(|type_definition| type_definition.transform_types(transform))

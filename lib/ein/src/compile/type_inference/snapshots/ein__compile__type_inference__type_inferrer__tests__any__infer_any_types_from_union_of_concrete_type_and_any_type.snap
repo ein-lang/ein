@@ -184,6 +184,9 @@ Ok(
             names: {},
         },
         imports: [],
-        ffi_imports: [],
+        builtin_interface: BuiltinInterface {
+            types: {},
+            functions: {},
+        },
     },
 )

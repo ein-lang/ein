@@ -22,12 +22,7 @@ impl ReferenceTypeResolver {
                         .iter()
                         .map(|(name, type_)| (name.into(), type_.clone()))
                 })
-                .chain(
-                    module
-                        .ffi_imports()
-                        .iter()
-                        .flat_map(|interface| interface.types().clone()),
-                )
+                .chain(module.builtin_interface().types().clone())
                 .chain(module.type_definitions().iter().map(|type_definition| {
                     (
                         type_definition.name().into(),
@@ -150,7 +145,7 @@ mod tests {
                     ),
                     true
                 )],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![],
             ))
@@ -166,7 +161,7 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![BuiltinInterface::new(
+                BuiltinInterface::new(
                     vec![(
                         "Foo".into(),
                         types::Number::new(SourceInformation::dummy()).into()
@@ -174,7 +169,7 @@ mod tests {
                     .into_iter()
                     .collect(),
                     Default::default()
-                )],
+                ),
                 vec![],
                 vec![],
             ))

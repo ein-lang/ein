@@ -87,6 +87,9 @@ Ok(
                 qualified: true,
             },
         ],
-        ffi_imports: [],
+        builtin_interface: BuiltinInterface {
+            types: {},
+            functions: {},
+        },
     },
 )

@@ -17,7 +17,7 @@ impl GlobalNameRenamer {
             module.path().clone(),
             module.export().clone(),
             module.imports().to_vec(),
-            module.ffi_imports().to_vec(),
+            module.builtin_interface().clone(),
             module
                 .type_definitions()
                 .iter()
@@ -299,7 +299,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             vec![VariableDefinition::new(
                 "x",
@@ -322,7 +322,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             vec![VariableDefinition::new(
                 "x",
@@ -345,7 +345,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![VariableDefinition::new(
                     "y",
@@ -364,7 +364,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(vec!["x".into()].into_iter().collect()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             vec![],
         );
@@ -381,7 +381,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(vec!["x".into()].into_iter().collect()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![],
             )
@@ -394,7 +394,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![TypeDefinition::new(
                 "x",
                 types::None::new(SourceInformation::dummy()),
@@ -414,7 +414,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![TypeDefinition::new(
                     "y",
                     types::None::new(SourceInformation::dummy()),
@@ -430,7 +430,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![TypeDefinition::new(
                 "x",
                 types::Reference::new("z", SourceInformation::dummy()),
@@ -456,7 +456,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![TypeDefinition::new(
                     "x",
                     types::Reference::new("v", SourceInformation::dummy()),
@@ -478,7 +478,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![TypeDefinition::new(
                 "x",
                 types::Record::new("y", Default::default(), SourceInformation::dummy()),
@@ -498,7 +498,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![TypeDefinition::new(
                     "x",
                     types::Record::new("z", Default::default(), SourceInformation::dummy()),
@@ -514,7 +514,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![],
+            BuiltinInterface::dummy(),
             vec![],
             vec![VariableDefinition::new(
                 "x",
@@ -545,7 +545,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![VariableDefinition::new(
                     "x",

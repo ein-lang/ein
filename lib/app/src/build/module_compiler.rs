@@ -102,7 +102,8 @@ impl<'a> ModuleCompiler<'a> {
                             .flatten(),
                     )
                     .collect(),
-                vec![], // TODO Import FFI packages.
+                // TODO Import builtin interface.
+                ein::BuiltinInterface::new(Default::default(), Default::default()),
             ),
             self.compile_configuration.clone(),
         )?;

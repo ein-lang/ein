@@ -125,7 +125,7 @@ mod tests {
                     ),
                     true,
                 )],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![]
             )),
@@ -157,7 +157,7 @@ mod tests {
                     ),
                     false,
                 )],
-                vec![],
+                BuiltinInterface::dummy(),
                 vec![],
                 vec![]
             )),

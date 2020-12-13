@@ -18,10 +18,8 @@ impl ModuleEnvironmentCreator {
             }
         }
 
-        for interface in module.ffi_imports() {
-            for (name, type_) in interface.functions() {
-                variables.insert(name.into(), type_.clone().into());
-            }
+        for (name, type_) in module.builtin_interface().functions() {
+            variables.insert(name.into(), type_.clone().into());
         }
 
         for definition in module.definitions() {
@@ -60,7 +58,7 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![BuiltinInterface::new(
+                BuiltinInterface::new(
                     Default::default(),
                     vec![(
                         "foo".into(),
@@ -72,7 +70,7 @@ mod tests {
                     )]
                     .into_iter()
                     .collect(),
-                )],
+                ),
                 vec![],
                 vec![],
             )),
