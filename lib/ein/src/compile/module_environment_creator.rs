@@ -18,6 +18,12 @@ impl ModuleEnvironmentCreator {
             }
         }
 
+        for interface in module.ffi_imports() {
+            for (name, type_) in interface.functions() {
+                variables.insert(name.into(), type_.clone().into());
+            }
+        }
+
         for definition in module.definitions() {
             match definition {
                 Definition::FunctionDefinition(function_definition) => {

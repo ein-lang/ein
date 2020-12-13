@@ -22,6 +22,12 @@ impl ReferenceTypeResolver {
                         .iter()
                         .map(|(name, type_)| (name.into(), type_.clone()))
                 })
+                .chain(
+                    module
+                        .ffi_imports()
+                        .iter()
+                        .flat_map(|interface| interface.types().clone()),
+                )
                 .chain(module.type_definitions().iter().map(|type_definition| {
                     (
                         type_definition.name().into(),
@@ -145,6 +151,30 @@ mod tests {
                     true
                 )],
                 vec![],
+                vec![],
+                vec![],
+            ))
+            .resolve(&types::Reference::new("Foo", SourceInformation::dummy()).into()),
+            Ok(types::Number::new(SourceInformation::dummy()).into())
+        );
+    }
+
+    #[test]
+    fn resolve_type_in_ffi_import() {
+        assert_eq!(
+            ReferenceTypeResolver::new(&Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![FfiPackageInterface::new(
+                    vec![(
+                        "Foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    Default::default()
+                )],
                 vec![],
                 vec![],
             ))

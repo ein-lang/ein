@@ -1936,4 +1936,69 @@ mod tests {
             ])));
         }
     }
+
+    mod ffi {
+        use super::*;
+
+        #[test]
+        fn infer_variable_using_ffi_type() {
+            insta::assert_debug_snapshot!(infer_types(&Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![FfiPackageInterface::new(
+                    vec![(
+                        "Foo".into(),
+                        types::Number::new(SourceInformation::dummy()).into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                    Default::default()
+                )],
+                vec![],
+                vec![VariableDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Reference::new("Foo", SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            )));
+        }
+
+        #[test]
+        fn infer_variable_using_ffi_function() {
+            insta::assert_debug_snapshot!(infer_types(&Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![FfiPackageInterface::new(
+                    Default::default(),
+                    vec![(
+                        "foo".into(),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                )],
+                vec![],
+                vec![VariableDefinition::new(
+                    "x",
+                    Application::new(
+                        Variable::new("foo", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            )));
+        }
+    }
 }
