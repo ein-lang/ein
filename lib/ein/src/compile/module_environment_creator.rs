@@ -44,3 +44,50 @@ impl ModuleEnvironmentCreator {
         variables
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::debug::*;
+    use crate::package::*;
+    use crate::path::*;
+    use crate::types;
+
+    #[test]
+    fn include_ffi_functions() {
+        assert_eq!(
+            ModuleEnvironmentCreator::create(&Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![],
+                vec![FfiPackageInterface::new(
+                    Default::default(),
+                    vec![(
+                        "foo".into(),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                        .into()
+                    )]
+                    .into_iter()
+                    .collect(),
+                )],
+                vec![],
+                vec![],
+            )),
+            vec![(
+                "foo".into(),
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            )]
+            .into_iter()
+            .collect()
+        );
+    }
+}
