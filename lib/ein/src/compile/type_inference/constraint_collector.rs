@@ -9,14 +9,19 @@ use std::sync::Arc;
 
 pub struct ConstraintCollector {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
+    module_environment_creator: Arc<ModuleEnvironmentCreator>,
     solved_subsumption_set: SubsumptionSet,
     checked_subsumption_set: SubsumptionSet,
 }
 
 impl ConstraintCollector {
-    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Self {
+    pub fn new(
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+        module_environment_creator: Arc<ModuleEnvironmentCreator>,
+    ) -> Self {
         Self {
             reference_type_resolver,
+            module_environment_creator,
             solved_subsumption_set: SubsumptionSet::new(),
             checked_subsumption_set: SubsumptionSet::new(),
         }
@@ -26,7 +31,7 @@ impl ConstraintCollector {
         mut self,
         module: &Module,
     ) -> Result<(SubsumptionSet, SubsumptionSet), CompileError> {
-        let variables = ModuleEnvironmentCreator::create(module);
+        let variables = self.module_environment_creator.create(module);
 
         for definition in module.definitions() {
             match definition {

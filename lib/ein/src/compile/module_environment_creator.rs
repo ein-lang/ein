@@ -9,14 +9,19 @@ pub struct ModuleEnvironmentCreator {
 }
 
 impl ModuleEnvironmentCreator {
-    pub fn new(builtin_function_set: Arc<BuiltinFunctionSet>) -> Self {
+    pub fn new(builtin_function_set: Arc<BuiltinFunctionSet>) -> Arc<Self> {
         Self {
             builtin_function_set,
         }
+        .into()
     }
 
     pub fn create(&self, module: &Module) -> HashMap<String, Type> {
         let mut variables = HashMap::<String, Type>::new();
+
+        for (name, type_) in self.builtin_function_set.as_ref() {
+            variables.insert(name.into(), type_.clone().into());
+        }
 
         for import in module.imports() {
             for (name, type_) in import.module_interface().functions() {

@@ -69,7 +69,13 @@ pub fn compile(
         .transform(&module);
 
     let list_type_configuration = Arc::new(configuration.list_type_configuration.qualify(&names));
-    let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
+    let module = transform_with_types(
+        &infer_types(
+            &transform_without_types(&module)?,
+            configuration.builtin_function_set.clone(),
+        )?,
+        configuration.builtin_function_set.clone(),
+    )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
@@ -153,6 +159,7 @@ mod tests {
     use crate::debug::*;
     use crate::types;
     use lazy_static::lazy_static;
+    use std::collections::HashMap;
 
     lazy_static! {
         static ref COMPILE_CONFIGURATION: Arc<CompileConfiguration> = CompileConfiguration {
@@ -162,6 +169,7 @@ mod tests {
             panic_function_name: "ein_panic".into(),
             list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
             string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
+            builtin_function_set: HashMap::new().into(),
         }
         .into();
     }
