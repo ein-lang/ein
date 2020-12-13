@@ -92,10 +92,8 @@ mod tests {
             ConstraintSolver::new(constraint_converter, reference_type_resolver.clone());
         let module_environment_creator =
             ModuleEnvironmentCreator::new(BuiltinFunctionSet::new().into());
-        let constraint_collector = ConstraintCollector::new(
-            reference_type_resolver.clone(),
-            module_environment_creator,
-        );
+        let constraint_collector =
+            ConstraintCollector::new(reference_type_resolver.clone(), module_environment_creator);
 
         TypeInferrer::new(
             reference_type_resolver,
