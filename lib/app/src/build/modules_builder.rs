@@ -42,7 +42,7 @@ impl<'a> ModulesBuilder<'a> {
             ein::ExternalUnresolvedModulePath,
             ein::ModuleInterface,
         >,
-        prelude_package_interfaces: &[&PackageInterface],
+        prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
         let mut module_interfaces = external_module_interfaces
             .iter()
@@ -61,7 +61,7 @@ impl<'a> ModulesBuilder<'a> {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
                 &source_file_path,
                 &module_interfaces,
-                prelude_package_interfaces,
+                prelude_package_interface,
                 package_configuration,
             )?;
 
