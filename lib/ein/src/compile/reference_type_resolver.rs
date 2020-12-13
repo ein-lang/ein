@@ -166,7 +166,7 @@ mod tests {
                 ModulePath::new(Package::new("", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
-                vec![FfiPackageInterface::new(
+                vec![BuiltinInterface::new(
                     vec![(
                         "Foo".into(),
                         types::Number::new(SourceInformation::dummy()).into()

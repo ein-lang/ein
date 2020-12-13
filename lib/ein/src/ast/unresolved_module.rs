@@ -1,6 +1,6 @@
+use super::builtin_interface::BuiltinInterface;
 use super::definition::Definition;
 use super::export::Export;
-use super::ffi_package_interface::FfiPackageInterface;
 use super::import::Import;
 use super::module::Module;
 use super::type_definition::TypeDefinition;
@@ -34,7 +34,7 @@ impl UnresolvedModule {
         self,
         path: ModulePath,
         imports: Vec<Import>,
-        ffi_imports: Vec<FfiPackageInterface>,
+        ffi_imports: Vec<BuiltinInterface>,
     ) -> Module {
         Module::new(
             path,

@@ -2,12 +2,12 @@ use crate::types::{self, Type};
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct FfiPackageInterface {
+pub struct BuiltinInterface {
     types: BTreeMap<String, Type>,
     functions: BTreeMap<String, types::Function>,
 }
 
-impl FfiPackageInterface {
+impl BuiltinInterface {
     pub fn new(
         types: BTreeMap<String, Type>,
         functions: BTreeMap<String, types::Function>,

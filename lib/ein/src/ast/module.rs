@@ -1,7 +1,7 @@
+use super::builtin_interface::BuiltinInterface;
 use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
-use super::ffi_package_interface::FfiPackageInterface;
 use super::import::Import;
 use super::let_::Let;
 use super::type_definition::TypeDefinition;
@@ -15,7 +15,7 @@ pub struct Module {
     definitions: Vec<Definition>,
     export: Export,
     imports: Vec<Import>,
-    ffi_imports: Vec<FfiPackageInterface>,
+    ffi_imports: Vec<BuiltinInterface>,
 }
 
 impl Module {
@@ -23,7 +23,7 @@ impl Module {
         path: ModulePath,
         export: Export,
         imports: Vec<Import>,
-        ffi_imports: Vec<FfiPackageInterface>,
+        ffi_imports: Vec<BuiltinInterface>,
         type_definitions: Vec<TypeDefinition>,
         definitions: Vec<Definition>,
     ) -> Self {
@@ -96,7 +96,7 @@ impl Module {
         &self.imports
     }
 
-    pub fn ffi_imports(&self) -> &[FfiPackageInterface] {
+    pub fn ffi_imports(&self) -> &[BuiltinInterface] {
         &self.ffi_imports
     }
 
