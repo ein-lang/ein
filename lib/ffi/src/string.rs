@@ -33,7 +33,7 @@ impl EinString {
 
             Self {
                 bytes: pointer,
-                length: self.length + other.length,
+                length,
             }
         }
     }
