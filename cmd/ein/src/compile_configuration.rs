@@ -60,6 +60,14 @@ lazy_static! {
                             SourceInformation::builtin(),
                         ),
                     ),
+                    (
+                        "_ein_number_to_string".into(),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::builtin()),
+                            types::EinString::new(SourceInformation::builtin()),
+                            SourceInformation::builtin(),
+                        ),
+                    ),
                 ]
                 .into_iter()
                 .collect(),
