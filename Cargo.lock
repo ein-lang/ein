@@ -163,6 +163,7 @@ dependencies = [
  "clap",
  "ein",
  "infra",
+ "lazy_static",
 ]
 
 [[package]]
