@@ -4,7 +4,7 @@ use std::{
 };
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct EinString {
     bytes: *const u8, // variadic length array
     length: usize,
@@ -86,6 +86,12 @@ impl EinString {
 
 unsafe impl Sync for EinString {}
 
+impl PartialEq for EinString {
+    fn eq(&self, other: &EinString) -> bool {
+        self.as_slice() == other.as_slice()
+    }
+}
+
 impl From<&str> for EinString {
     fn from(string: &str) -> Self {
         let bytes = string.as_bytes();
@@ -102,52 +108,50 @@ mod tests {
     use super::*;
 
     #[test]
+    fn join() {
+        assert_eq!(
+            EinString::from("foo").join(&EinString::from("bar")),
+            EinString::from("foobar")
+        );
+    }
+
+    #[test]
     fn slice_with_ascii() {
         assert_eq!(
-            EinString::from("abc")
-                .slice(2.0.into(), 2.0.into())
-                .as_slice(),
-            EinString::from("b").as_slice()
+            EinString::from("abc").slice(2.0.into(), 2.0.into()),
+            EinString::from("b")
         );
     }
 
     #[test]
     fn slice_with_negative_index() {
         assert_eq!(
+            EinString::from("abc").slice((-1.0).into(), 3.0.into()),
             EinString::from("abc")
-                .slice((-1.0).into(), 3.0.into())
-                .as_slice(),
-            EinString::from("abc").as_slice()
         );
     }
 
     #[test]
     fn slice_into_whole() {
         assert_eq!(
+            EinString::from("abc").slice(1.0.into(), 3.0.into()),
             EinString::from("abc")
-                .slice(1.0.into(), 3.0.into())
-                .as_slice(),
-            EinString::from("abc").as_slice()
         );
     }
 
     #[test]
     fn slice_into_empty() {
         assert_eq!(
-            EinString::from("abc")
-                .slice(4.0.into(), 4.0.into())
-                .as_slice(),
-            EinString::from("").as_slice()
+            EinString::from("abc").slice(4.0.into(), 4.0.into()),
+            EinString::from("")
         );
     }
 
     #[test]
     fn slice_with_emojis() {
         assert_eq!(
-            EinString::from("😀😉😂")
-                .slice(2.0.into(), 2.0.into())
-                .as_slice(),
-            EinString::from("😉").as_slice()
+            EinString::from("😀😉😂").slice(2.0.into(), 2.0.into()),
+            EinString::from("😉")
         );
     }
 }
