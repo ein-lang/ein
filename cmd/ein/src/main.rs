@@ -65,7 +65,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         }
         .into(),
         string_type_configuration: app::StringTypeConfiguration {
-            equal_function_name: "ein_string_equal".into(),
+            equal_function_name: "_ein_equal_strings".into(),
         }
         .into(),
         builtin_function_set: Arc::new(

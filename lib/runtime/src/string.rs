@@ -1,7 +1,7 @@
 use std::os::raw::c_void;
 
 #[no_mangle]
-pub static ein_string_equal: ffi::Closure = ffi::Closure::new(equal_strings as *mut c_void, 2);
+pub static _ein_equal_strings: ffi::Closure = ffi::Closure::new(equal_strings as *mut c_void, 2);
 
 extern "C" fn equal_strings(
     _environment: *const c_void,
