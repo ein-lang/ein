@@ -1,4 +1,4 @@
-Feature: Builtin functions and types
+Feature: Prelude functions and types
   Background:
     Given a file named "ein.json" with:
     """
