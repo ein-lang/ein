@@ -32,7 +32,7 @@ impl<'a> PackageBuilder<'a> {
             ExternalPackage,
             HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
         >,
-        prelude_package_interfaces: &[&PackageInterface],
+        prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         self.logger.log(&format!(
             "building package {} {}",
@@ -57,7 +57,7 @@ impl<'a> PackageBuilder<'a> {
         let (object_file_paths, interface_file_paths) = self.modules_builder.build(
             &package_configuration,
             &external_module_interfaces,
-            prelude_package_interfaces,
+            prelude_package_interface,
         )?;
 
         self.modules_linker.link(

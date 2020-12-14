@@ -1,4 +1,5 @@
 mod boolean_compiler;
+mod builtin_configuration;
 mod compile_configuration;
 mod error;
 mod expression_compiler;
@@ -28,6 +29,7 @@ mod variable_compiler;
 
 use crate::ast::*;
 use boolean_compiler::BooleanCompiler;
+pub use builtin_configuration::BuiltinConfiguration;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
 use expression_compiler::{ExpressionCompiler, ExpressionCompilerSet, ExpressionTransformerSet};
@@ -70,7 +72,13 @@ pub fn compile(
     let module =
         MainFunctionDefinitionTransformer::new(names, configuration.clone()).transform(&module);
 
-    let module = transform_with_types(&infer_types(&transform_without_types(&module)?)?)?;
+    let module = transform_with_types(
+        &infer_types(
+            &transform_without_types(&module)?,
+            configuration.builtin_configuration.clone(),
+        )?,
+        configuration.builtin_configuration.clone(),
+    )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
@@ -137,6 +145,7 @@ pub fn compile(
                 expression_compiler,
                 type_compiler,
                 configuration.string_type_configuration.clone(),
+                configuration.builtin_configuration.clone(),
             )
             .compile(&module)?,
             ssf_llvm::CompileConfiguration::new(
@@ -150,6 +159,7 @@ pub fn compile(
 
 #[cfg(test)]
 mod tests {
+    use super::builtin_configuration::BUILTIN_CONFIGURATION;
     use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::string_type_configuration::STRING_TYPE_CONFIGURATION;
     use super::system_type_configuration::SYSTEM_TYPE_CONFIGURATION;
@@ -167,6 +177,7 @@ mod tests {
             list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
             string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
             system_type_configuration: SYSTEM_TYPE_CONFIGURATION.clone(),
+            builtin_configuration: BUILTIN_CONFIGURATION.clone(),
         }
         .into();
     }

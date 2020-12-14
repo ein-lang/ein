@@ -1,3 +1,4 @@
+use super::builtin_configuration::BuiltinConfiguration;
 use super::list_type_configuration::ListTypeConfiguration;
 use super::string_type_configuration::StringTypeConfiguration;
 use super::system_type_configuration::SystemTypeConfiguration;
@@ -13,6 +14,7 @@ pub struct CompileConfiguration {
     pub list_type_configuration: Arc<ListTypeConfiguration>,
     pub string_type_configuration: Arc<StringTypeConfiguration>,
     pub system_type_configuration: Arc<SystemTypeConfiguration>,
+    pub builtin_configuration: Arc<BuiltinConfiguration>,
 }
 
 impl CompileConfiguration {

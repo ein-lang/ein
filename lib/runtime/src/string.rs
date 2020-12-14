@@ -1,7 +1,7 @@
 use std::os::raw::c_void;
 
 #[no_mangle]
-pub static ein_string_equal: ffi::Closure = ffi::Closure::new(equal_strings as *mut c_void, 2);
+pub static _ein_equal_strings: ffi::Closure = ffi::Closure::new(equal_strings as *mut c_void, 2);
 
 extern "C" fn equal_strings(
     _environment: *const c_void,
@@ -9,6 +9,29 @@ extern "C" fn equal_strings(
     other: ffi::EinString,
 ) -> ffi::Boolean {
     (one.as_slice() == other.as_slice()).into()
+}
+
+#[no_mangle]
+pub static _ein_join_strings: ffi::Closure = ffi::Closure::new(join_strings as *mut c_void, 2);
+
+extern "C" fn join_strings(
+    _environment: *const c_void,
+    one: ffi::EinString,
+    other: ffi::EinString,
+) -> ffi::EinString {
+    one.join(&other)
+}
+
+#[no_mangle]
+pub static _ein_slice_string: ffi::Closure = ffi::Closure::new(slice_string as *mut c_void, 3);
+
+extern "C" fn slice_string(
+    _environment: *const c_void,
+    string: ffi::EinString,
+    start: ffi::Number,
+    end: ffi::Number,
+) -> ffi::EinString {
+    string.slice(start, end)
 }
 
 #[cfg(test)]

@@ -742,7 +742,7 @@ fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 fn unchecked_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
     choice!(
         (letter(), many(alpha_num())).boxed(),
-        (character('$'), many(choice!(alpha_num(), character('$')))).boxed(),
+        (character('_'), many(choice!(alpha_num(), character('_')))).boxed(),
     )
     .map(|(head, tail): (char, String)| [head.into(), tail].concat())
 }

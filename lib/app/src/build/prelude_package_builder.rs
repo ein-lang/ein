@@ -41,7 +41,7 @@ impl<'a> PreludePackageBuilder<'a> {
 
         let (package_object_file_path, package_interface_file_path) =
             self.package_builder
-                .build(&package_configuration, &Default::default(), &[])?;
+                .build(&package_configuration, &Default::default(), None)?;
 
         Ok((
             package_object_file_path,
