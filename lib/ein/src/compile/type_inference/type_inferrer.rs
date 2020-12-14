@@ -14,6 +14,7 @@ pub struct TypeInferrer {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_equality_checker: Arc<TypeEqualityChecker>,
     type_canonicalizer: Arc<TypeCanonicalizer>,
+    constraint_collector: ConstraintCollector,
     constraint_solver: Arc<ConstraintSolver>,
 }
 
@@ -22,17 +23,19 @@ impl TypeInferrer {
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_equality_checker: Arc<TypeEqualityChecker>,
         type_canonicalizer: Arc<TypeCanonicalizer>,
+        constraint_collector: ConstraintCollector,
         constraint_solver: Arc<ConstraintSolver>,
     ) -> Self {
         Self {
             reference_type_resolver,
             type_equality_checker,
             type_canonicalizer,
+            constraint_collector,
             constraint_solver,
         }
     }
 
-    pub fn infer(&self, module: &Module) -> Result<Module, CompileError> {
+    pub fn infer(self, module: &Module) -> Result<Module, CompileError> {
         let module = module.transform_types(&mut |type_| -> Result<_, CompileError> {
             Ok(match type_ {
                 Type::Unknown(unknown) => {
@@ -43,7 +46,7 @@ impl TypeInferrer {
         })?;
 
         let (solved_subsumption_set, mut checked_subsumption_set) =
-            ConstraintCollector::new(self.reference_type_resolver.clone()).collect(&module)?;
+            self.constraint_collector.collect(&module)?;
 
         let substitutions = self
             .constraint_solver
@@ -54,7 +57,7 @@ impl TypeInferrer {
         let checker = ConstraintChecker::new(
             substitutor.clone(),
             self.reference_type_resolver.clone(),
-            self.type_equality_checker.clone(),
+            self.type_equality_checker,
         );
 
         checker.check(checked_subsumption_set)?;
@@ -65,6 +68,9 @@ impl TypeInferrer {
 
 #[cfg(test)]
 mod tests {
+    use super::super::super::builtin_configuration::BUILTIN_CONFIGURATION;
+    use super::super::super::module_environment_creator::ModuleEnvironmentCreator;
+    use super::super::constraint_collector::ConstraintCollector;
     use super::super::constraint_converter::ConstraintConverter;
     use super::*;
     use crate::debug::*;
@@ -84,11 +90,16 @@ mod tests {
         let constraint_converter = ConstraintConverter::new(reference_type_resolver.clone());
         let constraint_solver =
             ConstraintSolver::new(constraint_converter, reference_type_resolver.clone());
+        let module_environment_creator =
+            ModuleEnvironmentCreator::new(BUILTIN_CONFIGURATION.clone());
+        let constraint_collector =
+            ConstraintCollector::new(reference_type_resolver.clone(), module_environment_creator);
 
         TypeInferrer::new(
             reference_type_resolver,
             type_equality_checker,
             type_canonicalizer,
+            constraint_collector,
             constraint_solver,
         )
         .infer(module)

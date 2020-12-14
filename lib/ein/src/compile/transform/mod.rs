@@ -12,9 +12,11 @@ mod type_coercion_transformer;
 mod typed_meta_transformer;
 mod utilities;
 
+use super::builtin_configuration::BuiltinConfiguration;
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
 use super::last_result_type_calculator::LastResultTypeCalculator;
+use super::module_environment_creator::ModuleEnvironmentCreator;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_canonicalizer::TypeCanonicalizer;
 use super::type_comparability_checker::TypeComparabilityChecker;
@@ -30,6 +32,7 @@ pub use not_equal_operation_transformer::NotEqualOperationTransformer;
 use record_element_function_transformer::RecordElementFunctionTransformer;
 use record_equal_function_transformer::RecordEqualFunctionTransformer;
 use record_update_transformer::RecordUpdateTransformer;
+use std::sync::Arc;
 use type_coercion_transformer::TypeCoercionTransformer;
 use typed_meta_transformer::TypedMetaTransformer;
 
@@ -49,7 +52,10 @@ pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> 
     RecordUpdateTransformer::new().transform(module)
 }
 
-pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
+pub fn transform_with_types(
+    module: &Module,
+    builtin_configuration: Arc<BuiltinConfiguration>,
+) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let type_canonicalizer = TypeCanonicalizer::new(
@@ -60,6 +66,7 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
+    let module_environment_creator = ModuleEnvironmentCreator::new(builtin_configuration);
 
     let mut type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
@@ -69,6 +76,7 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
             type_canonicalizer,
             last_result_type_calculator,
         ),
+        module_environment_creator,
         reference_type_resolver,
     );
 
@@ -77,13 +85,14 @@ pub fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::builtin_configuration::BUILTIN_CONFIGURATION;
     use super::*;
     use crate::debug::SourceInformation;
     use crate::types;
     use insta::assert_debug_snapshot;
 
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
-        super::transform_with_types(module)
+        super::transform_with_types(module, BUILTIN_CONFIGURATION.clone())
     }
 
     mod type_coercion {

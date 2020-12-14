@@ -26,22 +26,25 @@ pub trait TypedTransformer {
 
 pub struct TypedMetaTransformer<D> {
     component_transformer: D,
+    module_environment_creator: Arc<ModuleEnvironmentCreator>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl<D: TypedTransformer> TypedMetaTransformer<D> {
     pub fn new(
         component_transformer: D,
+        module_environment_creator: Arc<ModuleEnvironmentCreator>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
     ) -> Self {
         Self {
             component_transformer,
+            module_environment_creator,
             reference_type_resolver,
         }
     }
 
     pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
-        let variables = ModuleEnvironmentCreator::create(module);
+        let variables = self.module_environment_creator.create(module);
 
         Ok(Module::new(
             module.path().clone(),
