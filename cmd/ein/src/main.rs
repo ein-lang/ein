@@ -69,18 +69,36 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         }
         .into(),
         builtin_function_set: Arc::new(
-            vec![(
-                "_ein_join_strings".into(),
-                types::Function::new(
-                    types::EinString::new(SourceInformation::builtin()),
+            vec![
+                (
+                    "_ein_join_strings".into(),
                     types::Function::new(
                         types::EinString::new(SourceInformation::builtin()),
-                        types::EinString::new(SourceInformation::builtin()),
+                        types::Function::new(
+                            types::EinString::new(SourceInformation::builtin()),
+                            types::EinString::new(SourceInformation::builtin()),
+                            SourceInformation::builtin(),
+                        ),
                         SourceInformation::builtin(),
                     ),
-                    SourceInformation::builtin(),
                 ),
-            )]
+                (
+                    "_ein_slice_string".into(),
+                    types::Function::new(
+                        types::EinString::new(SourceInformation::builtin()),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::builtin()),
+                            types::Function::new(
+                                types::Number::new(SourceInformation::builtin()),
+                                types::EinString::new(SourceInformation::builtin()),
+                                SourceInformation::builtin(),
+                            ),
+                            SourceInformation::builtin(),
+                        ),
+                        SourceInformation::builtin(),
+                    ),
+                ),
+            ]
             .into_iter()
             .collect(),
         ),

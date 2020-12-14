@@ -22,6 +22,18 @@ extern "C" fn join_strings(
     one.join(&other)
 }
 
+#[no_mangle]
+pub static _ein_slice_string: ffi::Closure = ffi::Closure::new(slice_string as *mut c_void, 3);
+
+extern "C" fn slice_string(
+    _environment: *const c_void,
+    string: ffi::EinString,
+    start: ffi::Number,
+    end: ffi::Number,
+) -> ffi::EinString {
+    string.slice(start, end)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
