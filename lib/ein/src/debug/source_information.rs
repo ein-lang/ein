@@ -42,7 +42,7 @@ impl SourceInformation {
         }
     }
 
-    // TODO Make location and line optional.
+    // TODO Make locations and lines optional.
     pub fn builtin() -> Self {
         Self::new("<builtin>", Location::new(0, 0), "")
     }
