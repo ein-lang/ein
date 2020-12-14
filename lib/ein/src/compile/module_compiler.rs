@@ -1,3 +1,4 @@
+use super::builtin_function_set::BuiltinFunctionSet;
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::string_type_configuration::StringTypeConfiguration;
@@ -9,6 +10,7 @@ pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,
     type_compiler: Arc<TypeCompiler>,
     string_type_configuration: Arc<StringTypeConfiguration>,
+    builtin_function_set: Arc<BuiltinFunctionSet>,
 }
 
 impl ModuleCompiler {
@@ -16,11 +18,13 @@ impl ModuleCompiler {
         expression_compiler: Arc<ExpressionCompiler>,
         type_compiler: Arc<TypeCompiler>,
         string_type_configuration: Arc<StringTypeConfiguration>,
+        builtin_function_set: Arc<BuiltinFunctionSet>,
     ) -> Self {
         Self {
             expression_compiler,
             type_compiler,
             string_type_configuration,
+            builtin_function_set,
         }
     }
 
@@ -56,6 +60,15 @@ impl ModuleCompiler {
                                 }),
                         )
                 })
+                .chain(self.builtin_function_set.iter().map(|(name, type_)| {
+                    Ok(ssf::ir::Declaration::new(
+                        name,
+                        self.type_compiler
+                            .compile(&type_.clone().into())?
+                            .into_function()
+                            .unwrap(),
+                    ))
+                }))
                 .collect::<Result<Vec<_>, CompileError>>()?
                 .into_iter()
                 .chain(vec![ssf::ir::Declaration::new(
@@ -72,13 +85,15 @@ impl ModuleCompiler {
             module
                 .definitions()
                 .iter()
-                .map(|definition| match definition {
-                    Definition::FunctionDefinition(function_definition) => {
-                        Ok(self.compile_function_definition(function_definition)?)
-                    }
-                    Definition::VariableDefinition(variable_definition) => {
-                        Ok(self.compile_variable_definition(variable_definition)?)
-                    }
+                .map(|definition| {
+                    Ok(match definition {
+                        Definition::FunctionDefinition(function_definition) => {
+                            self.compile_function_definition(function_definition)?
+                        }
+                        Definition::VariableDefinition(variable_definition) => {
+                            self.compile_variable_definition(variable_definition)?
+                        }
+                    })
                 })
                 .collect::<Result<Vec<_>, CompileError>>()?,
         )?)

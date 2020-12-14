@@ -140,6 +140,7 @@ pub fn compile(
                 expression_compiler,
                 type_compiler,
                 configuration.string_type_configuration.clone(),
+                configuration.builtin_function_set.clone(),
             )
             .compile(&module)?,
             ssf_llvm::CompileConfiguration::new(

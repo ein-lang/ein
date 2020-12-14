@@ -11,6 +11,17 @@ extern "C" fn equal_strings(
     (one.as_slice() == other.as_slice()).into()
 }
 
+#[no_mangle]
+pub static _ein_join_strings: ffi::Closure = ffi::Closure::new(join_strings as *mut c_void, 2);
+
+extern "C" fn join_strings(
+    _environment: *const c_void,
+    one: ffi::EinString,
+    other: ffi::EinString,
+) -> ffi::EinString {
+    one.join(&other)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -70,7 +70,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
         .into(),
         builtin_function_set: Arc::new(
             vec![(
-                "ein_string_join".into(),
+                "_ein_join_strings".into(),
                 types::Function::new(
                     types::EinString::new(SourceInformation::builtin()),
                     types::Function::new(
