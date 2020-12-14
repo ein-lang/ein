@@ -24,13 +24,6 @@ const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
 lazy_static! {
-    static ref RESERVED_IDENTIFIERS: HashSet<&'static str> = KEYWORDS
-        .iter()
-        .cloned()
-        .chain(vec![
-            "Any", "Boolean", "False", "List", "None", "Number", "True"
-        ])
-        .collect();
     static ref NUMBER_REGEX: regex::Regex =
         regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
     static ref STRING_REGEX: regex::Regex = regex::Regex::new(r#"^[^\\"]"#).unwrap();
@@ -731,7 +724,7 @@ fn identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
 
 fn raw_identifier<'a>() -> impl Parser<Stream<'a>, Output = String> {
     unchecked_identifier().then(|identifier| {
-        if RESERVED_IDENTIFIERS.contains(identifier.as_str()) {
+        if KEYWORDS.contains(&identifier.as_str()) {
             unexpected_any("keyword").left()
         } else {
             value(identifier).right()
