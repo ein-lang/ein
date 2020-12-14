@@ -12,7 +12,7 @@ mod type_coercion_transformer;
 mod typed_meta_transformer;
 mod utilities;
 
-use super::builtin_function_set::BuiltinFunctionSet;
+use super::builtin_configuration::BuiltinConfiguration;
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
 use super::last_result_type_calculator::LastResultTypeCalculator;
@@ -54,7 +54,7 @@ pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> 
 
 pub fn transform_with_types(
     module: &Module,
-    builtin_function_set: Arc<BuiltinFunctionSet>,
+    builtin_configuration: Arc<BuiltinConfiguration>,
 ) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
@@ -66,7 +66,7 @@ pub fn transform_with_types(
         ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
-    let module_environment_creator = ModuleEnvironmentCreator::new(builtin_function_set);
+    let module_environment_creator = ModuleEnvironmentCreator::new(builtin_configuration);
 
     let mut type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
@@ -85,13 +85,14 @@ pub fn transform_with_types(
 
 #[cfg(test)]
 mod tests {
+    use super::super::builtin_configuration::BUILTIN_CONFIGURATION;
     use super::*;
     use crate::debug::SourceInformation;
     use crate::types;
     use insta::assert_debug_snapshot;
 
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
-        super::transform_with_types(module, BuiltinFunctionSet::new().into())
+        super::transform_with_types(module, BUILTIN_CONFIGURATION.clone())
     }
 
     mod type_coercion {

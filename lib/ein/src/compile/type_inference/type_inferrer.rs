@@ -68,7 +68,7 @@ impl TypeInferrer {
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::builtin_function_set::BuiltinFunctionSet;
+    use super::super::super::builtin_configuration::BUILTIN_CONFIGURATION;
     use super::super::super::module_environment_creator::ModuleEnvironmentCreator;
     use super::super::constraint_collector::ConstraintCollector;
     use super::super::constraint_converter::ConstraintConverter;
@@ -91,7 +91,7 @@ mod tests {
         let constraint_solver =
             ConstraintSolver::new(constraint_converter, reference_type_resolver.clone());
         let module_environment_creator =
-            ModuleEnvironmentCreator::new(BuiltinFunctionSet::new().into());
+            ModuleEnvironmentCreator::new(BUILTIN_CONFIGURATION.clone());
         let constraint_collector =
             ConstraintCollector::new(reference_type_resolver.clone(), module_environment_creator);
 

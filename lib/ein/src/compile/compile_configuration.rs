@@ -1,4 +1,4 @@
-use super::builtin_function_set::BuiltinFunctionSet;
+use super::builtin_configuration::BuiltinConfiguration;
 use super::list_type_configuration::ListTypeConfiguration;
 use super::string_type_configuration::StringTypeConfiguration;
 use std::sync::Arc;
@@ -11,5 +11,5 @@ pub struct CompileConfiguration {
     pub panic_function_name: String,
     pub list_type_configuration: Arc<ListTypeConfiguration>,
     pub string_type_configuration: Arc<StringTypeConfiguration>,
-    pub builtin_function_set: Arc<BuiltinFunctionSet>,
+    pub builtin_configuration: Arc<BuiltinConfiguration>,
 }

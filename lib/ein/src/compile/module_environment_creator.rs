@@ -1,17 +1,17 @@
-use super::builtin_function_set::BuiltinFunctionSet;
+use super::builtin_configuration::BuiltinConfiguration;
 use crate::ast::*;
 use crate::types::Type;
 use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct ModuleEnvironmentCreator {
-    builtin_function_set: Arc<BuiltinFunctionSet>,
+    builtin_configuration: Arc<BuiltinConfiguration>,
 }
 
 impl ModuleEnvironmentCreator {
-    pub fn new(builtin_function_set: Arc<BuiltinFunctionSet>) -> Arc<Self> {
+    pub fn new(builtin_configuration: Arc<BuiltinConfiguration>) -> Arc<Self> {
         Self {
-            builtin_function_set,
+            builtin_configuration,
         }
         .into()
     }
@@ -19,7 +19,7 @@ impl ModuleEnvironmentCreator {
     pub fn create(&self, module: &Module) -> HashMap<String, Type> {
         let mut variables = HashMap::<String, Type>::new();
 
-        for (name, type_) in self.builtin_function_set.as_ref() {
+        for (name, type_) in &self.builtin_configuration.functions {
             variables.insert(name.into(), type_.clone().into());
         }
 

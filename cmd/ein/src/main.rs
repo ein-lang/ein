@@ -68,8 +68,8 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             equal_function_name: "_ein_equal_strings".into(),
         }
         .into(),
-        builtin_function_set: Arc::new(
-            vec![
+        builtin_configuration: Arc::new(ein::BuiltinConfiguration {
+            functions: vec![
                 (
                     "_ein_join_strings".into(),
                     types::Function::new(
@@ -101,7 +101,7 @@ fn build() -> Result<(), Box<dyn std::error::Error>> {
             ]
             .into_iter()
             .collect(),
-        ),
+        }),
     }
     .into();
     let module_compiler = app::ModuleCompiler::new(

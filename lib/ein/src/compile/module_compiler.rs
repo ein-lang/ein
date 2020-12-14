@@ -1,4 +1,4 @@
-use super::builtin_function_set::BuiltinFunctionSet;
+use super::builtin_configuration::BuiltinConfiguration;
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::string_type_configuration::StringTypeConfiguration;
@@ -10,7 +10,7 @@ pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,
     type_compiler: Arc<TypeCompiler>,
     string_type_configuration: Arc<StringTypeConfiguration>,
-    builtin_function_set: Arc<BuiltinFunctionSet>,
+    builtin_configuration: Arc<BuiltinConfiguration>,
 }
 
 impl ModuleCompiler {
@@ -18,13 +18,13 @@ impl ModuleCompiler {
         expression_compiler: Arc<ExpressionCompiler>,
         type_compiler: Arc<TypeCompiler>,
         string_type_configuration: Arc<StringTypeConfiguration>,
-        builtin_function_set: Arc<BuiltinFunctionSet>,
+        builtin_configuration: Arc<BuiltinConfiguration>,
     ) -> Self {
         Self {
             expression_compiler,
             type_compiler,
             string_type_configuration,
-            builtin_function_set,
+            builtin_configuration,
         }
     }
 
@@ -60,15 +60,20 @@ impl ModuleCompiler {
                                 }),
                         )
                 })
-                .chain(self.builtin_function_set.iter().map(|(name, type_)| {
-                    Ok(ssf::ir::Declaration::new(
-                        name,
-                        self.type_compiler
-                            .compile(&type_.clone().into())?
-                            .into_function()
-                            .unwrap(),
-                    ))
-                }))
+                .chain(
+                    self.builtin_configuration
+                        .functions
+                        .iter()
+                        .map(|(name, type_)| {
+                            Ok(ssf::ir::Declaration::new(
+                                name,
+                                self.type_compiler
+                                    .compile(&type_.clone().into())?
+                                    .into_function()
+                                    .unwrap(),
+                            ))
+                        }),
+                )
                 .collect::<Result<Vec<_>, CompileError>>()?
                 .into_iter()
                 .chain(vec![ssf::ir::Declaration::new(
