@@ -8,7 +8,6 @@ use std::os::unix::io::FromRawFd;
 #[repr(C)]
 pub struct System {
     fd_write: *const ffi::Closure,
-    stdout: ffi::Number,
 }
 
 unsafe impl Sync for System {}
@@ -17,7 +16,6 @@ static FD_WRITE: ffi::Closure = ffi::Closure::new(system_fd_write as *const c_vo
 
 pub static SYSTEM: System = System {
     fd_write: &FD_WRITE,
-    stdout: ffi::Number::new(1.0),
 };
 
 extern "C" fn system_fd_write(

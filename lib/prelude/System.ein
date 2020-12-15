@@ -2,7 +2,6 @@ export { System, fdWrite, stdout }
 
 type System {
   fdWrite : Number -> String -> Number,
-  stdout : Number,
 }
 
 fdWrite : System -> Number -> String -> Number
