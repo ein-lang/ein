@@ -4,7 +4,20 @@
 [![Codecov](https://img.shields.io/codecov/c/github/ein-lang/ein.svg?style=flat-square)](https://codecov.io/gh/ein-lang/ein)
 [![License](https://img.shields.io/github/license/ein-lang/ein.svg?style=flat-square)](LICENSE)
 
-The deterministic functional programming language
+The functional programming language for scalable development.
+
+## Install
+
+- It requires LLVM 10 or later installed on your system.
+
+```
+cargo install --git https://github.com/ein-lang/ein
+```
+
+## Documentation
+
+- [Guide](doc/guide.md)
+- [Language specification](doc/language_specification.md)
 
 ## License
 
