@@ -26,14 +26,14 @@ Feature: Case expressions
   Scenario: Bind a variable with a union type
     Given a file named "Main.ein" with:
     """
-		x : Number | Boolean | None
-		x = None
+    x : Number | Boolean | None
+    x = None
 
     main : System -> Number
     main system =
-      case _ = x
+      case x = x
         Number | None => 0
-				Boolean => 1
+        Boolean => 1
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`

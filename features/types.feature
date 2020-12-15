@@ -14,10 +14,10 @@ Feature: Types
     Given a file named "Foo.ein" with:
     """
     x : Boolean
-		x = True
+    x = True
 
     y : Boolean
-		y = False
+    y = False
     """
     When I run `ein build`
     Then the exit status should be 0
