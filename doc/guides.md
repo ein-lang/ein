@@ -1,4 +1,4 @@
-# Guide
+# Guides
 
 ## Creating a command
 
