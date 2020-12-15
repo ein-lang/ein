@@ -1,5 +1,5 @@
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum InitTarget {
+pub enum ProjectInitializationTarget {
     Command,
     Library,
 }
