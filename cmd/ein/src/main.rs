@@ -20,13 +20,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .subcommand(clap::SubCommand::with_name("build"))
         .subcommand(
             clap::SubCommand::with_name("init")
-                .arg(clap::Arg::with_name("target").index(1).required(true)),
+                .arg(clap::Arg::with_name("target").index(1).required(true))
+                .arg(clap::Arg::with_name("directory").index(2).required(true)),
         )
         .get_matches()
         .subcommand()
     {
         ("build", _) => build(),
-        ("init", matches) => init(matches.unwrap().value_of("target").unwrap()),
+        ("init", matches) => {
+            let matches = matches.unwrap();
+
+            init(
+                matches.value_of("target").unwrap(),
+                matches.value_of("directory").unwrap(),
+            )
+        }
         _ => unreachable!(),
     }
 }

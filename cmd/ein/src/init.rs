@@ -1,5 +1,5 @@
-pub fn init(target: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let file_path_converter = infra::FilePathConverter::new(std::env::current_dir()?);
+pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let file_path_converter = infra::FilePathConverter::new(directory);
     let file_storage = infra::FileStorage::new(&file_path_converter);
     let project_initializer = app::ProjectInitializer::new(&file_storage);
 

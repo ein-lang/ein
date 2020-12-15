@@ -2,7 +2,7 @@ use super::init_target::InitTarget;
 use crate::build::{BuildConfiguration, CommandTarget, Target};
 use crate::infra::{FilePath, FileStorage};
 
-const DEFAULT_COMMAND_NAME: &str = "foo";
+const DEFAULT_COMMAND_NAME: &str = "main";
 const DEFAULT_MAIN_FILENAME: &str = "Main.ein";
 
 pub struct ProjectInitializer<'a> {
