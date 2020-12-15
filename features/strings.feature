@@ -17,13 +17,12 @@ Feature: Strings
     foo : String
     foo = ""
 
-    main : Number -> Number
-    main x = 42
+    main : System -> Number
+    main system = 0
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    Then the exit status should be 0
 
   Scenario: Create a non-empty string
     Given a file named "Main.ein" with:
@@ -31,24 +30,22 @@ Feature: Strings
     foo : String
     foo = "foo"
 
-    main : Number -> Number
-    main x = 42
+    main : System -> Number
+    main system = 0
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    Then the exit status should be 0
 
   Scenario: Compare strings
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       if "foo" == "foo" && "foo" /= "bar"
-      then 42
-      else 13
+      then 0
+      else 1
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    Then the exit status should be 0

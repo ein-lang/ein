@@ -4,8 +4,7 @@ Feature: Error
     """
     {
       "target": {
-        "type": "Command",
-        "name": "foo"
+        "type": "Library"
       },
       "dependencies": {}
     }
@@ -16,9 +15,6 @@ Feature: Error
     """
     x : Error
     x = error 42
-
-    main : Number -> Number
-    main x = 42
     """
     When I run `ein build`
     Then the exit status should be 0

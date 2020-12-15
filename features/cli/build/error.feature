@@ -15,10 +15,10 @@ Feature: Error
     Given a file named "Main.ein" with:
     """
     f : Number
-    f = 42
+    f = 0
 
-    main : Number -> Number
-    main x = f x
+    main : System -> Number
+    main system = f 0
     """
     When I run `ein build`
     Then stderr from "ein build" should contain "types not matched"
@@ -33,8 +33,8 @@ Feature: Error
     a : Number
     a = 42
 
-    main : Number -> Number
-    main x = x
+    main : System -> Number
+    main system = 0
     """
     When I run `ein build`
     Then stderr from "ein build" should contain "duplicate names"

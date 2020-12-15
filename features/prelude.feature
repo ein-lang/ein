@@ -7,15 +7,23 @@ Feature: Prelude functions and types
         "type": "Command",
         "name": "foo"
       },
-      "dependencies": {}
+      "dependencies": {
+        "github.com/ein-lang/std": { "version": "main" }
+      }
     }
     """
 
   Scenario: Use not function
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = if not False then 42 else 13
+    import "github.com/ein-lang/std/Number"
+
+    main : System -> Number
+    main system =
+      let
+        _ = fdWrite system stdout (Number.string (if not False then 42 else 13))
+      in
+        0
     """
     And I successfully run `ein build`
     When I run `sh -c ./foo`

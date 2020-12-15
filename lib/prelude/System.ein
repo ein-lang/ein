@@ -8,5 +8,5 @@ type System {
 fdWrite : System -> Number -> String -> Number
 fdWrite = System.fdWrite
 
-stdout : System -> Number
-stdout = System.stdout
+stdout : Number
+stdout = 1

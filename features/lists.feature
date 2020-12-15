@@ -4,60 +4,44 @@ Feature: Lists
     """
     {
       "target": {
-        "type": "Command",
-        "name": "foo"
+        "type": "Library"
       },
       "dependencies": {}
     }
     """
 
   Scenario: Create an empty list
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     foo : List Number
     foo = []
-
-    main : Number -> Number
-    main x = 42
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Create a list with an element
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     foo : List Number
     foo = [ 42 ]
-
-    main : Number -> Number
-    main x = 42
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Prepend an element to a list
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     foo : List Number -> List Number
     foo x = [ 42, ...x ]
-
-    main : Number -> Number
-    main x = 42
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use a list case expression
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    main : Number -> Number
-    main z =
+    foo : Number
+    foo =
       case [ 29, 13 ]
         [] => 13
         [ x, ...xs ] =>
@@ -65,7 +49,5 @@ Feature: Lists
             [] => 13
             [ y, ...ys ] => x + y
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0

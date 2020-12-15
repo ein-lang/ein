@@ -14,8 +14,8 @@ Feature: Expressions
   Scenario: Apply a function of a let expression to arguments
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       (
         let
           f : Number -> Number
@@ -23,61 +23,51 @@ Feature: Expressions
         in
           f
       )
-      x
+      0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use if expressions
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = if True then 42 else 13
+    main : System -> Number
+    main system = if True then 0 else 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use arithmetic operators
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = 0 + 1 * 3 - 4 / 2
+    main : System -> Number
+    main system = 0 + 1 * 1 - 1 / 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "1"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use an equal operator with numbers
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = if x == 0 then 13 else 42
+    main : System -> Number
+    main system = if 0 == 1 then 1 else 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use an equal operator with records
     Given a file named "Main.ein" with:
     """
     type Foo { foo : Number, bar : Boolean }
 
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       if Foo{ foo = 42, bar = True } == Foo{ foo = 42, bar = True }
-      then 42
-      else 13
+      then 0
+      else 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use an equal operator with unions
     Given a file named "Main.ein" with:
@@ -88,32 +78,26 @@ Feature: Expressions
     b : Number | None
     b = None
 
-    main : Number -> Number
-    main x = if a == b then 13 else 42
+    main : System -> Number
+    main system = if a == b then 1 else 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use a not-equal operator
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = if 1 /= 2 then 42 else 13
+    main : System -> Number
+    main system = if 1 /= 2 then 0 else 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use boolean operators
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = if False || True && True then 42 else 13
+    main : System -> Number
+    main system = if False || True && True then 0 else 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
