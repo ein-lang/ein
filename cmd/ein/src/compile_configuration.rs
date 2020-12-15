@@ -4,13 +4,13 @@ use lazy_static::lazy_static;
 use std::sync::Arc;
 
 lazy_static! {
-    pub static ref COMPILE_CONFIGURATION: Arc<app::CompileConfiguration> =
-        app::CompileConfiguration {
+    pub static ref COMPILE_CONFIGURATION: Arc<ein::CompileConfiguration> =
+        ein::CompileConfiguration {
             source_main_function_name: "main".into(),
             object_main_function_name: "ein_main".into(),
             malloc_function_name: "ein_malloc".into(),
             panic_function_name: "ein_panic".into(),
-            list_type_configuration: app::ListTypeConfiguration {
+            list_type_configuration: ein::ListTypeConfiguration {
                 empty_list_variable_name: "_emptyList".into(),
                 concatenate_function_name: "_concatenateLists".into(),
                 equal_function_name: "_equalLists".into(),
@@ -22,11 +22,11 @@ lazy_static! {
                 first_rest_type_name: "_FirstRest".into(),
             }
             .into(),
-            string_type_configuration: app::StringTypeConfiguration {
+            string_type_configuration: ein::StringTypeConfiguration {
                 equal_function_name: "_ein_equal_strings".into(),
             }
             .into(),
-            system_type_configuration: app::SystemTypeConfiguration {
+            system_type_configuration: ein::SystemTypeConfiguration {
                 system_type_name: "System".into(),
             }
             .into(),
