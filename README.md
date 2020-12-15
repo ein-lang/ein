@@ -6,6 +6,18 @@
 
 The functional programming language for scalable development.
 
+## Install
+
+- It requires LLVM 10 or later installed on your system.
+
+```
+cargo install --git https://github.com/ein-lang/ein
+```
+
+## Documentation
+
+- [Type system](doc/type_system.md)
+
 ## License
 
 [MIT](LICENSE)
