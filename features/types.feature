@@ -4,37 +4,29 @@ Feature: Types
     """
     {
       "target": {
-        "type": "Command",
-        "name": "foo"
+        "type": "Library"
       },
       "dependencies": {}
     }
     """
 
   Scenario: Use Boolean type
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    f : Boolean -> Boolean -> Number
-    f x y = 42
+    x : Boolean
+    x = True
 
-    main : Number -> Number
-    main x = f False True
+    y : Boolean
+    y = False
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use None type
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    f : None -> Number
-    f x = 42
-
-    main : Number -> Number
-    main x = f None
+    x : None
+    x = None
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0

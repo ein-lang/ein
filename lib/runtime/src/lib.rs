@@ -1,5 +1,7 @@
 mod main_;
+mod number;
 mod string;
+mod system;
 
 use std::alloc::Layout;
 use std::io::Write;

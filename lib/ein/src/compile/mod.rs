@@ -17,6 +17,7 @@ mod name_generator;
 mod none_compiler;
 mod reference_type_resolver;
 mod string_type_configuration;
+mod system_type_configuration;
 mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
@@ -44,6 +45,7 @@ use none_compiler::NoneCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 pub use string_type_configuration::StringTypeConfiguration;
+pub use system_type_configuration::SystemTypeConfiguration;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
@@ -65,11 +67,11 @@ pub fn compile(
     let module = transform_before_name_qualification(&module)?;
 
     let names = GlobalNameMapCreator::create(&module);
+    let configuration = Arc::new(configuration.qualify(&names));
     let module = GlobalNameRenamer::new(names.clone()).rename(&module);
-    let module = MainFunctionDefinitionTransformer::new(names.clone(), configuration.clone())
-        .transform(&module);
+    let module =
+        MainFunctionDefinitionTransformer::new(names, configuration.clone()).transform(&module);
 
-    let list_type_configuration = Arc::new(configuration.list_type_configuration.qualify(&names));
     let module = transform_with_types(
         &infer_types(
             &transform_without_types(&module)?,
@@ -87,7 +89,7 @@ pub fn compile(
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
         union_tag_calculator.clone(),
-        list_type_configuration.clone(),
+        configuration.list_type_configuration.clone(),
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let none_compiler = NoneCompiler::new(type_compiler.clone());
@@ -97,20 +99,22 @@ pub fn compile(
         reference_type_resolver.clone(),
         type_comparability_checker,
         type_equality_checker.clone(),
-        list_type_configuration.clone(),
+        configuration.list_type_configuration.clone(),
     );
     let not_equal_operation_transformer = NotEqualOperationTransformer::new();
     let list_literal_transformer = ListLiteralTransformer::new(
         reference_type_resolver.clone(),
-        list_type_configuration.clone(),
+        configuration.list_type_configuration.clone(),
     );
     let boolean_operation_transformer = BooleanOperationTransformer::new();
     let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
         type_equality_checker,
         reference_type_resolver.clone(),
     );
-    let list_case_transformer =
-        ListCaseTransformer::new(reference_type_resolver.clone(), list_type_configuration);
+    let list_case_transformer = ListCaseTransformer::new(
+        reference_type_resolver.clone(),
+        configuration.list_type_configuration.clone(),
+    );
 
     let expression_compiler = ExpressionCompiler::new(
         ExpressionCompilerSet {
@@ -158,6 +162,7 @@ mod tests {
     use super::builtin_configuration::BUILTIN_CONFIGURATION;
     use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::string_type_configuration::STRING_TYPE_CONFIGURATION;
+    use super::system_type_configuration::SYSTEM_TYPE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
     use crate::types;
@@ -171,6 +176,7 @@ mod tests {
             panic_function_name: "ein_panic".into(),
             list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
             string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
+            system_type_configuration: SYSTEM_TYPE_CONFIGURATION.clone(),
             builtin_configuration: BUILTIN_CONFIGURATION.clone(),
         }
         .into();

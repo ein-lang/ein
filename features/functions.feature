@@ -4,8 +4,7 @@ Feature: Functions
     """
     {
       "target": {
-        "type": "Command",
-        "name": "foo"
+        "type": "Library"
       },
       "dependencies": {}
     }
@@ -14,13 +13,11 @@ Feature: Functions
   Scenario: Use an argument
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = x
+    f : Number -> Number
+    f x = x
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Apply a function to arguments
     Given a file named "Main.ein" with:
@@ -28,13 +25,11 @@ Feature: Functions
     f : Number -> Number
     f x = x
 
-    main : Number -> Number
-    main x = f x
+    a : Number
+    a = f 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use multiple arguments
     Given a file named "Main.ein" with:
@@ -42,13 +37,11 @@ Feature: Functions
     f : Number -> Number -> Number
     f x y = x
 
-    main : Number -> Number
-    main x = f x 13
+    a : Number
+    a = f 0 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Define a function with an omitted argument
     Given a file named "Main.ein" with:
@@ -56,13 +49,11 @@ Feature: Functions
     f : Number -> Number
     f x = x
 
-    main : Number -> Number
-    main = f
+    g : Number -> Number
+    g = f
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Define a function with one of its arguments omitted
     Given a file named "Main.ein" with:
@@ -73,14 +64,9 @@ Feature: Functions
         g y = x
       in
         g
-
-    main : Number -> Number
-    main x = f x 13
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Handle covariance and contravariance
     Given a file named "Main.ein" with:
@@ -89,12 +75,10 @@ Feature: Functions
     f x = 42
 
     g : (Number -> Number | None) -> Number
-    g h = let x = h 42 in 42
+    g h = let x = h 0 in 0
 
-    main : Number -> Number
-    main x = g f
+    a : Number
+    a = g f
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0

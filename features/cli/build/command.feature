@@ -14,34 +14,31 @@ Feature: Command
   Scenario: Build a command
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = x
+    main : System -> Number
+    main system = 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Build a command twice
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = x
+    main : System -> Number
+    main system = 0
     """
-    And I successfully run `ein build`
-    When I run `ein build`
-    Then the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Build a command in an inner directory
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x = x
+    main : System -> Number
+    main system = 0
     """
     And a directory named "Foo"
     And I cd to "Foo"
-    When I run `ein build`
-    Then the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Build a command with a dependency
     Given a file named "ein.json" with:
@@ -60,10 +57,8 @@ Feature: Command
     """
     import "github.com/ein-lang/sample-package/Foo"
 
-    main : Number -> Number
-    main = Foo.foo
+    main : System -> Number
+    main system = Foo.foo 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`

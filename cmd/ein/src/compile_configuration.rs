@@ -26,6 +26,10 @@ lazy_static! {
                 equal_function_name: "_ein_equal_strings".into(),
             }
             .into(),
+            system_type_configuration: app::SystemTypeConfiguration {
+                system_type_name: "System".into(),
+            }
+            .into(),
             builtin_configuration: Arc::new(ein::BuiltinConfiguration {
                 functions: vec![
                     (
@@ -53,6 +57,14 @@ lazy_static! {
                                 ),
                                 SourceInformation::builtin(),
                             ),
+                            SourceInformation::builtin(),
+                        ),
+                    ),
+                    (
+                        "_ein_number_to_string".into(),
+                        types::Function::new(
+                            types::Number::new(SourceInformation::builtin()),
+                            types::EinString::new(SourceInformation::builtin()),
                             SourceInformation::builtin(),
                         ),
                     ),

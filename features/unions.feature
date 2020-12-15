@@ -4,39 +4,28 @@ Feature: Union types
     """
     {
       "target": {
-        "type": "Command",
-        "name": "foo"
+        "type": "Library"
       },
       "dependencies": {}
     }
     """
 
   Scenario: Define a union value
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    foo : Boolean | None
-    foo = True
-
-    main : Number -> Number
-    main x = 42
+    foo : Number | None
+    foo = 42
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Define a union type
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    type Foo = Boolean | None
+    type Foo = Number | None
 
     foo : Foo
-    foo = True
-
-    main : Number -> Number
-    main x = 42
+    foo = 42
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I run `ein build`
+    Then the exit status should be 0

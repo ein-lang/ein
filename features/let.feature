@@ -14,96 +14,84 @@ Feature: Let expressions
   Scenario: Use let-values expression
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       let
         y : Number
-        y = x
+        y = 0
       in
         y
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use untyped let-values expression
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       let
-        y = x
+        y = 0
       in
         y
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use nested let-values expression
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       let
         y =
           let
-            z = x
+            z = 0
           in
             z
       in
         y
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use let-functions expression
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       let
         f : Number -> Number
         f y = y
       in
-        f x
+        f 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Use untyped let-functions expression
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       let
         f y = y
       in
-        f x
+        f 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Define multiple functions in a let-functions expression
     Given a file named "Main.ein" with:
     """
-    main : Number -> Number
-    main x =
+    main : System -> Number
+    main system =
       let
         f y = y
         g z = f z
       in
-        g x
+        g 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
-    Then stdout from "sh -c ./foo" should contain exactly "42"
-    And the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`

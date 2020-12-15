@@ -92,9 +92,21 @@ impl PartialEq for EinString {
     }
 }
 
-impl From<&str> for EinString {
-    fn from(string: &str) -> Self {
+impl From<&'static str> for EinString {
+    fn from(string: &'static str) -> Self {
         let bytes = string.as_bytes();
+
+        Self {
+            bytes: bytes.as_ptr(),
+            length: bytes.len(),
+        }
+    }
+}
+
+impl From<String> for EinString {
+    fn from(string: String) -> Self {
+        // TODO Use Vec::into_raw_parts() instead when it's stabilized.
+        let bytes = string.into_bytes().leak::<'static>();
 
         Self {
             bytes: bytes.as_ptr(),

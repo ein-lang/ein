@@ -1,0 +1,11 @@
+export { System, fdWrite, stdout }
+
+type System {
+  fdWrite : Number -> String -> Number,
+}
+
+fdWrite : System -> Number -> String -> Number
+fdWrite = System.fdWrite
+
+stdout : Number
+stdout = 1
