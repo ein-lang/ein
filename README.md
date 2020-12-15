@@ -16,7 +16,8 @@ cargo install --git https://github.com/ein-lang/ein
 
 ## Documentation
 
-- [Type system](doc/type_system.md)
+- [Types](doc/types.md)
+- [Expressions](doc/expressions.md)
 
 ## License
 
