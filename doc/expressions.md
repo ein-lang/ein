@@ -36,6 +36,7 @@ True || True
 ```
 "foo" == "bar"
 Foo{ foo : 0 } == Foo{ foo : 1 }
+42 /= None
 ```
 
 ## Function applications
