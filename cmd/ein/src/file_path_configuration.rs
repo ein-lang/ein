@@ -10,6 +10,7 @@ lazy_static! {
             "package",
             "ein",
             "bc",
-            "json"
+            "json",
+            "Main"
         );
 }
