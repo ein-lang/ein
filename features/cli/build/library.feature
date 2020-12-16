@@ -1,15 +1,7 @@
 Feature: Library
   Scenario: Build a library
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Library"
-      },
-      "dependencies": {}
-    }
-    """
-    And a file named "Foo.ein" with:
+    Given I successfully run `ein init library .`
+    And a file named "Main.ein" with:
     """
     export { foo }
 

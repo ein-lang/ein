@@ -1,14 +1,6 @@
 Feature: Types
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Library"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init library .`
 
   Scenario: Use Boolean type
     Given a file named "Foo.ein" with:

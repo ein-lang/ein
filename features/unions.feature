@@ -1,14 +1,6 @@
 Feature: Union types
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Library"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init library .`
 
   Scenario: Define a union value
     Given a file named "Foo.ein" with:

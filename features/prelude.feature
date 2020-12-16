@@ -1,15 +1,7 @@
 Feature: Prelude functions and types
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init command foo`
+    And I cd to "foo"
 
   Scenario: Use not function
     Given a file named "Main.ein" with:

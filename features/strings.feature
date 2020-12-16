@@ -1,15 +1,7 @@
 Feature: Strings
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init command foo`
+    And I cd to "foo"
 
   Scenario: Create an empty string
     Given a file named "Main.ein" with:
