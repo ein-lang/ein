@@ -47,7 +47,10 @@ f x y z
 ## If expressions
 
 ```
-if True then 42 else 13
+if True then
+  ...
+else
+  ...
 ```
 
 ## Case expressions
