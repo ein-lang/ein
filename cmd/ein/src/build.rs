@@ -59,27 +59,32 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_storage,
         &file_path_manager,
     );
-
-    app::MainPackageBuilder::new(
+    let command_linker = infra::CommandLinker::new(
+        &command_runner,
+        &file_path_converter,
+        root_directory.join("target/release/libruntime.a"),
+    );
+    let external_package_downloader = infra::ExternalPackageDownloader::new();
+    let external_packages_downloader = app::ExternalPackagesDownloader::new(
+        &package_configuration_reader,
+        &external_package_downloader,
+        &file_storage,
+        &file_path_manager,
+        &logger,
+    );
+    let external_packages_builder =
+        app::ExternalPackagesBuilder::new(&package_builder, &file_storage);
+    let main_package_builder = app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,
-        &infra::CommandLinker::new(
-            &command_runner,
-            &file_path_converter,
-            root_directory.join("target/release/libruntime.a"),
-        ),
+        &command_linker,
         &prelude_package_builder,
-        &app::ExternalPackagesDownloader::new(
-            &package_configuration_reader,
-            &infra::ExternalPackageDownloader::new(),
-            &file_storage,
-            &file_path_manager,
-            &logger,
-        ),
-        &app::ExternalPackagesBuilder::new(&package_builder, &file_storage),
+        &external_packages_downloader,
+        &external_packages_builder,
         &logger,
-    )
-    .build()
+    );
+
+    main_package_builder.build()
 }
 
 fn find_package_directory() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
