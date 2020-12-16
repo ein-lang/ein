@@ -1,14 +1,6 @@
 Feature: Records
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Library"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init library .`
 
   Scenario: Define a record value
     Given a file named "Main.ein" with:

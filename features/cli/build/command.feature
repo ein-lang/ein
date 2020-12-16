@@ -1,15 +1,7 @@
 Feature: Command
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Command",
-        "name": "foo"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init command foo`
+    And I cd to "foo"
 
   Scenario: Build a command
     Given a file named "Main.ein" with:

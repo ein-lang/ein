@@ -1,14 +1,6 @@
 Feature: Functions
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Library"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init library .`
 
   Scenario: Use an argument
     Given a file named "Main.ein" with:

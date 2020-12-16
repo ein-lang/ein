@@ -15,6 +15,7 @@ pub struct FilePathConfiguration {
     package_interface_file_path: FilePath,
     external_packages_directory_path: FilePath,
     prelude_package_directory_path: FilePath,
+    main_source_file_path: FilePath,
 }
 
 impl FilePathConfiguration {
@@ -25,6 +26,7 @@ impl FilePathConfiguration {
         source_file_extension: impl Into<String> + std::fmt::Display,
         object_file_extension: impl Into<String> + std::fmt::Display,
         interface_file_extension: impl Into<String> + std::fmt::Display,
+        main_file_basename: impl Into<String>,
     ) -> Self {
         let output_directory_path = FilePath::new(&[output_directory_name.into()]);
         let package_object_filename =
@@ -33,6 +35,7 @@ impl FilePathConfiguration {
             format!("{}.{}", package_artifact_basename, interface_file_extension,);
         let external_packages_directory_path =
             output_directory_path.join(&FilePath::new(&[EXTERNAL_PACKAGES_DIRECTORY]));
+        let source_file_extension = source_file_extension.into();
 
         Self {
             interface_file_extension: interface_file_extension.into(),
@@ -44,7 +47,9 @@ impl FilePathConfiguration {
                 .join(&FilePath::new(&[PRELUDE_PACKAGE_DIRECTORY])),
             external_packages_directory_path,
             object_directory_path: output_directory_path.join(&FilePath::new(&[OBJECT_DIRECTORY])),
-            source_file_extension: source_file_extension.into(),
+            main_source_file_path: FilePath::new(&[main_file_basename.into()])
+                .with_extension(&source_file_extension),
+            source_file_extension,
             object_file_extension: object_file_extension.into(),
             output_directory_path,
             build_configuration_file_path: FilePath::new(&[build_configuration_filename.into()]),
@@ -89,5 +94,9 @@ impl FilePathConfiguration {
 
     pub fn prelude_package_directory_path(&self) -> &FilePath {
         &self.prelude_package_directory_path
+    }
+
+    pub fn main_source_file_path(&self) -> &FilePath {
+        &self.main_source_file_path
     }
 }

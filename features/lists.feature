@@ -1,14 +1,6 @@
 Feature: Lists
   Background:
-    Given a file named "ein.json" with:
-    """
-    {
-      "target": {
-        "type": "Library"
-      },
-      "dependencies": {}
-    }
-    """
+    Given I successfully run `ein init library .`
 
   Scenario: Create an empty list
     Given a file named "Foo.ein" with:
