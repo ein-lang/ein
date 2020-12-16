@@ -29,3 +29,41 @@ case x = y
   Foo => ...
   Bar | Baz => ...
 ```
+
+## Operators
+
+### Number
+
+#### Arithmetics
+
+```
+1 + 1
+1 - 1
+1 * 1
+1 / 1
+```
+
+#### Comparison
+
+```
+1 == 1
+1 /= 1
+1 < 1
+1 <= 1
+1 > 1
+1 => 1
+```
+
+### Boolean
+
+```
+True && True
+True || True
+```
+
+### Generic equality
+
+```
+"foo" == "bar"
+Foo{ foo : 0 } == Foo{ foo : 1 }
+```
