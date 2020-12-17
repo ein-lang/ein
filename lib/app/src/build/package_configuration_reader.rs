@@ -1,5 +1,5 @@
 use super::package_configuration::PackageConfiguration;
-use super::path::FilePathConfiguration;
+use crate::path::FilePathConfiguration;
 use crate::infra::{FilePath, FilePathDisplayer, FileSystem};
 
 pub struct PackageConfigurationReader<'a> {

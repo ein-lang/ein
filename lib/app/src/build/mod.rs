@@ -13,7 +13,6 @@ mod package_builder;
 mod package_configuration;
 mod package_configuration_reader;
 mod package_interface;
-mod path;
 mod prelude_package_builder;
 
 pub use error::*;
@@ -31,5 +30,4 @@ pub use package_builder::*;
 pub use package_configuration::*;
 pub use package_configuration_reader::*;
 pub use package_interface::*;
-pub use path::*;
 pub use prelude_package_builder::*;

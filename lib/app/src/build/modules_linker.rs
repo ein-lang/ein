@@ -1,5 +1,5 @@
 use super::module_interfaces_linker::ModuleInterfacesLinker;
-use super::path::FilePathManager;
+use crate::path::FilePathManager;
 use crate::infra::{FilePath, ModuleObjectsLinker};
 
 pub struct ModulesLinker<'a> {

@@ -4,7 +4,7 @@ use super::module_parser::ModuleParser;
 use super::modules_finder::ModulesFinder;
 use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use super::path::FilePathManager;
+use crate::path::FilePathManager;
 use crate::infra::{FilePath, FileSystem};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;

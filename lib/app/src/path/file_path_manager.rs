@@ -1,4 +1,5 @@
-use crate::build::{ExternalPackage, FilePathConfiguration};
+use super::file_path_configuration::FilePathConfiguration;
+use crate::build::ExternalPackage;
 use crate::infra::FilePath;
 
 pub struct FilePathManager<'a> {

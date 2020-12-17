@@ -1,5 +1,6 @@
-use crate::build::{BuildConfiguration, FilePathConfiguration, Target};
+use crate::build::{BuildConfiguration, Target};
 use crate::infra::{FilePath, FileSystem};
+use crate::path::FilePathConfiguration;
 
 pub struct ProjectInitializer<'a> {
     file_system: &'a dyn FileSystem,
