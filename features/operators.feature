@@ -12,6 +12,15 @@ Feature: Operators
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
 
+  Scenario: Use boolean operators
+    Given a file named "Main.ein" with:
+    """
+    main : System -> Number
+    main system = if False || True && True then 0 else 1
+    """
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
+
   Scenario: Use an equal operator with numbers
     Given a file named "Main.ein" with:
     """
@@ -28,9 +37,10 @@ Feature: Operators
 
     main : System -> Number
     main system =
-      if Foo{ foo = 42, bar = True } == Foo{ foo = 42, bar = True }
-      then 0
-      else 1
+      if Foo{ foo = 42, bar = True } == Foo{ foo = 42, bar = True } then
+        0
+      else
+        1
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
@@ -55,15 +65,6 @@ Feature: Operators
     """
     main : System -> Number
     main system = if 1 /= 2 then 0 else 1
-    """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
-
-  Scenario: Use boolean operators
-    Given a file named "Main.ein" with:
-    """
-    main : System -> Number
-    main system = if False || True && True then 0 else 1
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
