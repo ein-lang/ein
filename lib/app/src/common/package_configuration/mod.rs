@@ -2,7 +2,6 @@ mod build_configuration;
 mod command_target;
 mod external_package_configuration;
 mod target;
-mod target_type;
 
 use crate::common::FilePath;
 pub use build_configuration::BuildConfiguration;
