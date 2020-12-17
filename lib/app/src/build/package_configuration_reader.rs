@@ -1,21 +1,21 @@
 use super::package_configuration::PackageConfiguration;
 use super::path::FilePathConfiguration;
-use crate::infra::{FilePath, FilePathDisplayer, FileStorage};
+use crate::infra::{FilePath, FilePathDisplayer, FileSystem};
 
 pub struct PackageConfigurationReader<'a> {
-    file_storage: &'a dyn FileStorage,
+    file_system: &'a dyn FileSystem,
     file_path_displayer: &'a dyn FilePathDisplayer,
     file_path_configuration: &'a FilePathConfiguration,
 }
 
 impl<'a> PackageConfigurationReader<'a> {
     pub fn new(
-        file_storage: &'a dyn FileStorage,
+        file_system: &'a dyn FileSystem,
         file_path_displayer: &'a dyn FilePathDisplayer,
         file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {
-            file_storage,
+            file_system,
             file_path_displayer,
             file_path_configuration,
         }
@@ -25,7 +25,7 @@ impl<'a> PackageConfigurationReader<'a> {
         &self,
         directory_path: &FilePath,
     ) -> Result<PackageConfiguration, Box<dyn std::error::Error>> {
-        let repository = self.file_storage.read_repository(directory_path)?;
+        let repository = self.file_system.read_repository(directory_path)?;
 
         Ok(PackageConfiguration::new(
             if let Some(repository) = repository {
@@ -45,7 +45,7 @@ impl<'a> PackageConfigurationReader<'a> {
             } else {
                 ein::Package::new(self.file_path_displayer.display(directory_path), "")
             },
-            serde_json::from_str(&self.file_storage.read_to_string(
+            serde_json::from_str(&self.file_system.read_to_string(
                 &directory_path.join(&self.file_path_configuration.build_configuration_file_path()),
             )?)?,
             directory_path.clone(),

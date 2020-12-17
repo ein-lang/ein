@@ -1,14 +1,14 @@
 use super::error::InfrastructureError;
-use super::file_path_converter::FilePathConverter;
+use super::os_file_path_converter::OsFilePathConverter;
 
-pub struct FileStorage<'a> {
-    file_path_converter: &'a FilePathConverter,
+pub struct FileSystem<'a> {
+    os_file_path_converter: &'a OsFilePathConverter,
 }
 
-impl<'a> FileStorage<'a> {
-    pub fn new(file_path_converter: &'a FilePathConverter) -> Self {
+impl<'a> FileSystem<'a> {
+    pub fn new(os_file_path_converter: &'a OsFilePathConverter) -> Self {
         Self {
-            file_path_converter,
+            os_file_path_converter,
         }
     }
 
@@ -16,13 +16,13 @@ impl<'a> FileStorage<'a> {
         &self,
         file_path: &app::FilePath,
     ) -> Result<Vec<app::FilePath>, std::io::Error> {
-        let path = self.file_path_converter.convert_to_os_path(file_path);
+        let path = self.os_file_path_converter.convert_to_os_path(file_path);
 
         Ok(path
             .read_dir()?
             .map(|entry| {
                 Ok(self
-                    .file_path_converter
+                    .os_file_path_converter
                     .convert_to_file_path(entry?.path())
                     .unwrap())
             })
@@ -33,7 +33,7 @@ impl<'a> FileStorage<'a> {
         &self,
         directory_path: &app::FilePath,
     ) -> Result<Option<app::Repository>, Box<dyn std::error::Error>> {
-        let path = self.file_path_converter.convert_to_os_path(directory_path);
+        let path = self.os_file_path_converter.convert_to_os_path(directory_path);
 
         if let Ok(repository) = git2::Repository::open(&path) {
             let url = if let Some(url) = repository
@@ -56,15 +56,15 @@ impl<'a> FileStorage<'a> {
     }
 }
 
-impl<'a> app::FileStorage for FileStorage<'a> {
+impl<'a> app::FileSystem for FileSystem<'a> {
     fn exists(&self, file_path: &app::FilePath) -> bool {
-        self.file_path_converter
+        self.os_file_path_converter
             .convert_to_os_path(file_path)
             .exists()
     }
 
     fn is_directory(&self, file_path: &app::FilePath) -> bool {
-        self.file_path_converter
+        self.os_file_path_converter
             .convert_to_os_path(file_path)
             .is_dir()
     }
@@ -76,7 +76,7 @@ impl<'a> app::FileStorage for FileStorage<'a> {
         Ok(self
             .read_directory_with_raw_error(file_path)
             .map_err(|source| InfrastructureError::ReadDirectory {
-                path: self.file_path_converter.convert_to_os_path(file_path),
+                path: self.os_file_path_converter.convert_to_os_path(file_path),
                 source,
             })?)
     }
@@ -88,7 +88,7 @@ impl<'a> app::FileStorage for FileStorage<'a> {
         Ok(self
             .read_repository_with_raw_error(directory_path)
             .map_err(|source| InfrastructureError::ReadRepository {
-                path: self.file_path_converter.convert_to_os_path(directory_path),
+                path: self.os_file_path_converter.convert_to_os_path(directory_path),
                 source,
             })?)
     }
@@ -97,7 +97,7 @@ impl<'a> app::FileStorage for FileStorage<'a> {
         &self,
         file_path: &app::FilePath,
     ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        let path = self.file_path_converter.convert_to_os_path(file_path);
+        let path = self.os_file_path_converter.convert_to_os_path(file_path);
 
         Ok(
             std::fs::read(&path)
@@ -109,7 +109,7 @@ impl<'a> app::FileStorage for FileStorage<'a> {
         &self,
         file_path: &app::FilePath,
     ) -> Result<String, Box<dyn std::error::Error>> {
-        let path = self.file_path_converter.convert_to_os_path(file_path);
+        let path = self.os_file_path_converter.convert_to_os_path(file_path);
 
         Ok(std::fs::read_to_string(&path)
             .map_err(|source| InfrastructureError::ReadFile { path, source })?)
@@ -120,7 +120,7 @@ impl<'a> app::FileStorage for FileStorage<'a> {
         file_path: &app::FilePath,
         data: &[u8],
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let path = self.file_path_converter.convert_to_os_path(file_path);
+        let path = self.os_file_path_converter.convert_to_os_path(file_path);
 
         if let Some(directory) = path.parent() {
             std::fs::create_dir_all(directory).map_err(|source| {

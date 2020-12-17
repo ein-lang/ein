@@ -6,31 +6,31 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let logger = infra::Logger::new();
 
-    let file_path_converter = infra::FilePathConverter::new(package_directory);
-    let file_storage = infra::FileStorage::new(&file_path_converter);
+    let os_file_path_converter = infra::OsFilePathConverter::new(package_directory);
+    let file_system = infra::FileSystem::new(&os_file_path_converter);
     let file_path_manager = app::FilePathManager::new(&FILE_PATH_CONFIGURATION);
-    let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
+    let file_path_displayer = infra::FilePathDisplayer::new(&os_file_path_converter);
 
     let command_runner = infra::CommandRunner::new();
     let module_objects_linker =
-        infra::ModuleObjectsLinker::new(&command_runner, &file_path_converter);
+        infra::ModuleObjectsLinker::new(&command_runner, &os_file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
         &file_path_manager,
-        &file_storage,
+        &file_system,
         &logger,
         COMPILE_CONFIGURATION.clone(),
     );
-    let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_storage);
+    let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_system);
     let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
         &modules_finder,
-        &file_storage,
+        &file_system,
         &file_path_manager,
     );
-    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_storage);
+    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_system);
     let modules_linker = app::ModulesLinker::new(
         &module_objects_linker,
         &module_interfaces_linker,
@@ -38,7 +38,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let package_configuration_reader = app::PackageConfigurationReader::new(
-        &file_storage,
+        &file_system,
         &file_path_displayer,
         &FILE_PATH_CONFIGURATION,
     );
@@ -49,31 +49,31 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let prelude_package_downloader = infra::PreludePackageDownloader::new(
         &command_runner,
-        &file_path_converter,
+        &os_file_path_converter,
         root_directory.join("lib/prelude"),
     );
     let prelude_package_builder = app::PreludePackageBuilder::new(
         &package_configuration_reader,
         &package_builder,
         &prelude_package_downloader,
-        &file_storage,
+        &file_system,
         &file_path_manager,
     );
     let command_linker = infra::CommandLinker::new(
         &command_runner,
-        &file_path_converter,
+        &os_file_path_converter,
         root_directory.join("target/release/libruntime.a"),
     );
     let external_package_downloader = infra::ExternalPackageDownloader::new();
     let external_packages_downloader = app::ExternalPackagesDownloader::new(
         &package_configuration_reader,
         &external_package_downloader,
-        &file_storage,
+        &file_system,
         &file_path_manager,
         &logger,
     );
     let external_packages_builder =
-        app::ExternalPackagesBuilder::new(&package_builder, &file_storage);
+        app::ExternalPackagesBuilder::new(&package_builder, &file_system);
     let main_package_builder = app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,

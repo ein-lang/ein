@@ -3,7 +3,7 @@ use super::module_parser::ModuleParser;
 use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage, Logger};
+use crate::infra::{FilePath, FileSystem, Logger};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -12,7 +12,7 @@ use std::sync::Arc;
 pub struct ModuleCompiler<'a> {
     module_parser: &'a ModuleParser<'a>,
     file_path_manager: &'a FilePathManager<'a>,
-    file_storage: &'a dyn FileStorage,
+    file_system: &'a dyn FileSystem,
     logger: &'a dyn Logger,
     compile_configuration: Arc<ein::CompileConfiguration>,
 }
@@ -21,14 +21,14 @@ impl<'a> ModuleCompiler<'a> {
     pub fn new(
         module_parser: &'a ModuleParser<'a>,
         file_path_manager: &'a FilePathManager<'a>,
-        file_storage: &'a dyn FileStorage,
+        file_system: &'a dyn FileSystem,
         logger: &'a dyn Logger,
         compile_configuration: Arc<ein::CompileConfiguration>,
     ) -> Self {
         Self {
             module_parser,
             file_path_manager,
-            file_storage,
+            file_system,
             logger,
             compile_configuration,
         }
@@ -41,7 +41,7 @@ impl<'a> ModuleCompiler<'a> {
         prelude_package_interface: Option<&PackageInterface>,
         package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
-        let source = self.file_storage.read_to_string(source_file_path)?;
+        let source = self.file_system.read_to_string(source_file_path)?;
         let module = self.module_parser.parse(&source, &source_file_path)?;
 
         let imported_module_interfaces = module
@@ -71,7 +71,7 @@ impl<'a> ModuleCompiler<'a> {
                 .interface_file_extension(),
         );
 
-        if self.file_storage.exists(&object_file_path) {
+        if self.file_system.exists(&object_file_path) {
             return Ok((object_file_path, interface_file_path));
         }
 
@@ -107,8 +107,8 @@ impl<'a> ModuleCompiler<'a> {
             self.compile_configuration.clone(),
         )?;
 
-        self.file_storage.write(&object_file_path, &bitcode)?;
-        self.file_storage.write(
+        self.file_system.write(&object_file_path, &bitcode)?;
+        self.file_system.write(
             &interface_file_path,
             &serde_json::to_string(&module_interface)?.as_bytes(),
         )?;

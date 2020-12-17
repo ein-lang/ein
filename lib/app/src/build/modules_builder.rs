@@ -5,7 +5,7 @@ use super::modules_finder::ModulesFinder;
 use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
 use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage};
+use crate::infra::{FilePath, FileSystem};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
@@ -14,7 +14,7 @@ pub struct ModulesBuilder<'a> {
     module_parser: &'a ModuleParser<'a>,
     module_compiler: &'a ModuleCompiler<'a>,
     modules_finder: &'a ModulesFinder<'a>,
-    file_storage: &'a dyn FileStorage,
+    file_system: &'a dyn FileSystem,
     file_path_manager: &'a FilePathManager<'a>,
 }
 
@@ -23,14 +23,14 @@ impl<'a> ModulesBuilder<'a> {
         module_parser: &'a ModuleParser<'a>,
         module_compiler: &'a ModuleCompiler<'a>,
         modules_finder: &'a ModulesFinder<'a>,
-        file_storage: &'a dyn FileStorage,
+        file_system: &'a dyn FileSystem,
         file_path_manager: &'a FilePathManager<'a>,
     ) -> Self {
         Self {
             module_parser,
             module_compiler,
             modules_finder,
-            file_storage,
+            file_system,
             file_path_manager,
         }
     }
@@ -66,7 +66,7 @@ impl<'a> ModulesBuilder<'a> {
             )?;
 
             let module_interface = serde_json::from_str::<ein::ModuleInterface>(
-                &self.file_storage.read_to_string(&interface_file_path)?,
+                &self.file_system.read_to_string(&interface_file_path)?,
             )?;
             module_interfaces.insert(
                 module_interface.path().internal_unresolved().into(),
@@ -94,7 +94,7 @@ impl<'a> ModulesBuilder<'a> {
 
         for source_file_path in source_file_paths {
             let module = self.module_parser.parse(
-                &self.file_storage.read_to_string(source_file_path)?,
+                &self.file_system.read_to_string(source_file_path)?,
                 source_file_path,
             )?;
 
