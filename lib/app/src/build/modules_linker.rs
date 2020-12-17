@@ -1,23 +1,23 @@
 use super::module_interfaces_linker::ModuleInterfacesLinker;
-use crate::common::{FilePath, FilePathManager};
+use crate::common::{FilePath, FilePathResolver};
 use crate::infra::ModuleObjectsLinker;
 
 pub struct ModulesLinker<'a> {
     module_objects_linker: &'a dyn ModuleObjectsLinker,
     module_interfaces_linker: &'a ModuleInterfacesLinker<'a>,
-    file_path_manager: &'a FilePathManager<'a>,
+    file_path_resolver: &'a FilePathResolver<'a>,
 }
 
 impl<'a> ModulesLinker<'a> {
     pub fn new(
         module_objects_linker: &'a dyn ModuleObjectsLinker,
         module_interfaces_linker: &'a ModuleInterfacesLinker<'a>,
-        file_path_manager: &'a FilePathManager<'a>,
+        file_path_resolver: &'a FilePathResolver<'a>,
     ) -> Self {
         Self {
             module_objects_linker,
             module_interfaces_linker,
-            file_path_manager,
+            file_path_resolver,
         }
     }
 
@@ -28,7 +28,7 @@ impl<'a> ModulesLinker<'a> {
         directory_path: &FilePath,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let package_object_file_path = directory_path.join(
-            self.file_path_manager
+            self.file_path_resolver
                 .configuration()
                 .package_object_file_path(),
         );
@@ -37,7 +37,7 @@ impl<'a> ModulesLinker<'a> {
             .link(&object_file_paths, &package_object_file_path)?;
 
         let package_interface_file_path = directory_path.join(
-            self.file_path_manager
+            self.file_path_resolver
                 .configuration()
                 .package_interface_file_path(),
         );

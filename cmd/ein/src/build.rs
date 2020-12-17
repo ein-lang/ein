@@ -8,7 +8,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let file_path_converter = infra::FilePathConverter::new(package_directory);
     let file_system = infra::FileSystem::new(&file_path_converter);
-    let file_path_manager = app::FilePathManager::new(&FILE_PATH_CONFIGURATION);
+    let file_path_resolver = app::FilePathResolver::new(&FILE_PATH_CONFIGURATION);
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
     let command_runner = infra::CommandRunner::new();
@@ -17,24 +17,24 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
-        &file_path_manager,
+        &file_path_resolver,
         &file_system,
         &logger,
         COMPILE_CONFIGURATION.clone(),
     );
-    let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_system);
+    let modules_finder = app::ModulesFinder::new(&file_path_resolver, &file_system);
     let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
         &modules_finder,
         &file_system,
-        &file_path_manager,
+        &file_path_resolver,
     );
     let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_system);
     let modules_linker = app::ModulesLinker::new(
         &module_objects_linker,
         &module_interfaces_linker,
-        &file_path_manager,
+        &file_path_resolver,
     );
 
     let package_configuration_reader = app::PackageConfigurationReader::new(
@@ -57,7 +57,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &package_builder,
         &prelude_package_downloader,
         &file_system,
-        &file_path_manager,
+        &file_path_resolver,
     );
     let command_linker = infra::CommandLinker::new(
         &command_runner,
@@ -69,7 +69,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &package_configuration_reader,
         &external_package_downloader,
         &file_system,
-        &file_path_manager,
+        &file_path_resolver,
         &logger,
     );
     let external_packages_builder =

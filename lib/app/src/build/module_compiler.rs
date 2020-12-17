@@ -2,7 +2,7 @@ use super::error::BuildError;
 use super::module_parser::ModuleParser;
 use super::package_interface::PackageInterface;
 use crate::common::PackageConfiguration;
-use crate::common::{FilePath, FilePathManager};
+use crate::common::{FilePath, FilePathResolver};
 use crate::infra::{FileSystem, Logger};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 pub struct ModuleCompiler<'a> {
     module_parser: &'a ModuleParser<'a>,
-    file_path_manager: &'a FilePathManager<'a>,
+    file_path_resolver: &'a FilePathResolver<'a>,
     file_system: &'a dyn FileSystem,
     logger: &'a dyn Logger,
     compile_configuration: Arc<ein::CompileConfiguration>,
@@ -20,14 +20,14 @@ pub struct ModuleCompiler<'a> {
 impl<'a> ModuleCompiler<'a> {
     pub fn new(
         module_parser: &'a ModuleParser<'a>,
-        file_path_manager: &'a FilePathManager<'a>,
+        file_path_resolver: &'a FilePathResolver<'a>,
         file_system: &'a dyn FileSystem,
         logger: &'a dyn Logger,
         compile_configuration: Arc<ein::CompileConfiguration>,
     ) -> Self {
         Self {
             module_parser,
-            file_path_manager,
+            file_path_resolver,
             file_system,
             logger,
             compile_configuration,
@@ -66,7 +66,7 @@ impl<'a> ModuleCompiler<'a> {
                     &imported_module_interfaces,
                 ));
         let interface_file_path = object_file_path.with_extension(
-            self.file_path_manager
+            self.file_path_resolver
                 .configuration()
                 .interface_file_extension(),
         );
@@ -75,7 +75,7 @@ impl<'a> ModuleCompiler<'a> {
             return Ok((object_file_path, interface_file_path));
         }
 
-        let module_path = self.file_path_manager.resolve_to_module_path(
+        let module_path = self.file_path_resolver.resolve_to_module_path(
             &source_file_path.relative_to(package_configuration.directory_path()),
             package_configuration.package(),
         );
@@ -131,12 +131,12 @@ impl<'a> ModuleCompiler<'a> {
             module_interface.hash(&mut hasher);
         }
 
-        self.file_path_manager
+        self.file_path_resolver
             .configuration()
             .object_directory_path()
             .join(&FilePath::new(&[&format!("{:x}", hasher.finish())]))
             .with_extension(
-                self.file_path_manager
+                self.file_path_resolver
                     .configuration()
                     .object_file_extension(),
             )

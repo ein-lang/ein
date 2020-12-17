@@ -4,7 +4,7 @@ use super::module_parser::ModuleParser;
 use super::modules_finder::ModulesFinder;
 use super::package_interface::PackageInterface;
 use crate::common::PackageConfiguration;
-use crate::common::{FilePath, FilePathManager};
+use crate::common::{FilePath, FilePathResolver};
 use crate::infra::FileSystem;
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
@@ -15,7 +15,7 @@ pub struct ModulesBuilder<'a> {
     module_compiler: &'a ModuleCompiler<'a>,
     modules_finder: &'a ModulesFinder<'a>,
     file_system: &'a dyn FileSystem,
-    file_path_manager: &'a FilePathManager<'a>,
+    file_path_resolver: &'a FilePathResolver<'a>,
 }
 
 impl<'a> ModulesBuilder<'a> {
@@ -24,14 +24,14 @@ impl<'a> ModulesBuilder<'a> {
         module_compiler: &'a ModuleCompiler<'a>,
         modules_finder: &'a ModulesFinder<'a>,
         file_system: &'a dyn FileSystem,
-        file_path_manager: &'a FilePathManager<'a>,
+        file_path_resolver: &'a FilePathResolver<'a>,
     ) -> Self {
         Self {
             module_parser,
             module_compiler,
             modules_finder,
             file_system,
-            file_path_manager,
+            file_path_resolver,
         }
     }
 
@@ -103,7 +103,7 @@ impl<'a> ModulesBuilder<'a> {
                     import.module_path()
                 {
                     graph.add_edge(
-                        indices[&self.file_path_manager.resolve_to_source_file_path(
+                        indices[&self.file_path_resolver.resolve_to_source_file_path(
                             package_configuration.directory_path(),
                             internal_module_path,
                         )],

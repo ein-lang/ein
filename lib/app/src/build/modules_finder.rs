@@ -1,18 +1,18 @@
-use crate::common::{FilePath, FilePathManager};
+use crate::common::{FilePath, FilePathResolver};
 use crate::infra::FileSystem;
 
 pub struct ModulesFinder<'a> {
-    file_path_manager: &'a FilePathManager<'a>,
+    file_path_resolver: &'a FilePathResolver<'a>,
     file_system: &'a dyn FileSystem,
 }
 
 impl<'a> ModulesFinder<'a> {
     pub fn new(
-        file_path_manager: &'a FilePathManager<'a>,
+        file_path_resolver: &'a FilePathResolver<'a>,
         file_system: &'a dyn FileSystem,
     ) -> Self {
         Self {
-            file_path_manager,
+            file_path_resolver,
             file_system,
         }
     }
@@ -34,7 +34,7 @@ impl<'a> ModulesFinder<'a> {
             } else if self.file_system.is_directory(&path) {
                 source_file_paths.extend(self.find(&path)?);
             } else if path.has_extension(
-                self.file_path_manager
+                self.file_path_resolver
                     .configuration()
                     .source_file_extension(),
             ) {

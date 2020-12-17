@@ -2,11 +2,11 @@ use super::external_package::ExternalPackage;
 use super::file_path::FilePath;
 use super::file_path_configuration::FilePathConfiguration;
 
-pub struct FilePathManager<'a> {
+pub struct FilePathResolver<'a> {
     file_path_configuration: &'a FilePathConfiguration,
 }
 
-impl<'a> FilePathManager<'a> {
+impl<'a> FilePathResolver<'a> {
     pub fn new(file_path_configuration: &'a FilePathConfiguration) -> Self {
         Self {
             file_path_configuration,
