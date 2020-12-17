@@ -1,4 +1,4 @@
-Feature: Functions
+Feature: Function
   Background:
     Given I successfully run `ein init library .`
 

@@ -1,4 +1,4 @@
-Feature: Records
+Feature: Record
   Background:
     Given I successfully run `ein init library .`
 
