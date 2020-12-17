@@ -1,4 +1,4 @@
-use crate::path::FilePath;
+use crate::common::FilePath;
 
 pub trait ModuleObjectsLinker {
     fn link(

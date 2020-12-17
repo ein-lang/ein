@@ -1,8 +1,8 @@
 use super::external_package::ExternalPackage;
 use super::package_configuration_reader::PackageConfigurationReader;
+use crate::common::FilePathManager;
+use crate::common::PackageConfiguration;
 use crate::infra::{ExternalPackageDownloader, FileSystem, Logger};
-use crate::package_configuration::PackageConfiguration;
-use crate::path::FilePathManager;
 use std::collections::HashMap;
 
 pub struct ExternalPackagesDownloader<'a> {
