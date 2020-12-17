@@ -28,7 +28,7 @@ impl<'a> FilePathManager<'a> {
         )
     }
 
-    pub fn convert_to_module_path(
+    pub fn resolve_to_module_path(
         &self,
         source_file_path: &FilePath,
         package: &ein::Package,
