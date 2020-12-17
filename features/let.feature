@@ -87,3 +87,20 @@ Feature: Let expressions
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
+
+  Scenario: Apply a function of a let expression to arguments
+    Given a file named "Main.ein" with:
+    """
+    main : System -> Number
+    main system =
+      (
+        let
+          f : Number -> Number
+          f y = y
+        in
+          f
+      )
+      0
+    """
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`

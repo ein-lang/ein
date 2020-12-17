@@ -1,39 +1,22 @@
-Feature: Expressions
+Feature: Operators
   Background:
     Given I successfully run `ein init command foo`
     And I cd to "foo"
-
-  Scenario: Apply a function of a let expression to arguments
-    Given a file named "Main.ein" with:
-    """
-    main : System -> Number
-    main system =
-      (
-        let
-          f : Number -> Number
-          f y = y
-        in
-          f
-      )
-      0
-    """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
-
-  Scenario: Use if expressions
-    Given a file named "Main.ein" with:
-    """
-    main : System -> Number
-    main system = if True then 0 else 1
-    """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
 
   Scenario: Use arithmetic operators
     Given a file named "Main.ein" with:
     """
     main : System -> Number
     main system = 0 + 1 * 1 - 1 / 1
+    """
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
+
+  Scenario: Use boolean operators
+    Given a file named "Main.ein" with:
+    """
+    main : System -> Number
+    main system = if False || True && True then 0 else 1
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
@@ -54,9 +37,10 @@ Feature: Expressions
 
     main : System -> Number
     main system =
-      if Foo{ foo = 42, bar = True } == Foo{ foo = 42, bar = True }
-      then 0
-      else 1
+      if Foo{ foo = 42, bar = True } == Foo{ foo = 42, bar = True } then
+        0
+      else
+        1
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
@@ -81,15 +65,6 @@ Feature: Expressions
     """
     main : System -> Number
     main system = if 1 /= 2 then 0 else 1
-    """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
-
-  Scenario: Use boolean operators
-    Given a file named "Main.ein" with:
-    """
-    main : System -> Number
-    main system = if False || True && True then 0 else 1
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
