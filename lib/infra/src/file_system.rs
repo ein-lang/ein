@@ -33,7 +33,9 @@ impl<'a> FileSystem<'a> {
         &self,
         directory_path: &app::FilePath,
     ) -> Result<Option<app::Repository>, Box<dyn std::error::Error>> {
-        let path = self.os_file_path_converter.convert_to_os_path(directory_path);
+        let path = self
+            .os_file_path_converter
+            .convert_to_os_path(directory_path);
 
         if let Ok(repository) = git2::Repository::open(&path) {
             let url = if let Some(url) = repository
@@ -88,7 +90,9 @@ impl<'a> app::FileSystem for FileSystem<'a> {
         Ok(self
             .read_repository_with_raw_error(directory_path)
             .map_err(|source| InfrastructureError::ReadRepository {
-                path: self.os_file_path_converter.convert_to_os_path(directory_path),
+                path: self
+                    .os_file_path_converter
+                    .convert_to_os_path(directory_path),
                 source,
             })?)
     }

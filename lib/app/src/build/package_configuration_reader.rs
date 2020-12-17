@@ -1,6 +1,6 @@
 use super::package_configuration::PackageConfiguration;
-use crate::path::FilePathConfiguration;
 use crate::infra::{FilePath, FilePathDisplayer, FileSystem};
+use crate::path::FilePathConfiguration;
 
 pub struct PackageConfigurationReader<'a> {
     file_system: &'a dyn FileSystem,

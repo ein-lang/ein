@@ -1,6 +1,6 @@
 use super::module_interfaces_linker::ModuleInterfacesLinker;
-use crate::path::FilePathManager;
 use crate::infra::{FilePath, ModuleObjectsLinker};
+use crate::path::FilePathManager;
 
 pub struct ModulesLinker<'a> {
     module_objects_linker: &'a dyn ModuleObjectsLinker,
