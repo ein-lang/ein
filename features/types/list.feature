@@ -1,4 +1,4 @@
-Feature: Lists
+Feature: List
   Background:
     Given I successfully run `ein init library .`
 

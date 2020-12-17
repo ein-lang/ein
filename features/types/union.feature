@@ -1,4 +1,4 @@
-Feature: Union types
+Feature: Union
   Background:
     Given I successfully run `ein init library .`
 

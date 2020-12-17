@@ -1,4 +1,4 @@
-Feature: Strings
+Feature: String
   Background:
     Given I successfully run `ein init command foo`
     And I cd to "foo"
