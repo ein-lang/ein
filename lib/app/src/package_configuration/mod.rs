@@ -4,7 +4,7 @@ mod external_package_configuration;
 mod target;
 mod target_type;
 
-use crate::infra::FilePath;
+use crate::path::FilePath;
 pub use build_configuration::BuildConfiguration;
 pub use command_target::CommandTarget;
 pub use external_package_configuration::ExternalPackageConfiguration;

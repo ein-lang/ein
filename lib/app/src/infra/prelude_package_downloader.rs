@@ -1,4 +1,4 @@
-use super::file_path::FilePath;
+use crate::path::FilePath;
 
 pub trait PreludePackageDownloader {
     fn download(

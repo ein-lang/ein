@@ -1,4 +1,4 @@
-use super::file_path::FilePath;
+use crate::path::FilePath;
 
 pub trait FilePathDisplayer {
     fn display(&self, file_path: &FilePath) -> String;

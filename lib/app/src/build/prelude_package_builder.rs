@@ -1,8 +1,8 @@
 use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::package_interface::PackageInterface;
-use crate::infra::{FilePath, FileSystem, PreludePackageDownloader};
-use crate::path::FilePathManager;
+use crate::infra::{FileSystem, PreludePackageDownloader};
+use crate::path::{FilePath, FilePathManager};
 
 pub struct PreludePackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,

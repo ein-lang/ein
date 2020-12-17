@@ -1,4 +1,4 @@
-use crate::infra::FilePath;
+use super::file_path::FilePath;
 
 const OBJECT_DIRECTORY: &str = "objects";
 const EXTERNAL_PACKAGES_DIRECTORY: &str = "packages";

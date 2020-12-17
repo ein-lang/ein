@@ -1,5 +1,5 @@
-use crate::infra::{FilePath, FileSystem};
-use crate::path::FilePathManager;
+use crate::infra::FileSystem;
+use crate::path::{FilePath, FilePathManager};
 
 pub struct ModulesFinder<'a> {
     file_path_manager: &'a FilePathManager<'a>,

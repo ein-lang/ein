@@ -1,5 +1,6 @@
 use super::package_interface::PackageInterface;
-use crate::infra::{FilePath, FileSystem};
+use crate::infra::FileSystem;
+use crate::path::FilePath;
 
 pub struct ModuleInterfacesLinker<'a> {
     file_system: &'a dyn FileSystem,

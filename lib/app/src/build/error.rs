@@ -1,5 +1,5 @@
 use super::external_package::ExternalPackage;
-use crate::infra::FilePath;
+use crate::path::FilePath;
 
 #[derive(Debug, PartialEq)]
 pub enum BuildError {

@@ -1,5 +1,5 @@
-use super::file_path::FilePath;
 use crate::build::ExternalPackage;
+use crate::path::FilePath;
 
 pub trait ExternalPackageDownloader {
     fn download(
