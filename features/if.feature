@@ -20,8 +20,8 @@ Feature: If
       if False then
         1
       else if True then
-			  0
-			else
+        0
+      else
         1
     """
     When I successfully run `ein build`
