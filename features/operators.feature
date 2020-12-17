@@ -1,4 +1,4 @@
-Feature: Expressions
+Feature: Operators
   Background:
     Given I successfully run `ein init command foo`
     And I cd to "foo"
