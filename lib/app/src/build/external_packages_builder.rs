@@ -1,9 +1,9 @@
 use super::error::BuildError;
 use super::external_package::ExternalPackage;
 use super::package_builder::PackageBuilder;
-use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
 use crate::infra::{FilePath, FileSystem};
+use crate::package_configuration::PackageConfiguration;
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;

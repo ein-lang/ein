@@ -1,5 +1,5 @@
-use crate::build::{BuildConfiguration, Target};
 use crate::infra::{FilePath, FileSystem};
+use crate::package_configuration::{BuildConfiguration, Target};
 use crate::path::FilePathConfiguration;
 
 pub struct ProjectInitializer<'a> {

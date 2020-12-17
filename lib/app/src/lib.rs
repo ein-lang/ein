@@ -1,6 +1,7 @@
 mod build;
 mod infra;
 mod init;
+mod package_configuration;
 mod path;
 
 pub use build::*;

@@ -1,8 +1,8 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
-use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
 use crate::infra::{FilePath, FileSystem, Logger};
+use crate::package_configuration::PackageConfiguration;
 use crate::path::FilePathManager;
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
