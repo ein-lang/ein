@@ -1,7 +1,5 @@
-use super::external_package::ExternalPackage;
 use super::package_configuration_reader::PackageConfigurationReader;
-use crate::common::FilePathManager;
-use crate::common::PackageConfiguration;
+use crate::common::{ExternalPackage, FilePathManager, PackageConfiguration};
 use crate::infra::{ExternalPackageDownloader, FileSystem, Logger};
 use std::collections::HashMap;
 

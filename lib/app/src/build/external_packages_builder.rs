@@ -1,9 +1,7 @@
 use super::error::BuildError;
-use super::external_package::ExternalPackage;
 use super::package_builder::PackageBuilder;
 use super::package_interface::PackageInterface;
-use crate::common::FilePath;
-use crate::common::PackageConfiguration;
+use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
 use crate::infra::FileSystem;
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;

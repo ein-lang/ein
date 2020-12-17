@@ -1,5 +1,4 @@
 mod error;
-mod external_package;
 mod external_packages_builder;
 mod external_packages_downloader;
 mod main_package_builder;
@@ -15,7 +14,6 @@ mod package_interface;
 mod prelude_package_builder;
 
 pub use error::*;
-pub use external_package::*;
 pub use external_packages_builder::*;
 pub use external_packages_downloader::*;
 pub use main_package_builder::*;
