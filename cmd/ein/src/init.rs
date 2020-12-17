@@ -2,8 +2,8 @@ use super::file_path_configuration::FILE_PATH_CONFIGURATION;
 use std::fs::create_dir_all;
 
 pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let os_file_path_converter = infra::OsFilePathConverter::new(directory);
-    let file_system = infra::FileSystem::new(&os_file_path_converter);
+    let file_path_converter = infra::FilePathConverter::new(directory);
+    let file_system = infra::FileSystem::new(&file_path_converter);
     let project_initializer = app::ProjectInitializer::new(&file_system, &FILE_PATH_CONFIGURATION);
 
     create_dir_all(directory)?;

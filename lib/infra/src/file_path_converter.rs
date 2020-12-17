@@ -1,8 +1,8 @@
-pub struct OsFilePathConverter {
+pub struct FilePathConverter {
     base_directory: std::path::PathBuf,
 }
 
-impl OsFilePathConverter {
+impl FilePathConverter {
     pub fn new(base_directory: impl AsRef<std::path::Path>) -> Self {
         Self {
             base_directory: base_directory.as_ref().into(),

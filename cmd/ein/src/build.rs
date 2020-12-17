@@ -6,14 +6,14 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let logger = infra::Logger::new();
 
-    let os_file_path_converter = infra::OsFilePathConverter::new(package_directory);
-    let file_system = infra::FileSystem::new(&os_file_path_converter);
+    let file_path_converter = infra::FilePathConverter::new(package_directory);
+    let file_system = infra::FileSystem::new(&file_path_converter);
     let file_path_manager = app::FilePathManager::new(&FILE_PATH_CONFIGURATION);
-    let file_path_displayer = infra::FilePathDisplayer::new(&os_file_path_converter);
+    let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
     let command_runner = infra::CommandRunner::new();
     let module_objects_linker =
-        infra::ModuleObjectsLinker::new(&command_runner, &os_file_path_converter);
+        infra::ModuleObjectsLinker::new(&command_runner, &file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
@@ -49,7 +49,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let prelude_package_downloader = infra::PreludePackageDownloader::new(
         &command_runner,
-        &os_file_path_converter,
+        &file_path_converter,
         root_directory.join("lib/prelude"),
     );
     let prelude_package_builder = app::PreludePackageBuilder::new(
@@ -61,7 +61,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     );
     let command_linker = infra::CommandLinker::new(
         &command_runner,
-        &os_file_path_converter,
+        &file_path_converter,
         root_directory.join("target/release/libruntime.a"),
     );
     let external_package_downloader = infra::ExternalPackageDownloader::new();

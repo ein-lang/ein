@@ -7,4 +7,5 @@ mod path;
 pub use build::*;
 pub use infra::*;
 pub use init::*;
+pub use package_configuration::*;
 pub use path::*;

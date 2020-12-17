@@ -1,20 +1,20 @@
 use super::command_runner::CommandRunner;
 use super::error::InfrastructureError;
-use super::os_file_path_converter::OsFilePathConverter;
+use super::file_path_converter::FilePathConverter;
 
 pub struct ModuleObjectsLinker<'a> {
     command_runner: &'a CommandRunner,
-    os_file_path_converter: &'a OsFilePathConverter,
+    file_path_converter: &'a FilePathConverter,
 }
 
 impl<'a> ModuleObjectsLinker<'a> {
     pub fn new(
         command_runner: &'a CommandRunner,
-        os_file_path_converter: &'a OsFilePathConverter,
+        file_path_converter: &'a FilePathConverter,
     ) -> Self {
         Self {
             command_runner,
-            os_file_path_converter,
+            file_path_converter,
         }
     }
 }
@@ -35,13 +35,13 @@ impl<'a> app::ModuleObjectsLinker for ModuleObjectsLinker<'a> {
             )
             .arg("-o")
             .arg(
-                self.os_file_path_converter
+                self.file_path_converter
                     .convert_to_os_path(package_object_file_path),
             )
             .args(
                 object_file_paths
                     .iter()
-                    .map(|path| self.os_file_path_converter.convert_to_os_path(path)),
+                    .map(|path| self.file_path_converter.convert_to_os_path(path)),
             ),
         )?;
 
