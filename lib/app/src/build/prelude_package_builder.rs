@@ -1,7 +1,7 @@
 use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::package_interface::PackageInterface;
-use crate::common::{FilePath, FilePathResolver};
+use crate::common::{FilePath, StaticFilePathManager};
 use crate::infra::{FileSystem, PreludePackageDownloader};
 
 pub struct PreludePackageBuilder<'a> {
@@ -9,7 +9,7 @@ pub struct PreludePackageBuilder<'a> {
     package_builder: &'a PackageBuilder<'a>,
     prelude_package_downloader: &'a dyn PreludePackageDownloader,
     file_system: &'a dyn FileSystem,
-    file_path_resolver: &'a FilePathResolver<'a>,
+    static_file_path_manager: &'a StaticFilePathManager,
 }
 
 impl<'a> PreludePackageBuilder<'a> {
@@ -18,21 +18,20 @@ impl<'a> PreludePackageBuilder<'a> {
         package_builder: &'a PackageBuilder<'a>,
         prelude_package_downloader: &'a dyn PreludePackageDownloader,
         file_system: &'a dyn FileSystem,
-        file_path_resolver: &'a FilePathResolver<'a>,
+        static_file_path_manager: &'a StaticFilePathManager,
     ) -> Self {
         Self {
             package_configuration_reader,
             package_builder,
             prelude_package_downloader,
             file_system,
-            file_path_resolver,
+            static_file_path_manager,
         }
     }
 
     pub fn build(&self) -> Result<(FilePath, PackageInterface), Box<dyn std::error::Error>> {
         let directory_path = self
-            .file_path_resolver
-            .configuration()
+            .static_file_path_manager
             .prelude_package_directory_path();
 
         self.prelude_package_downloader.download(&directory_path)?;

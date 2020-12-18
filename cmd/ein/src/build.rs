@@ -8,7 +8,9 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 
     let file_path_converter = infra::FilePathConverter::new(package_directory);
     let file_system = infra::FileSystem::new(&file_path_converter);
-    let file_path_resolver = app::FilePathResolver::new(&FILE_PATH_CONFIGURATION);
+    let static_file_path_manager = app::StaticFilePathManager::new(&FILE_PATH_CONFIGURATION);
+    let file_path_resolver =
+        app::FilePathResolver::new(&static_file_path_manager, &FILE_PATH_CONFIGURATION);
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
     let command_runner = infra::CommandRunner::new();
@@ -22,7 +24,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &logger,
         COMPILE_CONFIGURATION.clone(),
     );
-    let modules_finder = app::ModulesFinder::new(&file_path_resolver, &file_system);
+    let modules_finder = app::ModulesFinder::new(&file_system, &FILE_PATH_CONFIGURATION);
     let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
@@ -34,13 +36,13 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let modules_linker = app::ModulesLinker::new(
         &module_objects_linker,
         &module_interfaces_linker,
-        &file_path_resolver,
+        &static_file_path_manager,
     );
 
     let package_configuration_reader = app::PackageConfigurationReader::new(
         &file_system,
         &file_path_displayer,
-        &FILE_PATH_CONFIGURATION,
+        &static_file_path_manager,
     );
     let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker, &logger);
 
@@ -57,7 +59,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &package_builder,
         &prelude_package_downloader,
         &file_system,
-        &file_path_resolver,
+        &static_file_path_manager,
     );
     let command_linker = infra::CommandLinker::new(
         &command_runner,

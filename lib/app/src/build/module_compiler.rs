@@ -57,19 +57,14 @@ impl<'a> ModuleCompiler<'a> {
             })
             .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
 
-        let object_file_path =
-            package_configuration
-                .directory_path()
-                .join(&self.generate_object_file_path(
-                    source_file_path,
-                    &source,
-                    &imported_module_interfaces,
-                ));
-        let interface_file_path = object_file_path.with_extension(
-            self.file_path_resolver
-                .configuration()
-                .interface_file_extension(),
-        );
+        let module_id =
+            self.generate_module_id(source_file_path, &source, &imported_module_interfaces);
+        let object_file_path = self
+            .file_path_resolver
+            .resolve_object_file_path(package_configuration.directory_path(), &module_id);
+        let interface_file_path = self
+            .file_path_resolver
+            .resolve_interface_file_path(package_configuration.directory_path(), &module_id);
 
         if self.file_system.exists(&object_file_path) {
             return Ok((object_file_path, interface_file_path));
@@ -116,12 +111,12 @@ impl<'a> ModuleCompiler<'a> {
         Ok((object_file_path, interface_file_path))
     }
 
-    fn generate_object_file_path<'b>(
+    fn generate_module_id<'b>(
         &self,
         source_file_path: &FilePath,
         source: &str,
         imported_module_interfaces: impl IntoIterator<Item = &'b ein::ModuleInterface>,
-    ) -> FilePath {
+    ) -> String {
         let mut hasher = DefaultHasher::new();
 
         source_file_path.hash(&mut hasher);
@@ -131,14 +126,6 @@ impl<'a> ModuleCompiler<'a> {
             module_interface.hash(&mut hasher);
         }
 
-        self.file_path_resolver
-            .configuration()
-            .object_directory_path()
-            .join(&FilePath::new(&[&format!("{:x}", hasher.finish())]))
-            .with_extension(
-                self.file_path_resolver
-                    .configuration()
-                    .object_file_extension(),
-            )
+        format!("{:x}", hasher.finish())
     }
 }
