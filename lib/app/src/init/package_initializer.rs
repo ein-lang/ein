@@ -3,13 +3,13 @@ use crate::common::{
 };
 use crate::infra::FileSystem;
 
-pub struct ProjectInitializer<'a> {
+pub struct PackageInitializer<'a> {
     file_system: &'a dyn FileSystem,
     static_file_path_manager: &'a StaticFilePathManager,
     file_path_configuration: &'a FilePathConfiguration,
 }
 
-impl<'a> ProjectInitializer<'a> {
+impl<'a> PackageInitializer<'a> {
     pub fn new(
         file_system: &'a dyn FileSystem,
         static_file_path_manager: &'a StaticFilePathManager,

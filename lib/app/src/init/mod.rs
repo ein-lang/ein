@@ -1,3 +1,3 @@
-mod project_initializer;
+mod package_initializer;
 
-pub use project_initializer::*;
+pub use package_initializer::*;
