@@ -1,15 +1,15 @@
 use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::package_interface::PackageInterface;
-use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage, PreludePackageDownloader};
+use crate::common::{FilePath, StaticFilePathManager};
+use crate::infra::{FileSystem, PreludePackageDownloader};
 
 pub struct PreludePackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,
     package_builder: &'a PackageBuilder<'a>,
     prelude_package_downloader: &'a dyn PreludePackageDownloader,
-    file_storage: &'a dyn FileStorage,
-    file_path_manager: &'a FilePathManager<'a>,
+    file_system: &'a dyn FileSystem,
+    static_file_path_manager: &'a StaticFilePathManager,
 }
 
 impl<'a> PreludePackageBuilder<'a> {
@@ -17,22 +17,21 @@ impl<'a> PreludePackageBuilder<'a> {
         package_configuration_reader: &'a PackageConfigurationReader<'a>,
         package_builder: &'a PackageBuilder<'a>,
         prelude_package_downloader: &'a dyn PreludePackageDownloader,
-        file_storage: &'a dyn FileStorage,
-        file_path_manager: &'a FilePathManager<'a>,
+        file_system: &'a dyn FileSystem,
+        static_file_path_manager: &'a StaticFilePathManager,
     ) -> Self {
         Self {
             package_configuration_reader,
             package_builder,
             prelude_package_downloader,
-            file_storage,
-            file_path_manager,
+            file_system,
+            static_file_path_manager,
         }
     }
 
     pub fn build(&self) -> Result<(FilePath, PackageInterface), Box<dyn std::error::Error>> {
         let directory_path = self
-            .file_path_manager
-            .configuration()
+            .static_file_path_manager
             .prelude_package_directory_path();
 
         self.prelude_package_downloader.download(&directory_path)?;
@@ -47,7 +46,7 @@ impl<'a> PreludePackageBuilder<'a> {
             package_object_file_path,
             serde_json::from_str::<PackageInterface>(
                 &self
-                    .file_storage
+                    .file_system
                     .read_to_string(&package_interface_file_path)?,
             )?,
         ))

@@ -1,10 +1,11 @@
 use super::external_packages_builder::ExternalPackagesBuilder;
 use super::external_packages_downloader::ExternalPackagesDownloader;
 use super::package_builder::PackageBuilder;
-use super::package_configuration::Target;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::prelude_package_builder::PreludePackageBuilder;
-use crate::infra::{CommandLinker, FilePath, Logger};
+use crate::common::FilePath;
+use crate::common::Target;
+use crate::infra::{CommandLinker, Logger};
 
 pub struct MainPackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,

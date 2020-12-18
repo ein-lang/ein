@@ -1,9 +1,8 @@
 use super::error::BuildError;
-use super::external_package::ExternalPackage;
 use super::package_builder::PackageBuilder;
-use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use crate::infra::{FilePath, FileStorage};
+use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
+use crate::infra::FileSystem;
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
@@ -13,14 +12,14 @@ type ExternalModuleInterfaces =
 
 pub struct ExternalPackagesBuilder<'a> {
     package_builder: &'a PackageBuilder<'a>,
-    file_storage: &'a dyn FileStorage,
+    file_system: &'a dyn FileSystem,
 }
 
 impl<'a> ExternalPackagesBuilder<'a> {
-    pub fn new(package_builder: &'a PackageBuilder<'a>, file_storage: &'a dyn FileStorage) -> Self {
+    pub fn new(package_builder: &'a PackageBuilder<'a>, file_system: &'a dyn FileSystem) -> Self {
         Self {
             package_builder,
-            file_storage,
+            file_system,
         }
     }
 
@@ -46,7 +45,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
             module_interfaces.insert(
                 external_package.clone(),
                 self.convert_package_interface(&serde_json::from_str::<PackageInterface>(
-                    &self.file_storage.read_to_string(&interface_file_path)?,
+                    &self.file_system.read_to_string(&interface_file_path)?,
                 )?),
             );
         }

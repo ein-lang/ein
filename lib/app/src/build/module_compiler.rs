@@ -1,9 +1,9 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
-use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage, Logger};
+use crate::common::PackageConfiguration;
+use crate::common::{FilePath, FilePathResolver};
+use crate::infra::{FileSystem, Logger};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
@@ -11,8 +11,8 @@ use std::sync::Arc;
 
 pub struct ModuleCompiler<'a> {
     module_parser: &'a ModuleParser<'a>,
-    file_path_manager: &'a FilePathManager<'a>,
-    file_storage: &'a dyn FileStorage,
+    file_path_resolver: &'a FilePathResolver<'a>,
+    file_system: &'a dyn FileSystem,
     logger: &'a dyn Logger,
     compile_configuration: Arc<ein::CompileConfiguration>,
 }
@@ -20,15 +20,15 @@ pub struct ModuleCompiler<'a> {
 impl<'a> ModuleCompiler<'a> {
     pub fn new(
         module_parser: &'a ModuleParser<'a>,
-        file_path_manager: &'a FilePathManager<'a>,
-        file_storage: &'a dyn FileStorage,
+        file_path_resolver: &'a FilePathResolver<'a>,
+        file_system: &'a dyn FileSystem,
         logger: &'a dyn Logger,
         compile_configuration: Arc<ein::CompileConfiguration>,
     ) -> Self {
         Self {
             module_parser,
-            file_path_manager,
-            file_storage,
+            file_path_resolver,
+            file_system,
             logger,
             compile_configuration,
         }
@@ -41,7 +41,7 @@ impl<'a> ModuleCompiler<'a> {
         prelude_package_interface: Option<&PackageInterface>,
         package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
-        let source = self.file_storage.read_to_string(source_file_path)?;
+        let source = self.file_system.read_to_string(source_file_path)?;
         let module = self.module_parser.parse(&source, &source_file_path)?;
 
         let imported_module_interfaces = module
@@ -57,25 +57,20 @@ impl<'a> ModuleCompiler<'a> {
             })
             .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?;
 
-        let object_file_path =
-            package_configuration
-                .directory_path()
-                .join(&self.generate_object_file_path(
-                    source_file_path,
-                    &source,
-                    &imported_module_interfaces,
-                ));
-        let interface_file_path = object_file_path.with_extension(
-            self.file_path_manager
-                .configuration()
-                .interface_file_extension(),
-        );
+        let module_id =
+            self.generate_module_id(source_file_path, &source, &imported_module_interfaces);
+        let object_file_path = self
+            .file_path_resolver
+            .resolve_object_file_path(package_configuration.directory_path(), &module_id);
+        let interface_file_path = self
+            .file_path_resolver
+            .resolve_interface_file_path(package_configuration.directory_path(), &module_id);
 
-        if self.file_storage.exists(&object_file_path) {
+        if self.file_system.exists(&object_file_path) {
             return Ok((object_file_path, interface_file_path));
         }
 
-        let module_path = self.file_path_manager.convert_to_module_path(
+        let module_path = self.file_path_resolver.resolve_to_module_path(
             &source_file_path.relative_to(package_configuration.directory_path()),
             package_configuration.package(),
         );
@@ -107,8 +102,8 @@ impl<'a> ModuleCompiler<'a> {
             self.compile_configuration.clone(),
         )?;
 
-        self.file_storage.write(&object_file_path, &bitcode)?;
-        self.file_storage.write(
+        self.file_system.write(&object_file_path, &bitcode)?;
+        self.file_system.write(
             &interface_file_path,
             &serde_json::to_string(&module_interface)?.as_bytes(),
         )?;
@@ -116,12 +111,12 @@ impl<'a> ModuleCompiler<'a> {
         Ok((object_file_path, interface_file_path))
     }
 
-    fn generate_object_file_path<'b>(
+    fn generate_module_id<'b>(
         &self,
         source_file_path: &FilePath,
         source: &str,
         imported_module_interfaces: impl IntoIterator<Item = &'b ein::ModuleInterface>,
-    ) -> FilePath {
+    ) -> String {
         let mut hasher = DefaultHasher::new();
 
         source_file_path.hash(&mut hasher);
@@ -131,14 +126,6 @@ impl<'a> ModuleCompiler<'a> {
             module_interface.hash(&mut hasher);
         }
 
-        self.file_path_manager
-            .configuration()
-            .object_directory_path()
-            .join(&FilePath::new(&[&format!("{:x}", hasher.finish())]))
-            .with_extension(
-                self.file_path_manager
-                    .configuration()
-                    .object_file_extension(),
-            )
+        format!("{:x}", hasher.finish())
     }
 }

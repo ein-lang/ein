@@ -1,16 +1,6 @@
-use lazy_static::lazy_static;
-
-pub const PACKAGE_CONFIGURATION_FILENAME: &str = "ein.json";
-
-lazy_static! {
-    pub static ref FILE_PATH_CONFIGURATION: app::FilePathConfiguration =
-        app::FilePathConfiguration::new(
-            PACKAGE_CONFIGURATION_FILENAME,
-            ".ein",
-            "package",
-            "ein",
-            "bc",
-            "json",
-            "Main"
-        );
-}
+pub static FILE_PATH_CONFIGURATION: app::FilePathConfiguration = app::FilePathConfiguration {
+    build_configuration_filename: "ein.json",
+    output_directory_name: ".ein",
+    source_file_extension: "ein",
+    main_file_basename: "Main",
+};

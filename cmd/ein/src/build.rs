@@ -1,5 +1,5 @@
 use super::compile_configuration::COMPILE_CONFIGURATION;
-use super::file_path_configuration::{FILE_PATH_CONFIGURATION, PACKAGE_CONFIGURATION_FILENAME};
+use super::file_path_configuration::FILE_PATH_CONFIGURATION;
 
 pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let package_directory = find_package_directory()?;
@@ -7,8 +7,10 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let logger = infra::Logger::new();
 
     let file_path_converter = infra::FilePathConverter::new(package_directory);
-    let file_storage = infra::FileStorage::new(&file_path_converter);
-    let file_path_manager = app::FilePathManager::new(&FILE_PATH_CONFIGURATION);
+    let file_system = infra::FileSystem::new(&file_path_converter);
+    let static_file_path_manager = app::StaticFilePathManager::new(&FILE_PATH_CONFIGURATION);
+    let file_path_resolver =
+        app::FilePathResolver::new(&static_file_path_manager, &FILE_PATH_CONFIGURATION);
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
     let command_runner = infra::CommandRunner::new();
@@ -17,30 +19,30 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
-        &file_path_manager,
-        &file_storage,
+        &file_path_resolver,
+        &file_system,
         &logger,
         COMPILE_CONFIGURATION.clone(),
     );
-    let modules_finder = app::ModulesFinder::new(&file_path_manager, &file_storage);
+    let modules_finder = app::ModulesFinder::new(&file_system, &FILE_PATH_CONFIGURATION);
     let modules_builder = app::ModulesBuilder::new(
         &module_parser,
         &module_compiler,
         &modules_finder,
-        &file_storage,
-        &file_path_manager,
+        &file_system,
+        &file_path_resolver,
     );
-    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_storage);
+    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_system);
     let modules_linker = app::ModulesLinker::new(
         &module_objects_linker,
         &module_interfaces_linker,
-        &file_path_manager,
+        &static_file_path_manager,
     );
 
     let package_configuration_reader = app::PackageConfigurationReader::new(
-        &file_storage,
+        &file_system,
         &file_path_displayer,
-        &FILE_PATH_CONFIGURATION,
+        &static_file_path_manager,
     );
     let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker, &logger);
 
@@ -56,8 +58,8 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &package_configuration_reader,
         &package_builder,
         &prelude_package_downloader,
-        &file_storage,
-        &file_path_manager,
+        &file_system,
+        &static_file_path_manager,
     );
     let command_linker = infra::CommandLinker::new(
         &command_runner,
@@ -68,12 +70,12 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let external_packages_downloader = app::ExternalPackagesDownloader::new(
         &package_configuration_reader,
         &external_package_downloader,
-        &file_storage,
-        &file_path_manager,
+        &file_system,
+        &file_path_resolver,
         &logger,
     );
     let external_packages_builder =
-        app::ExternalPackagesBuilder::new(&package_builder, &file_storage);
+        app::ExternalPackagesBuilder::new(&package_builder, &file_system);
     let main_package_builder = app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,
@@ -90,13 +92,16 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 fn find_package_directory() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     let mut directory: &std::path::Path = &std::env::current_dir()?;
 
-    while !directory.join(PACKAGE_CONFIGURATION_FILENAME).exists() {
+    while !directory
+        .join(FILE_PATH_CONFIGURATION.build_configuration_filename)
+        .exists()
+    {
         directory = directory.parent().ok_or_else(|| {
             std::io::Error::new(
                 std::io::ErrorKind::NotFound,
                 format!(
                     "file {} not found in any parent directory",
-                    PACKAGE_CONFIGURATION_FILENAME,
+                    FILE_PATH_CONFIGURATION.build_configuration_filename,
                 ),
             )
         })?

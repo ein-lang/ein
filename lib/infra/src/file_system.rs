@@ -1,11 +1,11 @@
 use super::error::InfrastructureError;
 use super::file_path_converter::FilePathConverter;
 
-pub struct FileStorage<'a> {
+pub struct FileSystem<'a> {
     file_path_converter: &'a FilePathConverter,
 }
 
-impl<'a> FileStorage<'a> {
+impl<'a> FileSystem<'a> {
     pub fn new(file_path_converter: &'a FilePathConverter) -> Self {
         Self {
             file_path_converter,
@@ -56,7 +56,7 @@ impl<'a> FileStorage<'a> {
     }
 }
 
-impl<'a> app::FileStorage for FileStorage<'a> {
+impl<'a> app::FileSystem for FileSystem<'a> {
     fn exists(&self, file_path: &app::FilePath) -> bool {
         self.file_path_converter
             .convert_to_os_path(file_path)

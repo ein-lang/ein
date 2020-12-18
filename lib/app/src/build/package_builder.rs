@@ -1,9 +1,8 @@
-use super::external_package::ExternalPackage;
 use super::modules_builder::ModulesBuilder;
 use super::modules_linker::ModulesLinker;
-use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use crate::infra::{FilePath, Logger};
+use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
+use crate::infra::Logger;
 use std::collections::HashMap;
 
 pub struct PackageBuilder<'a> {

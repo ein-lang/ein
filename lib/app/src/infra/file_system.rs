@@ -1,7 +1,7 @@
-use super::file_path::FilePath;
 use super::repository::Repository;
+use crate::common::FilePath;
 
-pub trait FileStorage {
+pub trait FileSystem {
     fn exists(&self, path: &FilePath) -> bool;
     fn is_directory(&self, path: &FilePath) -> bool;
     fn read_directory(&self, path: &FilePath) -> Result<Vec<FilePath>, Box<dyn std::error::Error>>;
@@ -15,12 +15,12 @@ pub trait FileStorage {
 }
 
 #[cfg(test)]
-pub struct FakeFileStorage {
+pub struct FakeFileSystem {
     files: std::sync::Mutex<std::collections::HashMap<FilePath, Vec<u8>>>,
 }
 
 #[cfg(test)]
-impl FakeFileStorage {
+impl FakeFileSystem {
     pub fn new(files: std::collections::HashMap<FilePath, Vec<u8>>) -> Self {
         Self {
             files: files.into(),
@@ -29,7 +29,7 @@ impl FakeFileStorage {
 }
 
 #[cfg(test)]
-impl FileStorage for FakeFileStorage {
+impl FileSystem for FakeFileSystem {
     fn exists(&self, path: &FilePath) -> bool {
         self.files.lock().unwrap().contains_key(path)
     }
@@ -86,21 +86,21 @@ mod tests {
     #[test]
     fn exists() {
         assert!(
-            FakeFileStorage::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
+            FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
                 .exists(&FilePath::new(&["foo"]))
         );
-        assert!(!FakeFileStorage::new(Default::default()).exists(&FilePath::new(&["foo"])));
+        assert!(!FakeFileSystem::new(Default::default()).exists(&FilePath::new(&["foo"])));
     }
 
     #[test]
     fn read_to_string() {
         assert_eq!(
-            FakeFileStorage::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
+            FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
                 .read_to_string(&FilePath::new(&["foo"]))
                 .unwrap(),
             ""
         );
-        assert!(FakeFileStorage::new(Default::default())
+        assert!(FakeFileSystem::new(Default::default())
             .read_to_string(&FilePath::new(&["foo"]))
             .is_err());
     }
@@ -108,26 +108,26 @@ mod tests {
     #[test]
     fn read_to_vec() {
         assert_eq!(
-            FakeFileStorage::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
+            FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
                 .read_to_vec(&FilePath::new(&["foo"]))
                 .unwrap(),
             Vec::<u8>::new()
         );
-        assert!(FakeFileStorage::new(Default::default())
+        assert!(FakeFileSystem::new(Default::default())
             .read_to_vec(&FilePath::new(&["foo"]))
             .is_err());
     }
 
     #[test]
     fn write() {
-        let file_storage = FakeFileStorage::new(Default::default());
+        let file_system = FakeFileSystem::new(Default::default());
 
-        file_storage.write(&FilePath::new(&["foo"]), &[]).unwrap();
-        file_storage
+        file_system.write(&FilePath::new(&["foo"]), &[]).unwrap();
+        file_system
             .read_to_string(&FilePath::new(&["foo"]))
             .unwrap();
 
-        FakeFileStorage::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
+        FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
             .write(&FilePath::new(&["foo"]), &[])
             .unwrap();
     }

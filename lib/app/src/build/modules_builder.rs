@@ -2,10 +2,10 @@ use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
 use super::modules_finder::ModulesFinder;
-use super::package_configuration::PackageConfiguration;
 use super::package_interface::PackageInterface;
-use super::path::FilePathManager;
-use crate::infra::{FilePath, FileStorage};
+use crate::common::PackageConfiguration;
+use crate::common::{FilePath, FilePathResolver};
+use crate::infra::FileSystem;
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
@@ -14,8 +14,8 @@ pub struct ModulesBuilder<'a> {
     module_parser: &'a ModuleParser<'a>,
     module_compiler: &'a ModuleCompiler<'a>,
     modules_finder: &'a ModulesFinder<'a>,
-    file_storage: &'a dyn FileStorage,
-    file_path_manager: &'a FilePathManager<'a>,
+    file_system: &'a dyn FileSystem,
+    file_path_resolver: &'a FilePathResolver<'a>,
 }
 
 impl<'a> ModulesBuilder<'a> {
@@ -23,15 +23,15 @@ impl<'a> ModulesBuilder<'a> {
         module_parser: &'a ModuleParser<'a>,
         module_compiler: &'a ModuleCompiler<'a>,
         modules_finder: &'a ModulesFinder<'a>,
-        file_storage: &'a dyn FileStorage,
-        file_path_manager: &'a FilePathManager<'a>,
+        file_system: &'a dyn FileSystem,
+        file_path_resolver: &'a FilePathResolver<'a>,
     ) -> Self {
         Self {
             module_parser,
             module_compiler,
             modules_finder,
-            file_storage,
-            file_path_manager,
+            file_system,
+            file_path_resolver,
         }
     }
 
@@ -66,7 +66,7 @@ impl<'a> ModulesBuilder<'a> {
             )?;
 
             let module_interface = serde_json::from_str::<ein::ModuleInterface>(
-                &self.file_storage.read_to_string(&interface_file_path)?,
+                &self.file_system.read_to_string(&interface_file_path)?,
             )?;
             module_interfaces.insert(
                 module_interface.path().internal_unresolved().into(),
@@ -94,7 +94,7 @@ impl<'a> ModulesBuilder<'a> {
 
         for source_file_path in source_file_paths {
             let module = self.module_parser.parse(
-                &self.file_storage.read_to_string(source_file_path)?,
+                &self.file_system.read_to_string(source_file_path)?,
                 source_file_path,
             )?;
 
@@ -103,7 +103,7 @@ impl<'a> ModulesBuilder<'a> {
                     import.module_path()
                 {
                     graph.add_edge(
-                        indices[&self.file_path_manager.resolve_to_source_file_path(
+                        indices[&self.file_path_resolver.resolve_to_source_file_path(
                             package_configuration.directory_path(),
                             internal_module_path,
                         )],
