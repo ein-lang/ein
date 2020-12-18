@@ -103,7 +103,7 @@ impl<'a> ModulesBuilder<'a> {
                     import.module_path()
                 {
                     graph.add_edge(
-                        indices[&self.file_path_resolver.resolve_to_source_file_path(
+                        indices[&self.file_path_resolver.resolve_source_file_path(
                             package_configuration.directory_path(),
                             internal_module_path,
                         )],

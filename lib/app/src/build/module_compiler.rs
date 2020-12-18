@@ -70,7 +70,7 @@ impl<'a> ModuleCompiler<'a> {
             return Ok((object_file_path, interface_file_path));
         }
 
-        let module_path = self.file_path_resolver.resolve_to_module_path(
+        let module_path = self.file_path_resolver.resolve_module_path(
             &source_file_path.relative_to(package_configuration.directory_path()),
             package_configuration.package(),
         );
