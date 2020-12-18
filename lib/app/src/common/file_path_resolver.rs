@@ -1,6 +1,8 @@
 use super::external_package::ExternalPackage;
 use super::file_path::FilePath;
-use super::file_path_configuration::FilePathConfiguration;
+use super::file_path_configuration::{
+    FilePathConfiguration, INTERFACE_FILE_EXTENSION, OBJECT_FILE_EXTENSION,
+};
 use super::static_file_path_manager::StaticFilePathManager;
 
 pub struct FilePathResolver<'a> {
@@ -40,13 +42,13 @@ impl<'a> FilePathResolver<'a> {
                 .static_file_path_manager
                 .object_directory_path()
                 .join(&FilePath::new(&[&id]))
-                .with_extension(&self.file_path_configuration.object_file_extension),
+                .with_extension(OBJECT_FILE_EXTENSION),
         )
     }
 
     pub fn resolve_interface_file_path(&self, package_directory: &FilePath, id: &str) -> FilePath {
         self.resolve_object_file_path(package_directory, id)
-            .with_extension(&self.file_path_configuration.interface_file_extension)
+            .with_extension(INTERFACE_FILE_EXTENSION)
     }
 
     pub fn resolve_to_module_path(
