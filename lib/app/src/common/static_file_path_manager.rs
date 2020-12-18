@@ -16,7 +16,7 @@ pub struct StaticFilePathManager {
 
 impl StaticFilePathManager {
     pub fn new(configuration: &FilePathConfiguration) -> Self {
-        let output_directory_path = FilePath::new(&[configuration.output_directory_name.clone()]);
+        let output_directory_path = FilePath::new(&[configuration.output_directory_name]);
         let package_object_filename = format!(
             "{}.{}",
             &configuration.package_artifact_basename, &configuration.object_file_extension,
@@ -37,12 +37,12 @@ impl StaticFilePathManager {
                 .join(&FilePath::new(&[PRELUDE_PACKAGE_DIRECTORY])),
             external_packages_directory_path,
             object_directory_path: output_directory_path.join(&FilePath::new(&[OBJECT_DIRECTORY])),
-            main_source_file_path: FilePath::new(&[configuration.main_file_basename.clone()])
+            main_source_file_path: FilePath::new(&[configuration.main_file_basename])
                 .with_extension(&configuration.source_file_extension),
             output_directory_path,
-            build_configuration_file_path: FilePath::new(&[configuration
-                .build_configuration_filename
-                .clone()]),
+            build_configuration_file_path: FilePath::new(&[
+                configuration.build_configuration_filename
+            ]),
         }
     }
 

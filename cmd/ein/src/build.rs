@@ -1,5 +1,5 @@
 use super::compile_configuration::COMPILE_CONFIGURATION;
-use super::file_path_configuration::{FILE_PATH_CONFIGURATION, PACKAGE_CONFIGURATION_FILENAME};
+use super::file_path_configuration::FILE_PATH_CONFIGURATION;
 
 pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let package_directory = find_package_directory()?;
@@ -92,13 +92,16 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
 fn find_package_directory() -> Result<std::path::PathBuf, Box<dyn std::error::Error>> {
     let mut directory: &std::path::Path = &std::env::current_dir()?;
 
-    while !directory.join(PACKAGE_CONFIGURATION_FILENAME).exists() {
+    while !directory
+        .join(FILE_PATH_CONFIGURATION.build_configuration_filename)
+        .exists()
+    {
         directory = directory.parent().ok_or_else(|| {
             std::io::Error::new(
                 std::io::ErrorKind::NotFound,
                 format!(
                     "file {} not found in any parent directory",
-                    PACKAGE_CONFIGURATION_FILENAME,
+                    FILE_PATH_CONFIGURATION.build_configuration_filename,
                 ),
             )
         })?

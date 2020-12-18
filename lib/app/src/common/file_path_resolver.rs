@@ -32,10 +32,10 @@ impl<'a> FilePathResolver<'a> {
 
     pub fn resolve_object_file_path(
         &self,
-        package_directroy: &FilePath,
+        package_directory: &FilePath,
         id: impl AsRef<str>,
     ) -> FilePath {
-        package_directroy.join(
+        package_directory.join(
             &self
                 .static_file_path_manager
                 .object_directory_path()
@@ -44,8 +44,8 @@ impl<'a> FilePathResolver<'a> {
         )
     }
 
-    pub fn resolve_interface_file_path(&self, package_directroy: &FilePath, id: &str) -> FilePath {
-        self.resolve_object_file_path(package_directroy, id)
+    pub fn resolve_interface_file_path(&self, package_directory: &FilePath, id: &str) -> FilePath {
+        self.resolve_object_file_path(package_directory, id)
             .with_extension(&self.file_path_configuration.interface_file_extension)
     }
 
