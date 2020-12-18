@@ -2,6 +2,7 @@ mod build;
 mod compile_configuration;
 mod file_path_configuration;
 mod init;
+mod package_initialization_configuration;
 
 use build::build;
 use init::init;

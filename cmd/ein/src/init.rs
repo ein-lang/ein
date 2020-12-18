@@ -1,4 +1,5 @@
 use super::file_path_configuration::FILE_PATH_CONFIGURATION;
+use super::package_initialization_configuration::PACKAGE_INITIALIZATION_CONFIGURATION;
 use std::fs::create_dir_all;
 
 pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -9,6 +10,7 @@ pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Err
         &file_system,
         &static_file_path_manager,
         &FILE_PATH_CONFIGURATION,
+        &PACKAGE_INITIALIZATION_CONFIGURATION,
     );
 
     create_dir_all(directory)?;

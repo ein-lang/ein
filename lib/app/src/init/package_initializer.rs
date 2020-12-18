@@ -1,3 +1,4 @@
+use super::package_initialization_configuration::PackageInitializationConfiguration;
 use crate::common::{
     BuildConfiguration, FilePath, FilePathConfiguration, StaticFilePathManager, Target,
 };
@@ -7,6 +8,7 @@ pub struct PackageInitializer<'a> {
     file_system: &'a dyn FileSystem,
     static_file_path_manager: &'a StaticFilePathManager,
     file_path_configuration: &'a FilePathConfiguration,
+    package_initialization_configuration: &'a PackageInitializationConfiguration,
 }
 
 impl<'a> PackageInitializer<'a> {
@@ -14,11 +16,13 @@ impl<'a> PackageInitializer<'a> {
         file_system: &'a dyn FileSystem,
         static_file_path_manager: &'a StaticFilePathManager,
         file_path_configuration: &'a FilePathConfiguration,
+        package_initialization_configuration: &'a PackageInitializationConfiguration,
     ) -> Self {
         Self {
             file_system,
             static_file_path_manager,
             file_path_configuration,
+            package_initialization_configuration,
         }
     }
 
@@ -32,11 +36,26 @@ impl<'a> PackageInitializer<'a> {
             .as_bytes(),
         )?;
 
-        if matches!(target, Target::Command(_)) {
-            self.file_system.write(
-                self.static_file_path_manager.main_source_file_path(),
-                "main : System -> Number\nmain system = 0\n".as_bytes(),
-            )?;
+        match target {
+            Target::Command(_) => {
+                self.file_system.write(
+                    self.static_file_path_manager.main_source_file_path(),
+                    self.package_initialization_configuration
+                        .command_main_file_content
+                        .as_bytes(),
+                )?;
+            }
+            Target::Library => {
+                self.file_system.write(
+                    &FilePath::new(&[self
+                        .package_initialization_configuration
+                        .library_main_basename])
+                    .with_extension(&self.file_path_configuration.source_file_extension),
+                    self.package_initialization_configuration
+                        .library_main_file_content
+                        .as_bytes(),
+                )?;
+            }
         }
 
         Ok(())

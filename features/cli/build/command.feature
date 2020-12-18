@@ -4,11 +4,6 @@ Feature: Command
     And I cd to "foo"
 
   Scenario: Build a command
-    Given a file named "Main.ein" with:
-    """
-    main : System -> Number
-    main system = 0
-    """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
 
@@ -19,6 +14,7 @@ Feature: Command
     main system = 0
     """
     When I successfully run `ein build`
+    And I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
 
   Scenario: Build a command in an inner directory
