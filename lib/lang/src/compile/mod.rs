@@ -171,9 +171,9 @@ mod tests {
     lazy_static! {
         static ref COMPILE_CONFIGURATION: Arc<CompileConfiguration> = CompileConfiguration {
             source_main_function_name: "main".into(),
-            object_main_function_name: "ein_main".into(),
-            malloc_function_name: "ein_malloc".into(),
-            panic_function_name: "ein_panic".into(),
+            object_main_function_name: "my_main".into(),
+            malloc_function_name: "my_malloc".into(),
+            panic_function_name: "my_panic".into(),
             list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
             string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
             system_type_configuration: SYSTEM_TYPE_CONFIGURATION.clone(),
