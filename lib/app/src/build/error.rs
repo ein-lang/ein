@@ -7,7 +7,7 @@ pub enum BuildError {
     },
     ModuleCircularDependency(FilePath),
     ModuleNotFound {
-        module_path: ein::UnresolvedModulePath,
+        module_path: lang::UnresolvedModulePath,
     },
     PackageCircularDependency(ExternalPackage),
 }

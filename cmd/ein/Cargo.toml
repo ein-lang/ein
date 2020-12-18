@@ -11,6 +11,6 @@ path = "src/main.rs"
 [dependencies]
 app = { path = "../../lib/app" }
 clap = "2"
-ein = { path = "../../lib/ein" }
+lang = { path = "../../lib/lang" }
 infra = { path = "../../lib/infra" }
 lazy_static = "1"

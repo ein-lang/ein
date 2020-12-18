@@ -4,6 +4,6 @@ members = [
   "lib/app",
   "lib/ffi",
   "lib/infra",
+  "lib/lang",
   "lib/runtime",
-  "lib/ein",
 ]

@@ -11,14 +11,14 @@ pub use target::Target;
 
 #[derive(Clone, Debug)]
 pub struct PackageConfiguration {
-    package: ein::Package,
+    package: lang::Package,
     build_configuration: BuildConfiguration,
     directory_path: FilePath,
 }
 
 impl PackageConfiguration {
     pub fn new(
-        package: ein::Package,
+        package: lang::Package,
         build_configuration: BuildConfiguration,
         directory_path: FilePath,
     ) -> Self {
@@ -29,7 +29,7 @@ impl PackageConfiguration {
         }
     }
 
-    pub fn package(&self) -> &ein::Package {
+    pub fn package(&self) -> &lang::Package {
         &self.package
     }
 

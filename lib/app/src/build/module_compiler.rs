@@ -14,7 +14,7 @@ pub struct ModuleCompiler<'a> {
     file_path_resolver: &'a FilePathResolver<'a>,
     file_system: &'a dyn FileSystem,
     logger: &'a dyn Logger,
-    compile_configuration: Arc<ein::CompileConfiguration>,
+    compile_configuration: Arc<lang::CompileConfiguration>,
 }
 
 impl<'a> ModuleCompiler<'a> {
@@ -23,7 +23,7 @@ impl<'a> ModuleCompiler<'a> {
         file_path_resolver: &'a FilePathResolver<'a>,
         file_system: &'a dyn FileSystem,
         logger: &'a dyn Logger,
-        compile_configuration: Arc<ein::CompileConfiguration>,
+        compile_configuration: Arc<lang::CompileConfiguration>,
     ) -> Self {
         Self {
             module_parser,
@@ -37,7 +37,7 @@ impl<'a> ModuleCompiler<'a> {
     pub fn compile(
         &self,
         source_file_path: &FilePath,
-        module_interfaces: &HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>,
+        module_interfaces: &HashMap<lang::UnresolvedModulePath, lang::ModuleInterface>,
         prelude_package_interface: Option<&PackageInterface>,
         package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
@@ -80,18 +80,18 @@ impl<'a> ModuleCompiler<'a> {
             &module_path.external_unresolved()
         ))?;
 
-        let (bitcode, module_interface) = ein::compile(
+        let (bitcode, module_interface) = lang::compile(
             &module.resolve(
                 module_path,
                 imported_module_interfaces
                     .into_iter()
-                    .map(|module_interface| ein::Import::new(module_interface, true))
+                    .map(|module_interface| lang::Import::new(module_interface, true))
                     .chain(if let Some(package_interface) = prelude_package_interface {
                         package_interface
                             .modules()
                             .iter()
                             .map(|module_interface| {
-                                ein::Import::new(module_interface.clone(), false)
+                                lang::Import::new(module_interface.clone(), false)
                             })
                             .collect()
                     } else {
@@ -115,7 +115,7 @@ impl<'a> ModuleCompiler<'a> {
         &self,
         source_file_path: &FilePath,
         source: &str,
-        imported_module_interfaces: impl IntoIterator<Item = &'b ein::ModuleInterface>,
+        imported_module_interfaces: impl IntoIterator<Item = &'b lang::ModuleInterface>,
     ) -> String {
         let mut hasher = DefaultHasher::new();
 

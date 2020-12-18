@@ -8,7 +8,7 @@ use petgraph::graph::Graph;
 use std::collections::HashMap;
 
 type ExternalModuleInterfaces =
-    HashMap<ExternalPackage, HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>>;
+    HashMap<ExternalPackage, HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface>>;
 
 pub struct ExternalPackagesBuilder<'a> {
     package_builder: &'a PackageBuilder<'a>,
@@ -56,7 +56,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
     fn convert_package_interface(
         &self,
         package_interface: &PackageInterface,
-    ) -> HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface> {
+    ) -> HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface> {
         package_interface
             .modules()
             .iter()

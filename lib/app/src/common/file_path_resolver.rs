@@ -24,7 +24,7 @@ impl<'a> FilePathResolver<'a> {
     pub fn resolve_source_file_path(
         &self,
         directory_path: &FilePath,
-        internal_module_path: &ein::InternalUnresolvedModulePath,
+        internal_module_path: &lang::InternalUnresolvedModulePath,
     ) -> FilePath {
         directory_path.join(
             &FilePath::new(internal_module_path.components())
@@ -54,9 +54,9 @@ impl<'a> FilePathResolver<'a> {
     pub fn resolve_module_path(
         &self,
         source_file_path: &FilePath,
-        package: &ein::Package,
-    ) -> ein::ModulePath {
-        ein::ModulePath::new(
+        package: &lang::Package,
+    ) -> lang::ModulePath {
+        lang::ModulePath::new(
             package.clone(),
             source_file_path
                 .with_extension("")

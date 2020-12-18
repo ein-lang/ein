@@ -38,12 +38,12 @@ impl<'a> PackageConfigurationReader<'a> {
                     .collect::<Vec<_>>()
                     .join("/");
 
-                ein::Package::new(
+                lang::Package::new(
                     [repository.url().host_str().unwrap_or(""), &path].join("/"),
                     repository.version(),
                 )
             } else {
-                ein::Package::new(self.file_path_displayer.display(directory_path), "")
+                lang::Package::new(self.file_path_displayer.display(directory_path), "")
             },
             serde_json::from_str(
                 &self.file_system.read_to_string(
