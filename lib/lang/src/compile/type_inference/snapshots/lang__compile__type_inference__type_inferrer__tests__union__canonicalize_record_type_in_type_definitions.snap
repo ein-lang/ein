@@ -1,0 +1,52 @@
+---
+source: lib/lang/src/compile/type_inference/type_inferrer.rs
+expression: infer_types(&module)
+---
+Ok(
+    Module {
+        path: ModulePath {
+            package: Package {
+                name: "",
+                version: "",
+            },
+            components: [],
+        },
+        type_definitions: [
+            TypeDefinition {
+                name: "x",
+                type_: Record(
+                    Record {
+                        name: "Foo",
+                        elements: {
+                            "foo": Any(
+                                Any {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                        },
+                        source_information: SourceInformation {
+                            source_name: "",
+                            location: Location {
+                                line_number: 0,
+                                column_number: 0,
+                            },
+                            line: "",
+                        },
+                    },
+                ),
+            },
+        ],
+        definitions: [],
+        export: Export {
+            names: {},
+        },
+        imports: [],
+    },
+)

@@ -1,16 +1,16 @@
-use ein::debug::SourceInformation;
-use ein::types;
+use lang::debug::SourceInformation;
+use lang::types;
 use lazy_static::lazy_static;
 use std::sync::Arc;
 
 lazy_static! {
-    pub static ref COMPILE_CONFIGURATION: Arc<ein::CompileConfiguration> =
-        ein::CompileConfiguration {
+    pub static ref COMPILE_CONFIGURATION: Arc<lang::CompileConfiguration> =
+        lang::CompileConfiguration {
             source_main_function_name: "main".into(),
             object_main_function_name: "ein_main".into(),
             malloc_function_name: "ein_malloc".into(),
             panic_function_name: "ein_panic".into(),
-            list_type_configuration: ein::ListTypeConfiguration {
+            list_type_configuration: lang::ListTypeConfiguration {
                 empty_list_variable_name: "_emptyList".into(),
                 concatenate_function_name: "_concatenateLists".into(),
                 equal_function_name: "_equalLists".into(),
@@ -22,15 +22,15 @@ lazy_static! {
                 first_rest_type_name: "_FirstRest".into(),
             }
             .into(),
-            string_type_configuration: ein::StringTypeConfiguration {
+            string_type_configuration: lang::StringTypeConfiguration {
                 equal_function_name: "_ein_equal_strings".into(),
             }
             .into(),
-            system_type_configuration: ein::SystemTypeConfiguration {
+            system_type_configuration: lang::SystemTypeConfiguration {
                 system_type_name: "System".into(),
             }
             .into(),
-            builtin_configuration: Arc::new(ein::BuiltinConfiguration {
+            builtin_configuration: Arc::new(lang::BuiltinConfiguration {
                 functions: vec![
                     (
                         "_ein_join_strings".into(),

@@ -39,15 +39,15 @@ impl<'a> ModulesBuilder<'a> {
         &self,
         package_configuration: &PackageConfiguration,
         external_module_interfaces: &HashMap<
-            ein::ExternalUnresolvedModulePath,
-            ein::ModuleInterface,
+            lang::ExternalUnresolvedModulePath,
+            lang::ModuleInterface,
         >,
         prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
         let mut module_interfaces = external_module_interfaces
             .iter()
             .map(|(path, module_interface)| (path.clone().into(), module_interface.clone()))
-            .collect::<HashMap<ein::UnresolvedModulePath, ein::ModuleInterface>>();
+            .collect::<HashMap<lang::UnresolvedModulePath, lang::ModuleInterface>>();
 
         let mut object_file_paths = vec![];
         let mut interface_file_paths = vec![];
@@ -65,7 +65,7 @@ impl<'a> ModulesBuilder<'a> {
                 package_configuration,
             )?;
 
-            let module_interface = serde_json::from_str::<ein::ModuleInterface>(
+            let module_interface = serde_json::from_str::<lang::ModuleInterface>(
                 &self.file_system.read_to_string(&interface_file_path)?,
             )?;
             module_interfaces.insert(
@@ -99,11 +99,11 @@ impl<'a> ModulesBuilder<'a> {
             )?;
 
             for import in module.imports() {
-                if let ein::UnresolvedModulePath::Internal(internal_module_path) =
+                if let lang::UnresolvedModulePath::Internal(internal_module_path) =
                     import.module_path()
                 {
                     graph.add_edge(
-                        indices[&self.file_path_resolver.resolve_to_source_file_path(
+                        indices[&self.file_path_resolver.resolve_source_file_path(
                             package_configuration.directory_path(),
                             internal_module_path,
                         )],

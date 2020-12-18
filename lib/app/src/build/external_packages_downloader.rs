@@ -41,7 +41,7 @@ impl<'a> ExternalPackagesDownloader<'a> {
             let external_package = ExternalPackage::new(name, configuration.version());
             let directory_path = self
                 .file_path_resolver
-                .resolve_to_external_package_directory_path(&external_package);
+                .resolve_external_package_directory_path(&external_package);
 
             if !self.file_system.exists(&directory_path) {
                 self.logger.log(&format!(

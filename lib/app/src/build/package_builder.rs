@@ -29,7 +29,7 @@ impl<'a> PackageBuilder<'a> {
         package_configuration: &PackageConfiguration,
         external_module_interfaces: &HashMap<
             ExternalPackage,
-            HashMap<ein::ExternalUnresolvedModulePath, ein::ModuleInterface>,
+            HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface>,
         >,
         prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {

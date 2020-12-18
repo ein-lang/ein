@@ -37,7 +37,7 @@ dependencies = [
 name = "app"
 version = "0.1.0"
 dependencies = [
- "ein",
+ "lang",
  "petgraph",
  "regex",
  "serde",
@@ -161,8 +161,8 @@ version = "0.1.0"
 dependencies = [
  "app",
  "clap",
- "ein",
  "infra",
+ "lang",
  "lazy_static",
 ]
 
@@ -212,23 +212,6 @@ name = "dtoa"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "134951f4028bdadb9b84baf4232681efbf277da25144b9b0ad65df75946c422b"
-
-[[package]]
-name = "ein"
-version = "0.1.0"
-dependencies = [
- "combine",
- "derivative",
- "indoc",
- "insta",
- "lazy_static",
- "pretty_assertions",
- "regex",
- "serde",
- "serde_json",
- "ssf",
- "ssf-llvm",
-]
 
 [[package]]
 name = "either"
@@ -314,9 +297,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.6.0"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "55e2e4c765aa53a0424761bf9f41aa7a6ac1efa87238f59560640e27fca028f2"
+checksum = "4fb1fa934250de4de8aef298d81c729a7d33d8c239daa3a7575e6b92bfc7313b"
 dependencies = [
  "autocfg",
  "hashbrown",
@@ -336,8 +319,8 @@ name = "infra"
 version = "0.1.0"
 dependencies = [
  "app",
- "ein",
  "git2",
+ "lang",
  "termcolor",
  "url",
  "which",
@@ -404,6 +387,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c71313ebb9439f74b00d9d2dcec36440beaf57a6aa0623068441dd7cd81a7f2"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "lang"
+version = "0.1.0"
+dependencies = [
+ "combine",
+ "derivative",
+ "indoc",
+ "insta",
+ "lazy_static",
+ "pretty_assertions",
+ "regex",
+ "serde",
+ "serde_json",
+ "ssf",
+ "ssf-llvm",
 ]
 
 [[package]]

@@ -1,13 +1,6 @@
 Feature: Library
   Scenario: Build a library
     Given I successfully run `ein init library .`
-    And a file named "Main.ein" with:
-    """
-    export { foo }
-
-    foo : Number -> Number
-    foo x = x
-    """
     When I run `ein build`
     Then the exit status should be 0
 
