@@ -5,7 +5,11 @@ pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Err
     let file_path_converter = infra::FilePathConverter::new(directory);
     let file_system = infra::FileSystem::new(&file_path_converter);
     let static_file_path_manager = app::StaticFilePathManager::new(&FILE_PATH_CONFIGURATION);
-    let project_initializer = app::ProjectInitializer::new(&file_system, &static_file_path_manager);
+    let project_initializer = app::ProjectInitializer::new(
+        &file_system,
+        &static_file_path_manager,
+        &FILE_PATH_CONFIGURATION,
+    );
 
     create_dir_all(directory)?;
     project_initializer.initialize(&parse_target(target, directory)?)?;

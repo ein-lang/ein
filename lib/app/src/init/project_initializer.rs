@@ -1,26 +1,30 @@
-use crate::common::{BuildConfiguration, Target};
-use crate::common::{FilePath, StaticFilePathManager};
+use crate::common::{
+    BuildConfiguration, FilePath, FilePathConfiguration, StaticFilePathManager, Target,
+};
 use crate::infra::FileSystem;
 
 pub struct ProjectInitializer<'a> {
     file_system: &'a dyn FileSystem,
     static_file_path_manager: &'a StaticFilePathManager,
+    file_path_configuration: &'a FilePathConfiguration,
 }
 
 impl<'a> ProjectInitializer<'a> {
     pub fn new(
         file_system: &'a dyn FileSystem,
         static_file_path_manager: &'a StaticFilePathManager,
+        file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {
             file_system,
             static_file_path_manager,
+            file_path_configuration,
         }
     }
 
     pub fn initialize(&self, target: &Target) -> Result<(), Box<dyn std::error::Error>> {
         self.file_system.write(
-            &FilePath::new(&["ein.json"]),
+            &FilePath::new(&[self.file_path_configuration.build_configuration_filename]),
             serde_json::to_string_pretty(&BuildConfiguration::new(
                 target.clone(),
                 Default::default(),
