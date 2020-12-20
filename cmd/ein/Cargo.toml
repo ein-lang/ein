@@ -1,12 +1,8 @@
 [package]
-name = "command"
+name = "ein"
 version = "0.1.0"
 authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
-
-[[bin]]
-name = "ein"
-path = "src/main.rs"
 
 [dependencies]
 app = { path = "../../lib/app" }
