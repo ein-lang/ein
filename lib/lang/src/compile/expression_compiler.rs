@@ -123,48 +123,42 @@ impl ExpressionCompiler {
                         .boolean_operation_transformer
                         .transform(operation),
                 )?,
-                Operation::Generic(operation) => {
-                    let type_ = self.reference_type_resolver.resolve(operation.type_())?;
-
-                    if operation.operator() == Operator::NotEqual {
-                        self.compile(
-                            &self
-                                .expression_transformer_set
-                                .not_equal_operation_transformer
-                                .transform(operation),
-                        )?
-                    } else if operation.operator() == Operator::Equal
-                        && matches!(type_, Type::String(_))
-                    {
-                        ssf::ir::FunctionApplication::new(
-                            ssf::ir::FunctionApplication::new(
-                                ssf::ir::Variable::new(
-                                    &self.string_type_configuration.equal_function_name,
+                Operation::Generic(operation) => match operation.operator() {
+                    Operator::Equal => {
+                        match self.reference_type_resolver.resolve(operation.type_())? {
+                            Type::Number(_) => self
+                                .expression_compiler_set
+                                .boolean_compiler
+                                .compile_conversion(ssf::ir::PrimitiveOperation::new(
+                                    operation.operator().into(),
+                                    self.compile(operation.lhs())?,
+                                    self.compile(operation.rhs())?,
+                                )),
+                            Type::String(_) => ssf::ir::FunctionApplication::new(
+                                ssf::ir::FunctionApplication::new(
+                                    ssf::ir::Variable::new(
+                                        &self.string_type_configuration.equal_function_name,
+                                    ),
+                                    self.compile(operation.lhs())?,
                                 ),
-                                self.compile(operation.lhs())?,
-                            ),
-                            self.compile(operation.rhs())?,
-                        )
-                        .into()
-                    } else if operation.operator() == Operator::Equal
-                        && !matches!(type_, Type::Number(_))
-                    {
-                        self.compile(
-                            &self
-                                .expression_transformer_set
-                                .equal_operation_transformer
-                                .transform(operation)?,
-                        )?
-                    } else {
-                        self.expression_compiler_set
-                            .boolean_compiler
-                            .compile_conversion(ssf::ir::PrimitiveOperation::new(
-                                operation.operator().into(),
-                                self.compile(operation.lhs())?,
                                 self.compile(operation.rhs())?,
-                            ))
+                            )
+                            .into(),
+                            _ => self.compile(
+                                &self
+                                    .expression_transformer_set
+                                    .equal_operation_transformer
+                                    .transform(operation)?,
+                            )?,
+                        }
                     }
-                }
+                    Operator::NotEqual => self.compile(
+                        &self
+                            .expression_transformer_set
+                            .not_equal_operation_transformer
+                            .transform(operation),
+                    )?,
+                },
                 Operation::Order(operation) => self
                     .expression_compiler_set
                     .boolean_compiler
