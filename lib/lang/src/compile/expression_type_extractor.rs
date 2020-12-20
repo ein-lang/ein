@@ -119,7 +119,12 @@ impl ExpressionTypeExtractor {
                 Operation::Boolean(_) | Operation::Equality(_) | Operation::Order(_) => {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
-                Operation::Pipe(_) => todo!(),
+                Operation::Pipe(operation) => self
+                    .reference_type_resolver
+                    .resolve_to_function(&self.extract(operation.rhs(), &variables)?)?
+                    .unwrap()
+                    .result()
+                    .clone(),
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
             Expression::RecordElementOperation(operation) => {
@@ -293,6 +298,37 @@ mod tests {
                 &Default::default(),
             ),
             Ok(list_type.into())
+        );
+    }
+
+    #[test]
+    fn extract_type_of_pipe_operation() {
+        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
+
+        assert_eq!(
+            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+                &PipeOperation::new(
+                    None::new(SourceInformation::dummy()),
+                    Variable::new("f", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into(),
+                &vec![(
+                    "f".into(),
+                    types::Function::new(
+                        types::None::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into()
+                )]
+                .into_iter()
+                .collect(),
+            ),
+            Ok(types::Number::new(SourceInformation::dummy()).into())
         );
     }
 }
