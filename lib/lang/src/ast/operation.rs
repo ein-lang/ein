@@ -3,6 +3,7 @@ use super::boolean_operation::BooleanOperation;
 use super::equality_operation::EqualityOperation;
 use super::expression::Expression;
 use super::order_operation::OrderOperation;
+use super::pipe_operation::PipeOperation;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::sync::Arc;
@@ -13,6 +14,7 @@ pub enum Operation {
     Boolean(BooleanOperation),
     Equality(EqualityOperation),
     Order(OrderOperation),
+    Pipe(PipeOperation),
 }
 
 impl Operation {
@@ -22,6 +24,7 @@ impl Operation {
             Self::Boolean(operation) => operation.source_information(),
             Self::Equality(operation) => operation.source_information(),
             Self::Order(operation) => operation.source_information(),
+            Self::Pipe(operation) => operation.source_information(),
         }
     }
 
@@ -34,6 +37,7 @@ impl Operation {
             Self::Boolean(operation) => operation.transform_expressions(transform)?.into(),
             Self::Equality(operation) => operation.transform_expressions(transform)?.into(),
             Self::Order(operation) => operation.transform_expressions(transform)?.into(),
+            Self::Pipe(operation) => operation.transform_expressions(transform)?.into(),
         })
     }
 
@@ -46,6 +50,7 @@ impl Operation {
             Self::Boolean(operation) => operation.transform_types(transform)?.into(),
             Self::Equality(operation) => operation.transform_types(transform)?.into(),
             Self::Order(operation) => operation.transform_types(transform)?.into(),
+            Self::Pipe(operation) => operation.transform_types(transform)?.into(),
         })
     }
 }
@@ -71,5 +76,11 @@ impl From<EqualityOperation> for Operation {
 impl From<OrderOperation> for Operation {
     fn from(operation: OrderOperation) -> Self {
         Self::Order(operation)
+    }
+}
+
+impl From<PipeOperation> for Operation {
+    fn from(operation: PipeOperation) -> Self {
+        Self::Pipe(operation)
     }
 }

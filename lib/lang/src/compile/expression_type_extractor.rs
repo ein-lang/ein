@@ -119,6 +119,7 @@ impl ExpressionTypeExtractor {
                 Operation::Boolean(_) | Operation::Equality(_) | Operation::Order(_) => {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
+                Operation::Pipe(_) => todo!(),
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
             Expression::RecordElementOperation(operation) => {
