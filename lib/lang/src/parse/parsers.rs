@@ -1908,8 +1908,7 @@ mod tests {
                         Variable::new("x", SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("f", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -1940,8 +1939,7 @@ mod tests {
                             Variable::new("x", SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        )
-                        .into(),
+                        ),
                         FunctionDefinition::new(
                             "g",
                             vec!["x".into()],
@@ -1953,7 +1951,6 @@ mod tests {
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
-                        .into()
                     ],
                     Variable::new("g", SourceInformation::dummy()),
                     SourceInformation::dummy()
@@ -1985,8 +1982,7 @@ mod tests {
                         ),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into(),],
+                    ),],
                     Variable::new("f", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -2019,8 +2015,7 @@ mod tests {
                             ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        )
-                        .into(),
+                        ),
                         FunctionDefinition::new(
                             "h",
                             vec!["x".into()],
@@ -2032,7 +2027,6 @@ mod tests {
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
-                        .into()
                     ],
                     Variable::new("f", SourceInformation::dummy()),
                     SourceInformation::dummy()

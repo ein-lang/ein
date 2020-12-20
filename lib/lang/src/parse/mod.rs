@@ -107,8 +107,7 @@ mod tests {
                                 Variable::new("x", SourceInformation::dummy()),
                                 types::Unknown::new(SourceInformation::dummy()),
                                 SourceInformation::dummy(),
-                            )
-                            .into(),
+                            ),
                             FunctionDefinition::new(
                                 "g",
                                 vec!["x".into()],
@@ -119,8 +118,7 @@ mod tests {
                                 ),
                                 types::Unknown::new(SourceInformation::dummy()),
                                 SourceInformation::dummy(),
-                            )
-                            .into(),
+                            ),
                         ],
                         Application::new(
                             Variable::new("g", SourceInformation::dummy()),
