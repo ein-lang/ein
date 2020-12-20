@@ -472,15 +472,9 @@ fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
         keyword("in").expected("in keyword"),
         expression(),
     )
-        .map(
-            |(source_information, _, definitions, _, expression): (_, _, Vec<_>, _, _)| {
-                Let::new(
-                    definitions.into_iter().map(Definition::from).collect(),
-                    expression,
-                    source_information,
-                )
-            },
-        )
+        .map(|(source_information, _, definitions, _, expression)| {
+            Let::new(definitions, expression, source_information)
+        })
         .expected("let expression")
 }
 
@@ -1843,8 +1837,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -1857,8 +1850,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -1871,8 +1863,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -1885,8 +1876,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )

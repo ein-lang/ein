@@ -92,10 +92,7 @@ impl ExpressionCompiler {
                 None,
             )
             .into(),
-            Expression::Let(let_) => match let_.definitions()[0] {
-                Definition::FunctionDefinition(_) => todo!(),
-                Definition::VariableDefinition(_) => self.compile_let(let_)?,
-            },
+            Expression::Let(let_) => self.compile_let(let_)?,
             Expression::LetRecursive(let_) => self.compile_let_recursive(let_)?.into(),
             Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
@@ -361,20 +358,7 @@ impl ExpressionCompiler {
     }
 
     fn compile_let(&self, let_: &Let) -> Result<ssf::ir::Expression, CompileError> {
-        let variable_definitions = let_
-            .definitions()
-            .iter()
-            .map(|definition| match definition {
-                Definition::FunctionDefinition(function_definition) => {
-                    Err(CompileError::MixedDefinitionsInLet(
-                        function_definition.source_information().clone(),
-                    ))
-                }
-                Definition::VariableDefinition(variable_definition) => Ok(variable_definition),
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
-        variable_definitions.iter().rev().fold(
+        let_.definitions().iter().rev().fold(
             self.compile(let_.expression()),
             |expression, variable_definition| {
                 Ok(ssf::ir::Let::new(
@@ -692,8 +676,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -722,15 +705,13 @@ mod tests {
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        )
-                        .into(),
+                        ),
                         VariableDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
-                        .into()
                     ],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
@@ -901,8 +882,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     LetRecursive::new(
                         vec![FunctionDefinition::new(
                             "f",
@@ -992,8 +972,7 @@ mod tests {
                         None::new(SourceInformation::dummy()),
                         types::Any::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("y", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 ),

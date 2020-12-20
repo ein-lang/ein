@@ -158,37 +158,16 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
-                for definition in let_.definitions() {
-                    match definition {
-                        Definition::FunctionDefinition(function_definition) => {
-                            variables.insert(
-                                function_definition.name().into(),
-                                function_definition.type_().clone(),
-                            );
-                        }
-                        Definition::VariableDefinition(_) => {}
-                    }
-                }
-
                 let mut definitions = vec![];
 
-                for definition in let_.definitions() {
-                    definitions.push(match definition {
-                        Definition::FunctionDefinition(function_definition) => self
-                            .transform_function_definition(function_definition, &variables)?
-                            .into(),
-                        Definition::VariableDefinition(variable_definition) => {
-                            let definition = self
-                                .transform_variable_definition(variable_definition, &variables)?;
+                for variable_definition in let_.definitions() {
+                    definitions
+                        .push(self.transform_variable_definition(variable_definition, &variables)?);
 
-                            variables.insert(
-                                variable_definition.name().into(),
-                                variable_definition.type_().clone(),
-                            );
-
-                            definition.into()
-                        }
-                    })
+                    variables.insert(
+                        variable_definition.name().into(),
+                        variable_definition.type_().clone(),
+                    );
                 }
 
                 Let::new(
@@ -211,13 +190,11 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 let mut definitions = vec![];
 
                 for function_definition in let_.definitions() {
-                    definitions.push(
-                        self.transform_function_definition(function_definition, &variables)?
-                            .into(),
-                    )
+                    definitions
+                        .push(self.transform_function_definition(function_definition, &variables)?)
                 }
 
-                Let::new(
+                LetRecursive::new(
                     definitions,
                     self.transform_expression(let_.expression(), &variables)?,
                     let_.source_information().clone(),

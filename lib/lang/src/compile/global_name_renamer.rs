@@ -152,32 +152,12 @@ impl GlobalNameRenamer {
             .into(),
             Expression::Let(let_) => {
                 let mut names = names.clone();
-
-                for definition in let_.definitions() {
-                    match definition {
-                        Definition::FunctionDefinition(function_definition) => {
-                            names.remove(function_definition.name());
-                        }
-                        Definition::VariableDefinition(_) => {}
-                    }
-                }
-
                 let mut definitions = vec![];
 
-                for definition in let_.definitions() {
-                    definitions.push(match definition {
-                        Definition::FunctionDefinition(function_definition) => self
-                            .rename_function_definition(function_definition, &names)
-                            .into(),
-                        Definition::VariableDefinition(variable_definition) => {
-                            let definition =
-                                self.rename_variable_definition(variable_definition, &names);
+                for variable_definition in let_.definitions() {
+                    definitions.push(self.rename_variable_definition(variable_definition, &names));
 
-                            names.remove(variable_definition.name());
-
-                            definition.into()
-                        }
-                    })
+                    names.remove(variable_definition.name());
                 }
 
                 Let::new(
@@ -197,13 +177,10 @@ impl GlobalNameRenamer {
                 let mut definitions = vec![];
 
                 for function_definition in let_.definitions() {
-                    definitions.push(
-                        self.rename_function_definition(function_definition, &names)
-                            .into(),
-                    )
+                    definitions.push(self.rename_function_definition(function_definition, &names))
                 }
 
-                Let::new(
+                LetRecursive::new(
                     definitions,
                     self.rename_expression(let_.expression(), &names),
                     let_.source_information().clone(),

@@ -288,8 +288,7 @@ mod tests {
                     Number::new(42.0, SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()],
+                )],
                 Variable::new("y", SourceInformation::dummy()),
                 SourceInformation::dummy(),
             ),
@@ -315,8 +314,7 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                     SourceInformation::dummy(),
-                )
-                .into()],
+                )],
                 Variable::new("y", SourceInformation::dummy()),
                 SourceInformation::dummy(),
             ),
@@ -338,7 +336,7 @@ mod tests {
     fn infer_types_of_let_recursive() {
         let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
-            Let::new(
+            LetRecursive::new(
                 vec![FunctionDefinition::new(
                     "f",
                     vec!["z".into()],
@@ -349,8 +347,7 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                     SourceInformation::dummy(),
-                )
-                .into()],
+                )],
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),
                     Number::new(42.0, SourceInformation::dummy()),
@@ -370,7 +367,7 @@ mod tests {
     fn fail_to_infer_types_of_let_recursive() {
         let module = Module::from_definitions(vec![VariableDefinition::new(
             "x",
-            Let::new(
+            LetRecursive::new(
                 vec![FunctionDefinition::new(
                     "f",
                     vec!["z".into()],
@@ -385,8 +382,7 @@ mod tests {
                         SourceInformation::dummy(),
                     ),
                     SourceInformation::dummy(),
-                )
-                .into()],
+                )],
                 Application::new(
                     Variable::new("f", SourceInformation::dummy()),
                     Number::new(42.0, SourceInformation::dummy()),
@@ -419,8 +415,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("y", SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 ),
@@ -436,8 +431,7 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )
-                    .into(),],
+                    ),],
                     Variable::new("y", SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 ),
@@ -504,7 +498,7 @@ mod tests {
         assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
             VariableDefinition::new(
                 "x",
-                Let::new(
+                LetRecursive::new(
                     vec![
                         FunctionDefinition::new(
                             "f",
@@ -516,8 +510,7 @@ mod tests {
                             ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        )
-                        .into(),
+                        ),
                         FunctionDefinition::new(
                             "g",
                             vec!["x".into()],
@@ -533,7 +526,6 @@ mod tests {
                             ),
                             SourceInformation::dummy()
                         )
-                        .into()
                     ],
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
@@ -554,7 +546,7 @@ mod tests {
         assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
             VariableDefinition::new(
                 "x",
-                Let::new(
+                LetRecursive::new(
                     vec![
                         FunctionDefinition::new(
                             "f",
@@ -570,8 +562,7 @@ mod tests {
                                 SourceInformation::dummy(),
                             ),
                             SourceInformation::dummy()
-                        )
-                        .into(),
+                        ),
                         FunctionDefinition::new(
                             "g",
                             vec!["x".into()],
@@ -583,7 +574,6 @@ mod tests {
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
-                        .into()
                     ],
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
@@ -605,7 +595,7 @@ mod tests {
             FunctionDefinition::new(
                 "f",
                 vec!["x".into()],
-                Let::new(
+                LetRecursive::new(
                     vec![
                         FunctionDefinition::new(
                             "f",
@@ -617,8 +607,7 @@ mod tests {
                             ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        )
-                        .into(),
+                        ),
                         FunctionDefinition::new(
                             "g",
                             vec!["x".into()],
@@ -634,7 +623,6 @@ mod tests {
                             ),
                             SourceInformation::dummy()
                         )
-                        .into()
                     ],
                     Application::new(
                         Variable::new("f", SourceInformation::dummy()),
@@ -665,15 +653,13 @@ mod tests {
                         Variable::new("b", SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    )
-                    .into(),
+                    ),
                     VariableDefinition::new(
                         "b",
                         Variable::new("a", SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    )
-                    .into(),
+                    ),
                 ],
                 Variable::new("a", SourceInformation::dummy()),
                 SourceInformation::dummy(),
@@ -895,8 +881,7 @@ mod tests {
                             ),
                             type_,
                             SourceInformation::dummy(),
-                        )
-                        .into()],
+                        )],
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
@@ -944,8 +929,7 @@ mod tests {
                             ),
                             type_,
                             SourceInformation::dummy(),
-                        )
-                        .into()],
+                        )],
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
@@ -1838,8 +1822,7 @@ mod tests {
                             Variable::new("x", SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy(),
-                        )
-                        .into()],
+                        )],
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
@@ -1873,8 +1856,7 @@ mod tests {
                             ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy(),
-                        )
-                        .into()],
+                        )],
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),

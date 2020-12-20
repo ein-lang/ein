@@ -162,29 +162,13 @@ impl ConstraintCollector {
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
-                for definition in let_.definitions() {
-                    if let Definition::FunctionDefinition(function_definition) = definition {
-                        variables.insert(
-                            function_definition.name().into(),
-                            function_definition.type_().clone(),
-                        );
-                    }
-                }
+                for variable_definition in let_.definitions() {
+                    self.infer_variable_definition(variable_definition, &variables)?;
 
-                for definition in let_.definitions() {
-                    match definition {
-                        Definition::FunctionDefinition(function_definition) => {
-                            self.infer_function_definition(function_definition, &variables)?;
-                        }
-                        Definition::VariableDefinition(variable_definition) => {
-                            self.infer_variable_definition(variable_definition, &variables)?;
-
-                            variables.insert(
-                                variable_definition.name().into(),
-                                variable_definition.type_().clone(),
-                            );
-                        }
-                    }
+                    variables.insert(
+                        variable_definition.name().into(),
+                        variable_definition.type_().clone(),
+                    );
                 }
 
                 self.infer_expression(let_.expression(), &variables)

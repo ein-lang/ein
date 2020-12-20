@@ -80,7 +80,7 @@ impl EqualOperationTransformer {
             Type::List(list_type) => {
                 let element_type = list_type.element();
 
-                Let::new(
+                LetRecursive::new(
                     vec![FunctionDefinition::new(
                         "$equalElements",
                         vec!["lhs".into(), "rhs".into()],
@@ -138,8 +138,7 @@ impl EqualOperationTransformer {
                             source_information.clone(),
                         ),
                         source_information.clone(),
-                    )
-                    .into()],
+                    )],
                     Application::new(
                         Application::new(
                             Application::new(

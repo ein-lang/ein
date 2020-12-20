@@ -63,8 +63,7 @@ mod tests {
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy(),
-                        )
-                        .into()],
+                        )],
                         Variable::new("x", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),

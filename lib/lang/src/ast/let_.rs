@@ -1,19 +1,19 @@
-use super::definition::*;
-use super::expression::*;
+use super::expression::Expression;
+use super::variable_definition::VariableDefinition;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Let {
-    definitions: Vec<Definition>,
+    definitions: Vec<VariableDefinition>,
     expression: Arc<Expression>,
     source_information: Arc<SourceInformation>,
 }
 
 impl Let {
     pub fn new(
-        definitions: Vec<Definition>,
+        definitions: Vec<VariableDefinition>,
         expression: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
@@ -24,7 +24,7 @@ impl Let {
         }
     }
 
-    pub fn definitions(&self) -> &[Definition] {
+    pub fn definitions(&self) -> &[VariableDefinition] {
         &self.definitions
     }
 
