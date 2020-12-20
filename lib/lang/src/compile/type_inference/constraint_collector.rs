@@ -248,9 +248,9 @@ impl ConstraintCollector {
                     let boolean_type = types::Boolean::new(operation.source_information().clone());
 
                     self.solved_subsumption_set
-                        .add(lhs.clone(), boolean_type.clone());
+                        .add(lhs, boolean_type.clone());
                     self.solved_subsumption_set
-                        .add(rhs.clone(), boolean_type.clone());
+                        .add(rhs, boolean_type.clone());
 
                     Ok(boolean_type.into())
                 }
