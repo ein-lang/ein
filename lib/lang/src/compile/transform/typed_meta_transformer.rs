@@ -238,14 +238,37 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 case.source_information().clone(),
             )
             .into(),
-            Expression::Operation(operation) => Operation::with_type(
-                operation.type_().clone(),
-                operation.operator(),
-                self.transform_expression(operation.lhs(), &variables)?,
-                self.transform_expression(operation.rhs(), &variables)?,
-                operation.source_information().clone(),
-            )
-            .into(),
+            Expression::Operation(operation) => match operation {
+                Operation::Arithmetic(operation) => ArithmeticOperation::new(
+                    operation.operator(),
+                    self.transform_expression(operation.lhs(), &variables)?,
+                    self.transform_expression(operation.rhs(), &variables)?,
+                    operation.source_information().clone(),
+                )
+                .into(),
+                Operation::Boolean(operation) => BooleanOperation::new(
+                    operation.operator(),
+                    self.transform_expression(operation.lhs(), &variables)?,
+                    self.transform_expression(operation.rhs(), &variables)?,
+                    operation.source_information().clone(),
+                )
+                .into(),
+                Operation::Equality(operation) => EqualityOperation::with_type(
+                    operation.type_().clone(),
+                    operation.operator(),
+                    self.transform_expression(operation.lhs(), &variables)?,
+                    self.transform_expression(operation.rhs(), &variables)?,
+                    operation.source_information().clone(),
+                )
+                .into(),
+                Operation::Order(operation) => OrderOperation::new(
+                    operation.operator(),
+                    self.transform_expression(operation.lhs(), &variables)?,
+                    self.transform_expression(operation.rhs(), &variables)?,
+                    operation.source_information().clone(),
+                )
+                .into(),
+            },
             Expression::RecordConstruction(record_construction) => RecordConstruction::new(
                 record_construction.type_().clone(),
                 record_construction

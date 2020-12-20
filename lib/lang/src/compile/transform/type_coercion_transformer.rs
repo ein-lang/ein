@@ -249,39 +249,44 @@ impl TypedTransformer for TypeCoercionTransformer {
                 )
                 .into())
             }
-            Expression::Operation(operation) => {
-                let argument_type = self.type_canonicalizer.canonicalize(
-                    &types::Union::new(
-                        vec![
-                            self.expression_type_extractor
-                                .extract(operation.lhs(), variables)?,
-                            self.expression_type_extractor
-                                .extract(operation.rhs(), variables)?,
-                        ],
+            Expression::Operation(operation) => Ok(match operation {
+                Operation::Arithmetic(operation) => operation.clone().into(),
+                Operation::Boolean(operation) => operation.clone().into(),
+                Operation::Equality(operation) => {
+                    let argument_type = self.type_canonicalizer.canonicalize(
+                        &types::Union::new(
+                            vec![
+                                self.expression_type_extractor
+                                    .extract(operation.lhs(), variables)?,
+                                self.expression_type_extractor
+                                    .extract(operation.rhs(), variables)?,
+                            ],
+                            operation.source_information().clone(),
+                        )
+                        .into(),
+                    )?;
+
+                    EqualityOperation::with_type(
+                        operation.type_().clone(),
+                        operation.operator(),
+                        self.coerce_type(
+                            operation.lhs(),
+                            &argument_type,
+                            operation.source_information().clone(),
+                            variables,
+                        )?,
+                        self.coerce_type(
+                            operation.rhs(),
+                            &argument_type,
+                            operation.source_information().clone(),
+                            variables,
+                        )?,
                         operation.source_information().clone(),
                     )
-                    .into(),
-                )?;
-
-                Ok(Operation::with_type(
-                    operation.type_().clone(),
-                    operation.operator(),
-                    self.coerce_type(
-                        operation.lhs(),
-                        &argument_type,
-                        operation.source_information().clone(),
-                        variables,
-                    )?,
-                    self.coerce_type(
-                        operation.rhs(),
-                        &argument_type,
-                        operation.source_information().clone(),
-                        variables,
-                    )?,
-                    operation.source_information().clone(),
-                )
-                .into())
-            }
+                    .into()
+                }
+                Operation::Order(operation) => operation.clone().into(),
+            }),
             Expression::RecordConstruction(record_construction) => {
                 let record_type = self
                     .reference_type_resolver

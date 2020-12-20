@@ -112,18 +112,11 @@ impl ExpressionTypeExtractor {
             Expression::Number(number) => {
                 types::Number::new(number.source_information().clone()).into()
             }
-            Expression::Operation(operation) => match operation.operator() {
-                Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
+            Expression::Operation(operation) => match operation {
+                Operation::Arithmetic(_) => {
                     types::Number::new(operation.source_information().clone()).into()
                 }
-                Operator::Equal
-                | Operator::NotEqual
-                | Operator::LessThan
-                | Operator::LessThanOrEqual
-                | Operator::GreaterThan
-                | Operator::GreaterThanOrEqual
-                | Operator::And
-                | Operator::Or => {
+                Operation::Boolean(_) | Operation::Equality(_) | Operation::Order(_) => {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
             },
@@ -230,9 +223,8 @@ mod tests {
                         SourceInformation::dummy()
                     ),
                     "bar",
-                    Operation::with_type(
-                        types::Number::new(SourceInformation::dummy()),
-                        Operator::LessThan,
+                    OrderOperation::new(
+                        OrderOperator::LessThan,
                         Variable::new("bar", SourceInformation::dummy()),
                         Variable::new("bar", SourceInformation::dummy()),
                         SourceInformation::dummy()

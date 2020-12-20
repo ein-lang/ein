@@ -1,27 +1,43 @@
 use crate::ast::*;
 use crate::debug::SourceInformation;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ParsedOperator {
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    Equal,
+    NotEqual,
+    LessThan,
+    LessThanOrEqual,
+    GreaterThan,
+    GreaterThanOrEqual,
+    And,
+    Or,
+}
+
 pub fn reduce_operations(
     lhs: Expression,
-    pairs: &[(Operator, Expression, SourceInformation)],
+    pairs: &[(ParsedOperator, Expression, SourceInformation)],
 ) -> Expression {
     match pairs {
         [] => lhs,
         [(operator, rhs, source_information)] => {
-            Operation::new(*operator, lhs, rhs.clone(), source_information.clone()).into()
+            create_operation(*operator, lhs, rhs.clone(), source_information).into()
         }
         [(operator, rhs, source_information), (next_operator, _, _), ..] => {
             if operator_priority(*operator) >= operator_priority(*next_operator) {
                 reduce_operations(
-                    Operation::new(*operator, lhs, rhs.clone(), source_information.clone()).into(),
+                    create_operation(*operator, lhs, rhs.clone(), source_information).into(),
                     &pairs[1..],
                 )
             } else {
-                Operation::new(
+                create_operation(
                     *operator,
                     lhs,
                     reduce_operations(rhs.clone(), &pairs[1..]),
-                    source_information.clone(),
+                    source_information,
                 )
                 .into()
             }
@@ -29,17 +45,103 @@ pub fn reduce_operations(
     }
 }
 
-fn operator_priority(operator: Operator) -> usize {
+fn create_operation(
+    operator: ParsedOperator,
+    lhs: impl Into<Expression>,
+    rhs: impl Into<Expression>,
+    source_information: &SourceInformation,
+) -> Operation {
     match operator {
-        Operator::Or => 0,
-        Operator::And => 1,
-        Operator::Equal
-        | Operator::NotEqual
-        | Operator::LessThan
-        | Operator::LessThanOrEqual
-        | Operator::GreaterThan
-        | Operator::GreaterThanOrEqual => 2,
-        Operator::Add | Operator::Subtract => 3,
-        Operator::Multiply | Operator::Divide => 4,
+        ParsedOperator::Or => {
+            BooleanOperation::new(BooleanOperator::Or, lhs, rhs, source_information.clone()).into()
+        }
+        ParsedOperator::And => {
+            BooleanOperation::new(BooleanOperator::And, lhs, rhs, source_information.clone()).into()
+        }
+        ParsedOperator::Equal => EqualityOperation::new(
+            EqualityOperator::Equal,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::NotEqual => EqualityOperation::new(
+            EqualityOperator::NotEqual,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::Add => ArithmeticOperation::new(
+            ArithmeticOperator::Add,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::Subtract => ArithmeticOperation::new(
+            ArithmeticOperator::Subtract,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::Multiply => ArithmeticOperation::new(
+            ArithmeticOperator::Multiply,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::Divide => ArithmeticOperation::new(
+            ArithmeticOperator::Divide,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::LessThan => OrderOperation::new(
+            OrderOperator::LessThan,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::LessThanOrEqual => OrderOperation::new(
+            OrderOperator::LessThanOrEqual,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::GreaterThan => OrderOperation::new(
+            OrderOperator::GreaterThan,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::GreaterThanOrEqual => OrderOperation::new(
+            OrderOperator::GreaterThanOrEqual,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+    }
+}
+
+fn operator_priority(operator: ParsedOperator) -> usize {
+    match operator {
+        ParsedOperator::Or => 0,
+        ParsedOperator::And => 1,
+        ParsedOperator::Equal
+        | ParsedOperator::NotEqual
+        | ParsedOperator::LessThan
+        | ParsedOperator::LessThanOrEqual
+        | ParsedOperator::GreaterThan
+        | ParsedOperator::GreaterThanOrEqual => 2,
+        ParsedOperator::Add | ParsedOperator::Subtract => 3,
+        ParsedOperator::Multiply | ParsedOperator::Divide => 4,
     }
 }

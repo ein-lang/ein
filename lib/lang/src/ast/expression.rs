@@ -199,9 +199,9 @@ impl From<Number> for Expression {
     }
 }
 
-impl From<Operation> for Expression {
-    fn from(operation: Operation) -> Self {
-        Self::Operation(operation)
+impl<T: Into<Operation>> From<T> for Expression {
+    fn from(operation: T) -> Self {
+        Self::Operation(operation.into())
     }
 }
 

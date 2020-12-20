@@ -156,17 +156,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "command"
-version = "0.1.0"
-dependencies = [
- "app",
- "clap",
- "infra",
- "lang",
- "lazy_static",
-]
-
-[[package]]
 name = "console"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -212,6 +201,17 @@ name = "dtoa"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "134951f4028bdadb9b84baf4232681efbf277da25144b9b0ad65df75946c422b"
+
+[[package]]
+name = "ein"
+version = "0.1.0"
+dependencies = [
+ "app",
+ "clap",
+ "infra",
+ "lang",
+ "lazy_static",
+]
 
 [[package]]
 name = "either"

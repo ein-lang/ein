@@ -241,52 +241,49 @@ impl ConstraintCollector {
             Expression::Number(number) => {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
-            Expression::Operation(operation) => {
-                let lhs = self.infer_expression(operation.lhs(), variables)?;
-                let rhs = self.infer_expression(operation.rhs(), variables)?;
+            Expression::Operation(operation) => Ok(match operation {
+                Operation::Arithmetic(operation) => {
+                    let lhs = self.infer_expression(operation.lhs(), variables)?;
+                    let rhs = self.infer_expression(operation.rhs(), variables)?;
+                    let number_type = types::Number::new(operation.source_information().clone());
 
-                self.solved_subsumption_set
-                    .add(lhs.clone(), operation.type_().clone());
-                self.solved_subsumption_set
-                    .add(rhs.clone(), operation.type_().clone());
+                    self.solved_subsumption_set.add(lhs, number_type.clone());
+                    self.solved_subsumption_set.add(rhs, number_type.clone());
 
-                Ok(match operation.operator() {
-                    Operator::Add
-                    | Operator::Subtract
-                    | Operator::Multiply
-                    | Operator::Divide
-                    | Operator::LessThan
-                    | Operator::LessThanOrEqual
-                    | Operator::GreaterThan
-                    | Operator::GreaterThanOrEqual => {
-                        let number_type =
-                            types::Number::new(operation.source_information().clone());
+                    number_type.into()
+                }
+                Operation::Boolean(operation) => {
+                    let lhs = self.infer_expression(operation.lhs(), variables)?;
+                    let rhs = self.infer_expression(operation.rhs(), variables)?;
+                    let boolean_type = types::Boolean::new(operation.source_information().clone());
 
-                        self.solved_subsumption_set.add(lhs, number_type.clone());
-                        self.solved_subsumption_set.add(rhs, number_type.clone());
+                    self.solved_subsumption_set.add(lhs, boolean_type.clone());
+                    self.solved_subsumption_set.add(rhs, boolean_type.clone());
 
-                        match operation.operator() {
-                            Operator::Add
-                            | Operator::Subtract
-                            | Operator::Multiply
-                            | Operator::Divide => number_type.into(),
-                            _ => types::Boolean::new(operation.source_information().clone()).into(),
-                        }
-                    }
-                    Operator::Equal | Operator::NotEqual => {
-                        types::Boolean::new(operation.source_information().clone()).into()
-                    }
-                    Operator::And | Operator::Or => {
-                        let boolean_type =
-                            types::Boolean::new(operation.source_information().clone());
+                    boolean_type.into()
+                }
+                Operation::Equality(operation) => {
+                    let lhs = self.infer_expression(operation.lhs(), variables)?;
+                    let rhs = self.infer_expression(operation.rhs(), variables)?;
 
-                        self.solved_subsumption_set.add(lhs, boolean_type.clone());
-                        self.solved_subsumption_set.add(rhs, boolean_type.clone());
+                    self.solved_subsumption_set
+                        .add(lhs, operation.type_().clone());
+                    self.solved_subsumption_set
+                        .add(rhs, operation.type_().clone());
 
-                        boolean_type.into()
-                    }
-                })
-            }
+                    types::Boolean::new(operation.source_information().clone()).into()
+                }
+                Operation::Order(operation) => {
+                    let lhs = self.infer_expression(operation.lhs(), variables)?;
+                    let rhs = self.infer_expression(operation.rhs(), variables)?;
+                    let number_type = types::Number::new(operation.source_information().clone());
+
+                    self.solved_subsumption_set.add(lhs, number_type.clone());
+                    self.solved_subsumption_set.add(rhs, number_type);
+
+                    types::Boolean::new(operation.source_information().clone()).into()
+                }
+            }),
             Expression::RecordConstruction(construction) => {
                 let record_type = self
                     .reference_type_resolver

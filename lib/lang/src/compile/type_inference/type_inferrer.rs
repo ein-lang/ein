@@ -1468,9 +1468,8 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         "bar",
-                        Operation::with_type(
-                            types::Number::new(SourceInformation::dummy()),
-                            Operator::LessThan,
+                        OrderOperation::new(
+                            OrderOperator::LessThan,
                             Variable::new("bar", SourceInformation::dummy()),
                             Variable::new("bar", SourceInformation::dummy()),
                             SourceInformation::dummy()
@@ -1491,58 +1490,38 @@ mod tests {
 
         #[test]
         fn infer_types_of_arithmetic_operations() {
-            let create_module = |type_: Type| {
-                Module::from_definitions(vec![VariableDefinition::new(
-                    "x",
-                    Operation::with_type(
-                        type_,
-                        Operator::Add,
-                        Number::new(42.0, SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Number::new(SourceInformation::dummy()),
+            let module = Module::from_definitions(vec![VariableDefinition::new(
+                "x",
+                ArithmeticOperation::new(
+                    ArithmeticOperator::Add,
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()])
-            };
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
 
-            assert_eq!(
-                infer_types(&create_module(
-                    types::Unknown::new(SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(
-                    types::Number::new(SourceInformation::dummy()).into()
-                ))
-            );
+            assert_eq!(infer_types(&module), Ok(module.clone()));
         }
 
         #[test]
         fn infer_types_of_number_comparison_operations() {
-            let create_module = |type_: Type| {
-                Module::from_definitions(vec![VariableDefinition::new(
-                    "x",
-                    Operation::with_type(
-                        type_,
-                        Operator::LessThan,
-                        Number::new(42.0, SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
+            let module = Module::from_definitions(vec![VariableDefinition::new(
+                "x",
+                OrderOperation::new(
+                    OrderOperator::LessThan,
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()])
-            };
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
 
-            assert_eq!(
-                infer_types(&create_module(
-                    types::Unknown::new(SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(
-                    types::Number::new(SourceInformation::dummy()).into()
-                ))
-            );
+            assert_eq!(infer_types(&module), Ok(module.clone()));
         }
 
         #[test]
@@ -1555,9 +1534,9 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![VariableDefinition::new(
                     "x",
-                    Operation::with_type(
+                    EqualityOperation::with_type(
                         types::Unknown::new(SourceInformation::dummy()),
-                        Operator::Equal,
+                        EqualityOperator::Equal,
                         RecordConstruction::new(
                             reference_type.clone(),
                             Default::default(),
@@ -1579,30 +1558,20 @@ mod tests {
 
         #[test]
         fn infer_types_of_boolean_operation() {
-            let create_module = |type_: Type| {
-                Module::from_definitions(vec![VariableDefinition::new(
-                    "x",
-                    Operation::with_type(
-                        type_,
-                        Operator::And,
-                        Boolean::new(true, SourceInformation::dummy()),
-                        Boolean::new(true, SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
+            let module = Module::from_definitions(vec![VariableDefinition::new(
+                "x",
+                BooleanOperation::new(
+                    BooleanOperator::And,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()])
-            };
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
 
-            assert_eq!(
-                infer_types(&create_module(
-                    types::Unknown::new(SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(
-                    types::Boolean::new(SourceInformation::dummy()).into()
-                ))
-            );
+            assert_eq!(infer_types(&module), Ok(module.clone()));
         }
     }
 
