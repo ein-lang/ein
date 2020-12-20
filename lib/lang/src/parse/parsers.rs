@@ -173,6 +173,31 @@ fn variable_definition<'a>() -> impl Parser<Stream<'a>, Output = VariableDefinit
         )
 }
 
+fn result_definition<'a>() -> impl Parser<Stream<'a>, Output = VariableDefinition> {
+    (
+        source_information(),
+        type_annotation(),
+        identifier(),
+        sign("?="),
+        expression(),
+    )
+        .then(
+            |(source_information, (typed_name, type_), name, _, expression)| {
+                if typed_name == name {
+                    value(VariableDefinition::new(
+                        name,
+                        expression,
+                        type_,
+                        source_information,
+                    ))
+                    .left()
+                } else {
+                    unexpected_any("unmatched identifiers in definition").right()
+                }
+            },
+        )
+}
+
 fn type_annotation<'a>() -> impl Parser<Stream<'a>, Output = (String, Type)> {
     (identifier(), sign(":").with(type_()))
 }
@@ -208,6 +233,20 @@ fn untyped_function_definition<'a>() -> impl Parser<Stream<'a>, Output = Functio
 
 fn untyped_variable_definition<'a>() -> impl Parser<Stream<'a>, Output = VariableDefinition> {
     (source_information(), identifier(), sign("="), expression()).map(
+        |(source_information, name, _, expression)| {
+            let source_information = Arc::new(source_information);
+            VariableDefinition::new(
+                name,
+                expression,
+                types::Unknown::new(source_information.clone()),
+                source_information,
+            )
+        },
+    )
+}
+
+fn untyped_result_definition<'a>() -> impl Parser<Stream<'a>, Output = VariableDefinition> {
+    (source_information(), identifier(), sign("?="), expression()).map(
         |(source_information, name, _, expression)| {
             let source_information = Arc::new(source_information);
             VariableDefinition::new(
@@ -478,6 +517,20 @@ fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
         .expected("let expression")
 }
 
+fn let_error<'a>() -> impl Parser<Stream<'a>, Output = LetError> {
+    (
+        source_information(),
+        keyword("let").expected("let keyword"),
+        many1(choice!(result_definition(), untyped_result_definition())),
+        keyword("in").expected("in keyword"),
+        expression(),
+    )
+        .map(|(source_information, _, definitions, _, expression)| {
+            LetError::new(definitions, expression, source_information)
+        })
+        .expected("let-error expression")
+}
+
 fn let_recursive<'a>() -> impl Parser<Stream<'a>, Output = LetRecursive> {
     (
         source_information(),
@@ -612,6 +665,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         case().map(Expression::from),
         list_case().map(Expression::from),
         let_().map(Expression::from),
+        let_error().map(Expression::from),
         let_recursive().map(Expression::from),
     )
 }
@@ -1877,6 +1931,120 @@ mod tests {
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+            );
+            assert_eq!(
+                let_()
+                    .parse(stream("let\nx = 42\ny = 42\nin x", ""))
+                    .unwrap()
+                    .0,
+                Let::new(
+                    vec![
+                        VariableDefinition::new(
+                            "x",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        VariableDefinition::new(
+                            "y",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                    ],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+            );
+        }
+
+        #[test]
+        fn parse_let_error() {
+            assert!(let_error().parse(stream("let in 0", "")).is_err());
+            assert_eq!(
+                let_error()
+                    .parse(stream("let x : Number\nx ?= 42 in x", ""))
+                    .unwrap()
+                    .0,
+                LetError::new(
+                    vec![VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+            );
+            assert_eq!(
+                let_error().parse(stream("let x ?= 42 in x", "")).unwrap().0,
+                LetError::new(
+                    vec![VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+            );
+            assert_eq!(
+                let_error()
+                    .parse(stream("let\nx ?= 42 in x", ""))
+                    .unwrap()
+                    .0,
+                LetError::new(
+                    vec![VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+            );
+            assert_eq!(
+                let_error()
+                    .parse(stream("let\n x ?= 42 in x", ""))
+                    .unwrap()
+                    .0,
+                LetError::new(
+                    vec![VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        types::Unknown::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )],
+                    Variable::new("x", SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+            );
+            assert_eq!(
+                let_error()
+                    .parse(stream("let\nx ?= 42\ny ?= 42\nin x", ""))
+                    .unwrap()
+                    .0,
+                LetError::new(
+                    vec![
+                        VariableDefinition::new(
+                            "x",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
+                        VariableDefinition::new(
+                            "y",
+                            Number::new(42.0, SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        )
+                    ],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
