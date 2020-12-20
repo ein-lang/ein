@@ -1,7 +1,7 @@
 use super::arithmetic_operation::ArithmeticOperation;
 use super::boolean_operation::BooleanOperation;
+use super::equality_operation::EqualityOperation;
 use super::expression::Expression;
-use super::generic_operation::GenericOperation;
 use super::order_operation::OrderOperation;
 use crate::debug::SourceInformation;
 use crate::types::Type;
@@ -11,7 +11,7 @@ use std::sync::Arc;
 pub enum Operation {
     Arithmetic(ArithmeticOperation),
     Boolean(BooleanOperation),
-    Generic(GenericOperation),
+    Equality(EqualityOperation),
     Order(OrderOperation),
 }
 
@@ -20,7 +20,7 @@ impl Operation {
         match self {
             Self::Arithmetic(operation) => operation.source_information(),
             Self::Boolean(operation) => operation.source_information(),
-            Self::Generic(operation) => operation.source_information(),
+            Self::Equality(operation) => operation.source_information(),
             Self::Order(operation) => operation.source_information(),
         }
     }
@@ -32,7 +32,7 @@ impl Operation {
         Ok(match self {
             Self::Arithmetic(operation) => operation.transform_expressions(transform)?.into(),
             Self::Boolean(operation) => operation.transform_expressions(transform)?.into(),
-            Self::Generic(operation) => operation.transform_expressions(transform)?.into(),
+            Self::Equality(operation) => operation.transform_expressions(transform)?.into(),
             Self::Order(operation) => operation.transform_expressions(transform)?.into(),
         })
     }
@@ -44,7 +44,7 @@ impl Operation {
         Ok(match self {
             Self::Arithmetic(operation) => operation.transform_types(transform)?.into(),
             Self::Boolean(operation) => operation.transform_types(transform)?.into(),
-            Self::Generic(operation) => operation.transform_types(transform)?.into(),
+            Self::Equality(operation) => operation.transform_types(transform)?.into(),
             Self::Order(operation) => operation.transform_types(transform)?.into(),
         })
     }
@@ -62,9 +62,9 @@ impl From<BooleanOperation> for Operation {
     }
 }
 
-impl From<GenericOperation> for Operation {
-    fn from(operation: GenericOperation) -> Self {
-        Self::Generic(operation)
+impl From<EqualityOperation> for Operation {
+    fn from(operation: EqualityOperation) -> Self {
+        Self::Equality(operation)
     }
 }
 

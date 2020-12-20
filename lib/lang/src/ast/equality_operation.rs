@@ -1,21 +1,35 @@
 use super::expression::Expression;
-use super::operator::Operator;
 use crate::debug::SourceInformation;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum EqualityOperator {
+    Equal,
+    NotEqual,
+}
+
+impl From<EqualityOperator> for ssf::ir::PrimitiveOperator {
+    fn from(operator: EqualityOperator) -> Self {
+        match operator {
+            EqualityOperator::Equal => ssf::ir::PrimitiveOperator::Equal,
+            EqualityOperator::NotEqual => ssf::ir::PrimitiveOperator::NotEqual,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
-pub struct GenericOperation {
+pub struct EqualityOperation {
     type_: Type,
-    operator: Operator,
+    operator: EqualityOperator,
     lhs: Arc<Expression>,
     rhs: Arc<Expression>,
     source_information: Arc<SourceInformation>,
 }
 
-impl GenericOperation {
+impl EqualityOperation {
     pub fn new(
-        operator: Operator,
+        operator: EqualityOperator,
         lhs: impl Into<Expression>,
         rhs: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>>,
@@ -33,7 +47,7 @@ impl GenericOperation {
 
     pub fn with_type(
         type_: impl Into<Type>,
-        operator: Operator,
+        operator: EqualityOperator,
         lhs: impl Into<Expression>,
         rhs: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>>,
@@ -51,7 +65,7 @@ impl GenericOperation {
         &self.type_
     }
 
-    pub fn operator(&self) -> Operator {
+    pub fn operator(&self) -> EqualityOperator {
         self.operator
     }
 

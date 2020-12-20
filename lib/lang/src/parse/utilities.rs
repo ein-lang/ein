@@ -58,12 +58,20 @@ fn create_operation(
         ParsedOperator::And => {
             BooleanOperation::new(BooleanOperator::And, lhs, rhs, source_information.clone()).into()
         }
-        ParsedOperator::Equal => {
-            GenericOperation::new(Operator::Equal, lhs, rhs, source_information.clone()).into()
-        }
-        ParsedOperator::NotEqual => {
-            GenericOperation::new(Operator::NotEqual, lhs, rhs, source_information.clone()).into()
-        }
+        ParsedOperator::Equal => EqualityOperation::new(
+            EqualityOperator::Equal,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::NotEqual => EqualityOperation::new(
+            EqualityOperator::NotEqual,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
         ParsedOperator::Add => ArithmeticOperation::new(
             ArithmeticOperator::Add,
             lhs,

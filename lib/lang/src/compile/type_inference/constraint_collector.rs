@@ -262,7 +262,7 @@ impl ConstraintCollector {
 
                     boolean_type.into()
                 }
-                Operation::Generic(operation) => {
+                Operation::Equality(operation) => {
                     let lhs = self.infer_expression(operation.lhs(), variables)?;
                     let rhs = self.infer_expression(operation.rhs(), variables)?;
 

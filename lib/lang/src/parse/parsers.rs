@@ -2230,8 +2230,8 @@ mod tests {
                 ),
                 (
                     "1 == 1",
-                    GenericOperation::new(
-                        Operator::Equal,
+                    EqualityOperation::new(
+                        EqualityOperator::Equal,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),

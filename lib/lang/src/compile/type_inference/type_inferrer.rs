@@ -1534,9 +1534,9 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![VariableDefinition::new(
                     "x",
-                    GenericOperation::with_type(
+                    EqualityOperation::with_type(
                         types::Unknown::new(SourceInformation::dummy()),
-                        Operator::Equal,
+                        EqualityOperator::Equal,
                         RecordConstruction::new(
                             reference_type.clone(),
                             Default::default(),

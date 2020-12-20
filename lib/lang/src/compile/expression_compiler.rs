@@ -123,8 +123,8 @@ impl ExpressionCompiler {
                         .boolean_operation_transformer
                         .transform(operation),
                 )?,
-                Operation::Generic(operation) => match operation.operator() {
-                    Operator::Equal => {
+                Operation::Equality(operation) => match operation.operator() {
+                    EqualityOperator::Equal => {
                         match self.reference_type_resolver.resolve(operation.type_())? {
                             Type::Number(_) => self
                                 .expression_compiler_set
@@ -152,7 +152,7 @@ impl ExpressionCompiler {
                             )?,
                         }
                     }
-                    Operator::NotEqual => self.compile(
+                    EqualityOperator::NotEqual => self.compile(
                         &self
                             .expression_transformer_set
                             .not_equal_operation_transformer

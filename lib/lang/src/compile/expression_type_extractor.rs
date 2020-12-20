@@ -116,7 +116,7 @@ impl ExpressionTypeExtractor {
                 Operation::Arithmetic(_) => {
                     types::Number::new(operation.source_information().clone()).into()
                 }
-                Operation::Boolean(_) | Operation::Generic(_) | Operation::Order(_) => {
+                Operation::Boolean(_) | Operation::Equality(_) | Operation::Order(_) => {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
             },

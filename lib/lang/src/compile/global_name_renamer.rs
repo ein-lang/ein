@@ -234,7 +234,7 @@ impl GlobalNameRenamer {
                     operation.source_information().clone(),
                 )
                 .into(),
-                Operation::Generic(operation) => GenericOperation::with_type(
+                Operation::Equality(operation) => EqualityOperation::with_type(
                     operation.type_().clone(),
                     operation.operator(),
                     self.rename_expression(operation.lhs(), &names),

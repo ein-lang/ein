@@ -425,8 +425,8 @@ mod tests {
         compile(
             &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
-                GenericOperation::new(
-                    Operator::Equal,
+                EqualityOperation::new(
+                    EqualityOperator::Equal,
                     None::new(SourceInformation::dummy()),
                     None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -445,8 +445,8 @@ mod tests {
         compile(
             &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
-                GenericOperation::new(
-                    Operator::Equal,
+                EqualityOperation::new(
+                    EqualityOperator::Equal,
                     Boolean::new(false, SourceInformation::dummy()),
                     Boolean::new(true, SourceInformation::dummy()),
                     SourceInformation::dummy(),
@@ -465,8 +465,8 @@ mod tests {
         compile(
             &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
-                GenericOperation::new(
-                    Operator::Equal,
+                EqualityOperation::new(
+                    EqualityOperator::Equal,
                     None::new(SourceInformation::dummy()),
                     None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),

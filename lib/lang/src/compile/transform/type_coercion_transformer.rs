@@ -252,7 +252,7 @@ impl TypedTransformer for TypeCoercionTransformer {
             Expression::Operation(operation) => Ok(match operation {
                 Operation::Arithmetic(operation) => operation.clone().into(),
                 Operation::Boolean(operation) => operation.clone().into(),
-                Operation::Generic(operation) => {
+                Operation::Equality(operation) => {
                     let argument_type = self.type_canonicalizer.canonicalize(
                         &types::Union::new(
                             vec![
@@ -266,7 +266,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                         .into(),
                     )?;
 
-                    GenericOperation::with_type(
+                    EqualityOperation::with_type(
                         operation.type_().clone(),
                         operation.operator(),
                         self.coerce_type(

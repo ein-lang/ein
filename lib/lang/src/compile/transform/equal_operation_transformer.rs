@@ -35,8 +35,8 @@ impl EqualOperationTransformer {
         .into()
     }
 
-    pub fn transform(&self, operation: &GenericOperation) -> Result<Expression, CompileError> {
-        Ok(if operation.operator() == Operator::Equal {
+    pub fn transform(&self, operation: &EqualityOperation) -> Result<Expression, CompileError> {
+        Ok(if operation.operator() == EqualityOperator::Equal {
             self.transform_equal_operation(
                 operation.type_(),
                 operation.lhs(),
@@ -161,9 +161,9 @@ impl EqualOperationTransformer {
                 .into()
             }
             Type::None(_) => Boolean::new(true, source_information).into(),
-            Type::Number(_) => GenericOperation::with_type(
+            Type::Number(_) => EqualityOperation::with_type(
                 type_.clone(),
-                Operator::Equal,
+                EqualityOperator::Equal,
                 lhs.clone(),
                 rhs.clone(),
                 source_information,
@@ -188,9 +188,9 @@ impl EqualOperationTransformer {
                     return Err(CompileError::RecordEqualOperation(source_information));
                 }
             }
-            Type::String(_) => GenericOperation::with_type(
+            Type::String(_) => EqualityOperation::with_type(
                 type_.clone(),
-                Operator::Equal,
+                EqualityOperator::Equal,
                 lhs.clone(),
                 rhs.clone(),
                 source_information,
