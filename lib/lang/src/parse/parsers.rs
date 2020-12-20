@@ -617,6 +617,7 @@ fn operator<'a>() -> impl Parser<Stream<'a>, Output = ParsedOperator> {
         concrete_operator(">=", ParsedOperator::GreaterThanOrEqual),
         concrete_operator("&&", ParsedOperator::And),
         concrete_operator("||", ParsedOperator::Or),
+        concrete_operator("|>", ParsedOperator::Pipe),
     )
     .expected("operator")
 }
@@ -2284,6 +2285,28 @@ mod tests {
                             Boolean::new(true, SourceInformation::dummy()),
                             SourceInformation::dummy(),
                         ),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                (
+                    "42 |> f",
+                    PipeOperation::new(
+                        Number::new(42.0, SourceInformation::dummy()),
+                        Variable::new("f", SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ),
+                (
+                    "42 |> f |> g",
+                    PipeOperation::new(
+                        PipeOperation::new(
+                            Number::new(42.0, SourceInformation::dummy()),
+                            Variable::new("f", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        Variable::new("g", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )
                     .into(),
