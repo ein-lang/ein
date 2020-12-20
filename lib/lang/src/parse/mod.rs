@@ -86,10 +86,10 @@ mod tests {
                         main x = (
                             let
                                 f x = x
-                                y =
+                                g x =
                                 f x
                             in
-                                y
+                                g x
                         )
                         "
                 ),
@@ -99,7 +99,7 @@ mod tests {
                 FunctionDefinition::new(
                     "main",
                     vec!["x".into()],
-                    Let::new(
+                    LetRecursive::new(
                         vec![
                             FunctionDefinition::new(
                                 "f",
@@ -109,8 +109,9 @@ mod tests {
                                 SourceInformation::dummy(),
                             )
                             .into(),
-                            VariableDefinition::new(
-                                "y",
+                            FunctionDefinition::new(
+                                "g",
+                                vec!["x".into()],
                                 Application::new(
                                     Variable::new("f", SourceInformation::dummy()),
                                     Variable::new("x", SourceInformation::dummy()),
@@ -121,7 +122,11 @@ mod tests {
                             )
                             .into(),
                         ],
-                        Variable::new("y", SourceInformation::dummy()),
+                        Application::new(
+                            Variable::new("g", SourceInformation::dummy()),
+                            Variable::new("x", SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
                         SourceInformation::dummy(),
                     ),
                     types::Function::new(

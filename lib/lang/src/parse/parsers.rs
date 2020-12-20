@@ -177,6 +177,8 @@ fn type_annotation<'a>() -> impl Parser<Stream<'a>, Output = (String, Type)> {
     (identifier(), sign(":").with(type_()))
 }
 
+// TODO Remove this.
+#[cfg(test)]
 fn untyped_definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
     choice!(
         untyped_function_definition().map(Definition::from),
@@ -463,14 +465,40 @@ fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
     (
         source_information(),
         keyword("let").expected("let keyword"),
-        many1(choice!(definition(), untyped_definition())),
+        many1(choice!(
+            variable_definition(),
+            untyped_variable_definition()
+        )),
+        keyword("in").expected("in keyword"),
+        expression(),
+    )
+        .map(
+            |(source_information, _, definitions, _, expression): (_, _, Vec<_>, _, _)| {
+                Let::new(
+                    definitions.into_iter().map(Definition::from).collect(),
+                    expression,
+                    source_information,
+                )
+            },
+        )
+        .expected("let expression")
+}
+
+fn let_recursive<'a>() -> impl Parser<Stream<'a>, Output = LetRecursive> {
+    (
+        source_information(),
+        keyword("let").expected("let keyword"),
+        many1(choice!(
+            function_definition(),
+            untyped_function_definition()
+        )),
         keyword("in").expected("in keyword"),
         expression(),
     )
         .map(|(source_information, _, definitions, _, expression)| {
-            Let::new(definitions, expression, source_information)
+            LetRecursive::new(definitions, expression, source_information)
         })
-        .expected("let expression")
+        .expected("let-recursive expression")
 }
 
 fn application_or_atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -590,6 +618,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         case().map(Expression::from),
         list_case().map(Expression::from),
         let_().map(Expression::from),
+        let_recursive().map(Expression::from),
     )
 }
 
@@ -1862,9 +1891,17 @@ mod tests {
                     SourceInformation::dummy()
                 )
             );
+        }
+
+        #[test]
+        fn parse_let_recursive() {
+            assert!(let_recursive().parse(stream("let in 0", "")).is_err());
             assert_eq!(
-                let_().parse(stream("let f x = x in f", "")).unwrap().0,
-                Let::new(
+                let_recursive()
+                    .parse(stream("let f x = x in f", ""))
+                    .unwrap()
+                    .0,
+                LetRecursive::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -1878,24 +1915,24 @@ mod tests {
                 )
             );
             assert_eq!(
-                let_()
+                let_recursive()
                     .parse(stream(
                         indoc!(
                             "
                         let
                             f x = x
-                            y = (
+                            g x = (
                                 f x
                             )
                         in
-                            y
+                            g
                         "
                         ),
                         ""
                     ))
                     .unwrap()
                     .0,
-                Let::new(
+                LetRecursive::new(
                     vec![
                         FunctionDefinition::new(
                             "f",
@@ -1905,8 +1942,9 @@ mod tests {
                             SourceInformation::dummy()
                         )
                         .into(),
-                        VariableDefinition::new(
-                            "y",
+                        FunctionDefinition::new(
+                            "g",
+                            vec!["x".into()],
                             Application::new(
                                 Variable::new("f", SourceInformation::dummy()),
                                 Variable::new("x", SourceInformation::dummy()),
@@ -1917,12 +1955,12 @@ mod tests {
                         )
                         .into()
                     ],
-                    Variable::new("y", SourceInformation::dummy()),
+                    Variable::new("g", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
             );
             assert_eq!(
-                let_()
+                let_recursive()
                     .parse(stream(
                         indoc!(
                             "
@@ -1936,7 +1974,7 @@ mod tests {
                     ))
                     .unwrap()
                     .0,
-                Let::new(
+                LetRecursive::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -1954,7 +1992,7 @@ mod tests {
                 )
             );
             assert_eq!(
-                let_()
+                let_recursive()
                     .parse(stream(
                         indoc!(
                             "
@@ -1969,7 +2007,7 @@ mod tests {
                     ))
                     .unwrap()
                     .0,
-                Let::new(
+                LetRecursive::new(
                     vec![
                         FunctionDefinition::new(
                             "f",
