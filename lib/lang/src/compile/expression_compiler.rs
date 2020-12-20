@@ -167,6 +167,14 @@ impl ExpressionCompiler {
                         self.compile(operation.lhs())?,
                         self.compile(operation.rhs())?,
                     )),
+                Operation::Pipe(operation) => self.compile(
+                    &Application::new(
+                        operation.rhs().clone(),
+                        operation.lhs().clone(),
+                        operation.source_information().clone(),
+                    )
+                    .into(),
+                )?,
             },
             Expression::RecordConstruction(record) => ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(
@@ -660,6 +668,23 @@ mod tests {
                     None,
                 )
                 .into())
+            );
+        }
+
+        #[test]
+        fn compile_pipe_operation() {
+            let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+
+            assert_eq!(
+                expression_compiler.compile(
+                    &PipeOperation::new(
+                        Number::new(1.0, SourceInformation::dummy()),
+                        Variable::new("f", SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    )
+                    .into(),
+                ),
+                Ok(ssf::ir::FunctionApplication::new(ssf::ir::Variable::new("f"), 1.0).into())
             );
         }
     }

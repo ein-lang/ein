@@ -15,6 +15,7 @@ pub enum ParsedOperator {
     GreaterThanOrEqual,
     And,
     Or,
+    Pipe,
 }
 
 pub fn reduce_operations(
@@ -52,6 +53,7 @@ fn create_operation(
     source_information: &SourceInformation,
 ) -> Operation {
     match operator {
+        ParsedOperator::Pipe => PipeOperation::new(lhs, rhs, source_information.clone()).into(),
         ParsedOperator::Or => {
             BooleanOperation::new(BooleanOperator::Or, lhs, rhs, source_information.clone()).into()
         }
@@ -133,15 +135,16 @@ fn create_operation(
 
 fn operator_priority(operator: ParsedOperator) -> usize {
     match operator {
-        ParsedOperator::Or => 0,
-        ParsedOperator::And => 1,
+        ParsedOperator::Pipe => 0,
+        ParsedOperator::Or => 1,
+        ParsedOperator::And => 2,
         ParsedOperator::Equal
         | ParsedOperator::NotEqual
         | ParsedOperator::LessThan
         | ParsedOperator::LessThanOrEqual
         | ParsedOperator::GreaterThan
-        | ParsedOperator::GreaterThanOrEqual => 2,
-        ParsedOperator::Add | ParsedOperator::Subtract => 3,
-        ParsedOperator::Multiply | ParsedOperator::Divide => 4,
+        | ParsedOperator::GreaterThanOrEqual => 3,
+        ParsedOperator::Add | ParsedOperator::Subtract => 4,
+        ParsedOperator::Multiply | ParsedOperator::Divide => 5,
     }
 }

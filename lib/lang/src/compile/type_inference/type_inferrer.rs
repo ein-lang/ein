@@ -1573,6 +1573,37 @@ mod tests {
 
             assert_eq!(infer_types(&module), Ok(module.clone()));
         }
+
+        #[test]
+        fn infer_types_of_pipe_operation() {
+            let module = Module::from_definitions(vec![
+                FunctionDefinition::new(
+                    "f",
+                    vec!["x".into()],
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Function::new(
+                        types::None::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "x",
+                    PipeOperation::new(
+                        None::new(SourceInformation::dummy()),
+                        Variable::new("f", SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]);
+
+            assert_eq!(infer_types(&module), Ok(module.clone()));
+        }
     }
 
     mod union {

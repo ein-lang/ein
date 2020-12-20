@@ -122,11 +122,11 @@ impl TypedTransformer for TypeCoercionTransformer {
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
-        match expression {
+        Ok(match expression {
             Expression::Application(application) => {
                 let source_information = application.source_information();
 
-                Ok(Application::new(
+                Application::new(
                     application.function().clone(),
                     self.coerce_type(
                         application.argument(),
@@ -143,14 +143,14 @@ impl TypedTransformer for TypeCoercionTransformer {
                     )?,
                     source_information.clone(),
                 )
-                .into())
+                .into()
             }
             Expression::Case(case) => {
                 let result_type = self
                     .expression_type_extractor
                     .extract(expression, variables)?;
 
-                Ok(Case::with_type(
+                Case::with_type(
                     case.type_().clone(),
                     case.name(),
                     self.coerce_type(
@@ -179,14 +179,14 @@ impl TypedTransformer for TypeCoercionTransformer {
                         .collect::<Result<_, CompileError>>()?,
                     case.source_information().clone(),
                 )
-                .into())
+                .into()
             }
             Expression::If(if_) => {
                 let result_type = self
                     .expression_type_extractor
                     .extract(expression, variables)?;
 
-                Ok(If::new(
+                If::new(
                     if_.condition().clone(),
                     self.coerce_type(
                         if_.then(),
@@ -202,14 +202,14 @@ impl TypedTransformer for TypeCoercionTransformer {
                     )?,
                     if_.source_information().clone(),
                 )
-                .into())
+                .into()
             }
             Expression::ListCase(case) => {
                 let result_type = self
                     .expression_type_extractor
                     .extract(expression, variables)?;
 
-                Ok(ListCase::new(
+                ListCase::new(
                     self.coerce_type(
                         case.argument(),
                         case.type_(),
@@ -247,11 +247,9 @@ impl TypedTransformer for TypeCoercionTransformer {
                     },
                     case.source_information().clone(),
                 )
-                .into())
+                .into()
             }
-            Expression::Operation(operation) => Ok(match operation {
-                Operation::Arithmetic(operation) => operation.clone().into(),
-                Operation::Boolean(operation) => operation.clone().into(),
+            Expression::Operation(operation) => match operation {
                 Operation::Equality(operation) => {
                     let argument_type = self.type_canonicalizer.canonicalize(
                         &types::Union::new(
@@ -285,15 +283,18 @@ impl TypedTransformer for TypeCoercionTransformer {
                     )
                     .into()
                 }
-                Operation::Order(operation) => operation.clone().into(),
-            }),
+                Operation::Arithmetic(_)
+                | Operation::Boolean(_)
+                | Operation::Order(_)
+                | Operation::Pipe(_) => operation.clone().into(),
+            },
             Expression::RecordConstruction(record_construction) => {
                 let record_type = self
                     .reference_type_resolver
                     .resolve_to_record(record_construction.type_())?
                     .unwrap();
 
-                Ok(RecordConstruction::new(
+                RecordConstruction::new(
                     record_construction.type_().clone(),
                     record_construction
                         .elements()
@@ -312,7 +313,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                         .collect::<Result<_, CompileError>>()?,
                     record_construction.source_information().clone(),
                 )
-                .into())
+                .into()
             }
             Expression::Boolean(_)
             | Expression::Let(_)
@@ -321,8 +322,8 @@ impl TypedTransformer for TypeCoercionTransformer {
             | Expression::Number(_)
             | Expression::RecordElementOperation(_)
             | Expression::String(_)
-            | Expression::Variable(_) => Ok(expression.clone()),
+            | Expression::Variable(_) => expression.clone(),
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
-        }
+        })
     }
 }
