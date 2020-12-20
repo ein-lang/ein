@@ -111,79 +111,81 @@ impl ExpressionCompiler {
                     .transform(case)?,
             )?,
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
-            Expression::Operation(operation) => {
-                let type_ = self.reference_type_resolver.resolve(operation.type_())?;
+            Expression::Operation(operation) => match operation {
+                Operation::Generic(operation) => {
+                    let type_ = self.reference_type_resolver.resolve(operation.type_())?;
 
-                if operation.operator() == Operator::NotEqual {
-                    self.compile(
-                        &self
-                            .expression_transformer_set
-                            .not_equal_operation_transformer
-                            .transform(operation),
-                    )?
-                } else if operation.operator() == Operator::Equal
-                    && matches!(type_, Type::String(_))
-                {
-                    ssf::ir::FunctionApplication::new(
-                        ssf::ir::FunctionApplication::new(
-                            ssf::ir::Variable::new(
-                                &self.string_type_configuration.equal_function_name,
-                            ),
-                            self.compile(operation.lhs())?,
-                        ),
-                        self.compile(operation.rhs())?,
-                    )
-                    .into()
-                } else if operation.operator() == Operator::Equal
-                    && !matches!(type_, Type::Number(_))
-                {
-                    self.compile(
-                        &self
-                            .expression_transformer_set
-                            .equal_operation_transformer
-                            .transform(operation)?,
-                    )?
-                } else {
-                    match operation.operator() {
-                        Operator::Add
-                        | Operator::Subtract
-                        | Operator::Multiply
-                        | Operator::Divide
-                        | Operator::Equal
-                        | Operator::NotEqual
-                        | Operator::LessThan
-                        | Operator::LessThanOrEqual
-                        | Operator::GreaterThan
-                        | Operator::GreaterThanOrEqual => {
-                            let compiled = ssf::ir::PrimitiveOperation::new(
-                                operation.operator().try_into().unwrap(),
-                                self.compile(operation.lhs())?,
-                                self.compile(operation.rhs())?,
-                            );
-
-                            if matches!(
-                                operation.operator(),
-                                Operator::Add
-                                    | Operator::Subtract
-                                    | Operator::Multiply
-                                    | Operator::Divide
-                            ) {
-                                compiled.into()
-                            } else {
-                                self.expression_compiler_set
-                                    .boolean_compiler
-                                    .compile_conversion(compiled)
-                            }
-                        }
-                        Operator::And | Operator::Or => self.compile(
+                    if operation.operator() == Operator::NotEqual {
+                        self.compile(
                             &self
                                 .expression_transformer_set
-                                .boolean_operation_transformer
+                                .not_equal_operation_transformer
                                 .transform(operation),
-                        )?,
+                        )?
+                    } else if operation.operator() == Operator::Equal
+                        && matches!(type_, Type::String(_))
+                    {
+                        ssf::ir::FunctionApplication::new(
+                            ssf::ir::FunctionApplication::new(
+                                ssf::ir::Variable::new(
+                                    &self.string_type_configuration.equal_function_name,
+                                ),
+                                self.compile(operation.lhs())?,
+                            ),
+                            self.compile(operation.rhs())?,
+                        )
+                        .into()
+                    } else if operation.operator() == Operator::Equal
+                        && !matches!(type_, Type::Number(_))
+                    {
+                        self.compile(
+                            &self
+                                .expression_transformer_set
+                                .equal_operation_transformer
+                                .transform(operation)?,
+                        )?
+                    } else {
+                        match operation.operator() {
+                            Operator::Add
+                            | Operator::Subtract
+                            | Operator::Multiply
+                            | Operator::Divide
+                            | Operator::Equal
+                            | Operator::NotEqual
+                            | Operator::LessThan
+                            | Operator::LessThanOrEqual
+                            | Operator::GreaterThan
+                            | Operator::GreaterThanOrEqual => {
+                                let compiled = ssf::ir::PrimitiveOperation::new(
+                                    operation.operator().try_into().unwrap(),
+                                    self.compile(operation.lhs())?,
+                                    self.compile(operation.rhs())?,
+                                );
+
+                                if matches!(
+                                    operation.operator(),
+                                    Operator::Add
+                                        | Operator::Subtract
+                                        | Operator::Multiply
+                                        | Operator::Divide
+                                ) {
+                                    compiled.into()
+                                } else {
+                                    self.expression_compiler_set
+                                        .boolean_compiler
+                                        .compile_conversion(compiled)
+                                }
+                            }
+                            Operator::And | Operator::Or => self.compile(
+                                &self
+                                    .expression_transformer_set
+                                    .boolean_operation_transformer
+                                    .transform(operation),
+                            )?,
+                        }
                     }
                 }
-            }
+            },
             Expression::RecordConstruction(record) => ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(
                     self.type_compiler
@@ -621,7 +623,7 @@ mod tests {
 
             assert_eq!(
                 expression_compiler.compile(
-                    &Operation::new(
+                    &GenericOperation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(2.0, SourceInformation::dummy()),
@@ -643,7 +645,7 @@ mod tests {
 
             assert_eq!(
                 expression_compiler.compile(
-                    &Operation::new(
+                    &GenericOperation::new(
                         Operator::LessThan,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(2.0, SourceInformation::dummy()),

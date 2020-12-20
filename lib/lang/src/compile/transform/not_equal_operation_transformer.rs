@@ -8,12 +8,12 @@ impl NotEqualOperationTransformer {
         Self {}.into()
     }
 
-    pub fn transform(&self, operation: &Operation) -> Expression {
+    pub fn transform(&self, operation: &GenericOperation) -> Expression {
         if operation.operator() == Operator::NotEqual {
             let source_information = operation.source_information();
 
             If::new(
-                Operation::with_type(
+                GenericOperation::with_type(
                     operation.type_().clone(),
                     Operator::Equal,
                     operation.lhs().clone(),

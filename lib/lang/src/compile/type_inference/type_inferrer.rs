@@ -1468,7 +1468,7 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         "bar",
-                        Operation::with_type(
+                        GenericOperation::with_type(
                             types::Number::new(SourceInformation::dummy()),
                             Operator::LessThan,
                             Variable::new("bar", SourceInformation::dummy()),
@@ -1494,7 +1494,7 @@ mod tests {
             let create_module = |type_: Type| {
                 Module::from_definitions(vec![VariableDefinition::new(
                     "x",
-                    Operation::with_type(
+                    GenericOperation::with_type(
                         type_,
                         Operator::Add,
                         Number::new(42.0, SourceInformation::dummy()),
@@ -1522,7 +1522,7 @@ mod tests {
             let create_module = |type_: Type| {
                 Module::from_definitions(vec![VariableDefinition::new(
                     "x",
-                    Operation::with_type(
+                    GenericOperation::with_type(
                         type_,
                         Operator::LessThan,
                         Number::new(42.0, SourceInformation::dummy()),
@@ -1555,7 +1555,7 @@ mod tests {
                 vec![TypeDefinition::new("Foo", record_type)],
                 vec![VariableDefinition::new(
                     "x",
-                    Operation::with_type(
+                    GenericOperation::with_type(
                         types::Unknown::new(SourceInformation::dummy()),
                         Operator::Equal,
                         RecordConstruction::new(
@@ -1582,7 +1582,7 @@ mod tests {
             let create_module = |type_: Type| {
                 Module::from_definitions(vec![VariableDefinition::new(
                     "x",
-                    Operation::with_type(
+                    GenericOperation::with_type(
                         type_,
                         Operator::And,
                         Boolean::new(true, SourceInformation::dummy()),

@@ -8,7 +8,7 @@ impl BooleanOperationTransformer {
         Self {}.into()
     }
 
-    pub fn transform(&self, operation: &Operation) -> Expression {
+    pub fn transform(&self, operation: &GenericOperation) -> Expression {
         let source_information = operation.source_information();
 
         match operation.operator() {
@@ -41,7 +41,7 @@ mod tests {
     #[test]
     fn transform_and_operation() {
         assert_eq!(
-            BooleanOperationTransformer::new().transform(&Operation::with_type(
+            BooleanOperationTransformer::new().transform(&GenericOperation::with_type(
                 types::Boolean::new(SourceInformation::dummy()),
                 Operator::And,
                 Boolean::new(true, SourceInformation::dummy()),
@@ -61,7 +61,7 @@ mod tests {
     #[test]
     fn transform_or_operation() {
         assert_eq!(
-            BooleanOperationTransformer::new().transform(&Operation::with_type(
+            BooleanOperationTransformer::new().transform(&GenericOperation::with_type(
                 types::Boolean::new(SourceInformation::dummy()),
                 Operator::Or,
                 Boolean::new(false, SourceInformation::dummy()),

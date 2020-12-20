@@ -8,16 +8,17 @@ pub fn reduce_operations(
     match pairs {
         [] => lhs,
         [(operator, rhs, source_information)] => {
-            Operation::new(*operator, lhs, rhs.clone(), source_information.clone()).into()
+            GenericOperation::new(*operator, lhs, rhs.clone(), source_information.clone()).into()
         }
         [(operator, rhs, source_information), (next_operator, _, _), ..] => {
             if operator_priority(*operator) >= operator_priority(*next_operator) {
                 reduce_operations(
-                    Operation::new(*operator, lhs, rhs.clone(), source_information.clone()).into(),
+                    GenericOperation::new(*operator, lhs, rhs.clone(), source_information.clone())
+                        .into(),
                     &pairs[1..],
                 )
             } else {
-                Operation::new(
+                GenericOperation::new(
                     *operator,
                     lhs,
                     reduce_operations(rhs.clone(), &pairs[1..]),

@@ -195,7 +195,7 @@ mod tests {
                 .into(),
                 VariableDefinition::new(
                     "y",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Add,
                         Variable::new("x", SourceInformation::dummy()),
                         Number::new(42.0, SourceInformation::dummy()),
@@ -425,7 +425,7 @@ mod tests {
         compile(
             &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
-                Operation::new(
+                GenericOperation::new(
                     Operator::Equal,
                     None::new(SourceInformation::dummy()),
                     None::new(SourceInformation::dummy()),
@@ -445,7 +445,7 @@ mod tests {
         compile(
             &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
-                Operation::new(
+                GenericOperation::new(
                     Operator::Equal,
                     Boolean::new(false, SourceInformation::dummy()),
                     Boolean::new(true, SourceInformation::dummy()),
@@ -465,7 +465,7 @@ mod tests {
         compile(
             &Module::from_definitions(vec![VariableDefinition::new(
                 "x",
-                Operation::new(
+                GenericOperation::new(
                     Operator::Equal,
                     None::new(SourceInformation::dummy()),
                     None::new(SourceInformation::dummy()),

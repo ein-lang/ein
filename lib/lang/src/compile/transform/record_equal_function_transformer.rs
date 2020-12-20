@@ -51,7 +51,7 @@ impl RecordEqualFunctionTransformer {
         for (key, element_type) in record_type.elements() {
             expression = If::new(
                 expression,
-                Operation::with_type(
+                GenericOperation::with_type(
                     element_type.clone(),
                     Operator::Equal,
                     RecordElementOperation::new(

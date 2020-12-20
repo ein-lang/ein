@@ -1541,7 +1541,7 @@ mod tests {
             );
             assert_eq!(
                 expression().parse(stream("x + 1", "")).unwrap().0,
-                Operation::new(
+                GenericOperation::new(
                     Operator::Add,
                     Variable::new("x", SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
@@ -1551,7 +1551,7 @@ mod tests {
             );
             assert_eq!(
                 expression().parse(stream("x + y z", "")).unwrap().0,
-                Operation::new(
+                GenericOperation::new(
                     Operator::Add,
                     Variable::new("x", SourceInformation::dummy()),
                     Application::new(
@@ -1566,7 +1566,7 @@ mod tests {
             assert_eq!(
                 expression().parse(stream("(x + y) z", "")).unwrap().0,
                 Application::new(
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Add,
                         Variable::new("x", SourceInformation::dummy()),
                         Variable::new("y", SourceInformation::dummy()),
@@ -1701,7 +1701,7 @@ mod tests {
                     .unwrap()
                     .0,
                 If::new(
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::LessThan,
                         Variable::new("x", SourceInformation::dummy()),
                         Number::new(0.0, SourceInformation::dummy()),
@@ -2130,7 +2130,7 @@ mod tests {
             for (source, target) in vec![
                 (
                     "1 + 1",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
@@ -2139,7 +2139,7 @@ mod tests {
                 ),
                 (
                     "1 + 1 then",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
@@ -2148,9 +2148,9 @@ mod tests {
                 ),
                 (
                     "1 + 1 + 1",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Add,
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::Add,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(1.0, SourceInformation::dummy()),
@@ -2162,10 +2162,10 @@ mod tests {
                 ),
                 (
                     "1 + (1 + 1)",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::Add,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(1.0, SourceInformation::dummy()),
@@ -2176,9 +2176,9 @@ mod tests {
                 ),
                 (
                     "1 * 2 - 3",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Subtract,
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::Multiply,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(2.0, SourceInformation::dummy()),
@@ -2190,10 +2190,10 @@ mod tests {
                 ),
                 (
                     "1 + 2 * 3",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::Multiply,
                             Number::new(2.0, SourceInformation::dummy()),
                             Number::new(3.0, SourceInformation::dummy()),
@@ -2204,15 +2204,15 @@ mod tests {
                 ),
                 (
                     "1 * 2 - 3 / 4",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Subtract,
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::Multiply,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(2.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),
                         ),
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::Divide,
                             Number::new(3.0, SourceInformation::dummy()),
                             Number::new(4.0, SourceInformation::dummy()),
@@ -2223,7 +2223,7 @@ mod tests {
                 ),
                 (
                     "1 == 1",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Equal,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
@@ -2232,7 +2232,7 @@ mod tests {
                 ),
                 (
                     "True && True",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::And,
                         Boolean::new(true, SourceInformation::dummy()),
                         Boolean::new(true, SourceInformation::dummy()),
@@ -2241,7 +2241,7 @@ mod tests {
                 ),
                 (
                     "True || True",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Or,
                         Boolean::new(true, SourceInformation::dummy()),
                         Boolean::new(true, SourceInformation::dummy()),
@@ -2250,10 +2250,10 @@ mod tests {
                 ),
                 (
                     "True && 1 < 2",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::And,
                         Boolean::new(true, SourceInformation::dummy()),
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::LessThan,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(2.0, SourceInformation::dummy()),
@@ -2264,10 +2264,10 @@ mod tests {
                 ),
                 (
                     "True || True && True",
-                    Operation::new(
+                    GenericOperation::new(
                         Operator::Or,
                         Boolean::new(true, SourceInformation::dummy()),
-                        Operation::new(
+                        GenericOperation::new(
                             Operator::And,
                             Boolean::new(true, SourceInformation::dummy()),
                             Boolean::new(true, SourceInformation::dummy()),

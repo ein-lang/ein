@@ -112,20 +112,22 @@ impl ExpressionTypeExtractor {
             Expression::Number(number) => {
                 types::Number::new(number.source_information().clone()).into()
             }
-            Expression::Operation(operation) => match operation.operator() {
-                Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
-                    types::Number::new(operation.source_information().clone()).into()
-                }
-                Operator::Equal
-                | Operator::NotEqual
-                | Operator::LessThan
-                | Operator::LessThanOrEqual
-                | Operator::GreaterThan
-                | Operator::GreaterThanOrEqual
-                | Operator::And
-                | Operator::Or => {
-                    types::Boolean::new(operation.source_information().clone()).into()
-                }
+            Expression::Operation(operation) => match operation {
+                Operation::Generic(operation) => match operation.operator() {
+                    Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
+                        types::Number::new(operation.source_information().clone()).into()
+                    }
+                    Operator::Equal
+                    | Operator::NotEqual
+                    | Operator::LessThan
+                    | Operator::LessThanOrEqual
+                    | Operator::GreaterThan
+                    | Operator::GreaterThanOrEqual
+                    | Operator::And
+                    | Operator::Or => {
+                        types::Boolean::new(operation.source_information().clone()).into()
+                    }
+                },
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
             Expression::RecordElementOperation(operation) => {
@@ -230,7 +232,7 @@ mod tests {
                         SourceInformation::dummy()
                     ),
                     "bar",
-                    Operation::with_type(
+                    GenericOperation::with_type(
                         types::Number::new(SourceInformation::dummy()),
                         Operator::LessThan,
                         Variable::new("bar", SourceInformation::dummy()),
