@@ -283,7 +283,15 @@ impl ConstraintCollector {
 
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
-                Operation::Pipe(_) => todo!(),
+                Operation::Pipe(operation) => self.infer_expression(
+                    &Application::new(
+                        operation.rhs().clone(),
+                        operation.lhs().clone(),
+                        operation.source_information().clone(),
+                    )
+                    .into(),
+                    &variables,
+                )?,
             }),
             Expression::RecordConstruction(construction) => {
                 let record_type = self
