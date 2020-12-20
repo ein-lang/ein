@@ -76,6 +76,7 @@ impl ExpressionTypeExtractor {
 
                 self.extract(let_.expression(), &variables)?
             }
+            Expression::LetError(_) => todo!(),
             Expression::LetRecursive(let_) => {
                 let mut variables = variables.clone();
 

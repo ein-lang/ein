@@ -173,6 +173,7 @@ impl ConstraintCollector {
 
                 self.infer_expression(let_.expression(), &variables)
             }
+            Expression::LetError(_) => todo!(),
             Expression::LetRecursive(let_) => {
                 let mut variables = variables.clone();
 

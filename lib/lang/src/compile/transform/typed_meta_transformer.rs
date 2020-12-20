@@ -177,6 +177,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 )
                 .into()
             }
+            Expression::LetError(_) => todo!(),
             Expression::LetRecursive(let_) => {
                 let mut variables = variables.clone();
 

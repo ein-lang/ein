@@ -167,6 +167,23 @@ impl GlobalNameRenamer {
                 )
                 .into()
             }
+            Expression::LetError(let_) => {
+                let mut names = names.clone();
+                let mut definitions = vec![];
+
+                for variable_definition in let_.definitions() {
+                    definitions.push(self.rename_variable_definition(variable_definition, &names));
+
+                    names.remove(variable_definition.name());
+                }
+
+                LetError::new(
+                    definitions,
+                    self.rename_expression(let_.expression(), &names),
+                    let_.source_information().clone(),
+                )
+                .into()
+            }
             Expression::LetRecursive(let_) => {
                 let mut names = names.clone();
 

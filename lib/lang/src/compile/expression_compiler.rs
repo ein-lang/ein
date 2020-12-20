@@ -93,6 +93,7 @@ impl ExpressionCompiler {
             )
             .into(),
             Expression::Let(let_) => self.compile_let(let_)?,
+            Expression::LetError(_) => todo!(),
             Expression::LetRecursive(let_) => self.compile_let_recursive(let_)?.into(),
             Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
