@@ -198,6 +198,32 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 )
                 .into()
             }
+            Expression::LetRecursive(let_) => {
+                let mut variables = variables.clone();
+
+                for function_definition in let_.definitions() {
+                    variables.insert(
+                        function_definition.name().into(),
+                        function_definition.type_().clone(),
+                    );
+                }
+
+                let mut definitions = vec![];
+
+                for function_definition in let_.definitions() {
+                    definitions.push(
+                        self.transform_function_definition(function_definition, &variables)?
+                            .into(),
+                    )
+                }
+
+                Let::new(
+                    definitions,
+                    self.transform_expression(let_.expression(), &variables)?,
+                    let_.source_information().clone(),
+                )
+                .into()
+            }
             Expression::List(list) => List::with_type(
                 list.type_().clone(),
                 list.elements()

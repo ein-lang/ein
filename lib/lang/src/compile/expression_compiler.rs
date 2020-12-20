@@ -93,9 +93,10 @@ impl ExpressionCompiler {
             )
             .into(),
             Expression::Let(let_) => match let_.definitions()[0] {
-                Definition::FunctionDefinition(_) => self.compile_let_recursive(let_)?.into(),
+                Definition::FunctionDefinition(_) => todo!(),
                 Definition::VariableDefinition(_) => self.compile_let(let_)?,
             },
+            Expression::LetRecursive(let_) => self.compile_let_recursive(let_)?.into(),
             Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
                 &self
@@ -319,22 +320,12 @@ impl ExpressionCompiler {
         })
     }
 
-    fn compile_let_recursive(&self, let_: &Let) -> Result<ssf::ir::LetRecursive, CompileError> {
-        let function_definitions = let_
-            .definitions()
-            .iter()
-            .map(|definition| match definition {
-                Definition::FunctionDefinition(function_definition) => Ok(function_definition),
-                Definition::VariableDefinition(variable_definition) => {
-                    Err(CompileError::MixedDefinitionsInLet(
-                        variable_definition.source_information().clone(),
-                    ))
-                }
-            })
-            .collect::<Result<Vec<&FunctionDefinition>, _>>()?;
-
+    fn compile_let_recursive(
+        &self,
+        let_: &LetRecursive,
+    ) -> Result<ssf::ir::LetRecursive, CompileError> {
         Ok(ssf::ir::LetRecursive::new(
-            function_definitions
+            let_.definitions()
                 .iter()
                 .map(|function_definition| {
                     let type_ = self
@@ -767,7 +758,7 @@ mod tests {
 
         assert_eq!(
             expression_compiler.compile(
-                &Let::new(
+                &LetRecursive::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -778,8 +769,7 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -804,7 +794,7 @@ mod tests {
 
         assert_eq!(
             expression_compiler.compile(
-                &Let::new(
+                &LetRecursive::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -819,8 +809,7 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -848,11 +837,11 @@ mod tests {
 
         assert_eq!(
             expression_compiler.compile(
-                &Let::new(
+                &LetRecursive::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
-                        Let::new(
+                        LetRecursive::new(
                             vec![FunctionDefinition::new(
                                 "g",
                                 vec!["y".into()],
@@ -863,8 +852,7 @@ mod tests {
                                     SourceInformation::dummy()
                                 ),
                                 SourceInformation::dummy()
-                            )
-                            .into()],
+                            )],
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
@@ -874,8 +862,7 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -916,7 +903,7 @@ mod tests {
                         SourceInformation::dummy()
                     )
                     .into()],
-                    Let::new(
+                    LetRecursive::new(
                         vec![FunctionDefinition::new(
                             "f",
                             vec!["x".into()],
@@ -927,8 +914,7 @@ mod tests {
                                 SourceInformation::dummy()
                             ),
                             SourceInformation::dummy()
-                        )
-                        .into()],
+                        )],
                         Variable::new("y", SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),

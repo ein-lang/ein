@@ -187,6 +187,29 @@ impl GlobalNameRenamer {
                 )
                 .into()
             }
+            Expression::LetRecursive(let_) => {
+                let mut names = names.clone();
+
+                for function_definition in let_.definitions() {
+                    names.remove(function_definition.name());
+                }
+
+                let mut definitions = vec![];
+
+                for function_definition in let_.definitions() {
+                    definitions.push(
+                        self.rename_function_definition(function_definition, &names)
+                            .into(),
+                    )
+                }
+
+                Let::new(
+                    definitions,
+                    self.rename_expression(let_.expression(), &names),
+                    let_.source_information().clone(),
+                )
+                .into()
+            }
             Expression::List(list) => List::new(
                 list.elements()
                     .iter()

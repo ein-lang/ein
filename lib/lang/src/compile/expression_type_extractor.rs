@@ -86,6 +86,18 @@ impl ExpressionTypeExtractor {
 
                 self.extract(let_.expression(), &variables)?
             }
+            Expression::LetRecursive(let_) => {
+                let mut variables = variables.clone();
+
+                for function_definition in let_.definitions() {
+                    variables.insert(
+                        function_definition.name().into(),
+                        function_definition.type_().clone(),
+                    );
+                }
+
+                self.extract(let_.expression(), &variables)?
+            }
             Expression::List(list) => list.type_().clone(),
             Expression::ListCase(case) => self.type_canonicalizer.canonicalize(
                 &types::Union::new(

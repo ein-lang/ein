@@ -189,6 +189,22 @@ impl ConstraintCollector {
 
                 self.infer_expression(let_.expression(), &variables)
             }
+            Expression::LetRecursive(let_) => {
+                let mut variables = variables.clone();
+
+                for function_definition in let_.definitions() {
+                    variables.insert(
+                        function_definition.name().into(),
+                        function_definition.type_().clone(),
+                    );
+                }
+
+                for function_definition in let_.definitions() {
+                    self.infer_function_definition(function_definition, &variables)?;
+                }
+
+                self.infer_expression(let_.expression(), &variables)
+            }
             Expression::List(list) => {
                 let element_type = types::Variable::new(list.source_information().clone());
                 let list_type =

@@ -317,6 +317,7 @@ impl TypedTransformer for TypeCoercionTransformer {
             }
             Expression::Boolean(_)
             | Expression::Let(_)
+            | Expression::LetRecursive(_)
             | Expression::List(_)
             | Expression::None(_)
             | Expression::Number(_)
