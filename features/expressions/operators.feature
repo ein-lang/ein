@@ -68,3 +68,18 @@ Feature: Operators
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
+
+  Scenario: Use a pipe operator
+    Given a file named "Main.ein" with:
+    """
+    f : Number -> Number
+    f x = x * 2
+
+    g : Number -> Number
+    g x = x - 1
+
+    main : System -> Number
+    main system = 0.5 |> f |> g
+    """
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
