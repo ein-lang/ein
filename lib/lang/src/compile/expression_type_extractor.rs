@@ -113,13 +113,13 @@ impl ExpressionTypeExtractor {
                 types::Number::new(number.source_information().clone()).into()
             }
             Expression::Operation(operation) => match operation {
+                Operation::Arithmetic(_) => {
+                    types::Number::new(operation.source_information().clone()).into()
+                }
                 Operation::Boolean(_) => {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
                 Operation::Generic(operation) => match operation.operator() {
-                    Operator::Add | Operator::Subtract | Operator::Multiply | Operator::Divide => {
-                        types::Number::new(operation.source_information().clone()).into()
-                    }
                     Operator::Equal
                     | Operator::NotEqual
                     | Operator::LessThan

@@ -242,6 +242,16 @@ impl ConstraintCollector {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
             Expression::Operation(operation) => match operation {
+                Operation::Arithmetic(operation) => {
+                    let lhs = self.infer_expression(operation.lhs(), variables)?;
+                    let rhs = self.infer_expression(operation.rhs(), variables)?;
+                    let number_type = types::Number::new(operation.source_information().clone());
+
+                    self.solved_subsumption_set.add(lhs, number_type.clone());
+                    self.solved_subsumption_set.add(rhs, number_type.clone());
+
+                    Ok(number_type.into())
+                }
                 Operation::Boolean(operation) => {
                     let lhs = self.infer_expression(operation.lhs(), variables)?;
                     let rhs = self.infer_expression(operation.rhs(), variables)?;
@@ -262,11 +272,7 @@ impl ConstraintCollector {
                         .add(rhs.clone(), operation.type_().clone());
 
                     Ok(match operation.operator() {
-                        Operator::Add
-                        | Operator::Subtract
-                        | Operator::Multiply
-                        | Operator::Divide
-                        | Operator::LessThan
+                        Operator::LessThan
                         | Operator::LessThanOrEqual
                         | Operator::GreaterThan
                         | Operator::GreaterThanOrEqual => {
@@ -274,16 +280,9 @@ impl ConstraintCollector {
                                 types::Number::new(operation.source_information().clone());
 
                             self.solved_subsumption_set.add(lhs, number_type.clone());
-                            self.solved_subsumption_set.add(rhs, number_type.clone());
+                            self.solved_subsumption_set.add(rhs, number_type);
 
-                            match operation.operator() {
-                                Operator::Add
-                                | Operator::Subtract
-                                | Operator::Multiply
-                                | Operator::Divide => number_type.into(),
-                                _ => types::Boolean::new(operation.source_information().clone())
-                                    .into(),
-                            }
+                            types::Boolean::new(operation.source_information().clone()).into()
                         }
                         Operator::Equal | Operator::NotEqual => {
                             types::Boolean::new(operation.source_information().clone()).into()

@@ -13,7 +13,6 @@ use super::union_tag_calculator::UnionTagCalculator;
 use super::variable_compiler::VariableCompiler;
 use crate::ast::*;
 use crate::types::{self, Type};
-use std::convert::TryInto;
 use std::sync::Arc;
 
 pub struct ExpressionCompilerSet {
@@ -112,6 +111,12 @@ impl ExpressionCompiler {
             )?,
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => match operation {
+                Operation::Arithmetic(operation) => ssf::ir::PrimitiveOperation::new(
+                    operation.operator().into(),
+                    self.compile(operation.lhs())?,
+                    self.compile(operation.rhs())?,
+                )
+                .into(),
                 Operation::Boolean(operation) => self.compile(
                     &self
                         .expression_transformer_set
@@ -151,38 +156,13 @@ impl ExpressionCompiler {
                                 .transform(operation)?,
                         )?
                     } else {
-                        match operation.operator() {
-                            Operator::Add
-                            | Operator::Subtract
-                            | Operator::Multiply
-                            | Operator::Divide
-                            | Operator::Equal
-                            | Operator::NotEqual
-                            | Operator::LessThan
-                            | Operator::LessThanOrEqual
-                            | Operator::GreaterThan
-                            | Operator::GreaterThanOrEqual => {
-                                let compiled = ssf::ir::PrimitiveOperation::new(
-                                    operation.operator().try_into().unwrap(),
-                                    self.compile(operation.lhs())?,
-                                    self.compile(operation.rhs())?,
-                                );
-
-                                if matches!(
-                                    operation.operator(),
-                                    Operator::Add
-                                        | Operator::Subtract
-                                        | Operator::Multiply
-                                        | Operator::Divide
-                                ) {
-                                    compiled.into()
-                                } else {
-                                    self.expression_compiler_set
-                                        .boolean_compiler
-                                        .compile_conversion(compiled)
-                                }
-                            }
-                        }
+                        self.expression_compiler_set
+                            .boolean_compiler
+                            .compile_conversion(ssf::ir::PrimitiveOperation::new(
+                                operation.operator().into(),
+                                self.compile(operation.lhs())?,
+                                self.compile(operation.rhs())?,
+                            ))
                     }
                 }
             },
@@ -623,8 +603,8 @@ mod tests {
 
             assert_eq!(
                 expression_compiler.compile(
-                    &GenericOperation::new(
-                        Operator::Add,
+                    &ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(2.0, SourceInformation::dummy()),
                         SourceInformation::dummy()

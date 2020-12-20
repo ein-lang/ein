@@ -1541,8 +1541,8 @@ mod tests {
             );
             assert_eq!(
                 expression().parse(stream("x + 1", "")).unwrap().0,
-                GenericOperation::new(
-                    Operator::Add,
+                ArithmeticOperation::new(
+                    ArithmeticOperator::Add,
                     Variable::new("x", SourceInformation::dummy()),
                     Number::new(1.0, SourceInformation::dummy()),
                     SourceInformation::dummy()
@@ -1551,8 +1551,8 @@ mod tests {
             );
             assert_eq!(
                 expression().parse(stream("x + y z", "")).unwrap().0,
-                GenericOperation::new(
-                    Operator::Add,
+                ArithmeticOperation::new(
+                    ArithmeticOperator::Add,
                     Variable::new("x", SourceInformation::dummy()),
                     Application::new(
                         Variable::new("y", SourceInformation::dummy()),
@@ -1566,8 +1566,8 @@ mod tests {
             assert_eq!(
                 expression().parse(stream("(x + y) z", "")).unwrap().0,
                 Application::new(
-                    GenericOperation::new(
-                        Operator::Add,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
                         Variable::new("x", SourceInformation::dummy()),
                         Variable::new("y", SourceInformation::dummy()),
                         SourceInformation::dummy()
@@ -2130,8 +2130,8 @@ mod tests {
             for (source, target) in vec![
                 (
                     "1 + 1",
-                    GenericOperation::new(
-                        Operator::Add,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
@@ -2140,8 +2140,8 @@ mod tests {
                 ),
                 (
                     "1 + 1 then",
-                    GenericOperation::new(
-                        Operator::Add,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
@@ -2150,10 +2150,10 @@ mod tests {
                 ),
                 (
                     "1 + 1 + 1",
-                    GenericOperation::new(
-                        Operator::Add,
-                        GenericOperation::new(
-                            Operator::Add,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
+                        ArithmeticOperation::new(
+                            ArithmeticOperator::Add,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(1.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),
@@ -2165,11 +2165,11 @@ mod tests {
                 ),
                 (
                     "1 + (1 + 1)",
-                    GenericOperation::new(
-                        Operator::Add,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
-                        GenericOperation::new(
-                            Operator::Add,
+                        ArithmeticOperation::new(
+                            ArithmeticOperator::Add,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(1.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),
@@ -2180,10 +2180,10 @@ mod tests {
                 ),
                 (
                     "1 * 2 - 3",
-                    GenericOperation::new(
-                        Operator::Subtract,
-                        GenericOperation::new(
-                            Operator::Multiply,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Subtract,
+                        ArithmeticOperation::new(
+                            ArithmeticOperator::Multiply,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(2.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),
@@ -2195,11 +2195,11 @@ mod tests {
                 ),
                 (
                     "1 + 2 * 3",
-                    GenericOperation::new(
-                        Operator::Add,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
                         Number::new(1.0, SourceInformation::dummy()),
-                        GenericOperation::new(
-                            Operator::Multiply,
+                        ArithmeticOperation::new(
+                            ArithmeticOperator::Multiply,
                             Number::new(2.0, SourceInformation::dummy()),
                             Number::new(3.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),
@@ -2210,16 +2210,16 @@ mod tests {
                 ),
                 (
                     "1 * 2 - 3 / 4",
-                    GenericOperation::new(
-                        Operator::Subtract,
-                        GenericOperation::new(
-                            Operator::Multiply,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Subtract,
+                        ArithmeticOperation::new(
+                            ArithmeticOperator::Multiply,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(2.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),
                         ),
-                        GenericOperation::new(
-                            Operator::Divide,
+                        ArithmeticOperation::new(
+                            ArithmeticOperator::Divide,
                             Number::new(3.0, SourceInformation::dummy()),
                             Number::new(4.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),

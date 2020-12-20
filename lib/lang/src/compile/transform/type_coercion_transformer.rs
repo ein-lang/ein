@@ -250,6 +250,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                 .into())
             }
             Expression::Operation(operation) => Ok(match operation {
+                Operation::Arithmetic(operation) => operation.clone().into(),
                 Operation::Boolean(operation) => operation.clone().into(),
                 Operation::Generic(operation) => {
                     let argument_type = self.type_canonicalizer.canonicalize(

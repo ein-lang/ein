@@ -195,8 +195,8 @@ mod tests {
                 .into(),
                 VariableDefinition::new(
                     "y",
-                    GenericOperation::new(
-                        Operator::Add,
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
                         Variable::new("x", SourceInformation::dummy()),
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy()

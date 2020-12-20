@@ -1,5 +1,6 @@
 mod alternative;
 mod application;
+mod arithmetic_operation;
 mod boolean;
 mod boolean_operation;
 mod case;
@@ -33,6 +34,7 @@ mod variable_definition;
 
 pub use alternative::*;
 pub use application::*;
+pub use arithmetic_operation::*;
 pub use boolean::*;
 pub use boolean_operation::*;
 pub use case::*;

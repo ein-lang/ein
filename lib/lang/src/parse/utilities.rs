@@ -64,18 +64,34 @@ fn create_operation(
         ParsedOperator::NotEqual => {
             GenericOperation::new(Operator::NotEqual, lhs, rhs, source_information.clone()).into()
         }
-        ParsedOperator::Add => {
-            GenericOperation::new(Operator::Add, lhs, rhs, source_information.clone()).into()
-        }
-        ParsedOperator::Subtract => {
-            GenericOperation::new(Operator::Subtract, lhs, rhs, source_information.clone()).into()
-        }
-        ParsedOperator::Multiply => {
-            GenericOperation::new(Operator::Multiply, lhs, rhs, source_information.clone()).into()
-        }
-        ParsedOperator::Divide => {
-            GenericOperation::new(Operator::Divide, lhs, rhs, source_information.clone()).into()
-        }
+        ParsedOperator::Add => ArithmeticOperation::new(
+            ArithmeticOperator::Add,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::Subtract => ArithmeticOperation::new(
+            ArithmeticOperator::Subtract,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::Multiply => ArithmeticOperation::new(
+            ArithmeticOperator::Multiply,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::Divide => ArithmeticOperation::new(
+            ArithmeticOperator::Divide,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
         ParsedOperator::LessThan => {
             GenericOperation::new(Operator::LessThan, lhs, rhs, source_information.clone()).into()
         }
