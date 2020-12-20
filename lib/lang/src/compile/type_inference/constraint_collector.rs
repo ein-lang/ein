@@ -247,10 +247,8 @@ impl ConstraintCollector {
                     let rhs = self.infer_expression(operation.rhs(), variables)?;
                     let boolean_type = types::Boolean::new(operation.source_information().clone());
 
-                    self.solved_subsumption_set
-                        .add(lhs, boolean_type.clone());
-                    self.solved_subsumption_set
-                        .add(rhs, boolean_type.clone());
+                    self.solved_subsumption_set.add(lhs, boolean_type.clone());
+                    self.solved_subsumption_set.add(rhs, boolean_type.clone());
 
                     Ok(boolean_type.into())
                 }
