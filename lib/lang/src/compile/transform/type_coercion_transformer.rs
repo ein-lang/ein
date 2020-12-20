@@ -285,6 +285,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                     )
                     .into()
                 }
+                Operation::Order(operation) => operation.clone().into(),
             }),
             Expression::RecordConstruction(record_construction) => {
                 let record_type = self

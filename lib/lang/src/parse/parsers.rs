@@ -1701,8 +1701,8 @@ mod tests {
                     .unwrap()
                     .0,
                 If::new(
-                    GenericOperation::new(
-                        Operator::LessThan,
+                    OrderOperation::new(
+                        OrderOperator::LessThan,
                         Variable::new("x", SourceInformation::dummy()),
                         Number::new(0.0, SourceInformation::dummy()),
                         SourceInformation::dummy()
@@ -2263,8 +2263,8 @@ mod tests {
                     BooleanOperation::new(
                         BooleanOperator::And,
                         Boolean::new(true, SourceInformation::dummy()),
-                        GenericOperation::new(
-                            Operator::LessThan,
+                        OrderOperation::new(
+                            OrderOperator::LessThan,
                             Number::new(1.0, SourceInformation::dummy()),
                             Number::new(2.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),

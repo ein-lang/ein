@@ -261,6 +261,13 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                     operation.source_information().clone(),
                 )
                 .into(),
+                Operation::Order(operation) => OrderOperation::new(
+                    operation.operator(),
+                    self.transform_expression(operation.lhs(), &variables)?,
+                    self.transform_expression(operation.rhs(), &variables)?,
+                    operation.source_information().clone(),
+                )
+                .into(),
             },
             Expression::RecordConstruction(record_construction) => RecordConstruction::new(
                 record_construction.type_().clone(),

@@ -165,6 +165,14 @@ impl ExpressionCompiler {
                             ))
                     }
                 }
+                Operation::Order(operation) => self
+                    .expression_compiler_set
+                    .boolean_compiler
+                    .compile_conversion(ssf::ir::PrimitiveOperation::new(
+                        operation.operator().into(),
+                        self.compile(operation.lhs())?,
+                        self.compile(operation.rhs())?,
+                    )),
             },
             Expression::RecordConstruction(record) => ssf::ir::ConstructorApplication::new(
                 ssf::ir::Constructor::new(
@@ -625,8 +633,8 @@ mod tests {
 
             assert_eq!(
                 expression_compiler.compile(
-                    &GenericOperation::new(
-                        Operator::LessThan,
+                    &OrderOperation::new(
+                        OrderOperator::LessThan,
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(2.0, SourceInformation::dummy()),
                         SourceInformation::dummy()

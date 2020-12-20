@@ -242,6 +242,13 @@ impl GlobalNameRenamer {
                     operation.source_information().clone(),
                 )
                 .into(),
+                Operation::Order(operation) => OrderOperation::new(
+                    operation.operator(),
+                    self.rename_expression(operation.lhs(), &names),
+                    self.rename_expression(operation.rhs(), &names),
+                    operation.source_information().clone(),
+                )
+                .into(),
             },
             Expression::RecordConstruction(record_construction) => RecordConstruction::new(
                 record_construction.type_().clone(),

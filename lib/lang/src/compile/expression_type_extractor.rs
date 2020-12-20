@@ -116,19 +116,9 @@ impl ExpressionTypeExtractor {
                 Operation::Arithmetic(_) => {
                     types::Number::new(operation.source_information().clone()).into()
                 }
-                Operation::Boolean(_) => {
+                Operation::Boolean(_) | Operation::Generic(_) | Operation::Order(_) => {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
-                Operation::Generic(operation) => match operation.operator() {
-                    Operator::Equal
-                    | Operator::NotEqual
-                    | Operator::LessThan
-                    | Operator::LessThanOrEqual
-                    | Operator::GreaterThan
-                    | Operator::GreaterThanOrEqual => {
-                        types::Boolean::new(operation.source_information().clone()).into()
-                    }
-                },
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
             Expression::RecordElementOperation(operation) => {
@@ -233,9 +223,8 @@ mod tests {
                         SourceInformation::dummy()
                     ),
                     "bar",
-                    GenericOperation::with_type(
-                        types::Number::new(SourceInformation::dummy()),
-                        Operator::LessThan,
+                    OrderOperation::new(
+                        OrderOperator::LessThan,
                         Variable::new("bar", SourceInformation::dummy()),
                         Variable::new("bar", SourceInformation::dummy()),
                         SourceInformation::dummy()

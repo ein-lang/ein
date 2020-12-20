@@ -92,22 +92,29 @@ fn create_operation(
             source_information.clone(),
         )
         .into(),
-        ParsedOperator::LessThan => {
-            GenericOperation::new(Operator::LessThan, lhs, rhs, source_information.clone()).into()
-        }
-        ParsedOperator::LessThanOrEqual => GenericOperation::new(
-            Operator::LessThanOrEqual,
+        ParsedOperator::LessThan => OrderOperation::new(
+            OrderOperator::LessThan,
             lhs,
             rhs,
             source_information.clone(),
         )
         .into(),
-        ParsedOperator::GreaterThan => {
-            GenericOperation::new(Operator::GreaterThan, lhs, rhs, source_information.clone())
-                .into()
-        }
-        ParsedOperator::GreaterThanOrEqual => GenericOperation::new(
-            Operator::GreaterThanOrEqual,
+        ParsedOperator::LessThanOrEqual => OrderOperation::new(
+            OrderOperator::LessThanOrEqual,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::GreaterThan => OrderOperation::new(
+            OrderOperator::GreaterThan,
+            lhs,
+            rhs,
+            source_information.clone(),
+        )
+        .into(),
+        ParsedOperator::GreaterThanOrEqual => OrderOperation::new(
+            OrderOperator::GreaterThanOrEqual,
             lhs,
             rhs,
             source_information.clone(),

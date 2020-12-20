@@ -1468,9 +1468,8 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         "bar",
-                        GenericOperation::with_type(
-                            types::Number::new(SourceInformation::dummy()),
-                            Operator::LessThan,
+                        OrderOperation::new(
+                            OrderOperator::LessThan,
                             Variable::new("bar", SourceInformation::dummy()),
                             Variable::new("bar", SourceInformation::dummy()),
                             SourceInformation::dummy()
@@ -1509,30 +1508,20 @@ mod tests {
 
         #[test]
         fn infer_types_of_number_comparison_operations() {
-            let create_module = |type_: Type| {
-                Module::from_definitions(vec![VariableDefinition::new(
-                    "x",
-                    GenericOperation::with_type(
-                        type_,
-                        Operator::LessThan,
-                        Number::new(42.0, SourceInformation::dummy()),
-                        Number::new(42.0, SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
+            let module = Module::from_definitions(vec![VariableDefinition::new(
+                "x",
+                OrderOperation::new(
+                    OrderOperator::LessThan,
+                    Number::new(42.0, SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()])
-            };
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
 
-            assert_eq!(
-                infer_types(&create_module(
-                    types::Unknown::new(SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(
-                    types::Number::new(SourceInformation::dummy()).into()
-                ))
-            );
+            assert_eq!(infer_types(&module), Ok(module.clone()));
         }
 
         #[test]
