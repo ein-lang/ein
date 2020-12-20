@@ -85,8 +85,7 @@ impl ListCaseTransformer {
                                 ),
                                 element_type,
                                 source_information.clone(),
-                            )
-                            .into(),
+                            ),
                             VariableDefinition::new(
                                 case.rest_name(),
                                 Application::new(
@@ -99,8 +98,7 @@ impl ListCaseTransformer {
                                 ),
                                 case.type_().clone(),
                                 source_information.clone(),
-                            )
-                            .into(),
+                            ),
                         ],
                         case.non_empty_alternative().clone(),
                         source_information.clone(),

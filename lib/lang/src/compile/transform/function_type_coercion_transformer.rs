@@ -41,8 +41,7 @@ impl FunctionTypeCoercionTransformer {
                         coercion.argument().clone(),
                         coercion.from().clone(),
                         source_information.clone(),
-                    )
-                    .into()],
+                    )],
                     self.transform_function(
                         Variable::new(function_name, source_information.clone()).into(),
                         coercion.from(),
@@ -77,7 +76,7 @@ impl FunctionTypeCoercionTransformer {
                     let argument_name = self.argument_name_generator.generate();
 
                     // Curry functions to preserve their evaluation orders.
-                    Let::new(
+                    LetRecursive::new(
                         vec![FunctionDefinition::new(
                             to_function_name.clone(),
                             vec![argument_name.clone()],
@@ -99,8 +98,7 @@ impl FunctionTypeCoercionTransformer {
                                     ),
                                     from_function_type.result().clone(),
                                     source_information.clone(),
-                                )
-                                .into()],
+                                )],
                                 self.transform_function(
                                     Variable::new(from_function_name, source_information.clone())
                                         .into(),
@@ -112,8 +110,7 @@ impl FunctionTypeCoercionTransformer {
                             ),
                             to_function_type.clone(),
                             source_information.clone(),
-                        )
-                        .into()],
+                        )],
                         Variable::new(to_function_name, source_information.clone()),
                         source_information,
                     )
@@ -186,9 +183,8 @@ mod tests {
                     Variable::new("f", SourceInformation::dummy()),
                     from_type.clone(),
                     SourceInformation::dummy()
-                )
-                .into()],
-                Let::new(
+                )],
+                LetRecursive::new(
                     vec![FunctionDefinition::new(
                         "$tc_func_2",
                         vec!["$tc_arg_0".into()],
@@ -207,8 +203,7 @@ mod tests {
                                 ),
                                 from_type.result().clone(),
                                 SourceInformation::dummy()
-                            )
-                            .into()],
+                            )],
                             TypeCoercion::new(
                                 Variable::new("$tc_func_1", SourceInformation::dummy()),
                                 from_type.result().clone(),
@@ -219,8 +214,7 @@ mod tests {
                         ),
                         to_type.clone(),
                         SourceInformation::dummy()
-                    )
-                    .into()],
+                    )],
                     Variable::new("$tc_func_2", SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 ),

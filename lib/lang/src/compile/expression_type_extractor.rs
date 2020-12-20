@@ -67,21 +67,23 @@ impl ExpressionTypeExtractor {
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
-                for definition in let_.definitions() {
-                    match definition {
-                        Definition::FunctionDefinition(function_definition) => {
-                            variables.insert(
-                                function_definition.name().into(),
-                                function_definition.type_().clone(),
-                            );
-                        }
-                        Definition::VariableDefinition(variable_definition) => {
-                            variables.insert(
-                                variable_definition.name().into(),
-                                variable_definition.type_().clone(),
-                            );
-                        }
-                    }
+                for variable_definition in let_.definitions() {
+                    variables.insert(
+                        variable_definition.name().into(),
+                        variable_definition.type_().clone(),
+                    );
+                }
+
+                self.extract(let_.expression(), &variables)?
+            }
+            Expression::LetRecursive(let_) => {
+                let mut variables = variables.clone();
+
+                for function_definition in let_.definitions() {
+                    variables.insert(
+                        function_definition.name().into(),
+                        function_definition.type_().clone(),
+                    );
                 }
 
                 self.extract(let_.expression(), &variables)?

@@ -1,19 +1,19 @@
 use super::expression::Expression;
-use super::variable_definition::VariableDefinition;
+use super::function_definition::FunctionDefinition;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Let {
-    definitions: Vec<VariableDefinition>,
+pub struct LetRecursive {
+    definitions: Vec<FunctionDefinition>,
     expression: Arc<Expression>,
     source_information: Arc<SourceInformation>,
 }
 
-impl Let {
+impl LetRecursive {
     pub fn new(
-        definitions: Vec<VariableDefinition>,
+        definitions: Vec<FunctionDefinition>,
         expression: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
@@ -24,7 +24,7 @@ impl Let {
         }
     }
 
-    pub fn definitions(&self) -> &[VariableDefinition] {
+    pub fn definitions(&self) -> &[FunctionDefinition] {
         &self.definitions
     }
 

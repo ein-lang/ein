@@ -57,82 +57,80 @@ Ok(
                     body: Let(
                         Let {
                             definitions: [
-                                VariableDefinition(
-                                    VariableDefinition {
-                                        name: "z",
-                                        body: If(
-                                            If {
-                                                condition: Boolean(
-                                                    Boolean {
-                                                        value: true,
-                                                        source_information: SourceInformation {
-                                                            source_name: "",
-                                                            location: Location {
-                                                                line_number: 0,
-                                                                column_number: 0,
-                                                            },
-                                                            line: "",
+                                VariableDefinition {
+                                    name: "z",
+                                    body: If(
+                                        If {
+                                            condition: Boolean(
+                                                Boolean {
+                                                    value: true,
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
                                                         },
+                                                        line: "",
                                                     },
-                                                ),
-                                                then: Variable(
-                                                    Variable {
-                                                        name: "x",
-                                                        source_information: SourceInformation {
-                                                            source_name: "",
-                                                            location: Location {
-                                                                line_number: 0,
-                                                                column_number: 0,
-                                                            },
-                                                            line: "",
-                                                        },
-                                                    },
-                                                ),
-                                                else_: Number(
-                                                    Number {
-                                                        value: 42.0,
-                                                        source_information: SourceInformation {
-                                                            source_name: "",
-                                                            location: Location {
-                                                                line_number: 0,
-                                                                column_number: 0,
-                                                            },
-                                                            line: "",
-                                                        },
-                                                    },
-                                                ),
-                                                source_information: SourceInformation {
-                                                    source_name: "",
-                                                    location: Location {
-                                                        line_number: 0,
-                                                        column_number: 0,
-                                                    },
-                                                    line: "",
                                                 },
-                                            },
-                                        ),
-                                        type_: Any(
-                                            Any {
-                                                source_information: SourceInformation {
-                                                    source_name: "",
-                                                    location: Location {
-                                                        line_number: 0,
-                                                        column_number: 0,
+                                            ),
+                                            then: Variable(
+                                                Variable {
+                                                    name: "x",
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
                                                     },
-                                                    line: "",
                                                 },
+                                            ),
+                                            else_: Number(
+                                                Number {
+                                                    value: 42.0,
+                                                    source_information: SourceInformation {
+                                                        source_name: "",
+                                                        location: Location {
+                                                            line_number: 0,
+                                                            column_number: 0,
+                                                        },
+                                                        line: "",
+                                                    },
+                                                },
+                                            ),
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
                                             },
-                                        ),
-                                        source_information: SourceInformation {
-                                            source_name: "",
-                                            location: Location {
-                                                line_number: 0,
-                                                column_number: 0,
-                                            },
-                                            line: "",
                                         },
+                                    ),
+                                    type_: Any(
+                                        Any {
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
                                     },
-                                ),
+                                },
                             ],
                             expression: Number(
                                 Number {
