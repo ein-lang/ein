@@ -1,3 +1,4 @@
+use super::boolean_operation::BooleanOperation;
 use super::expression::Expression;
 use super::generic_operation::GenericOperation;
 use crate::debug::SourceInformation;
@@ -6,12 +7,14 @@ use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Operation {
+    Boolean(BooleanOperation),
     Generic(GenericOperation),
 }
 
 impl Operation {
     pub fn source_information(&self) -> &Arc<SourceInformation> {
         match self {
+            Self::Boolean(operation) => operation.source_information(),
             Self::Generic(operation) => operation.source_information(),
         }
     }
@@ -21,6 +24,7 @@ impl Operation {
         transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
         Ok(match self {
+            Self::Boolean(operation) => operation.transform_expressions(transform)?.into(),
             Self::Generic(operation) => operation.transform_expressions(transform)?.into(),
         })
     }
@@ -30,8 +34,15 @@ impl Operation {
         transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
         Ok(match self {
+            Self::Boolean(operation) => operation.transform_types(transform)?.into(),
             Self::Generic(operation) => operation.transform_types(transform)?.into(),
         })
+    }
+}
+
+impl From<BooleanOperation> for Operation {
+    fn from(operation: BooleanOperation) -> Self {
+        Self::Boolean(operation)
     }
 }
 

@@ -1,5 +1,5 @@
 use super::attempt::{many, many1, optional, sep_end_by, sep_end_by1};
-use super::utilities;
+use super::utilities::*;
 use crate::ast::*;
 use crate::debug::*;
 use crate::path::*;
@@ -600,31 +600,31 @@ fn operation_or_term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
             |(source_information, operator, expression)| (operator, expression, source_information),
         )),
     )
-        .map(|(expression, pairs): (_, Vec<_>)| utilities::reduce_operations(expression, &pairs))
+        .map(|(expression, pairs): (_, Vec<_>)| reduce_operations(expression, &pairs))
 }
 
-fn operator<'a>() -> impl Parser<Stream<'a>, Output = Operator> {
+fn operator<'a>() -> impl Parser<Stream<'a>, Output = ParsedOperator> {
     choice!(
-        concrete_operator("+", Operator::Add),
-        concrete_operator("-", Operator::Subtract),
-        concrete_operator("*", Operator::Multiply),
-        concrete_operator("/", Operator::Divide),
-        concrete_operator("==", Operator::Equal),
-        concrete_operator("/=", Operator::NotEqual),
-        concrete_operator("<", Operator::LessThan),
-        concrete_operator("<=", Operator::LessThanOrEqual),
-        concrete_operator(">", Operator::GreaterThan),
-        concrete_operator(">=", Operator::GreaterThanOrEqual),
-        concrete_operator("&&", Operator::And),
-        concrete_operator("||", Operator::Or),
+        concrete_operator("+", ParsedOperator::Add),
+        concrete_operator("-", ParsedOperator::Subtract),
+        concrete_operator("*", ParsedOperator::Multiply),
+        concrete_operator("/", ParsedOperator::Divide),
+        concrete_operator("==", ParsedOperator::Equal),
+        concrete_operator("/=", ParsedOperator::NotEqual),
+        concrete_operator("<", ParsedOperator::LessThan),
+        concrete_operator("<=", ParsedOperator::LessThanOrEqual),
+        concrete_operator(">", ParsedOperator::GreaterThan),
+        concrete_operator(">=", ParsedOperator::GreaterThanOrEqual),
+        concrete_operator("&&", ParsedOperator::And),
+        concrete_operator("||", ParsedOperator::Or),
     )
     .expected("operator")
 }
 
 fn concrete_operator<'a>(
     literal: &'static str,
-    operator: Operator,
-) -> impl Parser<Stream<'a>, Output = Operator> {
+    operator: ParsedOperator,
+) -> impl Parser<Stream<'a>, Output = ParsedOperator> {
     token(
         many1(one_of(OPERATOR_CHARACTERS.chars())).then(move |parsed_literal: String| {
             if parsed_literal == literal {
@@ -2135,7 +2135,8 @@ mod tests {
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "1 + 1 then",
@@ -2144,7 +2145,8 @@ mod tests {
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "1 + 1 + 1",
@@ -2158,7 +2160,8 @@ mod tests {
                         ),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "1 + (1 + 1)",
@@ -2172,7 +2175,8 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "1 * 2 - 3",
@@ -2186,7 +2190,8 @@ mod tests {
                         ),
                         Number::new(3.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "1 + 2 * 3",
@@ -2200,7 +2205,8 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "1 * 2 - 3 / 4",
@@ -2219,7 +2225,8 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "1 == 1",
@@ -2228,30 +2235,33 @@ mod tests {
                         Number::new(1.0, SourceInformation::dummy()),
                         Number::new(1.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "True && True",
-                    GenericOperation::new(
-                        Operator::And,
+                    BooleanOperation::new(
+                        BooleanOperator::And,
                         Boolean::new(true, SourceInformation::dummy()),
                         Boolean::new(true, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "True || True",
-                    GenericOperation::new(
-                        Operator::Or,
+                    BooleanOperation::new(
+                        BooleanOperator::Or,
                         Boolean::new(true, SourceInformation::dummy()),
                         Boolean::new(true, SourceInformation::dummy()),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "True && 1 < 2",
-                    GenericOperation::new(
-                        Operator::And,
+                    BooleanOperation::new(
+                        BooleanOperator::And,
                         Boolean::new(true, SourceInformation::dummy()),
                         GenericOperation::new(
                             Operator::LessThan,
@@ -2260,27 +2270,26 @@ mod tests {
                             SourceInformation::dummy(),
                         ),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
                 (
                     "True || True && True",
-                    GenericOperation::new(
-                        Operator::Or,
+                    BooleanOperation::new(
+                        BooleanOperator::Or,
                         Boolean::new(true, SourceInformation::dummy()),
-                        GenericOperation::new(
-                            Operator::And,
+                        BooleanOperation::new(
+                            BooleanOperator::And,
                             Boolean::new(true, SourceInformation::dummy()),
                             Boolean::new(true, SourceInformation::dummy()),
                             SourceInformation::dummy(),
                         ),
                         SourceInformation::dummy(),
-                    ),
+                    )
+                    .into(),
                 ),
             ] {
-                assert_eq!(
-                    expression().parse(stream(source, "")).unwrap().0,
-                    target.into()
-                );
+                assert_eq!(expression().parse(stream(source, "")).unwrap().0, target);
             }
         }
 
@@ -2451,16 +2460,16 @@ mod tests {
             assert!(operator().parse(stream("++", "")).is_err());
 
             for (source, expected) in &[
-                ("+", Operator::Add),
-                ("-", Operator::Subtract),
-                ("*", Operator::Multiply),
-                ("/", Operator::Divide),
-                ("==", Operator::Equal),
-                ("/=", Operator::NotEqual),
-                ("<", Operator::LessThan),
-                ("<=", Operator::LessThanOrEqual),
-                (">", Operator::GreaterThan),
-                (">=", Operator::GreaterThanOrEqual),
+                ("+", ParsedOperator::Add),
+                ("-", ParsedOperator::Subtract),
+                ("*", ParsedOperator::Multiply),
+                ("/", ParsedOperator::Divide),
+                ("==", ParsedOperator::Equal),
+                ("/=", ParsedOperator::NotEqual),
+                ("<", ParsedOperator::LessThan),
+                ("<=", ParsedOperator::LessThanOrEqual),
+                (">", ParsedOperator::GreaterThan),
+                (">=", ParsedOperator::GreaterThanOrEqual),
             ] {
                 assert_eq!(operator().parse(stream(source, "")).unwrap().0, *expected);
             }

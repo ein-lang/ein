@@ -220,6 +220,13 @@ impl GlobalNameRenamer {
             )
             .into(),
             Expression::Operation(operation) => match operation {
+                Operation::Boolean(operation) => BooleanOperation::new(
+                    operation.operator(),
+                    self.rename_expression(operation.lhs(), &names),
+                    self.rename_expression(operation.rhs(), &names),
+                    operation.source_information().clone(),
+                )
+                .into(),
                 Operation::Generic(operation) => GenericOperation::with_type(
                     operation.type_().clone(),
                     operation.operator(),

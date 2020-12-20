@@ -239,6 +239,13 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             )
             .into(),
             Expression::Operation(operation) => match operation {
+                Operation::Boolean(operation) => BooleanOperation::new(
+                    operation.operator(),
+                    self.transform_expression(operation.lhs(), &variables)?,
+                    self.transform_expression(operation.rhs(), &variables)?,
+                    operation.source_information().clone(),
+                )
+                .into(),
                 Operation::Generic(operation) => GenericOperation::with_type(
                     operation.type_().clone(),
                     operation.operator(),

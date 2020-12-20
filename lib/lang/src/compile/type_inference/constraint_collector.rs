@@ -242,6 +242,18 @@ impl ConstraintCollector {
                 Ok(types::Number::new(number.source_information().clone()).into())
             }
             Expression::Operation(operation) => match operation {
+                Operation::Boolean(operation) => {
+                    let lhs = self.infer_expression(operation.lhs(), variables)?;
+                    let rhs = self.infer_expression(operation.rhs(), variables)?;
+                    let boolean_type = types::Boolean::new(operation.source_information().clone());
+
+                    self.solved_subsumption_set
+                        .add(lhs.clone(), boolean_type.clone());
+                    self.solved_subsumption_set
+                        .add(rhs.clone(), boolean_type.clone());
+
+                    Ok(boolean_type.into())
+                }
                 Operation::Generic(operation) => {
                     let lhs = self.infer_expression(operation.lhs(), variables)?;
                     let rhs = self.infer_expression(operation.rhs(), variables)?;
@@ -277,15 +289,6 @@ impl ConstraintCollector {
                         }
                         Operator::Equal | Operator::NotEqual => {
                             types::Boolean::new(operation.source_information().clone()).into()
-                        }
-                        Operator::And | Operator::Or => {
-                            let boolean_type =
-                                types::Boolean::new(operation.source_information().clone());
-
-                            self.solved_subsumption_set.add(lhs, boolean_type.clone());
-                            self.solved_subsumption_set.add(rhs, boolean_type.clone());
-
-                            boolean_type.into()
                         }
                     })
                 }

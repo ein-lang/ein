@@ -1,6 +1,7 @@
 mod alternative;
 mod application;
 mod boolean;
+mod boolean_operation;
 mod case;
 mod definition;
 mod export;
@@ -33,6 +34,7 @@ mod variable_definition;
 pub use alternative::*;
 pub use application::*;
 pub use boolean::*;
+pub use boolean_operation::*;
 pub use case::*;
 pub use definition::*;
 pub use export::*;

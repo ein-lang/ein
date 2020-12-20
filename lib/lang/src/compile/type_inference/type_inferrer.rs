@@ -1579,30 +1579,20 @@ mod tests {
 
         #[test]
         fn infer_types_of_boolean_operation() {
-            let create_module = |type_: Type| {
-                Module::from_definitions(vec![VariableDefinition::new(
-                    "x",
-                    GenericOperation::with_type(
-                        type_,
-                        Operator::And,
-                        Boolean::new(true, SourceInformation::dummy()),
-                        Boolean::new(true, SourceInformation::dummy()),
-                        SourceInformation::dummy(),
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
+            let module = Module::from_definitions(vec![VariableDefinition::new(
+                "x",
+                BooleanOperation::new(
+                    BooleanOperator::And,
+                    Boolean::new(true, SourceInformation::dummy()),
+                    Boolean::new(true, SourceInformation::dummy()),
                     SourceInformation::dummy(),
-                )
-                .into()])
-            };
+                ),
+                types::Boolean::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()]);
 
-            assert_eq!(
-                infer_types(&create_module(
-                    types::Unknown::new(SourceInformation::dummy()).into()
-                )),
-                Ok(create_module(
-                    types::Boolean::new(SourceInformation::dummy()).into()
-                ))
-            );
+            assert_eq!(infer_types(&module), Ok(module.clone()));
         }
     }
 

@@ -249,7 +249,8 @@ impl TypedTransformer for TypeCoercionTransformer {
                 )
                 .into())
             }
-            Expression::Operation(operation) => match operation {
+            Expression::Operation(operation) => Ok(match operation {
+                Operation::Boolean(operation) => operation.clone().into(),
                 Operation::Generic(operation) => {
                     let argument_type = self.type_canonicalizer.canonicalize(
                         &types::Union::new(
@@ -264,7 +265,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                         .into(),
                     )?;
 
-                    Ok(GenericOperation::with_type(
+                    GenericOperation::with_type(
                         operation.type_().clone(),
                         operation.operator(),
                         self.coerce_type(
@@ -281,9 +282,9 @@ impl TypedTransformer for TypeCoercionTransformer {
                         )?,
                         operation.source_information().clone(),
                     )
-                    .into())
+                    .into()
                 }
-            },
+            }),
             Expression::RecordConstruction(record_construction) => {
                 let record_type = self
                     .reference_type_resolver

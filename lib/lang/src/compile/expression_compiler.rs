@@ -112,6 +112,12 @@ impl ExpressionCompiler {
             )?,
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => match operation {
+                Operation::Boolean(operation) => self.compile(
+                    &self
+                        .expression_transformer_set
+                        .boolean_operation_transformer
+                        .transform(operation),
+                )?,
                 Operation::Generic(operation) => {
                     let type_ = self.reference_type_resolver.resolve(operation.type_())?;
 
@@ -176,12 +182,6 @@ impl ExpressionCompiler {
                                         .compile_conversion(compiled)
                                 }
                             }
-                            Operator::And | Operator::Or => self.compile(
-                                &self
-                                    .expression_transformer_set
-                                    .boolean_operation_transformer
-                                    .transform(operation),
-                            )?,
                         }
                     }
                 }
