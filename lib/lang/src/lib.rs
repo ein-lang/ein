@@ -8,8 +8,8 @@ pub mod types;
 
 pub use ast::{Import, ModuleInterface, UnresolvedModule};
 pub use compile::{
-    compile, BuiltinConfiguration, CompileConfiguration, ListTypeConfiguration,
-    StringTypeConfiguration, SystemTypeConfiguration,
+    compile, BuiltinConfiguration, CompileConfiguration, ErrorTypeConfiguration,
+    ListTypeConfiguration, StringTypeConfiguration, SystemTypeConfiguration,
 };
 pub use package::Package;
 pub use parse::{parse, ParseError};

@@ -505,7 +505,7 @@ mod tests {
                         ),
                         SourceInformation::dummy(),
                     ),
-                    union_type.clone(),
+                    union_type,
                     SourceInformation::dummy(),
                 )
                 .into(),

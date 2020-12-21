@@ -30,6 +30,10 @@ lazy_static! {
                 system_type_name: "System".into(),
             }
             .into(),
+            error_type_configuration: lang::ErrorTypeConfiguration {
+                error_type_name: "Error".into(),
+            }
+            .into(),
             builtin_configuration: Arc::new(lang::BuiltinConfiguration {
                 functions: vec![
                     (
