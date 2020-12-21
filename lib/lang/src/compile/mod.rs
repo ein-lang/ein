@@ -76,7 +76,7 @@ pub fn compile(
 
     let module = transform_with_types(
         &infer_types(&transform_without_types(&module)?, configuration.clone())?,
-        configuration.builtin_configuration.clone(),
+        configuration.clone(),
     )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
@@ -158,30 +158,10 @@ pub fn compile(
 
 #[cfg(test)]
 mod tests {
-    use super::builtin_configuration::BUILTIN_CONFIGURATION;
-    use super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
-    use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
-    use super::string_type_configuration::STRING_TYPE_CONFIGURATION;
-    use super::system_type_configuration::SYSTEM_TYPE_CONFIGURATION;
+    use super::compile_configuration::COMPILE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
     use crate::types;
-    use lazy_static::lazy_static;
-
-    lazy_static! {
-        static ref COMPILE_CONFIGURATION: Arc<CompileConfiguration> = CompileConfiguration {
-            source_main_function_name: "main".into(),
-            object_main_function_name: "foo_main".into(),
-            malloc_function_name: "foo_malloc".into(),
-            panic_function_name: "foo_panic".into(),
-            list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
-            string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
-            system_type_configuration: SYSTEM_TYPE_CONFIGURATION.clone(),
-            error_type_configuration: ERROR_TYPE_CONFIGURATION.clone(),
-            builtin_configuration: BUILTIN_CONFIGURATION.clone(),
-        }
-        .into();
-    }
 
     #[test]
     fn compile_constant_initialized_with_operation() {

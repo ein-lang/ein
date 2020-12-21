@@ -1,6 +1,8 @@
 use super::error::CompileError;
+use super::error_type_configuration::ErrorTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_canonicalizer::TypeCanonicalizer;
+use super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
@@ -8,17 +10,23 @@ use std::sync::Arc;
 
 pub struct ExpressionTypeExtractor {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
+    type_equality_checker: Arc<TypeEqualityChecker>,
     type_canonicalizer: Arc<TypeCanonicalizer>,
+    error_type_configuration: Arc<ErrorTypeConfiguration>,
 }
 
 impl ExpressionTypeExtractor {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
+        type_equality_checker: Arc<TypeEqualityChecker>,
         type_canonicalizer: Arc<TypeCanonicalizer>,
+        error_type_configuration: Arc<ErrorTypeConfiguration>,
     ) -> Arc<Self> {
         Self {
             reference_type_resolver,
+            type_equality_checker,
             type_canonicalizer,
+            error_type_configuration,
         }
         .into()
     }
@@ -76,7 +84,29 @@ impl ExpressionTypeExtractor {
 
                 self.extract(let_.expression(), &variables)?
             }
-            Expression::LetError(_) => todo!(),
+            Expression::LetError(let_) => {
+                let error_type = types::Reference::new(
+                    &self.error_type_configuration.error_type_name,
+                    let_.source_information().clone(),
+                )
+                .into();
+                let mut variables = variables.clone();
+
+                for variable_definition in let_.definitions() {
+                    variables.insert(
+                        variable_definition.name().into(),
+                        self.remove_type_from_union(variable_definition.type_(), &error_type)?,
+                    );
+                }
+
+                self.type_canonicalizer.canonicalize(
+                    &types::Union::new(
+                        vec![self.extract(let_.expression(), &variables)?, error_type],
+                        let_.source_information().clone(),
+                    )
+                    .into(),
+                )?
+            }
             Expression::LetRecursive(let_) => {
                 let mut variables = variables.clone();
 
@@ -152,24 +182,67 @@ impl ExpressionTypeExtractor {
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
+
+    fn remove_type_from_union(
+        &self,
+        union_type: &Type,
+        removed_type: &Type,
+    ) -> Result<Type, CompileError> {
+        self.type_canonicalizer.canonicalize(
+            &types::Union::new(
+                self.reference_type_resolver
+                    .resolve_to_union(union_type)?
+                    .unwrap()
+                    .types()
+                    .iter()
+                    .map(|type_| {
+                        Ok(if self.type_equality_checker.equal(type_, removed_type)? {
+                            None
+                        } else {
+                            Some(type_.clone())
+                        })
+                    })
+                    .collect::<Result<Vec<_>, CompileError>>()?
+                    .into_iter()
+                    .flatten()
+                    .collect(),
+                union_type.source_information().clone(),
+            )
+            .into(),
+        )
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
     use super::super::reference_type_resolver::ReferenceTypeResolver;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::*;
     use crate::debug::SourceInformation;
+    use crate::package::Package;
+    use crate::path::ModulePath;
+
+    fn create_expression_type_extractor(module: &Module) -> Arc<ExpressionTypeExtractor> {
+        let reference_type_resolver = ReferenceTypeResolver::new(module);
+        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer = TypeCanonicalizer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker.clone(),
+        );
+
+        ExpressionTypeExtractor::new(
+            reference_type_resolver,
+            type_equality_checker,
+            type_canonicalizer,
+            ERROR_TYPE_CONFIGURATION.clone(),
+        )
+    }
 
     #[test]
     fn extract_type_of_case_expression() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer =
-            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
-
         assert_eq!(
-            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+            create_expression_type_extractor(&Module::dummy()).extract(
                 &Case::new(
                     "",
                     None::new(SourceInformation::dummy()),
@@ -201,10 +274,6 @@ mod tests {
 
     #[test]
     fn extract_type_of_record_element_operation() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer =
-            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
         let record_type = types::Record::new(
             "Foo",
             vec![(
@@ -217,7 +286,7 @@ mod tests {
         );
 
         assert_eq!(
-            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+            create_expression_type_extractor(&Module::dummy()).extract(
                 &RecordElementOperation::new(
                     record_type.clone(),
                     "foo",
@@ -249,13 +318,8 @@ mod tests {
 
     #[test]
     fn extract_type_of_list_case_expression_with_element() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer =
-            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
-
         assert_eq!(
-            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+            create_expression_type_extractor(&Module::dummy()).extract(
                 &ListCase::new(
                     List::new(vec![], SourceInformation::dummy()),
                     types::List::new(
@@ -277,17 +341,13 @@ mod tests {
 
     #[test]
     fn extract_type_of_list_case_expression_with_list() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer =
-            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
         let list_type = types::List::new(
             types::None::new(SourceInformation::dummy()),
             SourceInformation::dummy(),
         );
 
         assert_eq!(
-            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+            create_expression_type_extractor(&Module::dummy()).extract(
                 &ListCase::new(
                     List::new(vec![], SourceInformation::dummy()),
                     list_type.clone(),
@@ -306,13 +366,8 @@ mod tests {
 
     #[test]
     fn extract_type_of_pipe_operation() {
-        let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer =
-            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
-
         assert_eq!(
-            ExpressionTypeExtractor::new(reference_type_resolver, type_canonicalizer).extract(
+            create_expression_type_extractor(&Module::dummy()).extract(
                 &PipeOperation::new(
                     None::new(SourceInformation::dummy()),
                     Variable::new("f", SourceInformation::dummy()),
@@ -332,6 +387,69 @@ mod tests {
                 .collect(),
             ),
             Ok(types::Number::new(SourceInformation::dummy()).into())
+        );
+    }
+
+    #[test]
+    fn extract_type_of_let_error() {
+        let union_type = types::Union::new(
+            vec![
+                types::Number::new(SourceInformation::dummy()).into(),
+                types::Reference::new(
+                    &ERROR_TYPE_CONFIGURATION.error_type_name,
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ],
+            SourceInformation::dummy(),
+        );
+
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![Import::new(
+                ModuleInterface::new(
+                    ModulePath::new(Package::new("m", ""), vec![]),
+                    Default::default(),
+                    vec![(
+                        "Error".into(),
+                        types::Record::new("Error", Default::default(), SourceInformation::dummy())
+                            .into(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                    Default::default(),
+                    Default::default(),
+                ),
+                false,
+            )],
+            vec![],
+            vec![],
+        );
+
+        assert_eq!(
+            create_expression_type_extractor(&module).extract(
+                &LetError::new(
+                    vec![VariableDefinition::new(
+                        "y",
+                        Variable::new("x", SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )],
+                    ArithmeticOperation::new(
+                        ArithmeticOperator::Add,
+                        Variable::new("y", SourceInformation::dummy()),
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                &vec![("x".into(), union_type.clone().into())]
+                    .into_iter()
+                    .collect(),
+            ),
+            Ok(union_type.clone().into())
         );
     }
 }
