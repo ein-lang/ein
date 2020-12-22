@@ -177,7 +177,8 @@ impl GlobalNameRenamer {
                     names.remove(variable_definition.name());
                 }
 
-                LetError::new(
+                LetError::with_type(
+                    let_.type_().clone(),
                     definitions,
                     self.rename_expression(let_.expression(), &names),
                     let_.source_information().clone(),

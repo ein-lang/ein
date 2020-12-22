@@ -12,11 +12,13 @@ pub trait TypedTransformer {
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError>;
+
     fn transform_variable_definition(
         &mut self,
         variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<VariableDefinition, CompileError>;
+
     fn transform_expression(
         &mut self,
         expression: &Expression,
@@ -157,7 +159,6 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             .into(),
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
-
                 let mut definitions = vec![];
 
                 for variable_definition in let_.definitions() {
@@ -177,7 +178,34 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 )
                 .into()
             }
-            Expression::LetError(_) => todo!(),
+            Expression::LetError(let_) => {
+                let mut variables = variables.clone();
+                let mut definitions = vec![];
+
+                for variable_definition in let_.definitions() {
+                    // TODO Fix this hack.
+                    // Combine TypedMetaTransformer and TypeCoercionTransformer?
+                    definitions.push(VariableDefinition::new(
+                        variable_definition.name(),
+                        self.transform_expression(variable_definition.body(), &variables)?,
+                        variable_definition.type_().clone(),
+                        variable_definition.source_information().clone(),
+                    ));
+
+                    variables.insert(
+                        variable_definition.name().into(),
+                        variable_definition.type_().clone(),
+                    );
+                }
+
+                LetError::with_type(
+                    let_.type_().clone(),
+                    definitions,
+                    self.transform_expression(let_.expression(), &variables)?,
+                    let_.source_information().clone(),
+                )
+                .into()
+            }
             Expression::LetRecursive(let_) => {
                 let mut variables = variables.clone();
 

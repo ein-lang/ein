@@ -83,6 +83,18 @@ Ok(
                     name: "y",
                     body: LetError(
                         LetError {
+                            type_: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
                             definitions: [
                                 VariableDefinition {
                                     name: "z",
@@ -99,35 +111,8 @@ Ok(
                                             },
                                         },
                                     ),
-                                    type_: Union(
-                                        Union {
-                                            types: {
-                                                Number(
-                                                    Number {
-                                                        source_information: SourceInformation {
-                                                            source_name: "",
-                                                            location: Location {
-                                                                line_number: 0,
-                                                                column_number: 0,
-                                                            },
-                                                            line: "",
-                                                        },
-                                                    },
-                                                ),
-                                                Reference(
-                                                    Reference {
-                                                        name: "Error",
-                                                        source_information: SourceInformation {
-                                                            source_name: "",
-                                                            location: Location {
-                                                                line_number: 0,
-                                                                column_number: 0,
-                                                            },
-                                                            line: "",
-                                                        },
-                                                    },
-                                                ),
-                                            },
+                                    type_: Number(
+                                        Number {
                                             source_information: SourceInformation {
                                                 source_name: "",
                                                 location: Location {

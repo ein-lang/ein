@@ -1,0 +1,191 @@
+---
+source: lib/lang/src/compile/transform/let_error_transformer.rs
+expression: "create_let_error_transformer().transform(&LetError::with_type(types::Union::new(vec![types\n                                                                                     ::\n                                                                                     None\n                                                                                     ::\n                                                                                     new(SourceInformation\n                                                                                         ::\n                                                                                         dummy())\n                                                                                     .\n                                                                                     into(),\n                                                                                     error_type\n                                                                                     .\n                                                                                     clone()\n                                                                                     .\n                                                                                     into()],\n                                                                                SourceInformation::dummy()),\n                                                              vec![VariableDefinition\n                                                                   ::\n                                                                   new(\"x\",\n                                                                       Variable\n                                                                       ::\n                                                                       new(\"y\",\n                                                                           SourceInformation\n                                                                           ::\n                                                                           dummy()),\n                                                                       types\n                                                                       ::\n                                                                       Number\n                                                                       ::\n                                                                       new(SourceInformation\n                                                                           ::\n                                                                           dummy()),\n                                                                       SourceInformation\n                                                                       ::\n                                                                       dummy(),)],\n                                                              None::new(SourceInformation::dummy()),\n                                                              SourceInformation::dummy()))"
+---
+Ok(
+    Case(
+        Case {
+            type_: Union(
+                Union {
+                    types: {
+                        Number(
+                            Number {
+                                source_information: SourceInformation {
+                                    source_name: "",
+                                    location: Location {
+                                        line_number: 0,
+                                        column_number: 0,
+                                    },
+                                    line: "",
+                                },
+                            },
+                        ),
+                        Reference(
+                            Reference {
+                                name: "Error",
+                                source_information: SourceInformation {
+                                    source_name: "",
+                                    location: Location {
+                                        line_number: 0,
+                                        column_number: 0,
+                                    },
+                                    line: "",
+                                },
+                            },
+                        ),
+                    },
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+            name: "x",
+            argument: Variable(
+                Variable {
+                    name: "y",
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
+            alternatives: [
+                Alternative {
+                    type_: Number(
+                        Number {
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    expression: None(
+                        None {
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                },
+                Alternative {
+                    type_: Reference(
+                        Reference {
+                            name: "Error",
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    expression: TypeCoercion(
+                        TypeCoercion {
+                            argument: Variable(
+                                Variable {
+                                    name: "x",
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            from: Reference(
+                                Reference {
+                                    name: "Error",
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            to: Union(
+                                Union {
+                                    types: {
+                                        None(
+                                            None {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        Reference(
+                                            Reference {
+                                                name: "Error",
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                },
+            ],
+            source_information: SourceInformation {
+                source_name: "",
+                location: Location {
+                    line_number: 0,
+                    column_number: 0,
+                },
+                line: "",
+            },
+        },
+    ),
+)

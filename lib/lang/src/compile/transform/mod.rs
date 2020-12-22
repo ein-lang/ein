@@ -2,6 +2,7 @@ mod boolean_operation_transformer;
 mod elementless_record_transformer;
 mod equal_operation_transformer;
 mod function_type_coercion_transformer;
+mod let_error_transformer;
 mod list_case_transformer;
 mod list_literal_transformer;
 mod not_equal_operation_transformer;
@@ -26,6 +27,7 @@ pub use boolean_operation_transformer::BooleanOperationTransformer;
 use elementless_record_transformer::ElementlessRecordTransformer;
 pub use equal_operation_transformer::EqualOperationTransformer;
 pub use function_type_coercion_transformer::FunctionTypeCoercionTransformer;
+pub use let_error_transformer::LetErrorTransformer;
 pub use list_case_transformer::ListCaseTransformer;
 pub use list_literal_transformer::ListLiteralTransformer;
 pub use not_equal_operation_transformer::NotEqualOperationTransformer;
@@ -64,7 +66,6 @@ pub fn transform_with_types(
     );
     let expression_type_extractor = ExpressionTypeExtractor::new(
         reference_type_resolver.clone(),
-        type_equality_checker.clone(),
         type_canonicalizer.clone(),
         compile_configuration.error_type_configuration.clone(),
     );
@@ -76,9 +77,9 @@ pub fn transform_with_types(
     let mut type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
             reference_type_resolver.clone(),
-            type_equality_checker,
+            type_equality_checker.clone(),
             expression_type_extractor,
-            type_canonicalizer,
+            type_canonicalizer.clone(),
             last_result_type_calculator,
         ),
         module_environment_creator,

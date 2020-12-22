@@ -2,7 +2,6 @@ use super::error::CompileError;
 use super::error_type_configuration::ErrorTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_canonicalizer::TypeCanonicalizer;
-use super::type_equality_checker::TypeEqualityChecker;
 use crate::ast::*;
 use crate::types::{self, Type};
 use std::collections::HashMap;
@@ -10,7 +9,6 @@ use std::sync::Arc;
 
 pub struct ExpressionTypeExtractor {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    type_equality_checker: Arc<TypeEqualityChecker>,
     type_canonicalizer: Arc<TypeCanonicalizer>,
     error_type_configuration: Arc<ErrorTypeConfiguration>,
 }
@@ -18,13 +16,11 @@ pub struct ExpressionTypeExtractor {
 impl ExpressionTypeExtractor {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
-        type_equality_checker: Arc<TypeEqualityChecker>,
         type_canonicalizer: Arc<TypeCanonicalizer>,
         error_type_configuration: Arc<ErrorTypeConfiguration>,
     ) -> Arc<Self> {
         Self {
             reference_type_resolver,
-            type_equality_checker,
             type_canonicalizer,
             error_type_configuration,
         }
@@ -95,7 +91,7 @@ impl ExpressionTypeExtractor {
                 for variable_definition in let_.definitions() {
                     variables.insert(
                         variable_definition.name().into(),
-                        self.remove_type_from_union(variable_definition.type_(), &error_type)?,
+                        variable_definition.type_().clone(),
                     );
                 }
 
@@ -182,35 +178,6 @@ impl ExpressionTypeExtractor {
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
-
-    fn remove_type_from_union(
-        &self,
-        union_type: &Type,
-        removed_type: &Type,
-    ) -> Result<Type, CompileError> {
-        self.type_canonicalizer.canonicalize(
-            &types::Union::new(
-                self.reference_type_resolver
-                    .resolve_to_union(union_type)?
-                    .unwrap()
-                    .types()
-                    .iter()
-                    .map(|type_| {
-                        Ok(if self.type_equality_checker.equal(type_, removed_type)? {
-                            None
-                        } else {
-                            Some(type_.clone())
-                        })
-                    })
-                    .collect::<Result<Vec<_>, CompileError>>()?
-                    .into_iter()
-                    .flatten()
-                    .collect(),
-                union_type.source_information().clone(),
-            )
-            .into(),
-        )
-    }
 }
 
 #[cfg(test)]
@@ -233,7 +200,6 @@ mod tests {
 
         ExpressionTypeExtractor::new(
             reference_type_resolver,
-            type_equality_checker,
             type_canonicalizer,
             ERROR_TYPE_CONFIGURATION.clone(),
         )

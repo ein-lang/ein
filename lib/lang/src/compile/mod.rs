@@ -51,8 +51,9 @@ pub use system_type_configuration::SystemTypeConfiguration;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
+    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
 };
+use type_canonicalizer::TypeCanonicalizer;
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
 use type_equality_checker::TypeEqualityChecker;
@@ -82,6 +83,10 @@ pub fn compile(
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+    let type_canonicalizer = TypeCanonicalizer::new(
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+    );
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
@@ -107,12 +112,18 @@ pub fn compile(
     );
     let boolean_operation_transformer = BooleanOperationTransformer::new();
     let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
-        type_equality_checker,
+        type_equality_checker.clone(),
         reference_type_resolver.clone(),
     );
     let list_case_transformer = ListCaseTransformer::new(
         reference_type_resolver.clone(),
         configuration.list_type_configuration.clone(),
+    );
+    let let_error_transformer = LetErrorTransformer::new(
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+        type_canonicalizer,
+        configuration.error_type_configuration.clone(),
     );
 
     let expression_compiler = ExpressionCompiler::new(
@@ -129,6 +140,7 @@ pub fn compile(
             boolean_operation_transformer,
             function_type_coercion_transformer,
             list_case_transformer,
+            let_error_transformer,
         }
         .into(),
         reference_type_resolver,
@@ -706,4 +718,168 @@ mod tests {
     //         Ok(())
     //     }
     // }
+
+    mod let_error {
+        use super::*;
+        use crate::package::Package;
+        use crate::path::ModulePath;
+
+        #[test]
+        fn compile_let_error() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::Reference::new(
+                        &COMPILE_CONFIGURATION
+                            .error_type_configuration
+                            .error_type_name,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("m", ""), vec![]),
+                        Default::default(),
+                        vec![(
+                            "Error".into(),
+                            types::Record::new(
+                                "Error",
+                                Default::default(),
+                                SourceInformation::dummy(),
+                            )
+                            .into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    false,
+                )],
+                vec![],
+                vec![
+                    VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    VariableDefinition::new(
+                        "y",
+                        LetError::new(
+                            vec![VariableDefinition::new(
+                                "z",
+                                Variable::new("x", SourceInformation::dummy()),
+                                types::Variable::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            )],
+                            ArithmeticOperation::new(
+                                ArithmeticOperator::Add,
+                                Variable::new("z", SourceInformation::dummy()),
+                                Number::new(42.0, SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        union_type,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+            );
+
+            compile(&module, COMPILE_CONFIGURATION.clone()).unwrap();
+        }
+
+        #[test]
+        fn compile_let_error_with_multiple_definitions() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::Reference::new(
+                        &COMPILE_CONFIGURATION
+                            .error_type_configuration
+                            .error_type_name,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("m", ""), vec![]),
+                        Default::default(),
+                        vec![(
+                            "Error".into(),
+                            types::Record::new(
+                                "Error",
+                                Default::default(),
+                                SourceInformation::dummy(),
+                            )
+                            .into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    false,
+                )],
+                vec![],
+                vec![
+                    VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    VariableDefinition::new(
+                        "y",
+                        LetError::new(
+                            vec![
+                                VariableDefinition::new(
+                                    "z",
+                                    Variable::new("x", SourceInformation::dummy()),
+                                    types::Variable::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy(),
+                                ),
+                                VariableDefinition::new(
+                                    "v",
+                                    Variable::new("x", SourceInformation::dummy()),
+                                    types::Variable::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy(),
+                                ),
+                            ],
+                            ArithmeticOperation::new(
+                                ArithmeticOperator::Add,
+                                Variable::new("v", SourceInformation::dummy()),
+                                Variable::new("z", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        union_type,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+            );
+
+            compile(&module, COMPILE_CONFIGURATION.clone()).unwrap();
+        }
+    }
 }

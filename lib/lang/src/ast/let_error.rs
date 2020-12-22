@@ -1,11 +1,12 @@
 use super::expression::Expression;
 use super::variable_definition::VariableDefinition;
 use crate::debug::SourceInformation;
-use crate::types::Type;
+use crate::types::{self, Type};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct LetError {
+    type_: Type,
     definitions: Vec<VariableDefinition>,
     expression: Arc<Expression>,
     source_information: Arc<SourceInformation>,
@@ -17,11 +18,32 @@ impl LetError {
         expression: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
+        let source_information = source_information.into();
+
+        Self::with_type(
+            types::Unknown::new(source_information.clone()),
+            definitions,
+            expression,
+            source_information,
+        )
+    }
+
+    pub fn with_type(
+        type_: impl Into<Type>,
+        definitions: Vec<VariableDefinition>,
+        expression: impl Into<Expression>,
+        source_information: impl Into<Arc<SourceInformation>>,
+    ) -> Self {
         Self {
+            type_: type_.into(),
             definitions,
             expression: Arc::new(expression.into()),
             source_information: source_information.into(),
         }
+    }
+
+    pub fn type_(&self) -> &Type {
+        &self.type_
     }
 
     pub fn definitions(&self) -> &[VariableDefinition] {
@@ -40,7 +62,8 @@ impl LetError {
         &self,
         transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
     ) -> Result<Self, E> {
-        Ok(Self::new(
+        Ok(Self::with_type(
+            self.type_.clone(),
             self.definitions
                 .iter()
                 .map(|definition| definition.transform_expressions(transform))
@@ -54,7 +77,8 @@ impl LetError {
         &self,
         transform: &mut impl FnMut(&Type) -> Result<Type, E>,
     ) -> Result<Self, E> {
-        Ok(Self::new(
+        Ok(Self::with_type(
+            transform(&self.type_)?,
             self.definitions
                 .iter()
                 .map(|definition| definition.transform_types(transform))

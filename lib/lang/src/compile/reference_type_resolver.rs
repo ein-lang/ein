@@ -89,13 +89,6 @@ impl ReferenceTypeResolver {
         })
     }
 
-    pub fn resolve_to_union(&self, type_: &Type) -> Result<Option<types::Union>, CompileError> {
-        Ok(match self.resolve(type_)? {
-            Type::Union(union) => Some(union),
-            _ => None,
-        })
-    }
-
     pub fn is_any(&self, type_: &Type) -> Result<bool, CompileError> {
         Ok(matches!(self.resolve(type_)?, Type::Any(_)))
     }

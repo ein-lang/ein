@@ -39,7 +39,7 @@ impl TypeCoercionTransformer {
     }
 
     fn coerce_type(
-        &mut self,
+        &self,
         expression: &Expression,
         to_type: &Type,
         source_information: Arc<SourceInformation>,
@@ -204,6 +204,20 @@ impl TypedTransformer for TypeCoercionTransformer {
                 )
                 .into()
             }
+            Expression::LetError(let_) => LetError::with_type(
+                let_.type_().clone(),
+                let_.definitions().to_vec(),
+                self.coerce_type(
+                    let_.expression(),
+                    &self
+                        .expression_type_extractor
+                        .extract(expression, variables)?,
+                    let_.expression().source_information().clone(),
+                    variables,
+                )?,
+                let_.source_information().clone(),
+            )
+            .into(),
             Expression::ListCase(case) => {
                 let result_type = self
                     .expression_type_extractor
@@ -317,7 +331,6 @@ impl TypedTransformer for TypeCoercionTransformer {
             }
             Expression::Boolean(_)
             | Expression::Let(_)
-            | Expression::LetError(_)
             | Expression::LetRecursive(_)
             | Expression::List(_)
             | Expression::None(_)
