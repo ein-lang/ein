@@ -494,7 +494,7 @@ mod tests {
                         vec![VariableDefinition::new(
                             "z",
                             Variable::new("x", SourceInformation::dummy()),
-                            types::Variable::new(SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy(),
                         )],
                         ArithmeticOperation::new(
