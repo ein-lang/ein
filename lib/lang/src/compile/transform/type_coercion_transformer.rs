@@ -204,20 +204,31 @@ impl TypedTransformer for TypeCoercionTransformer {
                 )
                 .into()
             }
-            Expression::LetError(let_) => LetError::with_type(
-                let_.type_().clone(),
-                let_.definitions().to_vec(),
-                self.coerce_type(
-                    let_.expression(),
-                    &self
-                        .expression_type_extractor
-                        .extract(expression, variables)?,
-                    let_.expression().source_information().clone(),
-                    variables,
-                )?,
-                let_.source_information().clone(),
-            )
-            .into(),
+            Expression::LetError(let_) => {
+                let mut variables = variables.clone();
+
+                for variable_definition in let_.definitions() {
+                    variables.insert(
+                        variable_definition.name().into(),
+                        variable_definition.type_().clone(),
+                    );
+                }
+
+                LetError::with_type(
+                    let_.type_().clone(),
+                    let_.definitions().to_vec(),
+                    self.coerce_type(
+                        let_.expression(),
+                        &self
+                            .expression_type_extractor
+                            .extract(expression, &variables)?,
+                        let_.expression().source_information().clone(),
+                        &variables,
+                    )?,
+                    let_.source_information().clone(),
+                )
+                .into()
+            }
             Expression::ListCase(case) => {
                 let result_type = self
                     .expression_type_extractor
