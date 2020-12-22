@@ -10,3 +10,19 @@ Feature: Error
     """
     When I run `ein build`
     Then the exit status should be 0
+
+  Scenario: Use a let-error expression
+    Given a file named "Main.ein" with:
+    """
+    x : Number | Error
+    x = error 42
+
+    y : Number | Error
+    y =
+      let
+        x ?= x
+      in
+        x + 1
+    """
+    When I run `ein build`
+    Then the exit status should be 0
