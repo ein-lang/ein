@@ -202,15 +202,6 @@ fn type_annotation<'a>() -> impl Parser<Stream<'a>, Output = (String, Type)> {
     (identifier(), sign(":").with(type_()))
 }
 
-// TODO Remove this.
-#[cfg(test)]
-fn untyped_definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
-    choice!(
-        untyped_function_definition().map(Definition::from),
-        untyped_variable_definition().map(Definition::from),
-    )
-}
-
 fn untyped_function_definition<'a>() -> impl Parser<Stream<'a>, Output = FunctionDefinition> {
     (
         source_information(),
@@ -1162,17 +1153,19 @@ mod tests {
     #[test]
     fn parse_untyped_definition() {
         assert_eq!(
-            untyped_definition().parse(stream("x = 0", "")).unwrap().0,
+            untyped_variable_definition()
+                .parse(stream("x = 0", ""))
+                .unwrap()
+                .0,
             VariableDefinition::new(
                 "x",
                 Number::new(0.0, SourceInformation::dummy()),
                 types::Unknown::new(SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
-            .into()
         );
         assert_eq!(
-            untyped_definition()
+            untyped_function_definition()
                 .parse(stream("main x = 42", ""))
                 .unwrap()
                 .0,
@@ -1183,10 +1176,9 @@ mod tests {
                 types::Unknown::new(SourceInformation::dummy()),
                 SourceInformation::dummy()
             )
-            .into()
         );
         assert_eq!(
-            (untyped_definition(), untyped_definition())
+            (untyped_function_definition(), untyped_variable_definition())
                 .parse(stream(
                     indoc!(
                         "
@@ -1207,8 +1199,7 @@ mod tests {
                     Variable::new("x", SourceInformation::dummy()),
                     types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
-                )
-                .into(),
+                ),
                 VariableDefinition::new(
                     "y",
                     Application::new(
@@ -1219,7 +1210,6 @@ mod tests {
                     types::Unknown::new(SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
-                .into()
             )
         );
     }
