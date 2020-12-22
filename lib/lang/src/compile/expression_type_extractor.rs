@@ -81,11 +81,6 @@ impl ExpressionTypeExtractor {
                 self.extract(let_.expression(), &variables)?
             }
             Expression::LetError(let_) => {
-                let error_type = types::Reference::new(
-                    &self.error_type_configuration.error_type_name,
-                    let_.source_information().clone(),
-                )
-                .into();
                 let mut variables = variables.clone();
 
                 for variable_definition in let_.definitions() {
@@ -97,7 +92,14 @@ impl ExpressionTypeExtractor {
 
                 self.type_canonicalizer.canonicalize(
                     &types::Union::new(
-                        vec![self.extract(let_.expression(), &variables)?, error_type],
+                        vec![
+                            self.extract(let_.expression(), &variables)?,
+                            types::Reference::new(
+                                &self.error_type_configuration.error_type_name,
+                                let_.source_information().clone(),
+                            )
+                            .into(),
+                        ],
                         let_.source_information().clone(),
                     )
                     .into(),
