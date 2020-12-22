@@ -77,9 +77,9 @@ pub fn transform_with_types(
     let mut type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
+            type_equality_checker,
             expression_type_extractor,
-            type_canonicalizer.clone(),
+            type_canonicalizer,
             last_result_type_calculator,
         ),
         module_environment_creator,

@@ -568,8 +568,8 @@ mod tests {
         );
         let let_error_transformer = LetErrorTransformer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
-            type_canonicalizer.clone(),
+            type_equality_checker,
+            type_canonicalizer,
             ERROR_TYPE_CONFIGURATION.clone(),
         );
 

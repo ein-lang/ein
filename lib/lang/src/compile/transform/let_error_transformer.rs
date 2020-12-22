@@ -53,7 +53,7 @@ impl LetErrorTransformer {
                     variable_definition.name(),
                     variable_definition.body().clone(),
                     vec![
-                        Alternative::new(ok_type.clone(), expression?),
+                        Alternative::new(ok_type, expression?),
                         Alternative::new(
                             error_type.clone(),
                             self.coerce_type(
@@ -150,8 +150,8 @@ mod tests {
         );
 
         LetErrorTransformer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker.clone(),
+            reference_type_resolver,
+            type_equality_checker,
             type_canonicalizer,
             ERROR_TYPE_CONFIGURATION.clone(),
         )
@@ -166,7 +166,7 @@ mod tests {
                 types::Union::new(
                     vec![
                         types::None::new(SourceInformation::dummy()).into(),
-                        error_type.clone().into()
+                        error_type.into()
                     ],
                     SourceInformation::dummy()
                 ),

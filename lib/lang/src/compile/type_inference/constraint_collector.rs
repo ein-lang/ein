@@ -206,7 +206,7 @@ impl ConstraintCollector {
                 self.solved_subsumption_set
                     .add(expression_type.clone(), let_.type_().clone());
                 self.solved_subsumption_set
-                    .add(expression_type.clone(), result_type.clone());
+                    .add(expression_type, result_type.clone());
                 self.solved_subsumption_set.add(
                     types::Reference::new(
                         &self.error_type_configuration.error_type_name,

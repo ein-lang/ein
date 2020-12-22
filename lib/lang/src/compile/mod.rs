@@ -121,7 +121,7 @@ pub fn compile(
     );
     let let_error_transformer = LetErrorTransformer::new(
         reference_type_resolver.clone(),
-        type_equality_checker.clone(),
+        type_equality_checker,
         type_canonicalizer,
         configuration.error_type_configuration.clone(),
     );

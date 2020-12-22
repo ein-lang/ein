@@ -195,7 +195,7 @@ mod tests {
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
         let type_canonicalizer = TypeCanonicalizer::new(
             reference_type_resolver.clone(),
-            type_equality_checker.clone(),
+            type_equality_checker,
         );
 
         ExpressionTypeExtractor::new(
@@ -415,7 +415,7 @@ mod tests {
                     .into_iter()
                     .collect(),
             ),
-            Ok(union_type.clone().into())
+            Ok(union_type.into())
         );
     }
 }
