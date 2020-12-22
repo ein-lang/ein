@@ -193,10 +193,8 @@ mod tests {
     fn create_expression_type_extractor(module: &Module) -> Arc<ExpressionTypeExtractor> {
         let reference_type_resolver = ReferenceTypeResolver::new(module);
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
-        let type_canonicalizer = TypeCanonicalizer::new(
-            reference_type_resolver.clone(),
-            type_equality_checker,
-        );
+        let type_canonicalizer =
+            TypeCanonicalizer::new(reference_type_resolver.clone(), type_equality_checker);
 
         ExpressionTypeExtractor::new(
             reference_type_resolver,
