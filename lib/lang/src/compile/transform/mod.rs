@@ -74,7 +74,7 @@ pub fn transform_with_types(
     let module_environment_creator =
         ModuleEnvironmentCreator::new(compile_configuration.builtin_configuration.clone());
 
-    let mut type_coercion_transformer = TypedMetaTransformer::new(
+    let type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
             reference_type_resolver.clone(),
             type_equality_checker,

@@ -67,7 +67,7 @@ impl TypeCoercionTransformer {
 
 impl TypedTransformer for TypeCoercionTransformer {
     fn transform_function_definition(
-        &mut self,
+        &self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError> {
@@ -100,7 +100,7 @@ impl TypedTransformer for TypeCoercionTransformer {
     }
 
     fn transform_variable_definition(
-        &mut self,
+        &self,
         variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<VariableDefinition, CompileError> {
@@ -118,7 +118,7 @@ impl TypedTransformer for TypeCoercionTransformer {
     }
 
     fn transform_expression(
-        &mut self,
+        &self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {

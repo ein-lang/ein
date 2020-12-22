@@ -8,19 +8,19 @@ use std::sync::Arc;
 
 pub trait TypedTransformer {
     fn transform_function_definition(
-        &mut self,
+        &self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError>;
 
     fn transform_variable_definition(
-        &mut self,
+        &self,
         variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<VariableDefinition, CompileError>;
 
     fn transform_expression(
-        &mut self,
+        &self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError>;
@@ -45,7 +45,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
         }
     }
 
-    pub fn transform(&mut self, module: &Module) -> Result<Module, CompileError> {
+    pub fn transform(&self, module: &Module) -> Result<Module, CompileError> {
         let variables = self.module_environment_creator.create(module);
 
         Ok(Module::new(
@@ -71,7 +71,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
     }
 
     fn transform_function_definition(
-        &mut self,
+        &self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError> {
@@ -101,7 +101,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
     }
 
     fn transform_variable_definition(
-        &mut self,
+        &self,
         variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<VariableDefinition, CompileError> {
@@ -119,7 +119,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
     }
 
     fn transform_expression(
-        &mut self,
+        &self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
