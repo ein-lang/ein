@@ -399,7 +399,7 @@ mod tests {
                     vec![VariableDefinition::new(
                         "y",
                         Variable::new("x", SourceInformation::dummy()),
-                        union_type.clone(),
+                        types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     )],
                     ArithmeticOperation::new(
