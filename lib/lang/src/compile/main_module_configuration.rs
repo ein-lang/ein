@@ -3,7 +3,7 @@ use std::collections::HashMap;
 pub struct MainModuleConfiguration {
     pub source_main_function_name: String,
     pub object_main_function_name: String,
-    pub system_type_name: String,
+    pub argument_type_name: String,
 }
 
 impl MainModuleConfiguration {
@@ -11,7 +11,7 @@ impl MainModuleConfiguration {
         Self {
             source_main_function_name: self.source_main_function_name.clone(),
             object_main_function_name: self.object_main_function_name.clone(),
-            system_type_name: self.qualify_name(&self.system_type_name, &names),
+            argument_type_name: self.qualify_name(&self.argument_type_name, &names),
         }
     }
 

@@ -53,7 +53,7 @@ impl MainFunctionDefinitionTransformer {
                         ),
                         types::Function::new(
                             types::Reference::new(
-                                &self.main_module_configuration.system_type_name,
+                                &self.main_module_configuration.argument_type_name,
                                 source_information.clone(),
                             ),
                             types::Number::new(source_information.clone()),
