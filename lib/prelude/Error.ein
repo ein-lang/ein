@@ -1,8 +1,11 @@
-export { Error, error }
+export { Error, error, source }
 
 type Error {
-  error : Any
+  source : Any
 }
 
 error : Any -> Error
-error x = Error{ error = x }
+error x = Error{ source = x }
+
+source : Error -> Any
+source = Error.source
