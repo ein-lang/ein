@@ -6,7 +6,7 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::string_type_configuration::StringTypeConfiguration;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
+    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -28,6 +28,7 @@ pub struct ExpressionTransformerSet {
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
     pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
     pub list_case_transformer: Arc<ListCaseTransformer>,
+    pub let_error_transformer: Arc<LetErrorTransformer>,
 }
 
 pub struct ExpressionCompiler {
@@ -93,6 +94,7 @@ impl ExpressionCompiler {
             )
             .into(),
             Expression::Let(let_) => self.compile_let(let_)?,
+            Expression::LetError(let_) => self.compile_let_error(let_)?,
             Expression::LetRecursive(let_) => self.compile_let_recursive(let_)?.into(),
             Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
             Expression::List(list) => self.compile(
@@ -372,6 +374,15 @@ impl ExpressionCompiler {
         )
     }
 
+    fn compile_let_error(&self, let_: &LetError) -> Result<ssf::ir::Expression, CompileError> {
+        self.compile(
+            &self
+                .expression_transformer_set
+                .let_error_transformer
+                .transform(let_)?,
+        )
+    }
+
     fn compile_case(&self, case: &Case) -> Result<ssf::ir::Expression, CompileError> {
         if !self.reference_type_resolver.is_any(case.type_())?
             && !self.reference_type_resolver.is_union(case.type_())?
@@ -499,8 +510,10 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
+    use super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
     use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
     use super::super::string_type_configuration::STRING_TYPE_CONFIGURATION;
+    use super::super::type_canonicalizer::TypeCanonicalizer;
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_equality_checker::TypeEqualityChecker;
     use super::*;
@@ -529,6 +542,10 @@ mod tests {
         let type_comparability_checker =
             TypeComparabilityChecker::new(reference_type_resolver.clone());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+        let type_canonicalizer = TypeCanonicalizer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker.clone(),
+        );
         let equal_operation_transformer = EqualOperationTransformer::new(
             reference_type_resolver.clone(),
             type_comparability_checker,
@@ -542,12 +559,18 @@ mod tests {
         );
         let boolean_operation_transformer = BooleanOperationTransformer::new();
         let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
-            type_equality_checker,
+            type_equality_checker.clone(),
             reference_type_resolver.clone(),
         );
         let list_case_transformer = ListCaseTransformer::new(
             reference_type_resolver.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
+        );
+        let let_error_transformer = LetErrorTransformer::new(
+            reference_type_resolver.clone(),
+            type_equality_checker,
+            type_canonicalizer,
+            ERROR_TYPE_CONFIGURATION.clone(),
         );
 
         (
@@ -565,6 +588,7 @@ mod tests {
                     boolean_operation_transformer,
                     function_type_coercion_transformer,
                     list_case_transformer,
+                    let_error_transformer,
                 }
                 .into(),
                 reference_type_resolver,

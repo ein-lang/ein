@@ -39,7 +39,7 @@ impl TypeCoercionTransformer {
     }
 
     fn coerce_type(
-        &mut self,
+        &self,
         expression: &Expression,
         to_type: &Type,
         source_information: Arc<SourceInformation>,
@@ -67,7 +67,7 @@ impl TypeCoercionTransformer {
 
 impl TypedTransformer for TypeCoercionTransformer {
     fn transform_function_definition(
-        &mut self,
+        &self,
         function_definition: &FunctionDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<FunctionDefinition, CompileError> {
@@ -100,7 +100,7 @@ impl TypedTransformer for TypeCoercionTransformer {
     }
 
     fn transform_variable_definition(
-        &mut self,
+        &self,
         variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<VariableDefinition, CompileError> {
@@ -118,7 +118,7 @@ impl TypedTransformer for TypeCoercionTransformer {
     }
 
     fn transform_expression(
-        &mut self,
+        &self,
         expression: &Expression,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
@@ -201,6 +201,31 @@ impl TypedTransformer for TypeCoercionTransformer {
                         variables,
                     )?,
                     if_.source_information().clone(),
+                )
+                .into()
+            }
+            Expression::LetError(let_) => {
+                let mut variables = variables.clone();
+
+                for variable_definition in let_.definitions() {
+                    variables.insert(
+                        variable_definition.name().into(),
+                        variable_definition.type_().clone(),
+                    );
+                }
+
+                LetError::with_type(
+                    let_.type_().clone(),
+                    let_.definitions().to_vec(),
+                    self.coerce_type(
+                        let_.expression(),
+                        &self
+                            .expression_type_extractor
+                            .extract(expression, &variables)?,
+                        let_.expression().source_information().clone(),
+                        &variables,
+                    )?,
+                    let_.source_information().clone(),
                 )
                 .into()
             }

@@ -1,4 +1,5 @@
 use super::super::error::CompileError;
+use super::super::error_type_configuration::ErrorTypeConfiguration;
 use super::super::module_environment_creator::ModuleEnvironmentCreator;
 use super::super::reference_type_resolver::ReferenceTypeResolver;
 use super::subsumption_set::SubsumptionSet;
@@ -12,18 +13,21 @@ pub struct ConstraintCollector {
     module_environment_creator: Arc<ModuleEnvironmentCreator>,
     solved_subsumption_set: SubsumptionSet,
     checked_subsumption_set: SubsumptionSet,
+    error_type_configuration: Arc<ErrorTypeConfiguration>,
 }
 
 impl ConstraintCollector {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         module_environment_creator: Arc<ModuleEnvironmentCreator>,
+        error_type_configuration: Arc<ErrorTypeConfiguration>,
     ) -> Self {
         Self {
             reference_type_resolver,
             module_environment_creator,
             solved_subsumption_set: SubsumptionSet::new(),
             checked_subsumption_set: SubsumptionSet::new(),
+            error_type_configuration,
         }
     }
 
@@ -172,6 +176,46 @@ impl ConstraintCollector {
                 }
 
                 self.infer_expression(let_.expression(), &variables)
+            }
+            Expression::LetError(let_) => {
+                let mut variables = variables.clone();
+
+                for variable_definition in let_.definitions() {
+                    let body_type =
+                        self.infer_expression(variable_definition.body(), &variables)?;
+
+                    self.checked_subsumption_set
+                        .add(variable_definition.type_().clone(), body_type.clone());
+                    self.checked_subsumption_set.add(
+                        types::Reference::new(
+                            &self.error_type_configuration.error_type_name,
+                            variable_definition.source_information().clone(),
+                        ),
+                        body_type.clone(),
+                    );
+
+                    variables.insert(
+                        variable_definition.name().into(),
+                        variable_definition.type_().clone(),
+                    );
+                }
+
+                let result_type = types::Variable::new(let_.source_information().clone());
+                let expression_type = self.infer_expression(let_.expression(), &variables)?;
+
+                self.solved_subsumption_set
+                    .add(expression_type.clone(), let_.type_().clone());
+                self.solved_subsumption_set
+                    .add(expression_type, result_type.clone());
+                self.solved_subsumption_set.add(
+                    types::Reference::new(
+                        &self.error_type_configuration.error_type_name,
+                        let_.source_information().clone(),
+                    ),
+                    result_type.clone(),
+                );
+
+                Ok(result_type.into())
             }
             Expression::LetRecursive(let_) => {
                 let mut variables = variables.clone();

@@ -8,7 +8,7 @@ mod variable_constraint;
 mod variable_constraint_set;
 mod variable_substitutor;
 
-use super::builtin_configuration::BuiltinConfiguration;
+use super::compile_configuration::CompileConfiguration;
 use super::error::CompileError;
 use super::module_environment_creator::ModuleEnvironmentCreator;
 use super::reference_type_resolver::ReferenceTypeResolver;
@@ -23,7 +23,7 @@ use type_inferrer::TypeInferrer;
 
 pub fn infer_types(
     module: &Module,
-    builtin_configuration: Arc<BuiltinConfiguration>,
+    compile_configuration: Arc<CompileConfiguration>,
 ) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
@@ -32,9 +32,13 @@ pub fn infer_types(
         type_equality_checker.clone(),
     );
     let constraint_converter = ConstraintConverter::new(reference_type_resolver.clone());
-    let module_environment_creator = ModuleEnvironmentCreator::new(builtin_configuration);
-    let constraint_collector =
-        ConstraintCollector::new(reference_type_resolver.clone(), module_environment_creator);
+    let module_environment_creator =
+        ModuleEnvironmentCreator::new(compile_configuration.builtin_configuration.clone());
+    let constraint_collector = ConstraintCollector::new(
+        reference_type_resolver.clone(),
+        module_environment_creator,
+        compile_configuration.error_type_configuration.clone(),
+    );
     let constraint_solver =
         ConstraintSolver::new(constraint_converter, reference_type_resolver.clone());
 

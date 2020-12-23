@@ -3,6 +3,7 @@ use super::boolean::Boolean;
 use super::case::Case;
 use super::if_::If;
 use super::let_::Let;
+use super::let_error::LetError;
 use super::let_recursive::LetRecursive;
 use super::list::List;
 use super::list_case::ListCase;
@@ -26,6 +27,7 @@ pub enum Expression {
     Case(Case),
     If(If),
     Let(Let),
+    LetError(LetError),
     LetRecursive(LetRecursive),
     List(List),
     ListCase(ListCase),
@@ -53,6 +55,7 @@ impl Expression {
             Self::RecordUpdate(record_update) => record_update.source_information(),
             Self::If(if_) => if_.source_information(),
             Self::Let(let_) => let_.source_information(),
+            Self::LetError(let_) => let_.source_information(),
             Self::LetRecursive(let_) => let_.source_information(),
             Self::List(list) => list.source_information(),
             Self::ListCase(case) => case.source_information(),
@@ -83,6 +86,7 @@ impl Expression {
             }
             Self::If(if_) => if_.transform_expressions(transform)?.into(),
             Self::Let(let_) => let_.transform_expressions(transform)?.into(),
+            Self::LetError(let_) => let_.transform_expressions(transform)?.into(),
             Self::LetRecursive(let_) => let_.transform_expressions(transform)?.into(),
             Self::List(list) => list.transform_expressions(transform)?.into(),
             Self::ListCase(case) => case.transform_expressions(transform)?.into(),
@@ -112,6 +116,7 @@ impl Expression {
             Self::RecordUpdate(record_update) => record_update.transform_types(transform)?.into(),
             Self::If(if_) => if_.transform_types(transform)?.into(),
             Self::Let(let_) => let_.transform_types(transform)?.into(),
+            Self::LetError(let_) => let_.transform_types(transform)?.into(),
             Self::LetRecursive(let_) => let_.transform_types(transform)?.into(),
             Self::List(list) => list.transform_types(transform)?.into(),
             Self::ListCase(case) => case.transform_types(transform)?.into(),
@@ -177,6 +182,12 @@ impl From<If> for Expression {
 impl From<Let> for Expression {
     fn from(let_: Let) -> Self {
         Self::Let(let_)
+    }
+}
+
+impl From<LetError> for Expression {
+    fn from(let_: LetError) -> Self {
+        Self::LetError(let_)
     }
 }
 

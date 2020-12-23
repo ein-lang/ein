@@ -2,6 +2,7 @@ mod boolean_compiler;
 mod builtin_configuration;
 mod compile_configuration;
 mod error;
+mod error_type_configuration;
 mod expression_compiler;
 mod expression_type_extractor;
 mod global_name_map_creator;
@@ -32,6 +33,7 @@ use boolean_compiler::BooleanCompiler;
 pub use builtin_configuration::BuiltinConfiguration;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
+pub use error_type_configuration::ErrorTypeConfiguration;
 use expression_compiler::{ExpressionCompiler, ExpressionCompilerSet, ExpressionTransformerSet};
 use global_name_map_creator::GlobalNameMapCreator;
 use global_name_renamer::GlobalNameRenamer;
@@ -49,8 +51,9 @@ pub use system_type_configuration::SystemTypeConfiguration;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
+    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
 };
+use type_canonicalizer::TypeCanonicalizer;
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
 use type_equality_checker::TypeEqualityChecker;
@@ -73,16 +76,17 @@ pub fn compile(
         MainFunctionDefinitionTransformer::new(names, configuration.clone()).transform(&module);
 
     let module = transform_with_types(
-        &infer_types(
-            &transform_without_types(&module)?,
-            configuration.builtin_configuration.clone(),
-        )?,
-        configuration.builtin_configuration.clone(),
+        &infer_types(&transform_without_types(&module)?, configuration.clone())?,
+        configuration.clone(),
     )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
     let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
+    let type_canonicalizer = TypeCanonicalizer::new(
+        reference_type_resolver.clone(),
+        type_equality_checker.clone(),
+    );
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
     let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
@@ -108,12 +112,18 @@ pub fn compile(
     );
     let boolean_operation_transformer = BooleanOperationTransformer::new();
     let function_type_coercion_transformer = FunctionTypeCoercionTransformer::new(
-        type_equality_checker,
+        type_equality_checker.clone(),
         reference_type_resolver.clone(),
     );
     let list_case_transformer = ListCaseTransformer::new(
         reference_type_resolver.clone(),
         configuration.list_type_configuration.clone(),
+    );
+    let let_error_transformer = LetErrorTransformer::new(
+        reference_type_resolver.clone(),
+        type_equality_checker,
+        type_canonicalizer,
+        configuration.error_type_configuration.clone(),
     );
 
     let expression_compiler = ExpressionCompiler::new(
@@ -130,6 +140,7 @@ pub fn compile(
             boolean_operation_transformer,
             function_type_coercion_transformer,
             list_case_transformer,
+            let_error_transformer,
         }
         .into(),
         reference_type_resolver,
@@ -159,28 +170,10 @@ pub fn compile(
 
 #[cfg(test)]
 mod tests {
-    use super::builtin_configuration::BUILTIN_CONFIGURATION;
-    use super::list_type_configuration::LIST_TYPE_CONFIGURATION;
-    use super::string_type_configuration::STRING_TYPE_CONFIGURATION;
-    use super::system_type_configuration::SYSTEM_TYPE_CONFIGURATION;
+    use super::compile_configuration::COMPILE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
     use crate::types;
-    use lazy_static::lazy_static;
-
-    lazy_static! {
-        static ref COMPILE_CONFIGURATION: Arc<CompileConfiguration> = CompileConfiguration {
-            source_main_function_name: "main".into(),
-            object_main_function_name: "foo_main".into(),
-            malloc_function_name: "foo_malloc".into(),
-            panic_function_name: "foo_panic".into(),
-            list_type_configuration: LIST_TYPE_CONFIGURATION.clone(),
-            string_type_configuration: STRING_TYPE_CONFIGURATION.clone(),
-            system_type_configuration: SYSTEM_TYPE_CONFIGURATION.clone(),
-            builtin_configuration: BUILTIN_CONFIGURATION.clone(),
-        }
-        .into();
-    }
 
     #[test]
     fn compile_constant_initialized_with_operation() {
@@ -725,4 +718,168 @@ mod tests {
     //         Ok(())
     //     }
     // }
+
+    mod let_error {
+        use super::*;
+        use crate::package::Package;
+        use crate::path::ModulePath;
+
+        #[test]
+        fn compile_let_error() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::Reference::new(
+                        &COMPILE_CONFIGURATION
+                            .error_type_configuration
+                            .error_type_name,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("m", ""), vec![]),
+                        Default::default(),
+                        vec![(
+                            "Error".into(),
+                            types::Record::new(
+                                "Error",
+                                Default::default(),
+                                SourceInformation::dummy(),
+                            )
+                            .into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    false,
+                )],
+                vec![],
+                vec![
+                    VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    VariableDefinition::new(
+                        "y",
+                        LetError::new(
+                            vec![VariableDefinition::new(
+                                "z",
+                                Variable::new("x", SourceInformation::dummy()),
+                                types::Variable::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            )],
+                            ArithmeticOperation::new(
+                                ArithmeticOperator::Add,
+                                Variable::new("z", SourceInformation::dummy()),
+                                Number::new(42.0, SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        union_type,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+            );
+
+            compile(&module, COMPILE_CONFIGURATION.clone()).unwrap();
+        }
+
+        #[test]
+        fn compile_let_error_with_multiple_definitions() {
+            let union_type = types::Union::new(
+                vec![
+                    types::Number::new(SourceInformation::dummy()).into(),
+                    types::Reference::new(
+                        &COMPILE_CONFIGURATION
+                            .error_type_configuration
+                            .error_type_name,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+                SourceInformation::dummy(),
+            );
+
+            let module = Module::new(
+                ModulePath::new(Package::new("", ""), vec![]),
+                Export::new(Default::default()),
+                vec![Import::new(
+                    ModuleInterface::new(
+                        ModulePath::new(Package::new("m", ""), vec![]),
+                        Default::default(),
+                        vec![(
+                            "Error".into(),
+                            types::Record::new(
+                                "Error",
+                                Default::default(),
+                                SourceInformation::dummy(),
+                            )
+                            .into(),
+                        )]
+                        .into_iter()
+                        .collect(),
+                        Default::default(),
+                        Default::default(),
+                    ),
+                    false,
+                )],
+                vec![],
+                vec![
+                    VariableDefinition::new(
+                        "x",
+                        Number::new(42.0, SourceInformation::dummy()),
+                        union_type.clone(),
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                    VariableDefinition::new(
+                        "y",
+                        LetError::new(
+                            vec![
+                                VariableDefinition::new(
+                                    "z",
+                                    Variable::new("x", SourceInformation::dummy()),
+                                    types::Variable::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy(),
+                                ),
+                                VariableDefinition::new(
+                                    "v",
+                                    Variable::new("x", SourceInformation::dummy()),
+                                    types::Variable::new(SourceInformation::dummy()),
+                                    SourceInformation::dummy(),
+                                ),
+                            ],
+                            ArithmeticOperation::new(
+                                ArithmeticOperator::Add,
+                                Variable::new("v", SourceInformation::dummy()),
+                                Variable::new("z", SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
+                            SourceInformation::dummy(),
+                        ),
+                        union_type,
+                        SourceInformation::dummy(),
+                    )
+                    .into(),
+                ],
+            );
+
+            compile(&module, COMPILE_CONFIGURATION.clone()).unwrap();
+        }
+    }
 }

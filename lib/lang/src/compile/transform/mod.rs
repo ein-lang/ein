@@ -2,6 +2,7 @@ mod boolean_operation_transformer;
 mod elementless_record_transformer;
 mod equal_operation_transformer;
 mod function_type_coercion_transformer;
+mod let_error_transformer;
 mod list_case_transformer;
 mod list_literal_transformer;
 mod not_equal_operation_transformer;
@@ -12,7 +13,7 @@ mod type_coercion_transformer;
 mod typed_meta_transformer;
 mod utilities;
 
-use super::builtin_configuration::BuiltinConfiguration;
+use super::compile_configuration::CompileConfiguration;
 use super::error::CompileError;
 use super::expression_type_extractor::ExpressionTypeExtractor;
 use super::last_result_type_calculator::LastResultTypeCalculator;
@@ -26,6 +27,7 @@ pub use boolean_operation_transformer::BooleanOperationTransformer;
 use elementless_record_transformer::ElementlessRecordTransformer;
 pub use equal_operation_transformer::EqualOperationTransformer;
 pub use function_type_coercion_transformer::FunctionTypeCoercionTransformer;
+pub use let_error_transformer::LetErrorTransformer;
 pub use list_case_transformer::ListCaseTransformer;
 pub use list_literal_transformer::ListLiteralTransformer;
 pub use not_equal_operation_transformer::NotEqualOperationTransformer;
@@ -54,7 +56,7 @@ pub fn transform_without_types(module: &Module) -> Result<Module, CompileError> 
 
 pub fn transform_with_types(
     module: &Module,
-    builtin_configuration: Arc<BuiltinConfiguration>,
+    compile_configuration: Arc<CompileConfiguration>,
 ) -> Result<Module, CompileError> {
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
@@ -62,13 +64,17 @@ pub fn transform_with_types(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
     );
-    let expression_type_extractor =
-        ExpressionTypeExtractor::new(reference_type_resolver.clone(), type_canonicalizer.clone());
+    let expression_type_extractor = ExpressionTypeExtractor::new(
+        reference_type_resolver.clone(),
+        type_canonicalizer.clone(),
+        compile_configuration.error_type_configuration.clone(),
+    );
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
-    let module_environment_creator = ModuleEnvironmentCreator::new(builtin_configuration);
+    let module_environment_creator =
+        ModuleEnvironmentCreator::new(compile_configuration.builtin_configuration.clone());
 
-    let mut type_coercion_transformer = TypedMetaTransformer::new(
+    let type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
             reference_type_resolver.clone(),
             type_equality_checker,
@@ -85,14 +91,14 @@ pub fn transform_with_types(
 
 #[cfg(test)]
 mod tests {
-    use super::super::builtin_configuration::BUILTIN_CONFIGURATION;
+    use super::super::compile_configuration::COMPILE_CONFIGURATION;
     use super::*;
     use crate::debug::SourceInformation;
     use crate::types;
     use insta::assert_debug_snapshot;
 
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {
-        super::transform_with_types(module, BUILTIN_CONFIGURATION.clone())
+        super::transform_with_types(module, COMPILE_CONFIGURATION.clone())
     }
 
     mod type_coercion {

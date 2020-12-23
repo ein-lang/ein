@@ -69,6 +69,7 @@ impl TypeInferrer {
 #[cfg(test)]
 mod tests {
     use super::super::super::builtin_configuration::BUILTIN_CONFIGURATION;
+    use super::super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
     use super::super::super::module_environment_creator::ModuleEnvironmentCreator;
     use super::super::constraint_collector::ConstraintCollector;
     use super::super::constraint_converter::ConstraintConverter;
@@ -92,8 +93,11 @@ mod tests {
             ConstraintSolver::new(constraint_converter, reference_type_resolver.clone());
         let module_environment_creator =
             ModuleEnvironmentCreator::new(BUILTIN_CONFIGURATION.clone());
-        let constraint_collector =
-            ConstraintCollector::new(reference_type_resolver.clone(), module_environment_creator);
+        let constraint_collector = ConstraintCollector::new(
+            reference_type_resolver.clone(),
+            module_environment_creator,
+            ERROR_TYPE_CONFIGURATION.clone(),
+        );
 
         TypeInferrer::new(
             reference_type_resolver,
@@ -440,6 +444,75 @@ mod tests {
             )
             .into()]))
         );
+    }
+
+    #[test]
+    fn infer_types_of_let_error() {
+        let union_type = types::Union::new(
+            vec![
+                types::Number::new(SourceInformation::dummy()).into(),
+                types::Reference::new(
+                    &ERROR_TYPE_CONFIGURATION.error_type_name,
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ],
+            SourceInformation::dummy(),
+        );
+
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![Import::new(
+                ModuleInterface::new(
+                    ModulePath::new(Package::new("m", ""), vec![]),
+                    Default::default(),
+                    vec![(
+                        "Error".into(),
+                        types::Record::new("Error", Default::default(), SourceInformation::dummy())
+                            .into(),
+                    )]
+                    .into_iter()
+                    .collect(),
+                    Default::default(),
+                    Default::default(),
+                ),
+                false,
+            )],
+            vec![],
+            vec![
+                VariableDefinition::new(
+                    "x",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    union_type.clone(),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "y",
+                    LetError::new(
+                        vec![VariableDefinition::new(
+                            "z",
+                            Variable::new("x", SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )],
+                        ArithmeticOperation::new(
+                            ArithmeticOperator::Add,
+                            Variable::new("z", SourceInformation::dummy()),
+                            Number::new(42.0, SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    union_type,
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ],
+        );
+
+        insta::assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
