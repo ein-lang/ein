@@ -23,6 +23,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_system,
         &logger,
         COMPILE_CONFIGURATION.clone(),
+        &FILE_PATH_CONFIGURATION,
     );
     let modules_finder = app::ModulesFinder::new(&file_system, &FILE_PATH_CONFIGURATION);
     let modules_builder = app::ModulesBuilder::new(

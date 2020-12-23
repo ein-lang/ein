@@ -1,21 +1,16 @@
 use std::collections::HashMap;
 
-#[cfg(test)]
-lazy_static::lazy_static! {
-    pub static ref SYSTEM_TYPE_CONFIGURATION: std::sync::Arc<SystemTypeConfiguration> =
-        SystemTypeConfiguration {
-            system_type_name: "System".into(),
-        }
-        .into();
-}
-
-pub struct SystemTypeConfiguration {
+pub struct MainModuleConfiguration {
+    pub source_main_function_name: String,
+    pub object_main_function_name: String,
     pub system_type_name: String,
 }
 
-impl SystemTypeConfiguration {
+impl MainModuleConfiguration {
     pub fn qualify(&self, names: &HashMap<String, String>) -> Self {
         Self {
+            source_main_function_name: self.source_main_function_name.clone(),
+            object_main_function_name: self.object_main_function_name.clone(),
             system_type_name: self.qualify_name(&self.system_type_name, &names),
         }
     }
