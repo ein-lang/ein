@@ -77,7 +77,7 @@ pub fn compile(
         MainFunctionDefinitionTransformer::new(names, main_module_configuration.clone())
             .transform(&module)
     } else {
-        module.clone()
+        module
     };
 
     let module = transform_with_types(
