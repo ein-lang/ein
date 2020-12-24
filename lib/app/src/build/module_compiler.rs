@@ -103,6 +103,10 @@ impl<'a> ModuleCompiler<'a> {
                     })
                     .collect(),
             ),
+            // TODO Refactor this by createing the following classes.
+            // - MainModuleCompiler
+            // - CommandPackageBuilder
+            // - LibraryPackageBuilder
             if self.is_main_module(&module_path, package_configuration) {
                 self.compile_configuration.clone()
             } else {
