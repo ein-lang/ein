@@ -1,4 +1,4 @@
-use super::compile_configuration::CompileConfiguration;
+use super::main_module_configuration::MainModuleConfiguration;
 use crate::ast::*;
 use crate::types;
 use std::collections::HashMap;
@@ -8,24 +8,24 @@ const ARGUMENT_NAME: &str = "$argument";
 
 pub struct MainFunctionDefinitionTransformer {
     global_names: Arc<HashMap<String, String>>,
-    compile_configuration: Arc<CompileConfiguration>,
+    main_module_configuration: Arc<MainModuleConfiguration>,
 }
 
 impl MainFunctionDefinitionTransformer {
     pub fn new(
         global_names: Arc<HashMap<String, String>>,
-        compile_configuration: Arc<CompileConfiguration>,
+        main_module_configuration: Arc<MainModuleConfiguration>,
     ) -> Self {
         Self {
             global_names,
-            compile_configuration,
+            main_module_configuration,
         }
     }
 
     pub fn transform(&self, module: &Module) -> Module {
         if let Some(main_function_name) = self
             .global_names
-            .get(&self.compile_configuration.source_main_function_name)
+            .get(&self.main_module_configuration.source_main_function_name)
         {
             let main_function_definition = module
                 .definitions()
@@ -44,7 +44,7 @@ impl MainFunctionDefinitionTransformer {
                     .iter()
                     .cloned()
                     .chain(vec![FunctionDefinition::new(
-                        &self.compile_configuration.object_main_function_name,
+                        &self.main_module_configuration.object_main_function_name,
                         vec![ARGUMENT_NAME.into()],
                         Application::new(
                             Variable::new(main_function_name, source_information.clone()),
@@ -53,10 +53,7 @@ impl MainFunctionDefinitionTransformer {
                         ),
                         types::Function::new(
                             types::Reference::new(
-                                &self
-                                    .compile_configuration
-                                    .system_type_configuration
-                                    .system_type_name,
+                                &self.main_module_configuration.argument_type_name,
                                 source_information.clone(),
                             ),
                             types::Number::new(source_information.clone()),

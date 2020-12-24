@@ -11,6 +11,7 @@ mod global_name_validator;
 mod last_result_type_calculator;
 mod list_type_configuration;
 mod main_function_definition_transformer;
+mod main_module_configuration;
 mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
@@ -18,7 +19,6 @@ mod name_generator;
 mod none_compiler;
 mod reference_type_resolver;
 mod string_type_configuration;
-mod system_type_configuration;
 mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
@@ -41,13 +41,13 @@ use global_name_validator::GlobalNameValidator;
 use last_result_type_calculator::LastResultTypeCalculator;
 pub use list_type_configuration::ListTypeConfiguration;
 use main_function_definition_transformer::MainFunctionDefinitionTransformer;
+pub use main_module_configuration::MainModuleConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
 use none_compiler::NoneCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 pub use string_type_configuration::StringTypeConfiguration;
-pub use system_type_configuration::SystemTypeConfiguration;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
@@ -72,8 +72,13 @@ pub fn compile(
     let names = GlobalNameMapCreator::create(&module);
     let configuration = Arc::new(configuration.qualify(&names));
     let module = GlobalNameRenamer::new(names.clone()).rename(&module);
-    let module =
-        MainFunctionDefinitionTransformer::new(names, configuration.clone()).transform(&module);
+
+    let module = if let Some(main_module_configuration) = &configuration.main_module_configuration {
+        MainFunctionDefinitionTransformer::new(names, main_module_configuration.clone())
+            .transform(&module)
+    } else {
+        module
+    };
 
     let module = transform_with_types(
         &infer_types(&transform_without_types(&module)?, configuration.clone())?,

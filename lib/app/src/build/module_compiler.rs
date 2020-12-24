@@ -1,8 +1,9 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
 use super::package_interface::PackageInterface;
-use crate::common::PackageConfiguration;
-use crate::common::{FilePath, FilePathResolver};
+use crate::common::{
+    FilePath, FilePathConfiguration, FilePathResolver, PackageConfiguration, Target,
+};
 use crate::infra::{FileSystem, Logger};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
@@ -15,6 +16,7 @@ pub struct ModuleCompiler<'a> {
     file_system: &'a dyn FileSystem,
     logger: &'a dyn Logger,
     compile_configuration: Arc<lang::CompileConfiguration>,
+    file_path_configuration: &'a FilePathConfiguration,
 }
 
 impl<'a> ModuleCompiler<'a> {
@@ -24,6 +26,7 @@ impl<'a> ModuleCompiler<'a> {
         file_system: &'a dyn FileSystem,
         logger: &'a dyn Logger,
         compile_configuration: Arc<lang::CompileConfiguration>,
+        file_path_configuration: &'a FilePathConfiguration,
     ) -> Self {
         Self {
             module_parser,
@@ -31,6 +34,7 @@ impl<'a> ModuleCompiler<'a> {
             file_system,
             logger,
             compile_configuration,
+            file_path_configuration,
         }
     }
 
@@ -82,7 +86,7 @@ impl<'a> ModuleCompiler<'a> {
 
         let (bitcode, module_interface) = lang::compile(
             &module.resolve(
-                module_path,
+                module_path.clone(),
                 imported_module_interfaces
                     .into_iter()
                     .map(|module_interface| lang::Import::new(module_interface, true))
@@ -99,7 +103,17 @@ impl<'a> ModuleCompiler<'a> {
                     })
                     .collect(),
             ),
-            self.compile_configuration.clone(),
+            // TODO Refactor this by creating the following classes.
+            // - MainModuleCompiler
+            // - CommandPackageBuilder
+            // - LibraryPackageBuilder
+            if self.is_main_module(&module_path, package_configuration) {
+                self.compile_configuration.clone()
+            } else {
+                let mut configuration = self.compile_configuration.as_ref().clone();
+                configuration.main_module_configuration = None;
+                configuration.into()
+            },
         )?;
 
         self.file_system.write(&object_file_path, &bitcode)?;
@@ -127,5 +141,17 @@ impl<'a> ModuleCompiler<'a> {
         }
 
         format!("{:x}", hasher.finish())
+    }
+
+    fn is_main_module(
+        &self,
+        module_path: &lang::ModulePath,
+        package_configuration: &PackageConfiguration,
+    ) -> bool {
+        matches!(
+            package_configuration.build_configuration().target(),
+            Target::Command(_)
+        ) && module_path.components().collect::<Vec<&str>>()
+            == vec![self.file_path_configuration.main_file_basename]
     }
 }

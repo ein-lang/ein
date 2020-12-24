@@ -9,7 +9,7 @@ pub mod types;
 pub use ast::{Import, ModuleInterface, UnresolvedModule};
 pub use compile::{
     compile, BuiltinConfiguration, CompileConfiguration, ErrorTypeConfiguration,
-    ListTypeConfiguration, StringTypeConfiguration, SystemTypeConfiguration,
+    ListTypeConfiguration, MainModuleConfiguration, StringTypeConfiguration,
 };
 pub use package::Package;
 pub use parse::{parse, ParseError};

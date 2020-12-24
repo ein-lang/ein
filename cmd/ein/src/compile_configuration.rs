@@ -5,8 +5,6 @@ use std::sync::Arc;
 lazy_static! {
     pub static ref COMPILE_CONFIGURATION: Arc<lang::CompileConfiguration> =
         lang::CompileConfiguration {
-            source_main_function_name: "main".into(),
-            object_main_function_name: "ein_main".into(),
             malloc_function_name: "ein_malloc".into(),
             panic_function_name: "ein_panic".into(),
             list_type_configuration: lang::ListTypeConfiguration {
@@ -25,15 +23,19 @@ lazy_static! {
                 equal_function_name: "_ein_equal_strings".into(),
             }
             .into(),
-            system_type_configuration: lang::SystemTypeConfiguration {
-                system_type_name: "System".into(),
-            }
-            .into(),
             error_type_configuration: lang::ErrorTypeConfiguration {
                 error_type_name: "Error".into(),
             }
             .into(),
             builtin_configuration: BUILTIN_CONFIGURATION.clone(),
+            main_module_configuration: Some(
+                lang::MainModuleConfiguration {
+                    source_main_function_name: "main".into(),
+                    object_main_function_name: "ein_main".into(),
+                    argument_type_name: "System".into(),
+                }
+                .into()
+            ),
         }
         .into();
 }
