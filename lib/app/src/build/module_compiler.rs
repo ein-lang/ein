@@ -103,7 +103,7 @@ impl<'a> ModuleCompiler<'a> {
                     })
                     .collect(),
             ),
-            // TODO Refactor this by createing the following classes.
+            // TODO Refactor this by creating the following classes.
             // - MainModuleCompiler
             // - CommandPackageBuilder
             // - LibraryPackageBuilder
