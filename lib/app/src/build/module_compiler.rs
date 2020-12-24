@@ -1,7 +1,9 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
 use super::package_interface::PackageInterface;
-use crate::common::{FilePath, FilePathConfiguration, FilePathResolver, PackageConfiguration};
+use crate::common::{
+    FilePath, FilePathConfiguration, FilePathResolver, PackageConfiguration, Target,
+};
 use crate::infra::{FileSystem, Logger};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
@@ -101,7 +103,7 @@ impl<'a> ModuleCompiler<'a> {
                     })
                     .collect(),
             ),
-            if self.is_main_module(&module_path) {
+            if self.is_main_module(&module_path, package_configuration) {
                 self.compile_configuration.clone()
             } else {
                 let mut configuration = self.compile_configuration.as_ref().clone();
@@ -137,8 +139,15 @@ impl<'a> ModuleCompiler<'a> {
         format!("{:x}", hasher.finish())
     }
 
-    fn is_main_module(&self, module_path: &lang::ModulePath) -> bool {
-        module_path.components().collect::<Vec<&str>>()
+    fn is_main_module(
+        &self,
+        module_path: &lang::ModulePath,
+        package_configuration: &PackageConfiguration,
+    ) -> bool {
+        matches!(
+            package_configuration.build_configuration().target(),
+            Target::Command(_)
+        ) && module_path.components().collect::<Vec<&str>>()
             == vec![self.file_path_configuration.main_file_basename]
     }
 }
