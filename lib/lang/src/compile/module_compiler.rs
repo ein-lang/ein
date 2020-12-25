@@ -30,6 +30,7 @@ impl ModuleCompiler {
 
     pub fn compile(&self, module: &Module) -> Result<ssf::ir::Module, CompileError> {
         Ok(ssf::ir::Module::new(
+            vec![],
             module
                 .imports()
                 .iter()
