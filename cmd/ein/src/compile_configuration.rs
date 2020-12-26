@@ -1,4 +1,3 @@
-use super::builtin_configuration::BUILTIN_CONFIGURATION;
 use lazy_static::lazy_static;
 use std::sync::Arc;
 
@@ -27,7 +26,6 @@ lazy_static! {
                 error_type_name: "Error".into(),
             }
             .into(),
-            builtin_configuration: BUILTIN_CONFIGURATION.clone(),
             main_module_configuration: Some(
                 lang::MainModuleConfiguration {
                     source_main_function_name: "main".into(),

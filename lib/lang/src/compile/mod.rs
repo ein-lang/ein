@@ -1,5 +1,4 @@
 mod boolean_compiler;
-mod builtin_configuration;
 mod compile_configuration;
 mod error;
 mod error_type_configuration;
@@ -30,7 +29,6 @@ mod variable_compiler;
 
 use crate::ast::*;
 use boolean_compiler::BooleanCompiler;
-pub use builtin_configuration::BuiltinConfiguration;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
 pub use error_type_configuration::ErrorTypeConfiguration;
@@ -161,7 +159,6 @@ pub fn compile(
                 expression_compiler,
                 type_compiler,
                 configuration.string_type_configuration.clone(),
-                configuration.builtin_configuration.clone(),
             )
             .compile(&module)?,
             ssf_llvm::CompileConfiguration::new(
