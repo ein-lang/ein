@@ -35,8 +35,9 @@ impl<'a> PackageBuilder<'a> {
             HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface>,
         >,
         prelude_package_interface: Option<&PackageInterface>,
-    ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
-        self.ffi_package_initializer
+    ) -> Result<(Vec<FilePath>, FilePath), Box<dyn std::error::Error>> {
+        let ffi_object_file_path = self
+            .ffi_package_initializer
             .initialize(package_configuration.directory_path())?;
 
         self.logger.log(&format!(
@@ -65,10 +66,18 @@ impl<'a> PackageBuilder<'a> {
             prelude_package_interface,
         )?;
 
-        self.modules_linker.link(
+        let (package_object_file_path, package_interface_file_path) = self.modules_linker.link(
             &object_file_paths,
             &interface_file_paths,
             package_configuration.directory_path(),
-        )
+        )?;
+
+        Ok((
+            ffi_object_file_path
+                .into_iter()
+                .chain(vec![package_object_file_path])
+                .collect(),
+            package_interface_file_path,
+        ))
     }
 }

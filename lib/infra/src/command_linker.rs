@@ -40,6 +40,8 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                         .map(|path| self.file_path_converter.convert_to_os_path(path)),
                 )
                 .arg(&self.runtime_library_path),
-        )
+        )?;
+
+        Ok(())
     }
 }

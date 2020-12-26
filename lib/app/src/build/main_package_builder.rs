@@ -41,7 +41,7 @@ impl<'a> MainPackageBuilder<'a> {
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         let package_configuration = self.package_configuration_reader.read(&FilePath::empty())?;
 
-        let (prelude_package_object_file_path, prelude_package_interface) =
+        let (prelude_package_object_file_paths, prelude_package_interface) =
             self.prelude_package_builder.build()?;
 
         let external_package_configurations = self
@@ -52,7 +52,7 @@ impl<'a> MainPackageBuilder<'a> {
             .external_packages_builder
             .build(&external_package_configurations, &prelude_package_interface)?;
 
-        let (package_object_file_path, _) = self.package_builder.build(
+        let (package_object_file_paths, _) = self.package_builder.build(
             &package_configuration,
             &external_module_interfaces,
             Some(&prelude_package_interface),
@@ -64,8 +64,9 @@ impl<'a> MainPackageBuilder<'a> {
                     .log(&format!("linking command {}", command_target.name()))?;
 
                 self.command_linker.link(
-                    &vec![package_object_file_path, prelude_package_object_file_path]
+                    &prelude_package_object_file_paths
                         .into_iter()
+                        .chain(package_object_file_paths)
                         .chain(external_package_object_file_paths)
                         .collect::<Vec<_>>(),
                     command_target.name(),

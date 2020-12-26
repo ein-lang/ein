@@ -19,13 +19,23 @@ impl<'a> FfiPackageInitializer<'a> {
 }
 
 impl<'a> app::FfiPackageInitializer for FfiPackageInitializer<'a> {
-    fn initialize(&self, directory_path: &app::FilePath) -> Result<(), Box<dyn std::error::Error>> {
-        self.command_runner
+    fn initialize(
+        &self,
+        directory_path: &app::FilePath,
+    ) -> Result<Option<app::FilePath>, Box<dyn std::error::Error>> {
+        let stdout = self
+            .command_runner
             .run(std::process::Command::new("sh").arg("-c").arg(format!(
-                "cd {} && if [ -r init.sh ]; then ./init.sh; fi",
+                "cd {} && if [ -r ffi.sh ]; then ./ffi.sh; fi",
                 self.file_path_converter
                     .convert_to_os_path(directory_path)
                     .to_string_lossy()
-            )))
+            )))?;
+
+        Ok(if stdout == "" {
+            None
+        } else {
+            Some(directory_path.join(&self.file_path_converter.convert_to_file_path(stdout)?))
+        })
     }
 }
