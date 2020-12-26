@@ -213,6 +213,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "ein-ffi"
+version = "0.1.0"
+dependencies = [
+ "bdwgc-alloc",
+]
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -223,13 +230,6 @@ name = "encode_unicode"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
-
-[[package]]
-name = "ffi"
-version = "0.1.0"
-dependencies = [
- "bdwgc-alloc",
-]
 
 [[package]]
 name = "fixedbitset"
@@ -661,7 +661,7 @@ checksum = "3b181ba2dcf07aaccad5448e8ead58db5b742cf85dfe035e2227f137a539a189"
 name = "runtime"
 version = "0.1.0"
 dependencies = [
- "ffi",
+ "ein-ffi",
  "termcolor",
 ]
 

@@ -1,8 +1,11 @@
 [package]
-name = "ffi"
+name = "ein-ffi"
+description = "FFI library for Ein programming language"
 version = "0.1.0"
-publish = false
+publish = true
 edition = "2018"
+license = "MIT"
+authors = ["Yota Toyama <raviqqe@gmail.com>"]
 
 [dependencies]
 bdwgc-alloc = "0.5"
