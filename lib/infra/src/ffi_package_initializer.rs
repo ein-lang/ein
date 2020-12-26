@@ -22,7 +22,7 @@ impl<'a> app::FfiPackageInitializer for FfiPackageInitializer<'a> {
     fn initialize(&self, directory_path: &app::FilePath) -> Result<(), Box<dyn std::error::Error>> {
         self.command_runner
             .run(std::process::Command::new("sh").arg("-c").arg(format!(
-                "cd {} && if [ -r build.sh ]; then ./build.sh; fi",
+                "cd {} && if [ -r init.sh ]; then ./init.sh; fi",
                 self.file_path_converter
                     .convert_to_os_path(directory_path)
                     .to_string_lossy()
