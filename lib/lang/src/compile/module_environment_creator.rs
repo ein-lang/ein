@@ -33,6 +33,10 @@ impl ModuleEnvironmentCreator {
             }
         }
 
+        for declaration in module.foreign_declarations() {
+            variables.insert(declaration.name().into(), declaration.type_().clone());
+        }
+
         for definition in module.definitions() {
             match definition {
                 Definition::FunctionDefinition(function_definition) => {

@@ -569,6 +569,37 @@ mod tests {
     }
 
     #[test]
+    fn infer_types_of_foreign_declarations() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![ForeignDeclaration::new(
+                "f",
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )],
+            vec![],
+            vec![VariableDefinition::new(
+                "x",
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
     fn infer_types_of_let_with_recursive_functions_and_the_latter_typed() {
         assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
             VariableDefinition::new(
