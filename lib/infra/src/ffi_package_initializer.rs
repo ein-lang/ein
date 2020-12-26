@@ -31,11 +31,12 @@ impl<'a> app::FfiPackageInitializer for FfiPackageInitializer<'a> {
                     .convert_to_os_path(directory_path)
                     .to_string_lossy()
             )))?;
+        let path_string = stdout.trim();
 
-        Ok(if stdout == "" {
+        Ok(if path_string == "" {
             None
         } else {
-            Some(directory_path.join(&self.file_path_converter.convert_to_file_path(stdout)?))
+            Some(directory_path.join(&self.file_path_converter.convert_to_file_path(path_string)?))
         })
     }
 }
