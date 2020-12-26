@@ -9,5 +9,5 @@ name = "runtime"
 crate-type = ["staticlib"]
 
 [dependencies]
-ein-ffi = { path = "../ffi" }
+ffi = { path = "../ffi", package = "ein-ffi" }
 termcolor = "1"
