@@ -1,4 +1,3 @@
-use super::expression::Expression;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::sync::Arc;
@@ -33,17 +32,6 @@ impl ForeignDeclaration {
 
     pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
-    }
-
-    pub fn transform_expressions<E>(
-        &self,
-        _: &mut impl FnMut(&Expression) -> Result<Expression, E>,
-    ) -> Result<Self, E> {
-        Ok(Self::new(
-            self.name.clone(),
-            self.type_.clone(),
-            self.source_information.clone(),
-        ))
     }
 
     pub fn transform_types<E>(

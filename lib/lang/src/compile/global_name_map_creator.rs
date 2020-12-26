@@ -126,7 +126,8 @@ mod tests {
                     true,
                 )],
                 vec![],
-                vec![]
+                vec![],
+                vec![],
             )),
             vec![("m.x".into(), "p().m.x".into())]
                 .into_iter()
@@ -157,7 +158,8 @@ mod tests {
                     false,
                 )],
                 vec![],
-                vec![]
+                vec![],
+                vec![],
             )),
             vec![("x".into(), "p().m.x".into())]
                 .into_iter()

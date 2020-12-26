@@ -138,6 +138,7 @@ mod tests {
             )],
             vec![],
             vec![],
+            vec![],
         );
     }
 

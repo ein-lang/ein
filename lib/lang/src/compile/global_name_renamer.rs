@@ -17,6 +17,7 @@ impl GlobalNameRenamer {
             module.path().clone(),
             module.export().clone(),
             module.imports().to_vec(),
+            module.foreign_declarations().to_vec(),
             module
                 .type_definitions()
                 .iter()
@@ -346,6 +347,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
+            vec![],
             vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
@@ -368,6 +370,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
+            vec![],
             vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
@@ -390,6 +393,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![],
+                vec![],
                 vec![VariableDefinition::new(
                     "y",
                     Number::new(42.0, SourceInformation::dummy()),
@@ -409,6 +413,7 @@ mod tests {
             vec![],
             vec![],
             vec![],
+            vec![],
         );
 
         assert_eq!(
@@ -425,6 +430,7 @@ mod tests {
                 vec![],
                 vec![],
                 vec![],
+                vec![],
             )
         );
     }
@@ -434,6 +440,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![TypeDefinition::new(
                 "x",
@@ -454,6 +461,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
+                vec![],
                 vec![TypeDefinition::new(
                     "y",
                     types::None::new(SourceInformation::dummy()),
@@ -468,6 +476,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![TypeDefinition::new(
                 "x",
@@ -494,6 +503,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
+                vec![],
                 vec![TypeDefinition::new(
                     "x",
                     types::Reference::new("v", SourceInformation::dummy()),
@@ -515,6 +525,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
+            vec![],
             vec![TypeDefinition::new(
                 "x",
                 types::Record::new("y", Default::default(), SourceInformation::dummy()),
@@ -534,6 +545,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
+                vec![],
                 vec![TypeDefinition::new(
                     "x",
                     types::Record::new("z", Default::default(), SourceInformation::dummy()),
@@ -548,6 +560,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![],
             vec![VariableDefinition::new(
@@ -578,6 +591,7 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
+                vec![],
                 vec![],
                 vec![],
                 vec![VariableDefinition::new(
