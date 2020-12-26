@@ -18,7 +18,7 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 const KEYWORDS: &[&str] = &[
-    "case", "else", "export", "if", "import", "in", "let", "then", "type",
+    "case", "else", "export", "foreign", "if", "import", "in", "let", "then", "type",
 ];
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
@@ -52,19 +52,23 @@ pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
     (
         optional(export()),
         many(import()),
+        many(foreign_declaration()),
         many(type_definition()),
         many(definition()),
     )
         .skip(blank())
         .skip(eof())
-        .map(|(export, imports, type_definitions, definitions)| {
-            UnresolvedModule::new(
-                export.unwrap_or_else(|| Export::new(Default::default())),
-                imports,
-                type_definitions,
-                definitions,
-            )
-        })
+        .map(
+            |(export, imports, foreign_declarations, type_definitions, definitions)| {
+                UnresolvedModule::new(
+                    export.unwrap_or_else(|| Export::new(Default::default())),
+                    imports,
+                    foreign_declarations,
+                    type_definitions,
+                    definitions,
+                )
+            },
+        )
 }
 
 fn export<'a>() -> impl Parser<Stream<'a>, Output = Export> {
@@ -111,6 +115,14 @@ fn path_component<'a>() -> impl Parser<Stream<'a>, Output = String> {
         many(choice!(alpha_num(), one_of(".-".chars()))),
     )
         .map(|(head, tail): (String, String)| [head, tail].concat())
+}
+
+fn foreign_declaration<'a>() -> impl Parser<Stream<'a>, Output = ForeignDeclaration> {
+    (source_information(), keyword("foreign"), type_annotation())
+        .map(|(source_information, _, (name, type_))| {
+            ForeignDeclaration::new(&name, &name, type_, source_information)
+        })
+        .expected("foreign declaration")
 }
 
 fn definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
@@ -912,6 +924,7 @@ mod tests {
                 Export::new(vec!["foo".into()].drain(..).collect()),
                 vec![],
                 vec![],
+                vec![],
                 vec![]
             )
         );
@@ -926,6 +939,7 @@ mod tests {
                     vec!["Foo".into(), "Bar".into()]
                 ))],
                 vec![],
+                vec![],
                 vec![]
             )
         );
@@ -933,6 +947,7 @@ mod tests {
             module().parse(stream("x : Number\nx = 42", "")).unwrap().0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                vec![],
                 vec![],
                 vec![],
                 vec![VariableDefinition::new(
@@ -951,6 +966,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                vec![],
                 vec![],
                 vec![],
                 vec![
@@ -978,6 +994,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                vec![],
                 vec![],
                 vec![],
                 vec![FunctionDefinition::new(
@@ -1097,6 +1114,26 @@ mod tests {
                 component.to_string()
             );
         }
+    }
+
+    #[test]
+    fn parse_foreign_declaration() {
+        assert_eq!(
+            foreign_declaration()
+                .parse(stream("foreign foo : Number -> Number", ""))
+                .unwrap()
+                .0,
+            ForeignDeclaration::new(
+                "foo",
+                "foo",
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            ),
+        );
     }
 
     #[test]

@@ -480,6 +480,7 @@ mod tests {
                 false,
             )],
             vec![],
+            vec![],
             vec![
                 VariableDefinition::new(
                     "x",
@@ -555,9 +556,42 @@ mod tests {
                 true,
             )],
             vec![],
+            vec![],
             vec![VariableDefinition::new(
                 "y",
                 Variable::new("x", SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+        assert_eq!(infer_types(&module), Ok(module));
+    }
+
+    #[test]
+    fn infer_types_of_foreign_declarations() {
+        let module = Module::new(
+            ModulePath::new(Package::new("", ""), vec![]),
+            Export::new(Default::default()),
+            vec![],
+            vec![ForeignDeclaration::new(
+                "f",
+                "",
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )],
+            vec![],
+            vec![VariableDefinition::new(
+                "x",
+                Application::new(
+                    Variable::new("f", SourceInformation::dummy()),
+                    Number::new(42.0, SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                ),
                 types::Number::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )
@@ -753,10 +787,7 @@ mod tests {
 
     #[test]
     fn infer_types_with_reference_types() {
-        let module = Module::new(
-            ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()),
-            vec![],
+        let module = Module::from_definitions_and_type_definitions(
             vec![TypeDefinition::new(
                 "Foo",
                 types::Number::new(SourceInformation::dummy()),
@@ -775,19 +806,13 @@ mod tests {
 
     #[test]
     fn fail_to_infer_types_with_reference_type_not_found() {
-        let module = Module::new(
-            ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()),
-            vec![],
-            vec![],
-            vec![VariableDefinition::new(
-                "x",
-                Number::new(42.0, SourceInformation::dummy()),
-                types::Reference::new("Foo", SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            )
-            .into()],
-        );
+        let module = Module::from_definitions(vec![VariableDefinition::new(
+            "x",
+            Number::new(42.0, SourceInformation::dummy()),
+            types::Reference::new("Foo", SourceInformation::dummy()),
+            SourceInformation::dummy(),
+        )
+        .into()]);
 
         assert_eq!(
             infer_types(&module),
@@ -819,6 +844,7 @@ mod tests {
                 true,
             )],
             vec![],
+            vec![],
             vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
@@ -833,10 +859,7 @@ mod tests {
 
     #[test]
     fn infer_types_with_recursive_reference_types() {
-        let module = Module::new(
-            ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()),
-            vec![],
+        let module = Module::from_definitions_and_type_definitions(
             vec![TypeDefinition::new(
                 "Foo",
                 types::Function::new(

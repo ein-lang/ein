@@ -1,6 +1,7 @@
 use super::definition::Definition;
 use super::export::Export;
 use super::expression::Expression;
+use super::foreign_declaration::ForeignDeclaration;
 use super::import::Import;
 use super::type_definition::TypeDefinition;
 use crate::path::ModulePath;
@@ -13,6 +14,7 @@ pub struct Module {
     definitions: Vec<Definition>,
     export: Export,
     imports: Vec<Import>,
+    foreign_declarations: Vec<ForeignDeclaration>,
 }
 
 impl Module {
@@ -20,6 +22,7 @@ impl Module {
         path: ModulePath,
         export: Export,
         imports: Vec<Import>,
+        foreign_declarations: Vec<ForeignDeclaration>,
         type_definitions: Vec<TypeDefinition>,
         definitions: Vec<Definition>,
     ) -> Self {
@@ -29,6 +32,7 @@ impl Module {
             definitions,
             export,
             imports,
+            foreign_declarations,
         }
     }
 
@@ -40,6 +44,7 @@ impl Module {
             vec![],
             vec![],
             vec![],
+            vec![],
         )
     }
 
@@ -48,6 +53,7 @@ impl Module {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![],
             definitions,
@@ -62,6 +68,7 @@ impl Module {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             type_definitions,
             definitions,
@@ -88,6 +95,10 @@ impl Module {
         &self.imports
     }
 
+    pub fn foreign_declarations(&self) -> &[ForeignDeclaration] {
+        &self.foreign_declarations
+    }
+
     pub fn transform_expressions<E>(
         &self,
         transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
@@ -96,6 +107,7 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
+            self.foreign_declarations.clone(),
             self.type_definitions.clone(),
             self.definitions
                 .iter()
@@ -112,6 +124,10 @@ impl Module {
             self.path.clone(),
             self.export.clone(),
             self.imports.clone(),
+            self.foreign_declarations
+                .iter()
+                .map(|declaration| declaration.transform_types(transform))
+                .collect::<Result<_, _>>()?,
             self.type_definitions
                 .iter()
                 .map(|type_definition| type_definition.transform_types(transform))

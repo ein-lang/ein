@@ -158,6 +158,7 @@ mod tests {
                     vec!["package".into(), "Module".into()]
                 ))],
                 vec![],
+                vec![],
                 vec![FunctionDefinition::new(
                     "main",
                     vec!["x".into()],

@@ -769,6 +769,7 @@ mod tests {
                     false,
                 )],
                 vec![],
+                vec![],
                 vec![
                     VariableDefinition::new(
                         "x",
@@ -843,6 +844,7 @@ mod tests {
                     ),
                     false,
                 )],
+                vec![],
                 vec![],
                 vec![
                     VariableDefinition::new(
