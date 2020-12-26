@@ -30,7 +30,24 @@ impl ModuleCompiler {
 
     pub fn compile(&self, module: &Module) -> Result<ssf::ir::Module, CompileError> {
         Ok(ssf::ir::Module::new(
-            vec![],
+            module
+                .foreign_declarations()
+                .iter()
+                .map(|declaration| -> Result<_, CompileError> {
+                    Ok(ssf::ir::ForeignDeclaration::new(
+                        declaration.name(),
+                        declaration.foreign_name(),
+                        self.type_compiler
+                            .compile(declaration.type_())?
+                            .into_function()
+                            .ok_or_else(|| {
+                                CompileError::FunctionExpected(
+                                    declaration.source_information().clone(),
+                                )
+                            })?,
+                    ))
+                })
+                .collect::<Result<_, _>>()?,
             module
                 .imports()
                 .iter()
