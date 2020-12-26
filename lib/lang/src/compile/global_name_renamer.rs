@@ -17,7 +17,18 @@ impl GlobalNameRenamer {
             module.path().clone(),
             module.export().clone(),
             module.imports().to_vec(),
-            module.foreign_declarations().to_vec(),
+            module
+                .foreign_declarations()
+                .iter()
+                .map(|declaration| {
+                    ForeignDeclaration::new(
+                        self.rename_name(declaration.name(), &self.names),
+                        declaration.foreign_name(),
+                        declaration.type_().clone(),
+                        declaration.source_information().clone(),
+                    )
+                })
+                .collect(),
             module
                 .type_definitions()
                 .iter()
@@ -609,6 +620,46 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
+            )
+        );
+    }
+
+    #[test]
+    fn rename_names_in_foreign_declarations() {
+        let module = Module::new(
+            ModulePath::dummy(),
+            Export::new(Default::default()),
+            vec![],
+            vec![ForeignDeclaration::new(
+                "x",
+                "x",
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )],
+            vec![],
+            vec![],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(
+                vec![("x".into(), "y".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
+            Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![],
+                vec![ForeignDeclaration::new(
+                    "y",
+                    "x",
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )],
+                vec![],
+                vec![],
             )
         );
     }

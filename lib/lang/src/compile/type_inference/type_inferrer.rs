@@ -576,6 +576,7 @@ mod tests {
             vec![],
             vec![ForeignDeclaration::new(
                 "f",
+                "",
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),

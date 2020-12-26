@@ -120,7 +120,7 @@ fn path_component<'a>() -> impl Parser<Stream<'a>, Output = String> {
 fn foreign_declaration<'a>() -> impl Parser<Stream<'a>, Output = ForeignDeclaration> {
     (source_information(), keyword("foreign"), type_annotation())
         .map(|(source_information, _, (name, type_))| {
-            ForeignDeclaration::new(name, type_, source_information)
+            ForeignDeclaration::new(&name, &name, type_, source_information)
         })
         .expected("foreign declaration")
 }
@@ -1124,6 +1124,7 @@ mod tests {
                 .unwrap()
                 .0,
             ForeignDeclaration::new(
+                "foo",
                 "foo",
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),

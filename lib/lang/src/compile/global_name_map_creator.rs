@@ -21,6 +21,13 @@ impl GlobalNameMapCreator {
             }
         }
 
+        for declaration in module.foreign_declarations() {
+            names.insert(
+                declaration.name().into(),
+                module.path().fully_qualify_name(declaration.name()),
+            );
+        }
+
         for type_definition in module.type_definitions() {
             names.insert(
                 type_definition.name().into(),
@@ -162,6 +169,33 @@ mod tests {
                 vec![],
             )),
             vec![("x".into(), "p().m.x".into())]
+                .into_iter()
+                .collect::<HashMap<_, _>>()
+                .into()
+        );
+    }
+
+    #[test]
+    fn create_name_map_from_foreign_declarations() {
+        assert_eq!(
+            GlobalNameMapCreator::create(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![],
+                vec![ForeignDeclaration::new(
+                    "foo",
+                    "foo",
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )],
+                vec![],
+                vec![],
+            )),
+            vec![("foo".into(), "().foo".into())]
                 .into_iter()
                 .collect::<HashMap<_, _>>()
                 .into()
