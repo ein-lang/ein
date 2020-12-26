@@ -45,7 +45,14 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_displayer,
         &static_file_path_manager,
     );
-    let package_builder = app::PackageBuilder::new(&modules_builder, &modules_linker, &logger);
+    let ffi_package_initializer =
+        infra::FfiPackageInitializer::new(&command_runner, &file_path_converter);
+    let package_builder = app::PackageBuilder::new(
+        &modules_builder,
+        &modules_linker,
+        &logger,
+        &ffi_package_initializer,
+    );
 
     let root_directory_string = std::env::var("EIN_ROOT")?;
     let root_directory = std::path::Path::new(&root_directory_string);

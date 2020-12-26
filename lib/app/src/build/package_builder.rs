@@ -2,13 +2,14 @@ use super::modules_builder::ModulesBuilder;
 use super::modules_linker::ModulesLinker;
 use super::package_interface::PackageInterface;
 use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
-use crate::infra::Logger;
+use crate::infra::{FfiPackageInitializer, Logger};
 use std::collections::HashMap;
 
 pub struct PackageBuilder<'a> {
     modules_builder: &'a ModulesBuilder<'a>,
     modules_linker: &'a ModulesLinker<'a>,
     logger: &'a dyn Logger,
+    ffi_package_initializer: &'a dyn FfiPackageInitializer,
 }
 
 impl<'a> PackageBuilder<'a> {
@@ -16,11 +17,13 @@ impl<'a> PackageBuilder<'a> {
         modules_builder: &'a ModulesBuilder<'a>,
         modules_linker: &'a ModulesLinker<'a>,
         logger: &'a dyn Logger,
+        ffi_package_initializer: &'a dyn FfiPackageInitializer,
     ) -> Self {
         Self {
             modules_builder,
             modules_linker,
             logger,
+            ffi_package_initializer,
         }
     }
 
@@ -33,6 +36,9 @@ impl<'a> PackageBuilder<'a> {
         >,
         prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
+        self.ffi_package_initializer
+            .initialize(package_configuration.directory_path())?;
+
         self.logger.log(&format!(
             "building package {} {}",
             package_configuration.package().name(),
