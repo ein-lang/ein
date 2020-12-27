@@ -1,19 +1,24 @@
-#[derive(Default)]
-pub struct ExternalPackageDownloader;
+use super::file_path_converter::FilePathConverter;
 
-impl ExternalPackageDownloader {
-    pub fn new() -> Self {
-        Self
+pub struct ExternalPackageDownloader<'a> {
+    file_path_converter: &'a FilePathConverter,
+}
+
+impl<'a> ExternalPackageDownloader<'a> {
+    pub fn new(file_path_converter: &'a FilePathConverter) -> Self {
+        Self {
+            file_path_converter,
+        }
     }
 }
 
-impl app::ExternalPackageDownloader for ExternalPackageDownloader {
+impl<'a> app::ExternalPackageDownloader for ExternalPackageDownloader<'a> {
     fn download(
         &self,
         external_package: &app::ExternalPackage,
         directory_path: &app::FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let directory_path = directory_path.components().collect::<std::path::PathBuf>();
+        let directory_path = self.file_path_converter.convert_to_os_path(directory_path);
 
         let url = url::Url::parse(&["https://", external_package.name()].concat())?;
         let repository = git2::Repository::clone(url.as_str(), &directory_path)?;
