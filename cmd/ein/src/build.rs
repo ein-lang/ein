@@ -74,7 +74,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_converter,
         root_directory.join("target/release/libruntime.a"),
     );
-    let external_package_downloader = infra::ExternalPackageDownloader::new();
+    let external_package_downloader = infra::ExternalPackageDownloader::new(&file_path_converter);
     let external_packages_downloader = app::ExternalPackagesDownloader::new(
         &package_configuration_reader,
         &external_package_downloader,

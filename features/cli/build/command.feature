@@ -37,7 +37,7 @@ Feature: Command
         "name": "foo"
       },
       "dependencies": {
-        "github.com/ein-lang/sample-package": { "version": "main" }
+        "github.com/ein-lang/sample-package": { "version": "HEAD" }
       }
     }
     """

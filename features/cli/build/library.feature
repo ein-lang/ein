@@ -12,7 +12,7 @@ Feature: Library
         "type": "Library"
       },
       "dependencies": {
-        "github.com/ein-lang/sample-package": { "version": "main" }
+        "github.com/ein-lang/sample-package": { "version": "HEAD" }
       }
     }
     """
