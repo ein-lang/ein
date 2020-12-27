@@ -1,7 +1,7 @@
 use super::command_runner::CommandRunner;
 use super::file_path_converter::FilePathConverter;
 
-const FFI_INITIALIZATION_SCRIPT: &str = "ffi.sh";
+const FFI_INITIALIZATION_SCRIPT: &str = "ein-ffi.sh";
 
 pub struct FfiPackageInitializer<'a> {
     command_runner: &'a CommandRunner,
