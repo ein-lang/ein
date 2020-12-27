@@ -750,7 +750,7 @@ checksum = "ae524f056d7d770e174287294f562e95044c68e88dec909a00d2094805db9d75"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#3170d41da5112d5ad8560f8495b472b2c0cb9fa2"
+source = "git+https://github.com/raviqqe/ssf?branch=master#4168daff14d0b215aadf6cc0298b5e5ec57af714"
 dependencies = [
  "pretty_assertions",
 ]
@@ -758,7 +758,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#3170d41da5112d5ad8560f8495b472b2c0cb9fa2"
+source = "git+https://github.com/raviqqe/ssf?branch=master#4168daff14d0b215aadf6cc0298b5e5ec57af714"
 dependencies = [
  "inkwell",
  "lazy_static",
@@ -773,9 +773,9 @@ checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 
 [[package]]
 name = "syn"
-version = "1.0.55"
+version = "1.0.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a571a711dddd09019ccc628e1b17fe87c59b09d513c06c026877aa708334f37a"
+checksum = "a9802ddde94170d186eeee5005b798d9c159fa970403f1be19976d0cfb939b72"
 dependencies = [
  "proc-macro2",
  "quote",

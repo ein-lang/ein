@@ -28,19 +28,19 @@ impl<'a> ExternalPackagesBuilder<'a> {
         package_configurations: &HashMap<ExternalPackage, PackageConfiguration>,
         prelude_package_interface: &PackageInterface,
     ) -> Result<(Vec<FilePath>, ExternalModuleInterfaces), Box<dyn std::error::Error>> {
-        let mut object_file_paths = vec![];
+        let mut package_object_file_paths = vec![];
         let mut module_interfaces = HashMap::new();
 
         for external_package in self.sort_external_packages(package_configurations)? {
             let package_configuration = &package_configurations[&external_package];
 
-            let (object_file_path, interface_file_path) = self.package_builder.build(
+            let (object_file_paths, interface_file_path) = self.package_builder.build(
                 package_configuration,
                 &module_interfaces,
                 Some(prelude_package_interface),
             )?;
 
-            object_file_paths.push(object_file_path);
+            package_object_file_paths.extend(object_file_paths);
 
             module_interfaces.insert(
                 external_package.clone(),
@@ -50,7 +50,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
             );
         }
 
-        Ok((object_file_paths, module_interfaces))
+        Ok((package_object_file_paths, module_interfaces))
     }
 
     fn convert_package_interface(
