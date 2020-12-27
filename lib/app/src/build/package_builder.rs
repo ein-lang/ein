@@ -73,9 +73,9 @@ impl<'a> PackageBuilder<'a> {
         )?;
 
         Ok((
-            ffi_object_file_path
+            vec![package_object_file_path]
                 .into_iter()
-                .chain(vec![package_object_file_path])
+                .chain(ffi_object_file_path)
                 .collect(),
             package_interface_file_path,
         ))
