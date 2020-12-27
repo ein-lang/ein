@@ -391,6 +391,7 @@ mod tests {
             )],
             vec![],
             vec![],
+            vec![],
         );
 
         assert_eq!(

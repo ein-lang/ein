@@ -14,6 +14,17 @@ impl GlobalNameValidator {
     pub fn validate(&self, module: &Module) -> Result<(), CompileError> {
         let mut names = HashMap::<&str, Arc<SourceInformation>>::new();
 
+        for declaration in module.foreign_declarations() {
+            if let Some(source_information) = names.get(declaration.name()) {
+                return Err(CompileError::DuplicateNames(
+                    source_information.clone(),
+                    declaration.source_information().clone(),
+                ));
+            }
+
+            names.insert(declaration.name(), declaration.source_information().clone());
+        }
+
         for definition in module.definitions() {
             if let Some(source_information) = names.get(definition.name()) {
                 return Err(CompileError::DuplicateNames(
@@ -32,6 +43,7 @@ impl GlobalNameValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::path::ModulePath;
     use crate::types;
 
     #[test]
@@ -53,6 +65,39 @@ mod tests {
                 )
                 .into(),
             ])),
+            Err(CompileError::DuplicateNames(
+                SourceInformation::dummy().into(),
+                SourceInformation::dummy().into()
+            ))
+        );
+    }
+
+    #[test]
+    fn validate_duplicate_names_with_foreign_declarations() {
+        assert_eq!(
+            GlobalNameValidator::new().validate(&Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![],
+                vec![ForeignDeclaration::new(
+                    "foo",
+                    "foo",
+                    types::Function::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    SourceInformation::dummy()
+                )],
+                vec![],
+                vec![VariableDefinition::new(
+                    "foo",
+                    Number::new(42.0, SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()]
+            )),
             Err(CompileError::DuplicateNames(
                 SourceInformation::dummy().into(),
                 SourceInformation::dummy().into()

@@ -1,5 +1,4 @@
 mod build;
-mod builtin_configuration;
 mod compile_configuration;
 mod file_path_configuration;
 mod init;

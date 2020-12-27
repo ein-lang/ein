@@ -1,4 +1,3 @@
-use super::builtin_configuration::BuiltinConfiguration;
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::string_type_configuration::StringTypeConfiguration;
@@ -10,7 +9,6 @@ pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,
     type_compiler: Arc<TypeCompiler>,
     string_type_configuration: Arc<StringTypeConfiguration>,
-    builtin_configuration: Arc<BuiltinConfiguration>,
 }
 
 impl ModuleCompiler {
@@ -18,18 +16,34 @@ impl ModuleCompiler {
         expression_compiler: Arc<ExpressionCompiler>,
         type_compiler: Arc<TypeCompiler>,
         string_type_configuration: Arc<StringTypeConfiguration>,
-        builtin_configuration: Arc<BuiltinConfiguration>,
     ) -> Self {
         Self {
             expression_compiler,
             type_compiler,
             string_type_configuration,
-            builtin_configuration,
         }
     }
 
     pub fn compile(&self, module: &Module) -> Result<ssf::ir::Module, CompileError> {
         Ok(ssf::ir::Module::new(
+            module
+                .foreign_declarations()
+                .iter()
+                .map(|declaration| -> Result<_, CompileError> {
+                    Ok(ssf::ir::ForeignDeclaration::new(
+                        declaration.name(),
+                        declaration.foreign_name(),
+                        self.type_compiler
+                            .compile(declaration.type_())?
+                            .into_function()
+                            .ok_or_else(|| {
+                                CompileError::FunctionExpected(
+                                    declaration.source_information().clone(),
+                                )
+                            })?,
+                    ))
+                })
+                .collect::<Result<_, _>>()?,
             module
                 .imports()
                 .iter()
@@ -60,20 +74,6 @@ impl ModuleCompiler {
                                 }),
                         )
                 })
-                .chain(
-                    self.builtin_configuration
-                        .functions
-                        .iter()
-                        .map(|(name, type_)| {
-                            Ok(ssf::ir::Declaration::new(
-                                name,
-                                self.type_compiler
-                                    .compile(&type_.clone().into())?
-                                    .into_function()
-                                    .unwrap(),
-                            ))
-                        }),
-                )
                 .collect::<Result<Vec<_>, CompileError>>()?
                 .into_iter()
                 .chain(vec![ssf::ir::Declaration::new(

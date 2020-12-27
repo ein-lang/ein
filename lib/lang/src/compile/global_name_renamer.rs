@@ -18,6 +18,18 @@ impl GlobalNameRenamer {
             module.export().clone(),
             module.imports().to_vec(),
             module
+                .foreign_declarations()
+                .iter()
+                .map(|declaration| {
+                    ForeignDeclaration::new(
+                        self.rename_name(declaration.name(), &self.names),
+                        declaration.foreign_name(),
+                        declaration.type_().clone(),
+                        declaration.source_information().clone(),
+                    )
+                })
+                .collect(),
+            module
                 .type_definitions()
                 .iter()
                 .map(|type_definition| {
@@ -346,6 +358,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
+            vec![],
             vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
@@ -368,6 +381,7 @@ mod tests {
             Export::new(Default::default()),
             vec![],
             vec![],
+            vec![],
             vec![VariableDefinition::new(
                 "x",
                 Number::new(42.0, SourceInformation::dummy()),
@@ -390,6 +404,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![],
+                vec![],
                 vec![VariableDefinition::new(
                     "y",
                     Number::new(42.0, SourceInformation::dummy()),
@@ -409,6 +424,7 @@ mod tests {
             vec![],
             vec![],
             vec![],
+            vec![],
         );
 
         assert_eq!(
@@ -425,6 +441,7 @@ mod tests {
                 vec![],
                 vec![],
                 vec![],
+                vec![],
             )
         );
     }
@@ -434,6 +451,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![TypeDefinition::new(
                 "x",
@@ -454,6 +472,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
+                vec![],
                 vec![TypeDefinition::new(
                     "y",
                     types::None::new(SourceInformation::dummy()),
@@ -468,6 +487,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![TypeDefinition::new(
                 "x",
@@ -494,6 +514,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
+                vec![],
                 vec![TypeDefinition::new(
                     "x",
                     types::Reference::new("v", SourceInformation::dummy()),
@@ -515,6 +536,7 @@ mod tests {
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
             vec![],
+            vec![],
             vec![TypeDefinition::new(
                 "x",
                 types::Record::new("y", Default::default(), SourceInformation::dummy()),
@@ -534,6 +556,7 @@ mod tests {
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
                 vec![],
+                vec![],
                 vec![TypeDefinition::new(
                     "x",
                     types::Record::new("z", Default::default(), SourceInformation::dummy()),
@@ -548,6 +571,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            vec![],
             vec![],
             vec![],
             vec![VariableDefinition::new(
@@ -580,6 +604,7 @@ mod tests {
                 Export::new(Default::default()),
                 vec![],
                 vec![],
+                vec![],
                 vec![VariableDefinition::new(
                     "x",
                     Case::new(
@@ -595,6 +620,46 @@ mod tests {
                     SourceInformation::dummy(),
                 )
                 .into()],
+            )
+        );
+    }
+
+    #[test]
+    fn rename_names_in_foreign_declarations() {
+        let module = Module::new(
+            ModulePath::dummy(),
+            Export::new(Default::default()),
+            vec![],
+            vec![ForeignDeclaration::new(
+                "x",
+                "x",
+                types::None::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )],
+            vec![],
+            vec![],
+        );
+
+        assert_eq!(
+            GlobalNameRenamer::new(
+                vec![("x".into(), "y".into())]
+                    .into_iter()
+                    .collect::<HashMap<_, _>>()
+                    .into()
+            )
+            .rename(&module),
+            Module::new(
+                ModulePath::dummy(),
+                Export::new(Default::default()),
+                vec![],
+                vec![ForeignDeclaration::new(
+                    "y",
+                    "x",
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )],
+                vec![],
+                vec![],
             )
         );
     }

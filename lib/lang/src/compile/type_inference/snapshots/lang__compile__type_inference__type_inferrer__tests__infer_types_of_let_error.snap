@@ -270,5 +270,6 @@ Ok(
                 qualified: false,
             },
         ],
+        foreign_declarations: [],
     },
 )

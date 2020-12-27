@@ -87,5 +87,6 @@ Ok(
                 qualified: true,
             },
         ],
+        foreign_declarations: [],
     },
 )

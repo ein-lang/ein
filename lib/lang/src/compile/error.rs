@@ -12,6 +12,7 @@ pub enum CompileError {
     DuplicateNames(Arc<SourceInformation>, Arc<SourceInformation>),
     ExportedNameNotFound { name: String },
     FunctionEqualOperation(Arc<SourceInformation>),
+    FunctionExpected(Arc<SourceInformation>),
     MixedDefinitionsInLet(Arc<SourceInformation>),
     RecordEqualOperation(Arc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
@@ -46,6 +47,9 @@ impl Display for CompileError {
                 "cannot compare functions\n{}",
                 source_information
             ),
+            Self::FunctionExpected(source_information) => {
+                write!(formatter, "function expected\n{}", source_information)
+            }
             Self::MixedDefinitionsInLet(source_information) => write!(
                 formatter,
                 "cannot mix function and variable definitions in a let expression\n{}",

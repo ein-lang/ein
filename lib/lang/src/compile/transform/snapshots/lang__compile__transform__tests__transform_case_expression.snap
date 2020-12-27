@@ -374,5 +374,6 @@ Ok(
             names: {},
         },
         imports: [],
+        foreign_declarations: [],
     },
 )

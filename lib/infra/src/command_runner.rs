@@ -12,11 +12,11 @@ impl CommandRunner {
     pub fn run(
         &self,
         command: &mut std::process::Command,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    ) -> Result<String, Box<dyn std::error::Error>> {
         let output = command.output()?;
 
         if output.status.success() {
-            return Ok(());
+            return Ok(String::from_utf8(output.stdout)?);
         }
 
         std::io::stderr().write_all(&output.stdout)?;

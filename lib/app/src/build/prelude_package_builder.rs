@@ -29,7 +29,7 @@ impl<'a> PreludePackageBuilder<'a> {
         }
     }
 
-    pub fn build(&self) -> Result<(FilePath, PackageInterface), Box<dyn std::error::Error>> {
+    pub fn build(&self) -> Result<(Vec<FilePath>, PackageInterface), Box<dyn std::error::Error>> {
         let directory_path = self
             .static_file_path_manager
             .prelude_package_directory_path();
@@ -38,12 +38,12 @@ impl<'a> PreludePackageBuilder<'a> {
 
         let package_configuration = self.package_configuration_reader.read(&directory_path)?;
 
-        let (package_object_file_path, package_interface_file_path) =
+        let (package_object_file_paths, package_interface_file_path) =
             self.package_builder
                 .build(&package_configuration, &Default::default(), None)?;
 
         Ok((
-            package_object_file_path,
+            package_object_file_paths,
             serde_json::from_str::<PackageInterface>(
                 &self
                     .file_system

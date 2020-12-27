@@ -146,6 +146,7 @@ mod tests {
                 )],
                 vec![],
                 vec![],
+                vec![],
             ))
             .resolve(&types::Reference::new("Foo", SourceInformation::dummy()).into()),
             Ok(types::Number::new(SourceInformation::dummy()).into())

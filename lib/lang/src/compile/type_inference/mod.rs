@@ -32,8 +32,7 @@ pub fn infer_types(
         type_equality_checker.clone(),
     );
     let constraint_converter = ConstraintConverter::new(reference_type_resolver.clone());
-    let module_environment_creator =
-        ModuleEnvironmentCreator::new(compile_configuration.builtin_configuration.clone());
+    let module_environment_creator = ModuleEnvironmentCreator::new();
     let constraint_collector = ConstraintCollector::new(
         reference_type_resolver.clone(),
         module_environment_creator,

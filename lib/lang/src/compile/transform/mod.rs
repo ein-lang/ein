@@ -71,8 +71,7 @@ pub fn transform_with_types(
     );
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
-    let module_environment_creator =
-        ModuleEnvironmentCreator::new(compile_configuration.builtin_configuration.clone());
+    let module_environment_creator = ModuleEnvironmentCreator::new();
 
     let type_coercion_transformer = TypedMetaTransformer::new(
         TypeCoercionTransformer::new(
