@@ -36,7 +36,7 @@ impl<'a> app::FfiPackageInitializer for FfiPackageInitializer<'a> {
             )))?;
         let path_string = stdout.trim();
 
-        Ok(if path_string == "" {
+        Ok(if path_string.is_empty() {
             None
         } else {
             Some(
