@@ -1,6 +1,8 @@
 use super::command_runner::CommandRunner;
 use super::file_path_converter::FilePathConverter;
 
+const FFI_INITIALIZATION_SCRIPT: &str = "ffi.sh";
+
 pub struct FfiPackageInitializer<'a> {
     command_runner: &'a CommandRunner,
     file_path_converter: &'a FilePathConverter,
@@ -26,10 +28,11 @@ impl<'a> app::FfiPackageInitializer for FfiPackageInitializer<'a> {
         let stdout = self
             .command_runner
             .run(std::process::Command::new("sh").arg("-c").arg(format!(
-                "cd {} && if [ -r ffi.sh ]; then ./ffi.sh; fi",
+                "cd {} && if [ -r {script} ]; then ./{script}; fi",
                 self.file_path_converter
                     .convert_to_os_path(directory_path)
-                    .to_string_lossy()
+                    .to_string_lossy(),
+                script = FFI_INITIALIZATION_SCRIPT,
             )))?;
         let path_string = stdout.trim();
 
@@ -44,5 +47,13 @@ impl<'a> app::FfiPackageInitializer for FfiPackageInitializer<'a> {
                 ),
             )
         })
+    }
+
+    fn is_ffi_used(&self, directory_path: &app::FilePath) -> bool {
+        self.file_path_converter
+            .convert_to_os_path(
+                &directory_path.join(&app::FilePath::new(vec![FFI_INITIALIZATION_SCRIPT])),
+            )
+            .exists()
     }
 }

@@ -36,15 +36,27 @@ impl<'a> PackageBuilder<'a> {
         >,
         prelude_package_interface: Option<&PackageInterface>,
     ) -> Result<(Vec<FilePath>, FilePath), Box<dyn std::error::Error>> {
-        let ffi_object_file_path = self
-            .ffi_package_initializer
-            .initialize(package_configuration.directory_path())?;
-
         self.logger.log(&format!(
             "building package {} {}",
             package_configuration.package().name(),
             package_configuration.package().version()
         ))?;
+
+        let ffi_object_file_path = if self
+            .ffi_package_initializer
+            .is_ffi_used(package_configuration.directory_path())
+        {
+            self.logger.log(&format!(
+                "building FFI for package {} {}",
+                package_configuration.package().name(),
+                package_configuration.package().version()
+            ))?;
+
+            self.ffi_package_initializer
+                .initialize(package_configuration.directory_path())?
+        } else {
+            None
+        };
 
         let external_module_interfaces = package_configuration
             .build_configuration()
