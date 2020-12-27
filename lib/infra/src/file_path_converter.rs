@@ -10,12 +10,11 @@ impl FilePathConverter {
     }
 
     pub fn convert_to_os_path(&self, path: &app::FilePath) -> std::path::PathBuf {
-        if path.components().count() == 0 {
-            self.base_directory.clone()
-        } else {
-            self.base_directory
-                .join(path.components().collect::<std::path::PathBuf>())
-        }
+        self.base_directory.join(
+            path.components()
+                .map(|component| component.replace("/", "_").replace("\\", "_"))
+                .collect::<std::path::PathBuf>(),
+        )
     }
 
     pub fn convert_absolute_to_file_path(
@@ -60,5 +59,43 @@ impl FilePathConverter {
                 })
                 .collect::<Vec<String>>(),
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn convert_to_empty_os_path() {
+        let base_directory = &std::env::current_dir().unwrap();
+
+        assert_eq!(
+            &FilePathConverter::new(base_directory)
+                .convert_to_os_path(&app::FilePath::new(Vec::<&str>::new())),
+            base_directory
+        );
+    }
+
+    #[test]
+    fn convert_to_os_path() {
+        let base_directory = &std::env::current_dir().unwrap();
+
+        assert_eq!(
+            FilePathConverter::new(base_directory)
+                .convert_to_os_path(&app::FilePath::new(vec!["foo"])),
+            base_directory.join("foo")
+        );
+    }
+
+    #[test]
+    fn convert_to_os_path_escaping_path() {
+        let base_directory = &std::env::current_dir().unwrap();
+
+        assert_eq!(
+            FilePathConverter::new(base_directory)
+                .convert_to_os_path(&app::FilePath::new(vec!["foo/bar\\baz"])),
+            base_directory.join("foo_bar_baz")
+        );
     }
 }
