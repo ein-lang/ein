@@ -36,6 +36,8 @@ impl<'a> app::PreludePackageDownloader for PreludePackageDownloader<'a> {
                 .arg("-r")
                 .arg(&self.prelude_package_directory)
                 .arg(path),
-        )
+        )?;
+
+        Ok(())
     }
 }
