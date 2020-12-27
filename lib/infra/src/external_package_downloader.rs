@@ -25,7 +25,10 @@ impl<'a> app::ExternalPackageDownloader for ExternalPackageDownloader<'a> {
 
         repository.checkout_tree(
             &repository
-                .resolve_reference_from_short_name(external_package.version())?
+                .resolve_reference_from_short_name(&format!(
+                    "origin/{}",
+                    external_package.version()
+                ))?
                 .peel(git2::ObjectType::Any)?,
             None,
         )?;
