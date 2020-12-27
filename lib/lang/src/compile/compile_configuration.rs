@@ -1,4 +1,3 @@
-use super::builtin_configuration::BuiltinConfiguration;
 use super::error_type_configuration::ErrorTypeConfiguration;
 use super::list_type_configuration::ListTypeConfiguration;
 use super::main_module_configuration::MainModuleConfiguration;
@@ -17,7 +16,6 @@ lazy_static! {
         string_type_configuration: super::string_type_configuration::STRING_TYPE_CONFIGURATION
             .clone(),
         error_type_configuration: super::error_type_configuration::ERROR_TYPE_CONFIGURATION.clone(),
-        builtin_configuration: super::builtin_configuration::BUILTIN_CONFIGURATION.clone(),
         main_module_configuration: None,
     }
     .into();
@@ -30,7 +28,6 @@ pub struct CompileConfiguration {
     pub error_type_configuration: Arc<ErrorTypeConfiguration>,
     pub list_type_configuration: Arc<ListTypeConfiguration>,
     pub string_type_configuration: Arc<StringTypeConfiguration>,
-    pub builtin_configuration: Arc<BuiltinConfiguration>,
     pub main_module_configuration: Option<Arc<MainModuleConfiguration>>,
 }
 
