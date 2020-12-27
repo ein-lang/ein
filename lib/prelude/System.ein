@@ -1,4 +1,4 @@
-export { System, system, fdWrite, stdout }
+export { System, fdWrite, stdout }
 
 type System {
   fdWrite : Number -> String -> Number,
