@@ -36,7 +36,13 @@ impl<'a> app::FfiPackageInitializer for FfiPackageInitializer<'a> {
         Ok(if path_string == "" {
             None
         } else {
-            Some(directory_path.join(&self.file_path_converter.convert_to_file_path(path_string)?))
+            Some(
+                directory_path.join(
+                    &self
+                        .file_path_converter
+                        .convert_relative_to_file_path(path_string)?,
+                ),
+            )
         })
     }
 }
