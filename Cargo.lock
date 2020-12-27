@@ -145,9 +145,9 @@ dependencies = [
 
 [[package]]
 name = "combine"
-version = "4.5.0"
+version = "4.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "385a3f4b0910409ff56ff221bd2a6f7591f7f537bba447c5010c47e898040d98"
+checksum = "01199925a18b00193570e3d70cfe57dcb647eb167c29851983e76fc39e2fee39"
 dependencies = [
  "bytes",
  "memchr",
@@ -750,7 +750,7 @@ checksum = "ae524f056d7d770e174287294f562e95044c68e88dec909a00d2094805db9d75"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#4168daff14d0b215aadf6cc0298b5e5ec57af714"
+source = "git+https://github.com/raviqqe/ssf?branch=main#4168daff14d0b215aadf6cc0298b5e5ec57af714"
 dependencies = [
  "pretty_assertions",
 ]
@@ -758,7 +758,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=master#4168daff14d0b215aadf6cc0298b5e5ec57af714"
+source = "git+https://github.com/raviqqe/ssf?branch=main#4168daff14d0b215aadf6cc0298b5e5ec57af714"
 dependencies = [
  "inkwell",
  "lazy_static",
@@ -821,18 +821,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.22"
+version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0e9ae34b84616eedaaf1e9dd6026dbe00dcafa92aa0c8077cb69df1fcfe5e53e"
+checksum = "76cc616c6abf8c8928e2fdcc0dbfab37175edd8fb49a4641066ad1364fdab146"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.22"
+version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ba20f23e85b10754cd195504aebf6a27e2e6cbe28c17778a0c930724628dd56"
+checksum = "9be73a2caec27583d0046ef3796c3794f868a5bc813db689eed00c7631275cd1"
 dependencies = [
  "proc-macro2",
  "quote",
