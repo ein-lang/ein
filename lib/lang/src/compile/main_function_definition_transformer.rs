@@ -28,13 +28,12 @@ impl MainFunctionDefinitionTransformer {
             .global_names
             .get(&self.main_module_configuration.source_main_function_name)
             .ok_or_else(|| CompileError::MainFunctionNotFound(module.path().clone()))?;
-
-        let main_function_definition = module
+        let source_information = module
             .definitions()
             .iter()
             .find(|definition| definition.name() == main_function_name)
-            .unwrap();
-        let source_information = main_function_definition.source_information();
+            .ok_or_else(|| CompileError::MainFunctionNotFound(module.path().clone()))?
+            .source_information();
 
         Ok(Module::new(
             module.path().clone(),
