@@ -73,7 +73,7 @@ pub fn compile(
 
     let module = if let Some(main_module_configuration) = &configuration.main_module_configuration {
         MainFunctionDefinitionTransformer::new(names, main_module_configuration.clone())
-            .transform(&module)
+            .transform(&module)?
     } else {
         module
     };
