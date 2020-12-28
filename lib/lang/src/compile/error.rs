@@ -1,5 +1,6 @@
 use crate::ast;
 use crate::debug::*;
+use crate::path::ModulePath;
 use crate::types;
 use std::error::Error;
 use std::fmt::Display;
@@ -13,7 +14,7 @@ pub enum CompileError {
     ExportedNameNotFound { name: String },
     FunctionEqualOperation(Arc<SourceInformation>),
     FunctionExpected(Arc<SourceInformation>),
-    MixedDefinitionsInLet(Arc<SourceInformation>),
+    MainFunctionNotFound(ModulePath),
     RecordEqualOperation(Arc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
@@ -50,10 +51,10 @@ impl Display for CompileError {
             Self::FunctionExpected(source_information) => {
                 write!(formatter, "function expected\n{}", source_information)
             }
-            Self::MixedDefinitionsInLet(source_information) => write!(
+            Self::MainFunctionNotFound(path) => write!(
                 formatter,
-                "cannot mix function and variable definitions in a let expression\n{}",
-                source_information
+                "main function not found in main module {}",
+                &path
             ),
             Self::RecordEqualOperation(source_information) => write!(
                 formatter,

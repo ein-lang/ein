@@ -538,7 +538,12 @@ mod tests {
         );
         let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
         let none_compiler = NoneCompiler::new(type_compiler.clone());
-        let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
+        let variable_compiler = VariableCompiler::new(
+            type_compiler.clone(),
+            reference_type_resolver.clone(),
+            &module,
+        )
+        .unwrap();
         let type_comparability_checker =
             TypeComparabilityChecker::new(reference_type_resolver.clone());
         let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());

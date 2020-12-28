@@ -473,7 +473,6 @@ mod tests {
                     .into_iter()
                     .collect(),
                     Default::default(),
-                    Default::default(),
                 ),
                 false,
             )],
@@ -541,7 +540,6 @@ mod tests {
             vec![Import::new(
                 ModuleInterface::new(
                     ModulePath::new(Package::new("m", ""), vec![]),
-                    Default::default(),
                     Default::default(),
                     Default::default(),
                     vec![(
@@ -836,7 +834,6 @@ mod tests {
                     )]
                     .into_iter()
                     .collect(),
-                    Default::default(),
                     Default::default(),
                 ),
                 true,

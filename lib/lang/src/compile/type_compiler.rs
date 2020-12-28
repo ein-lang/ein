@@ -222,6 +222,10 @@ impl TypeCompiler {
         ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![])])
     }
 
+    pub fn compile_thunk_argument(&self) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![])])
+    }
+
     fn compile_number(&self) -> ssf::types::Primitive {
         ssf::types::Primitive::Float64
     }

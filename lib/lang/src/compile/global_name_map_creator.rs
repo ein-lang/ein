@@ -122,7 +122,6 @@ mod tests {
                         ModulePath::new(Package::new("p", ""), vec!["m".into()]),
                         vec!["x".into()].into_iter().collect(),
                         Default::default(),
-                        Default::default(),
                         vec![(
                             "x".into(),
                             types::None::new(SourceInformation::dummy()).into(),
@@ -153,7 +152,6 @@ mod tests {
                     ModuleInterface::new(
                         ModulePath::new(Package::new("p", ""), vec!["m".into()]),
                         vec!["x".into()].into_iter().collect(),
-                        Default::default(),
                         Default::default(),
                         vec![(
                             "x".into(),

@@ -73,7 +73,7 @@ pub fn compile(
 
     let module = if let Some(main_module_configuration) = &configuration.main_module_configuration {
         MainFunctionDefinitionTransformer::new(names, main_module_configuration.clone())
-            .transform(&module)
+            .transform(&module)?
     } else {
         module
     };
@@ -100,7 +100,11 @@ pub fn compile(
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let none_compiler = NoneCompiler::new(type_compiler.clone());
-    let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
+    let variable_compiler = VariableCompiler::new(
+        type_compiler.clone(),
+        reference_type_resolver.clone(),
+        &module,
+    )?;
 
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
@@ -761,7 +765,6 @@ mod tests {
                         .into_iter()
                         .collect(),
                         Default::default(),
-                        Default::default(),
                     ),
                     false,
                 )],
@@ -836,7 +839,6 @@ mod tests {
                         )]
                         .into_iter()
                         .collect(),
-                        Default::default(),
                         Default::default(),
                     ),
                     false,
