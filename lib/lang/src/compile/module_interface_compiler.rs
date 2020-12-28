@@ -35,27 +35,11 @@ impl ModuleInterfaceCompiler {
                         )
                     })
                     .collect(),
+                Default::default(),
                 module
                     .definitions()
                     .iter()
-                    .filter_map(|definition| match definition {
-                        Definition::FunctionDefinition(function_definition) => Some((
-                            function_definition.name().into(),
-                            function_definition.type_().clone(),
-                        )),
-                        Definition::VariableDefinition(_) => None,
-                    })
-                    .collect(),
-                module
-                    .definitions()
-                    .iter()
-                    .filter_map(|definition| match definition {
-                        Definition::FunctionDefinition(_) => None,
-                        Definition::VariableDefinition(variable_definition) => Some((
-                            variable_definition.name().into(),
-                            variable_definition.type_().clone(),
-                        )),
-                    })
+                    .map(|definition| (definition.name().into(), definition.type_().clone()))
                     .collect(),
             ))
         }

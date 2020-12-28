@@ -100,7 +100,11 @@ pub fn compile(
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
     let none_compiler = NoneCompiler::new(type_compiler.clone());
-    let variable_compiler = VariableCompiler::new(type_compiler.clone(), &module);
+    let variable_compiler = VariableCompiler::new(
+        type_compiler.clone(),
+        reference_type_resolver.clone(),
+        &module,
+    )?;
 
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
