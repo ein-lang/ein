@@ -132,7 +132,6 @@ mod tests {
                     .into_iter()
                     .collect(),
                     Default::default(),
-                    Default::default(),
                 ),
                 false,
             )],

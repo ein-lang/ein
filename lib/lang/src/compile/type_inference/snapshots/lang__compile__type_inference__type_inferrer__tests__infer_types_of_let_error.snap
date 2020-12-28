@@ -264,7 +264,6 @@ Ok(
                             },
                         ),
                     },
-                    functions: {},
                     variables: {},
                 },
                 qualified: false,

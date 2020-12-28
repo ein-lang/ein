@@ -35,7 +35,6 @@ impl ModuleInterfaceCompiler {
                         )
                     })
                     .collect(),
-                Default::default(),
                 module
                     .definitions()
                     .iter()
@@ -65,7 +64,6 @@ mod tests {
                 Default::default(),
                 Default::default(),
                 Default::default(),
-                Default::default(),
             ))
         );
     }
@@ -90,7 +88,6 @@ mod tests {
             Ok(ModuleInterface::new(
                 ModulePath::new(Package::new("P", ""), vec!["M".into()]),
                 vec!["x".into()].into_iter().collect(),
-                Default::default(),
                 Default::default(),
                 vec![(
                     "P().M.x".into(),

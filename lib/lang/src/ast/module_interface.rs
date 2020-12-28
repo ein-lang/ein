@@ -8,7 +8,6 @@ pub struct ModuleInterface {
     path: ModulePath,
     exported_names: BTreeSet<String>,  // Unqualified
     types: BTreeMap<String, Type>,     // Fully-qualified
-    functions: BTreeMap<String, Type>, // Fully-qualified
     variables: BTreeMap<String, Type>, // Fully-qualified
 }
 
@@ -17,14 +16,12 @@ impl ModuleInterface {
         path: ModulePath,
         exported_names: BTreeSet<String>,
         types: BTreeMap<String, Type>,
-        functions: BTreeMap<String, Type>,
         variables: BTreeMap<String, Type>,
     ) -> Self {
         Self {
             path,
             exported_names,
             types,
-            functions,
             variables,
         }
     }
@@ -39,10 +36,6 @@ impl ModuleInterface {
 
     pub fn types(&self) -> &BTreeMap<String, Type> {
         &self.types
-    }
-
-    pub fn functions(&self) -> &BTreeMap<String, Type> {
-        &self.functions
     }
 
     pub fn variables(&self) -> &BTreeMap<String, Type> {
