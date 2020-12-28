@@ -259,6 +259,8 @@ impl ExpressionCompiler {
                             .transform(coercion)?,
                     )?
                 } else {
+                    // Coerce to union or Any types.
+
                     let from_type = self.reference_type_resolver.resolve(coercion.from())?;
                     let to_type = self
                         .type_compiler
