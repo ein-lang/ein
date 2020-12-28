@@ -68,11 +68,6 @@ impl ConstraintSolver {
                 (Type::List(one), Type::List(other)) => {
                     solved_subsumption_set.add(one.element().clone(), other.element().clone());
                 }
-                (Type::Union(union), other) => {
-                    for type_ in union.types() {
-                        solved_subsumption_set.add(type_.clone(), other.clone());
-                    }
-                }
                 subsumption => checked_subsumption_set.add(subsumption.0, subsumption.1),
             }
         }
