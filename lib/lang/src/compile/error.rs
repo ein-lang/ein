@@ -15,7 +15,6 @@ pub enum CompileError {
     FunctionEqualOperation(Arc<SourceInformation>),
     FunctionExpected(Arc<SourceInformation>),
     MainFunctionNotFound(ModulePath),
-    MixedDefinitionsInLet(Arc<SourceInformation>),
     RecordEqualOperation(Arc<SourceInformation>),
     SsfAnalysis(ssf::AnalysisError),
     SsfCompile(ssf_llvm::CompileError),
@@ -56,11 +55,6 @@ impl Display for CompileError {
                 formatter,
                 "main function not found in main module {}",
                 &path
-            ),
-            Self::MixedDefinitionsInLet(source_information) => write!(
-                formatter,
-                "cannot mix function and variable definitions in a let expression\n{}",
-                source_information
             ),
             Self::RecordEqualOperation(source_information) => write!(
                 formatter,
