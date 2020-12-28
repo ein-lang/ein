@@ -249,7 +249,9 @@ impl ExpressionCompiler {
                 .into()
             }
             Expression::TypeCoercion(coercion) => {
-                if self.reference_type_resolver.is_function(coercion.to())? {
+                if self.reference_type_resolver.is_list(coercion.to())? {
+                    todo!();
+                } else if self.reference_type_resolver.is_function(coercion.to())? {
                     self.compile(
                         &self
                             .expression_transformer_set
