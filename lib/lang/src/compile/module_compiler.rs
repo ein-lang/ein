@@ -130,54 +130,82 @@ impl ModuleCompiler {
         &self,
         variable_definition: &VariableDefinition,
     ) -> Result<Vec<ssf::ir::Definition>, CompileError> {
-        let variable_type = self.type_compiler.compile(variable_definition.type_())?;
-        let thunk_argument_type = self.type_compiler.compile_thunk_argument();
-        const THUNK_ARGUMENT_NAME: &str = "$thunk_arg";
+        let core_type = self.type_compiler.compile(variable_definition.type_())?;
 
         Ok(
-            if let ssf::types::Type::Function(function_type) = &variable_type {
-                let thunk_name = format!("{}.thunk", variable_definition.name());
-                const ARGUMENT_NAME: &str = "$arg";
-
-                vec![
-                    ssf::ir::Definition::thunk(
-                        &thunk_name,
-                        vec![ssf::ir::Argument::new(
-                            THUNK_ARGUMENT_NAME,
-                            thunk_argument_type.clone(),
-                        )],
-                        self.expression_compiler
-                            .compile(variable_definition.body())?,
-                        variable_type.clone(),
-                    ),
-                    ssf::ir::Definition::new(
-                        variable_definition.name(),
-                        vec![ssf::ir::Argument::new(
-                            ARGUMENT_NAME,
-                            function_type.argument().clone(),
-                        )],
-                        ssf::ir::FunctionApplication::new(
-                            ssf::ir::FunctionApplication::new(
-                                ssf::ir::Variable::new(&thunk_name),
-                                ssf::ir::ConstructorApplication::new(
-                                    ssf::ir::Constructor::new(thunk_argument_type, 0),
-                                    vec![],
-                                ),
-                            ),
-                            ssf::ir::Variable::new(ARGUMENT_NAME),
-                        ),
-                        function_type.result().clone(),
-                    ),
-                ]
-            } else {
-                vec![ssf::ir::Definition::thunk(
+            if let ssf::types::Type::Function(function_type) = core_type {
+                self.compile_function_variable_definition(
                     variable_definition.name(),
-                    vec![ssf::ir::Argument::new("", thunk_argument_type)],
-                    self.expression_compiler
-                        .compile(variable_definition.body())?,
-                    variable_type.clone(),
-                )]
+                    variable_definition.body(),
+                    &function_type,
+                )?
+            } else {
+                vec![self.compile_value_variable_definition(
+                    variable_definition.name(),
+                    variable_definition.body(),
+                    &core_type,
+                )?]
             },
         )
+    }
+
+    fn compile_function_variable_definition(
+        &self,
+        name: &str,
+        body: &Expression,
+        function_type: &ssf::types::Function,
+    ) -> Result<Vec<ssf::ir::Definition>, CompileError> {
+        let thunk_name = format!("{}.thunk", name);
+        const ARGUMENT_NAME: &str = "$arg";
+
+        Ok(vec![
+            ssf::ir::Definition::thunk(
+                &thunk_name,
+                vec![ssf::ir::Argument::new(
+                    "",
+                    self.type_compiler.compile_thunk_argument(),
+                )],
+                self.expression_compiler.compile(body)?,
+                function_type.clone(),
+            ),
+            ssf::ir::Definition::new(
+                name,
+                vec![ssf::ir::Argument::new(
+                    ARGUMENT_NAME,
+                    function_type.argument().clone(),
+                )],
+                ssf::ir::FunctionApplication::new(
+                    ssf::ir::FunctionApplication::new(
+                        ssf::ir::Variable::new(&thunk_name),
+                        ssf::ir::ConstructorApplication::new(
+                            ssf::ir::Constructor::new(
+                                self.type_compiler.compile_thunk_argument(),
+                                0,
+                            ),
+                            vec![],
+                        ),
+                    ),
+                    ssf::ir::Variable::new(ARGUMENT_NAME),
+                ),
+                function_type.result().clone(),
+            ),
+        ])
+    }
+
+    fn compile_value_variable_definition(
+        &self,
+        name: &str,
+        body: &Expression,
+        type_: &ssf::types::Type,
+    ) -> Result<ssf::ir::Definition, CompileError> {
+        Ok(ssf::ir::Definition::thunk(
+            name,
+            vec![ssf::ir::Argument::new(
+                "",
+                self.type_compiler.compile_thunk_argument(),
+            )],
+            self.expression_compiler.compile(body)?,
+            type_.clone(),
+        ))
     }
 }
