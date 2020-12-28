@@ -172,10 +172,7 @@ impl ModuleCompiler {
             } else {
                 vec![ssf::ir::Definition::thunk(
                     variable_definition.name(),
-                    vec![ssf::ir::Argument::new(
-                        THUNK_ARGUMENT_NAME,
-                        thunk_argument_type,
-                    )],
+                    vec![ssf::ir::Argument::new("", thunk_argument_type)],
                     self.expression_compiler
                         .compile(variable_definition.body())?,
                     variable_type.clone(),
