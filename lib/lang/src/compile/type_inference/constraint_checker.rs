@@ -26,18 +26,18 @@ impl ConstraintChecker {
     }
 
     pub fn check(&self, mut subsumption_set: SubsumptionSet) -> Result<(), CompileError> {
-        while let Some(subsumption) = subsumption_set.remove() {
+        while let Some((lower, upper)) = subsumption_set.remove() {
             match (
-                self.variable_substitutor.substitute(&subsumption.0)?,
-                self.variable_substitutor.substitute(&subsumption.1)?,
+                self.variable_substitutor.substitute(&lower)?,
+                self.variable_substitutor.substitute(&upper)?,
             ) {
                 (_, Type::Any(_)) => {}
-                (Type::Reference(reference), other) => subsumption_set.add(
+                (Type::Reference(reference), upper) => subsumption_set.add(
                     self.reference_type_resolver.resolve_reference(&reference)?,
-                    other.clone(),
+                    upper.clone(),
                 ),
-                (one, Type::Reference(reference)) => subsumption_set.add(
-                    one.clone(),
+                (lower, Type::Reference(reference)) => subsumption_set.add(
+                    lower.clone(),
                     self.reference_type_resolver.resolve_reference(&reference)?,
                 ),
                 (Type::Function(one), Type::Function(other)) => {
@@ -52,17 +52,17 @@ impl ConstraintChecker {
                         subsumption_set.add(type_.clone(), other.clone());
                     }
                 }
-                (one, Type::Union(union)) => {
+                (lower, Type::Union(union)) => {
                     if !union
                         .types()
                         .iter()
-                        .map(|type_| self.type_equality_checker.equal(&one, type_))
+                        .map(|type_| self.type_equality_checker.equal(&lower, type_))
                         .collect::<Result<Vec<_>, _>>()?
                         .into_iter()
                         .any(|value| value)
                     {
                         return Err(CompileError::TypesNotMatched(
-                            one.source_information().clone(),
+                            lower.source_information().clone(),
                             union.source_information().clone(),
                         ));
                     }
