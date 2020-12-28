@@ -53,12 +53,12 @@ impl ConstraintSolver {
 
                     constraint_set.add_upper_type(&variable, &upper);
                 }
-                (Type::Reference(reference), other) => solved_subsumption_set.add(
+                (Type::Reference(reference), upper) => solved_subsumption_set.add(
                     self.reference_type_resolver.resolve_reference(&reference)?,
-                    other.clone(),
+                    upper.clone(),
                 ),
-                (one, Type::Reference(reference)) => solved_subsumption_set.add(
-                    one.clone(),
+                (lower, Type::Reference(reference)) => solved_subsumption_set.add(
+                    lower.clone(),
                     self.reference_type_resolver.resolve_reference(&reference)?,
                 ),
                 (Type::Function(one), Type::Function(other)) => {
