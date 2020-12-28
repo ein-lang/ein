@@ -250,7 +250,7 @@ impl ExpressionCompiler {
             }
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_list(coercion.to())? {
-                    todo!();
+                    todo!("List type covariance not implemented yet")
                 } else if self.reference_type_resolver.is_function(coercion.to())? {
                     self.compile(
                         &self
