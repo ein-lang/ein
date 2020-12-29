@@ -67,7 +67,7 @@ impl ListTypeCoercionTransformer {
                             Variable::new(argument_name.clone(), source_information.clone()),
                             vec![Alternative::new(
                                 from_list_type.element().clone(),
-                                Variable::new(argument_name.clone(), source_information.clone()),
+                                Variable::new(argument_name, source_information.clone()),
                             )],
                             source_information.clone(),
                         ),
@@ -98,7 +98,7 @@ impl ListTypeCoercionTransformer {
                 coercion.argument().clone(),
                 source_information.clone(),
             ),
-            source_information.clone(),
+            source_information,
         )
         .into())
     }
