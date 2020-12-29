@@ -45,7 +45,7 @@ Feature: Subtyping
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
 
-  Scenario: Let a function type subsume a union type.
+  Scenario: Let a function type subsume a union type in a list expression
     Given a file named "Main.ein" with:
     """
     f : Number | None -> Number
