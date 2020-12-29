@@ -6,7 +6,8 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::string_type_configuration::StringTypeConfiguration;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
+    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, ListTypeCoercionTransformer,
+    NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -27,6 +28,7 @@ pub struct ExpressionTransformerSet {
     pub list_literal_transformer: Arc<ListLiteralTransformer>,
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
     pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
+    pub list_type_coercion_transformer: Arc<ListTypeCoercionTransformer>,
     pub list_case_transformer: Arc<ListCaseTransformer>,
     pub let_error_transformer: Arc<LetErrorTransformer>,
 }
@@ -249,14 +251,65 @@ impl ExpressionCompiler {
                 .into()
             }
             Expression::TypeCoercion(coercion) => {
-                if self.reference_type_resolver.is_function(coercion.to())? {
+                if self.reference_type_resolver.is_list(coercion.from())?
+                    && self.reference_type_resolver.is_list(coercion.to())?
+                {
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .list_type_coercion_transformer
+                            .transform(coercion)?,
+                    )?
+                } else if self.reference_type_resolver.is_function(coercion.from())?
+                    && self.reference_type_resolver.is_function(coercion.to())?
+                {
                     self.compile(
                         &self
                             .expression_transformer_set
                             .function_type_coercion_transformer
                             .transform(coercion)?,
                     )?
+                } else if self.reference_type_resolver.is_union(coercion.from())?
+                    && (self.reference_type_resolver.is_function(coercion.to())?
+                        || self.reference_type_resolver.is_list(coercion.to())?)
+                {
+                    let union_type = self
+                        .reference_type_resolver
+                        .resolve_to_union(coercion.from())?
+                        .unwrap();
+                    let source_information = coercion.source_information();
+                    let argument_name = "$arg";
+
+                    self.compile(
+                        &Case::with_type(
+                            union_type.clone(),
+                            argument_name,
+                            coercion.argument().clone(),
+                            union_type
+                                .types()
+                                .iter()
+                                .map(|type_| {
+                                    Alternative::new(
+                                        type_.clone(),
+                                        TypeCoercion::new(
+                                            Variable::new(
+                                                argument_name,
+                                                source_information.clone(),
+                                            ),
+                                            type_.clone(),
+                                            coercion.to().clone(),
+                                            source_information.clone(),
+                                        ),
+                                    )
+                                })
+                                .collect(),
+                            source_information.clone(),
+                        )
+                        .into(),
+                    )?
                 } else {
+                    // Coerce to union or Any types.
+
                     let from_type = self.reference_type_resolver.resolve(coercion.from())?;
                     let to_type = self
                         .type_compiler
@@ -567,6 +620,11 @@ mod tests {
             type_equality_checker.clone(),
             reference_type_resolver.clone(),
         );
+        let list_type_coercion_transformer = ListTypeCoercionTransformer::new(
+            type_equality_checker.clone(),
+            reference_type_resolver.clone(),
+            LIST_TYPE_CONFIGURATION.clone(),
+        );
         let list_case_transformer = ListCaseTransformer::new(
             reference_type_resolver.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
@@ -592,6 +650,7 @@ mod tests {
                     list_literal_transformer,
                     boolean_operation_transformer,
                     function_type_coercion_transformer,
+                    list_type_coercion_transformer,
                     list_case_transformer,
                     let_error_transformer,
                 }

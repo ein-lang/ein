@@ -45,23 +45,21 @@ impl TypeCoercionTransformer {
         source_information: Arc<SourceInformation>,
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
-        let from_type = self.reference_type_resolver.resolve(
-            &self
-                .expression_type_extractor
-                .extract(&expression, variables)?,
-        )?;
-        let to_type = self.reference_type_resolver.resolve(to_type)?;
+        let from_type = self
+            .expression_type_extractor
+            .extract(&expression, variables)?;
 
-        Ok(
-            if self.type_equality_checker.equal(&from_type, &to_type)?
-                || self.reference_type_resolver.is_list(&from_type)?
-                    && self.reference_type_resolver.is_list(&to_type)?
-            {
-                expression.clone()
-            } else {
-                TypeCoercion::new(expression.clone(), from_type, to_type, source_information).into()
-            },
-        )
+        Ok(if self.type_equality_checker.equal(&from_type, &to_type)? {
+            expression.clone()
+        } else {
+            TypeCoercion::new(
+                expression.clone(),
+                from_type,
+                to_type.clone(),
+                source_information,
+            )
+            .into()
+        })
     }
 }
 
@@ -229,6 +227,42 @@ impl TypedTransformer for TypeCoercionTransformer {
                 )
                 .into()
             }
+            Expression::List(list) => {
+                let list_type = self
+                    .reference_type_resolver
+                    .resolve_to_list(list.type_())?
+                    .unwrap();
+                let element_type = list_type.element();
+
+                List::with_type(
+                    list.type_().clone(),
+                    list.elements()
+                        .iter()
+                        .map(|element| {
+                            Ok(match element {
+                                ListElement::Multiple(expression) => {
+                                    ListElement::Multiple(self.coerce_type(
+                                        expression,
+                                        &list.type_(),
+                                        expression.source_information().clone(),
+                                        variables,
+                                    )?)
+                                }
+                                ListElement::Single(expression) => {
+                                    ListElement::Single(self.coerce_type(
+                                        expression,
+                                        &element_type,
+                                        expression.source_information().clone(),
+                                        variables,
+                                    )?)
+                                }
+                            })
+                        })
+                        .collect::<Result<Vec<_>, CompileError>>()?,
+                    list.source_information().clone(),
+                )
+                .into()
+            }
             Expression::ListCase(case) => {
                 let result_type = self
                     .expression_type_extractor
@@ -343,7 +377,6 @@ impl TypedTransformer for TypeCoercionTransformer {
             Expression::Boolean(_)
             | Expression::Let(_)
             | Expression::LetRecursive(_)
-            | Expression::List(_)
             | Expression::None(_)
             | Expression::Number(_)
             | Expression::RecordElementOperation(_)

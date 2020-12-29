@@ -889,6 +889,56 @@ mod tests {
         assert_debug_snapshot!(infer_types(&module));
     }
 
+    #[test]
+    fn fail_to_infer_types_with_invalid_union_type() {
+        let module = Module::from_definitions(vec![
+            VariableDefinition::new(
+                "x",
+                List::new(
+                    vec![ListElement::Single(
+                        Number::new(42.0, SourceInformation::dummy()).into(),
+                    )],
+                    SourceInformation::dummy(),
+                ),
+                types::Union::new(
+                    vec![
+                        types::List::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )
+                        .into(),
+                        types::List::new(
+                            types::None::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )
+                        .into(),
+                    ],
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )
+            .into(),
+            VariableDefinition::new(
+                "y",
+                Variable::new("x", SourceInformation::dummy()),
+                types::List::new(
+                    types::Union::new(
+                        vec![
+                            types::Number::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                ),
+                SourceInformation::dummy(),
+            )
+            .into(),
+        ]);
+
+        assert_debug_snapshot!(infer_types(&module));
+    }
+
     mod if_ {
         use super::*;
         use pretty_assertions::assert_eq;

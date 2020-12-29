@@ -16,6 +16,7 @@ lazy_static! {
                 rest_function_name: "_rest".into(),
                 list_type_name: "_AnyList".into(),
                 first_rest_type_name: "_FirstRest".into(),
+                map_function_name: "_mapList".into(),
             }
             .into(),
             string_type_configuration: lang::StringTypeConfiguration {

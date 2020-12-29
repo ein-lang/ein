@@ -16,6 +16,7 @@ lazy_static! {
         rest_function_name: "rest".into(),
         list_type_name: "GenericList".into(),
         first_rest_type_name: "FirstRest".into(),
+        map_function_name: "mapList".into(),
     }
     .into();
 }
@@ -30,6 +31,7 @@ pub struct ListTypeConfiguration {
     pub rest_function_name: String,
     pub list_type_name: String,
     pub first_rest_type_name: String,
+    pub map_function_name: String,
 }
 
 impl ListTypeConfiguration {
@@ -44,6 +46,7 @@ impl ListTypeConfiguration {
             rest_function_name: self.qualify_name(&self.rest_function_name, &names),
             list_type_name: self.qualify_name(&self.list_type_name, &names),
             first_rest_type_name: self.qualify_name(&self.first_rest_type_name, &names),
+            map_function_name: self.qualify_name(&self.map_function_name, &names),
         }
     }
 
