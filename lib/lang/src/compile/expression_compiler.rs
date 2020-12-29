@@ -251,19 +251,61 @@ impl ExpressionCompiler {
                 .into()
             }
             Expression::TypeCoercion(coercion) => {
-                if self.reference_type_resolver.is_list(coercion.to())? {
+                if self.reference_type_resolver.is_list(coercion.from())?
+                    && self.reference_type_resolver.is_list(coercion.to())?
+                {
                     self.compile(
                         &self
                             .expression_transformer_set
                             .list_type_coercion_transformer
                             .transform(coercion)?,
                     )?
-                } else if self.reference_type_resolver.is_function(coercion.to())? {
+                } else if self.reference_type_resolver.is_function(coercion.from())?
+                    && self.reference_type_resolver.is_function(coercion.to())?
+                {
                     self.compile(
                         &self
                             .expression_transformer_set
                             .function_type_coercion_transformer
                             .transform(coercion)?,
+                    )?
+                } else if self.reference_type_resolver.is_union(coercion.from())?
+                    && (self.reference_type_resolver.is_function(coercion.to())?
+                        || self.reference_type_resolver.is_list(coercion.to())?)
+                {
+                    let union_type = self
+                        .reference_type_resolver
+                        .resolve_to_union(coercion.from())?
+                        .unwrap();
+                    let source_information = coercion.source_information();
+                    let argument_name = "$arg";
+
+                    self.compile(
+                        &Case::with_type(
+                            union_type.clone(),
+                            argument_name,
+                            coercion.argument().clone(),
+                            union_type
+                                .types()
+                                .iter()
+                                .map(|type_| {
+                                    Alternative::new(
+                                        type_.clone(),
+                                        TypeCoercion::new(
+                                            Variable::new(
+                                                argument_name,
+                                                source_information.clone(),
+                                            ),
+                                            type_.clone(),
+                                            coercion.to().clone(),
+                                            source_information.clone(),
+                                        ),
+                                    )
+                                })
+                                .collect(),
+                            source_information.clone(),
+                        )
+                        .into(),
                     )?
                 } else {
                     // Coerce to union or Any types.
