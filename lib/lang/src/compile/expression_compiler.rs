@@ -578,6 +578,11 @@ mod tests {
             type_equality_checker.clone(),
             reference_type_resolver.clone(),
         );
+        let list_type_coercion_transformer = ListTypeCoercionTransformer::new(
+            type_equality_checker.clone(),
+            reference_type_resolver.clone(),
+            LIST_TYPE_CONFIGURATION.clone(),
+        );
         let list_case_transformer = ListCaseTransformer::new(
             reference_type_resolver.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
@@ -603,6 +608,7 @@ mod tests {
                     list_literal_transformer,
                     boolean_operation_transformer,
                     function_type_coercion_transformer,
+                    list_type_coercion_transformer,
                     list_case_transformer,
                     let_error_transformer,
                 }
