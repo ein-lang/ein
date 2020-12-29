@@ -33,6 +33,14 @@ impl ListTypeCoercionTransformer {
     }
 
     pub fn transform(&self, coercion: &TypeCoercion) -> Result<Expression, CompileError> {
+        Ok(if self.is_coercion_necessary(coercion.to())? {
+            self.transform_element(coercion)?
+        } else {
+            coercion.argument().clone()
+        })
+    }
+
+    fn transform_element(&self, coercion: &TypeCoercion) -> Result<Expression, CompileError> {
         let coerce_function_name = self.coerce_function_name_generator.generate();
         let argument_name = self.argument_name_generator.generate();
 
@@ -113,5 +121,16 @@ impl ListTypeCoercionTransformer {
             )
             .into()
         })
+    }
+
+    fn is_coercion_necessary(&self, to_type: &Type) -> Result<bool, CompileError> {
+        let list_type = self
+            .reference_type_resolver
+            .resolve_to_list(to_type)?
+            .unwrap();
+        let element_type = list_type.element();
+
+        Ok(self.reference_type_resolver.is_function(element_type)?
+            || self.reference_type_resolver.is_list(element_type)?)
     }
 }
