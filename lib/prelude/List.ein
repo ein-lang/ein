@@ -9,6 +9,7 @@ export {
   _getListLength,
   _prependToList,
   _firstRest,
+  _mapList,
 }
 
 type _AnyList {
@@ -103,3 +104,16 @@ equalNodes equalElements one other =
       case other = other
         Node => False
         None => True
+
+_mapList : (Any -> Any) -> _AnyList -> _AnyList
+_mapList f list = _AnyList{ node = _mapNode f (_AnyList.node list) }
+
+_mapNode : (Any -> Any) -> Node | None -> Node | None
+_mapNode f node =
+  case node = node
+    Node =>
+      Node{
+        first = node |> Node.first |> f,
+        rest = node |> Node.rest |> _mapNode f,
+      }
+    None => None

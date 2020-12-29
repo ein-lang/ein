@@ -46,7 +46,7 @@ impl TypeCompiler {
 
     pub fn compile(&self, type_: &Type) -> Result<ssf::types::Type, CompileError> {
         Ok(match type_ {
-            Type::Any(_) => self.compile_any()?.into(),
+            Type::Any(_) => self.compile_any().into(),
             Type::Boolean(_) => self.compile_boolean().into(),
             Type::Function(function) => ssf::types::Function::new(
                 self.compile(function.argument())?,
@@ -148,10 +148,8 @@ impl TypeCompiler {
     }
 
     // Any types are compiled as union types which subsume all types.
-    pub fn compile_any(&self) -> Result<ssf::types::Algebraic, CompileError> {
-        Ok(ssf::types::Algebraic::with_tags(
-            UNION_PADDING_ENTRIES.iter().cloned().collect(),
-        ))
+    pub fn compile_any(&self) -> ssf::types::Algebraic {
+        ssf::types::Algebraic::with_tags(UNION_PADDING_ENTRIES.iter().cloned().collect())
     }
 
     pub fn compile_union_for_case<'a>(

@@ -49,7 +49,8 @@ pub use string_type_configuration::StringTypeConfiguration;
 use transform::{
     transform_before_name_qualification, transform_with_types, transform_without_types,
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
+    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, ListTypeCoercionTransformer,
+    NotEqualOperationTransformer,
 };
 use type_canonicalizer::TypeCanonicalizer;
 use type_comparability_checker::TypeComparabilityChecker;
@@ -122,6 +123,11 @@ pub fn compile(
         type_equality_checker.clone(),
         reference_type_resolver.clone(),
     );
+    let list_type_coercion_transformer = ListTypeCoercionTransformer::new(
+        type_equality_checker.clone(),
+        reference_type_resolver.clone(),
+        configuration.list_type_configuration.clone(),
+    );
     let list_case_transformer = ListCaseTransformer::new(
         reference_type_resolver.clone(),
         configuration.list_type_configuration.clone(),
@@ -146,6 +152,7 @@ pub fn compile(
             list_literal_transformer,
             boolean_operation_transformer,
             function_type_coercion_transformer,
+            list_type_coercion_transformer,
             list_case_transformer,
             let_error_transformer,
         }

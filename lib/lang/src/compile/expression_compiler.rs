@@ -6,7 +6,8 @@ use super::reference_type_resolver::ReferenceTypeResolver;
 use super::string_type_configuration::StringTypeConfiguration;
 use super::transform::{
     BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, NotEqualOperationTransformer,
+    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, ListTypeCoercionTransformer,
+    NotEqualOperationTransformer,
 };
 use super::type_compiler::TypeCompiler;
 use super::union_tag_calculator::UnionTagCalculator;
@@ -27,6 +28,7 @@ pub struct ExpressionTransformerSet {
     pub list_literal_transformer: Arc<ListLiteralTransformer>,
     pub boolean_operation_transformer: Arc<BooleanOperationTransformer>,
     pub function_type_coercion_transformer: Arc<FunctionTypeCoercionTransformer>,
+    pub list_type_coercion_transformer: Arc<ListTypeCoercionTransformer>,
     pub list_case_transformer: Arc<ListCaseTransformer>,
     pub let_error_transformer: Arc<LetErrorTransformer>,
 }
@@ -250,7 +252,12 @@ impl ExpressionCompiler {
             }
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_list(coercion.to())? {
-                    todo!("List type covariance not implemented yet")
+                    self.compile(
+                        &self
+                            .expression_transformer_set
+                            .list_type_coercion_transformer
+                            .transform(coercion)?,
+                    )?
                 } else if self.reference_type_resolver.is_function(coercion.to())? {
                     self.compile(
                         &self
