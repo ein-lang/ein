@@ -18,8 +18,8 @@ Feature: Subtyping
         Number => 0
         None => 1
     """
-    When I run `ein build`
-    Then the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Handle covariance and contravariance of functions in lists
     Given a file named "Main.ein" with:
@@ -42,8 +42,8 @@ Feature: Subtyping
             Number => 0
             None => 1
     """
-    When I run `ein build`
-    Then the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
 
   Scenario: Let a function type subsume a union type.
     Given a file named "Main.ein" with:
@@ -66,5 +66,5 @@ Feature: Subtyping
             Number => 0
             None => 1
     """
-    When I run `ein build`
-    Then the exit status should be 0
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
