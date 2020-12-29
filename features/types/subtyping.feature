@@ -3,7 +3,7 @@ Feature: Subtyping
     Given I successfully run `ein init command foo`
     And I cd to "foo"
 
-  Scenario: Handle covariance and contravariance with functions
+  Scenario: Handle covariance and contravariance of functions
     Given a file named "Main.ein" with:
     """
     f : Number | None -> Number
@@ -21,7 +21,7 @@ Feature: Subtyping
     When I run `ein build`
     Then the exit status should be 0
 
-  Scenario: Handle covariance and contravariance with functions in lists
+  Scenario: Handle covariance and contravariance of functions in lists
     Given a file named "Main.ein" with:
     """
     f : Number | None -> Number
