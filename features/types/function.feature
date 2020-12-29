@@ -59,18 +59,3 @@ Feature: Function
     """
     When I run `ein build`
     Then the exit status should be 0
-
-  Scenario: Handle covariance and contravariance
-    Given a file named "Main.ein" with:
-    """
-    f : Number | None -> Number
-    f x = 42
-
-    g : (Number -> Number | None) -> Number
-    g h = let x = h 0 in 0
-
-    a : Number
-    a = g f
-    """
-    When I run `ein build`
-    Then the exit status should be 0
