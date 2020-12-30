@@ -41,7 +41,9 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                         .iter()
                         .map(|path| self.file_path_converter.convert_to_os_path(path)),
                 )
-                .arg(&self.runtime_library_path),
+                .arg(&self.runtime_library_path)
+                .arg("-ldl")
+                .arg("-lpthread"),
         )?;
 
         Ok(())
