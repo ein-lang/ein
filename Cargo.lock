@@ -214,10 +214,7 @@ dependencies = [
 
 [[package]]
 name = "ein-ffi"
-version = "0.2.0"
-dependencies = [
- "bdwgc-alloc",
-]
+version = "0.2.1"
 
 [[package]]
 name = "either"
@@ -661,6 +658,7 @@ checksum = "3b181ba2dcf07aaccad5448e8ead58db5b742cf85dfe035e2227f137a539a189"
 name = "runtime"
 version = "0.1.0"
 dependencies = [
+ "bdwgc-alloc",
  "ein-ffi",
  "termcolor",
 ]
