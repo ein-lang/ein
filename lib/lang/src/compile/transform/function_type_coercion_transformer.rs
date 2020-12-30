@@ -116,7 +116,7 @@ impl FunctionTypeCoercionTransformer {
                     )
                     .into()
                 }
-                (_, Type::Function(_)) => unreachable!("{:#?} {:#?}", &from_type, &to_type),
+                (_, Type::Function(_)) => unreachable!(),
                 _ => self.coerce_type(argument, from_type, to_type, source_information)?,
             }
         })
