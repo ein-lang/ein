@@ -32,8 +32,10 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                 .arg("-o")
                 .arg(command_name)
                 .arg("-O3")
-                .arg("-ldl")
-                .arg("-lpthread")
+                // TODO Replace this with the one of system packages.
+                // This double linking of the runtime library is to define
+                // __rg_alloc, etc. the very first.
+                .arg(&self.runtime_library_path)
                 .args(
                     object_file_paths
                         .iter()
