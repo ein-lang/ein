@@ -32,14 +32,18 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                 .arg("-o")
                 .arg(command_name)
                 .arg("-O3")
-                .arg("-ldl")
-                .arg("-lpthread")
+                // TODO Replace this with the one of system packages.
+                // This double linking of the runtime library is to define
+                // the global allocator symbols in Rust first.
+                .arg(&self.runtime_library_path)
                 .args(
                     object_file_paths
                         .iter()
                         .map(|path| self.file_path_converter.convert_to_os_path(path)),
                 )
-                .arg(&self.runtime_library_path),
+                .arg(&self.runtime_library_path)
+                .arg("-ldl")
+                .arg("-lpthread"),
         )?;
 
         Ok(())
