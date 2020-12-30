@@ -25,5 +25,9 @@ extern "C" fn system_fd_write(
 ) -> ffi::Number {
     let mut file = unsafe { File::from_raw_fd(f64::from(fd) as i32) };
 
-    (file.write(buffer.as_slice()).unwrap() as f64).into()
+    let byte_count = (file.write(buffer.as_slice()).unwrap() as f64).into();
+
+    std::mem::forget(file);
+
+    byte_count
 }
