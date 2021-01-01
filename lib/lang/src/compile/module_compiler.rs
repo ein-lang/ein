@@ -98,7 +98,7 @@ impl ModuleCompiler {
                 .into_iter()
                 .flatten()
                 .collect(),
-        )?)
+        ))
     }
 
     fn compile_function_definition(
