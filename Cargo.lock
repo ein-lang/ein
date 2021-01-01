@@ -660,7 +660,6 @@ version = "0.1.0"
 dependencies = [
  "bdwgc-alloc",
  "ein-ffi",
- "termcolor",
 ]
 
 [[package]]
@@ -748,7 +747,7 @@ checksum = "1a55ca5f3b68e41c979bf8c46a6f1da892ca4db8f94023ce0bd32407573b1ac0"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#d8a2fd28439898a0c44fd4470b241d6873e7ef94"
+source = "git+https://github.com/raviqqe/ssf?branch=main#ff75cdfb1d3f04007e3dbdea93cdfa4c8bc787be"
 dependencies = [
  "pretty_assertions",
 ]
@@ -756,7 +755,7 @@ dependencies = [
 [[package]]
 name = "ssf-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#d8a2fd28439898a0c44fd4470b241d6873e7ef94"
+source = "git+https://github.com/raviqqe/ssf?branch=main#ff75cdfb1d3f04007e3dbdea93cdfa4c8bc787be"
 dependencies = [
  "inkwell",
  "lazy_static",

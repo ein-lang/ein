@@ -11,4 +11,3 @@ crate-type = ["staticlib"]
 [dependencies]
 bdwgc-alloc = "0.5"
 ffi = { path = "../ffi", package = "ein-ffi" }
-termcolor = "1"

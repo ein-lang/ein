@@ -5,7 +5,6 @@ lazy_static! {
     pub static ref COMPILE_CONFIGURATION: Arc<lang::CompileConfiguration> =
         lang::CompileConfiguration {
             malloc_function_name: "ein_malloc".into(),
-            panic_function_name: "ein_panic".into(),
             list_type_configuration: lang::ListTypeConfiguration {
                 empty_list_variable_name: "_emptyList".into(),
                 concatenate_function_name: "_concatenateLists".into(),
