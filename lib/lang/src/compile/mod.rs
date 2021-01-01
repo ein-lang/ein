@@ -172,10 +172,10 @@ pub fn compile(
                 configuration.string_type_configuration.clone(),
             )
             .compile(&module)?,
-            ssf_llvm::CompileConfiguration::new(
-                Some(configuration.malloc_function_name.clone()),
-                Some(configuration.panic_function_name.clone()),
-            ),
+            ssf_llvm::CompileConfiguration {
+                malloc_function_name: configuration.malloc_function_name.clone(),
+            }
+            .into(),
         )?,
         ModuleInterfaceCompiler::new().compile(&module)?,
     ))
