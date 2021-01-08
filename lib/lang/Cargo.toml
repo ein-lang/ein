@@ -5,7 +5,7 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-combine = { version = "4.4.0", features = ["regex"] }
+combine = { version = "4.5.2", features = ["regex"] }
 derivative = "2"
 indoc = "1.0"
 insta = { version = "1.5", features = ["backtrace"] }
