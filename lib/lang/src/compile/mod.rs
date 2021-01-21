@@ -165,18 +165,15 @@ pub fn compile(
     );
 
     Ok((
-        ssf_llvm::compile(
+        fmm_c::compile(&ssf_fmm::compile(
             &ModuleCompiler::new(
                 expression_compiler,
                 type_compiler,
                 configuration.string_type_configuration.clone(),
             )
             .compile(&module)?,
-            ssf_llvm::CompileConfiguration {
-                malloc_function_name: configuration.malloc_function_name.clone(),
-            }
-            .into(),
-        )?,
+        ))
+        .into(),
         ModuleInterfaceCompiler::new().compile(&module)?,
     ))
 }
