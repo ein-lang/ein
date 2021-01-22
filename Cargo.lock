@@ -230,7 +230,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#f510da5b04a0e453962dec153021886fa5b60de8"
+source = "git+https://github.com/raviqqe/fmm?branch=main#b61d1babdccbe58b7f21485168b3a6dc3950c022"
 dependencies = [
  "petgraph",
 ]
@@ -238,7 +238,7 @@ dependencies = [
 [[package]]
 name = "fmm-c"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#f510da5b04a0e453962dec153021886fa5b60de8"
+source = "git+https://github.com/raviqqe/fmm?branch=main#b61d1babdccbe58b7f21485168b3a6dc3950c022"
 dependencies = [
  "fmm",
  "tempfile",
@@ -715,7 +715,7 @@ dependencies = [
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#b9a8378e0e8211a64f5d894c6e6a27ea0b22ef49"
+source = "git+https://github.com/raviqqe/ssf?branch=main#afcef22e550a5359f2fb4266cb915ab8600175c9"
 dependencies = [
  "pretty_assertions",
 ]
@@ -723,7 +723,7 @@ dependencies = [
 [[package]]
 name = "ssf-fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#b9a8378e0e8211a64f5d894c6e6a27ea0b22ef49"
+source = "git+https://github.com/raviqqe/ssf?branch=main#afcef22e550a5359f2fb4266cb915ab8600175c9"
 dependencies = [
  "fmm",
  "fmm-c",
