@@ -25,11 +25,11 @@ impl BooleanCompiler {
             expression.into(),
             vec![
                 ssf::ir::PrimitiveAlternative::new(
-                    ssf::ir::Primitive::Integer8(0),
+                    ssf::ir::Primitive::Boolean(false),
                     self.compile(false),
                 ),
                 ssf::ir::PrimitiveAlternative::new(
-                    ssf::ir::Primitive::Integer8(1),
+                    ssf::ir::Primitive::Boolean(true),
                     self.compile(true),
                 ),
             ],
