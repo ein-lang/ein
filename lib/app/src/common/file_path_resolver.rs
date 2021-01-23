@@ -32,22 +32,15 @@ impl<'a> FilePathResolver<'a> {
         )
     }
 
-    pub fn resolve_object_file_path(
-        &self,
-        package_directory: &FilePath,
-        id: impl AsRef<str>,
-    ) -> FilePath {
-        package_directory.join(
-            &self
-                .static_file_path_manager
-                .object_directory_path()
-                .join(&FilePath::new(&[&id]))
-                .with_extension(OBJECT_FILE_EXTENSION),
-        )
+    pub fn resolve_object_file_path(&self, id: impl AsRef<str>) -> FilePath {
+        self.static_file_path_manager
+            .object_directory_path()
+            .join(&FilePath::new(&[&id]))
+            .with_extension(OBJECT_FILE_EXTENSION)
     }
 
-    pub fn resolve_interface_file_path(&self, package_directory: &FilePath, id: &str) -> FilePath {
-        self.resolve_object_file_path(package_directory, id)
+    pub fn resolve_interface_file_path(&self, id: &str) -> FilePath {
+        self.resolve_object_file_path(id)
             .with_extension(INTERFACE_FILE_EXTENSION)
     }
 
