@@ -714,14 +714,14 @@ mod tests {
                     ),
                     vec![
                         ssf::ir::PrimitiveAlternative::new(
-                            ssf::ir::Primitive::Integer8(0),
+                            ssf::ir::Primitive::Boolean(false),
                             ssf::ir::ConstructorApplication::new(
                                 ssf::ir::Constructor::new(type_compiler.compile_boolean(), 0),
                                 vec![],
                             ),
                         ),
                         ssf::ir::PrimitiveAlternative::new(
-                            ssf::ir::Primitive::Integer8(1),
+                            ssf::ir::Primitive::Boolean(true),
                             ssf::ir::ConstructorApplication::new(
                                 ssf::ir::Constructor::new(type_compiler.compile_boolean(), 1),
                                 vec![],
