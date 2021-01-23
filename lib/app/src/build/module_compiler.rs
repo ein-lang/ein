@@ -1,6 +1,5 @@
 use super::error::BuildError;
 use super::module_parser::ModuleParser;
-use super::package_interface::PackageInterface;
 use crate::common::{
     FilePath, FilePathConfiguration, FilePathResolver, PackageConfiguration, Target,
 };
@@ -42,7 +41,7 @@ impl<'a> ModuleCompiler<'a> {
         &self,
         source_file_path: &FilePath,
         module_interfaces: &HashMap<lang::UnresolvedModulePath, lang::ModuleInterface>,
-        prelude_package_interface: Option<&PackageInterface>,
+        prelude_module_interfaces: &[lang::ModuleInterface],
         package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_system.read_to_string(source_file_path)?;
@@ -84,37 +83,30 @@ impl<'a> ModuleCompiler<'a> {
             &module_path.external_unresolved()
         ))?;
 
-        let (bitcode, module_interface) = lang::compile(
-            &module.resolve(
-                module_path.clone(),
-                imported_module_interfaces
-                    .into_iter()
-                    .map(|module_interface| lang::Import::new(module_interface, true))
-                    .chain(if let Some(package_interface) = prelude_package_interface {
-                        package_interface
-                            .modules()
-                            .iter()
-                            .map(|module_interface| {
-                                lang::Import::new(module_interface.clone(), false)
-                            })
-                            .collect()
-                    } else {
-                        vec![]
-                    })
-                    .collect(),
-            ),
-            // TODO Refactor this by creating the following classes.
-            // - MainModuleCompiler
-            // - CommandPackageBuilder
-            // - LibraryPackageBuilder
-            if self.is_main_module(&module_path, package_configuration) {
-                self.compile_configuration.clone()
-            } else {
-                let mut configuration = self.compile_configuration.as_ref().clone();
-                configuration.main_module_configuration = None;
-                configuration.into()
-            },
-        )?;
+        let (bitcode, module_interface) =
+            lang::compile(
+                &module.resolve(
+                    module_path.clone(),
+                    imported_module_interfaces
+                        .into_iter()
+                        .map(|module_interface| lang::Import::new(module_interface, true))
+                        .chain(prelude_module_interfaces.iter().map(|module_interface| {
+                            lang::Import::new(module_interface.clone(), false)
+                        }))
+                        .collect(),
+                ),
+                // TODO Refactor this by creating the following classes.
+                // - MainModuleCompiler
+                // - CommandPackageBuilder
+                // - LibraryPackageBuilder
+                if self.is_main_module(&module_path, package_configuration) {
+                    self.compile_configuration.clone()
+                } else {
+                    let mut configuration = self.compile_configuration.as_ref().clone();
+                    configuration.main_module_configuration = None;
+                    configuration.into()
+                },
+            )?;
 
         self.file_system.write(&object_file_path, &bitcode)?;
         self.file_system.write(

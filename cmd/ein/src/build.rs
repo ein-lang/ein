@@ -33,11 +33,10 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_system,
         &file_path_resolver,
     );
-    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_system);
     let modules_linker = app::ModulesLinker::new(
         &module_objects_linker,
-        &module_interfaces_linker,
         &static_file_path_manager,
+        &file_system,
     );
 
     let package_configuration_reader = app::PackageConfigurationReader::new(
@@ -66,7 +65,6 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &package_configuration_reader,
         &package_builder,
         &prelude_package_downloader,
-        &file_system,
         &static_file_path_manager,
     );
     let command_linker = infra::CommandLinker::new(
@@ -82,8 +80,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_resolver,
         &logger,
     );
-    let external_packages_builder =
-        app::ExternalPackagesBuilder::new(&package_builder, &file_system);
+    let external_packages_builder = app::ExternalPackagesBuilder::new(&package_builder);
     let main_package_builder = app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,

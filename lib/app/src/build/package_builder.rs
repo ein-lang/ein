@@ -1,6 +1,5 @@
 use super::modules_builder::ModulesBuilder;
 use super::modules_linker::ModulesLinker;
-use super::package_interface::PackageInterface;
 use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
 use crate::infra::{FfiPackageInitializer, Logger};
 use std::collections::HashMap;
@@ -34,8 +33,8 @@ impl<'a> PackageBuilder<'a> {
             ExternalPackage,
             HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface>,
         >,
-        prelude_package_interface: Option<&PackageInterface>,
-    ) -> Result<(Vec<FilePath>, FilePath), Box<dyn std::error::Error>> {
+        prelude_module_interfaces: &[lang::ModuleInterface],
+    ) -> Result<(Vec<FilePath>, Vec<lang::ModuleInterface>), Box<dyn std::error::Error>> {
         self.logger.log(&format!(
             "building package {} {}",
             package_configuration.package().name(),
@@ -75,10 +74,10 @@ impl<'a> PackageBuilder<'a> {
         let (object_file_paths, interface_file_paths) = self.modules_builder.build(
             &package_configuration,
             &external_module_interfaces,
-            prelude_package_interface,
+            prelude_module_interfaces,
         )?;
 
-        let (package_object_file_path, package_interface_file_path) = self.modules_linker.link(
+        let (package_object_file_path, package_interface) = self.modules_linker.link(
             &object_file_paths,
             &interface_file_paths,
             package_configuration.directory_path(),
@@ -89,7 +88,7 @@ impl<'a> PackageBuilder<'a> {
                 .into_iter()
                 .chain(ffi_object_file_path)
                 .collect(),
-            package_interface_file_path,
+            package_interface,
         ))
     }
 }

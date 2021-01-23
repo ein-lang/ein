@@ -41,7 +41,7 @@ impl<'a> MainPackageBuilder<'a> {
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         let package_configuration = self.package_configuration_reader.read(&FilePath::empty())?;
 
-        let (prelude_package_object_file_paths, prelude_package_interface) =
+        let (prelude_package_object_file_paths, prelude_module_interfaces) =
             self.prelude_package_builder.build()?;
 
         let external_package_configurations = self
@@ -50,12 +50,12 @@ impl<'a> MainPackageBuilder<'a> {
 
         let (external_package_object_file_paths, external_module_interfaces) = self
             .external_packages_builder
-            .build(&external_package_configurations, &prelude_package_interface)?;
+            .build(&external_package_configurations, &prelude_module_interfaces)?;
 
         let (package_object_file_paths, _) = self.package_builder.build(
             &package_configuration,
             &external_module_interfaces,
-            Some(&prelude_package_interface),
+            &prelude_module_interfaces,
         )?;
 
         match package_configuration.build_configuration().target() {
