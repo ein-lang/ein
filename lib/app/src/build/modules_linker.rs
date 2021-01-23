@@ -35,7 +35,7 @@ impl<'a> ModulesLinker<'a> {
         Ok((
             package_object_file_path,
             interface_file_paths
-                .into_iter()
+                .iter()
                 .map(|file_path| {
                     Ok(serde_json::from_slice(
                         &self.file_system.read_to_vec(&file_path)?,
