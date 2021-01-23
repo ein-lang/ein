@@ -2,7 +2,6 @@ pub const EXTERNAL_PACKAGES_DIRECTORY: &str = "packages";
 pub const INTERFACE_FILE_EXTENSION: &str = "json";
 pub const OBJECT_DIRECTORY: &str = "objects";
 pub const OBJECT_FILE_EXTENSION: &str = "bc";
-pub const PACKAGE_ARTIFACT_BASENAME: &str = "package";
 pub const PRELUDE_PACKAGE_DIRECTORY: &str = "prelude";
 
 pub struct FilePathConfiguration {
