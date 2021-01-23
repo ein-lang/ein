@@ -1,6 +1,5 @@
 use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
-use super::package_interface::PackageInterface;
 use crate::common::{FilePath, StaticFilePathManager};
 use crate::infra::PreludePackageDownloader;
 
@@ -26,7 +25,9 @@ impl<'a> PreludePackageBuilder<'a> {
         }
     }
 
-    pub fn build(&self) -> Result<(Vec<FilePath>, PackageInterface), Box<dyn std::error::Error>> {
+    pub fn build(
+        &self,
+    ) -> Result<(Vec<FilePath>, Vec<lang::ModuleInterface>), Box<dyn std::error::Error>> {
         let directory_path = self
             .static_file_path_manager
             .prelude_package_directory_path();
@@ -37,7 +38,7 @@ impl<'a> PreludePackageBuilder<'a> {
 
         let (package_object_file_paths, package_interface) =
             self.package_builder
-                .build(&package_configuration, &Default::default(), None)?;
+                .build(&package_configuration, &Default::default(), &[])?;
 
         Ok((package_object_file_paths, package_interface))
     }
