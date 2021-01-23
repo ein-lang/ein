@@ -1,4 +1,5 @@
 use super::module_interfaces_linker::ModuleInterfacesLinker;
+use super::package_interface::PackageInterface;
 use crate::common::{FilePath, StaticFilePathManager};
 use crate::infra::ModuleObjectsLinker;
 
@@ -26,19 +27,16 @@ impl<'a> ModulesLinker<'a> {
         object_file_paths: &[FilePath],
         interface_file_paths: &[FilePath],
         directory_path: &FilePath,
-    ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
+    ) -> Result<(FilePath, PackageInterface), Box<dyn std::error::Error>> {
         let package_object_file_path =
             directory_path.join(self.static_file_path_manager.package_object_file_path());
 
         self.module_objects_linker
             .link(&object_file_paths, &package_object_file_path)?;
 
-        let package_interface_file_path =
-            directory_path.join(self.static_file_path_manager.package_interface_file_path());
-
-        self.module_interfaces_linker
-            .link(interface_file_paths, &package_interface_file_path)?;
-
-        Ok((package_object_file_path, package_interface_file_path))
+        Ok((
+            package_object_file_path,
+            self.module_interfaces_linker.link(interface_file_paths)?,
+        ))
     }
 }
