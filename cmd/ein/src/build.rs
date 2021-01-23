@@ -14,8 +14,6 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let file_path_displayer = infra::FilePathDisplayer::new(&file_path_converter);
 
     let command_runner = infra::CommandRunner::new();
-    let module_objects_linker =
-        infra::ModuleObjectsLinker::new(&command_runner, &file_path_converter);
     let module_parser = app::ModuleParser::new(&file_path_displayer);
     let module_compiler = app::ModuleCompiler::new(
         &module_parser,
@@ -33,12 +31,6 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_system,
         &file_path_resolver,
     );
-    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_system);
-    let modules_linker = app::ModulesLinker::new(
-        &module_objects_linker,
-        &module_interfaces_linker,
-        &static_file_path_manager,
-    );
 
     let package_configuration_reader = app::PackageConfigurationReader::new(
         &file_system,
@@ -49,9 +41,9 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         infra::FfiPackageInitializer::new(&command_runner, &file_path_converter);
     let package_builder = app::PackageBuilder::new(
         &modules_builder,
-        &modules_linker,
-        &logger,
         &ffi_package_initializer,
+        &file_system,
+        &logger,
     );
 
     let root_directory_string = std::env::var("EIN_ROOT")?;
@@ -66,7 +58,6 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &package_configuration_reader,
         &package_builder,
         &prelude_package_downloader,
-        &file_system,
         &static_file_path_manager,
     );
     let command_linker = infra::CommandLinker::new(
@@ -82,8 +73,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_path_resolver,
         &logger,
     );
-    let external_packages_builder =
-        app::ExternalPackagesBuilder::new(&package_builder, &file_system);
+    let external_packages_builder = app::ExternalPackagesBuilder::new(&package_builder);
     let main_package_builder = app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,

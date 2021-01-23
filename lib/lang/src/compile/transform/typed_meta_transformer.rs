@@ -89,7 +89,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
 
         let body = self.transform_expression(function_definition.body(), &variables)?;
 
-        Ok(self.component_transformer.transform_function_definition(
+        self.component_transformer.transform_function_definition(
             &FunctionDefinition::new(
                 function_definition.name(),
                 function_definition.arguments().to_vec(),
@@ -98,7 +98,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 function_definition.source_information().clone(),
             ),
             &variables,
-        )?)
+        )
     }
 
     fn transform_variable_definition(
@@ -108,7 +108,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
     ) -> Result<VariableDefinition, CompileError> {
         let body = self.transform_expression(variable_definition.body(), variables)?;
 
-        Ok(self.component_transformer.transform_variable_definition(
+        self.component_transformer.transform_variable_definition(
             &VariableDefinition::new(
                 variable_definition.name(),
                 body,
@@ -116,7 +116,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 variable_definition.source_information().clone(),
             ),
             variables,
-        )?)
+        )
     }
 
     fn transform_expression(
@@ -353,8 +353,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             Expression::RecordUpdate(_) | Expression::TypeCoercion(_) => unreachable!(),
         };
 
-        Ok(self
-            .component_transformer
-            .transform_expression(&expression, &variables)?)
+        self.component_transformer
+            .transform_expression(&expression, &variables)
     }
 }

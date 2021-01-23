@@ -18,15 +18,14 @@ impl<'a> FileSystem<'a> {
     ) -> Result<Vec<app::FilePath>, std::io::Error> {
         let path = self.file_path_converter.convert_to_os_path(file_path);
 
-        Ok(path
-            .read_dir()?
+        path.read_dir()?
             .map(|entry| {
                 Ok(self
                     .file_path_converter
                     .convert_absolute_to_file_path(entry?.path())
                     .unwrap())
             })
-            .collect::<Result<_, std::io::Error>>()?)
+            .collect::<Result<_, std::io::Error>>()
     }
 
     fn read_repository_with_raw_error(

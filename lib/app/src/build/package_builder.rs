@@ -1,29 +1,27 @@
 use super::modules_builder::ModulesBuilder;
-use super::modules_linker::ModulesLinker;
-use super::package_interface::PackageInterface;
 use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
-use crate::infra::{FfiPackageInitializer, Logger};
+use crate::infra::{FfiPackageInitializer, FileSystem, Logger};
 use std::collections::HashMap;
 
 pub struct PackageBuilder<'a> {
     modules_builder: &'a ModulesBuilder<'a>,
-    modules_linker: &'a ModulesLinker<'a>,
-    logger: &'a dyn Logger,
     ffi_package_initializer: &'a dyn FfiPackageInitializer,
+    file_system: &'a dyn FileSystem,
+    logger: &'a dyn Logger,
 }
 
 impl<'a> PackageBuilder<'a> {
     pub fn new(
         modules_builder: &'a ModulesBuilder<'a>,
-        modules_linker: &'a ModulesLinker<'a>,
-        logger: &'a dyn Logger,
         ffi_package_initializer: &'a dyn FfiPackageInitializer,
+        file_system: &'a dyn FileSystem,
+        logger: &'a dyn Logger,
     ) -> Self {
         Self {
             modules_builder,
-            modules_linker,
-            logger,
             ffi_package_initializer,
+            file_system,
+            logger,
         }
     }
 
@@ -34,8 +32,8 @@ impl<'a> PackageBuilder<'a> {
             ExternalPackage,
             HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface>,
         >,
-        prelude_package_interface: Option<&PackageInterface>,
-    ) -> Result<(Vec<FilePath>, FilePath), Box<dyn std::error::Error>> {
+        prelude_module_interfaces: &[lang::ModuleInterface],
+    ) -> Result<(Vec<FilePath>, Vec<lang::ModuleInterface>), Box<dyn std::error::Error>> {
         self.logger.log(&format!(
             "building package {} {}",
             package_configuration.package().name(),
@@ -75,21 +73,22 @@ impl<'a> PackageBuilder<'a> {
         let (object_file_paths, interface_file_paths) = self.modules_builder.build(
             &package_configuration,
             &external_module_interfaces,
-            prelude_package_interface,
-        )?;
-
-        let (package_object_file_path, package_interface_file_path) = self.modules_linker.link(
-            &object_file_paths,
-            &interface_file_paths,
-            package_configuration.directory_path(),
+            prelude_module_interfaces,
         )?;
 
         Ok((
-            vec![package_object_file_path]
+            object_file_paths
                 .into_iter()
                 .chain(ffi_object_file_path)
                 .collect(),
-            package_interface_file_path,
+            interface_file_paths
+                .iter()
+                .map(|file_path| {
+                    Ok(serde_json::from_slice(
+                        &self.file_system.read_to_vec(&file_path)?,
+                    )?)
+                })
+                .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?,
         ))
     }
 }

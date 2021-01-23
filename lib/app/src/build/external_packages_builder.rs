@@ -1,8 +1,6 @@
 use super::error::BuildError;
 use super::package_builder::PackageBuilder;
-use super::package_interface::PackageInterface;
 use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
-use crate::infra::FileSystem;
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
 use std::collections::HashMap;
@@ -12,53 +10,46 @@ type ExternalModuleInterfaces =
 
 pub struct ExternalPackagesBuilder<'a> {
     package_builder: &'a PackageBuilder<'a>,
-    file_system: &'a dyn FileSystem,
 }
 
 impl<'a> ExternalPackagesBuilder<'a> {
-    pub fn new(package_builder: &'a PackageBuilder<'a>, file_system: &'a dyn FileSystem) -> Self {
-        Self {
-            package_builder,
-            file_system,
-        }
+    pub fn new(package_builder: &'a PackageBuilder<'a>) -> Self {
+        Self { package_builder }
     }
 
     pub fn build(
         &self,
         package_configurations: &HashMap<ExternalPackage, PackageConfiguration>,
-        prelude_package_interface: &PackageInterface,
+        prelude_module_interfaces: &[lang::ModuleInterface],
     ) -> Result<(Vec<FilePath>, ExternalModuleInterfaces), Box<dyn std::error::Error>> {
         let mut package_object_file_paths = vec![];
-        let mut module_interfaces = HashMap::new();
+        let mut external_module_interfaces = HashMap::new();
 
         for external_package in self.sort_external_packages(package_configurations)? {
             let package_configuration = &package_configurations[&external_package];
 
-            let (object_file_paths, interface_file_path) = self.package_builder.build(
+            let (object_file_paths, module_interfaces) = self.package_builder.build(
                 package_configuration,
-                &module_interfaces,
-                Some(prelude_package_interface),
+                &external_module_interfaces,
+                &prelude_module_interfaces,
             )?;
 
             package_object_file_paths.extend(object_file_paths);
 
-            module_interfaces.insert(
+            external_module_interfaces.insert(
                 external_package.clone(),
-                self.convert_package_interface(&serde_json::from_str::<PackageInterface>(
-                    &self.file_system.read_to_string(&interface_file_path)?,
-                )?),
+                self.convert_module_interfaces(&module_interfaces),
             );
         }
 
-        Ok((package_object_file_paths, module_interfaces))
+        Ok((package_object_file_paths, external_module_interfaces))
     }
 
-    fn convert_package_interface(
+    fn convert_module_interfaces(
         &self,
-        package_interface: &PackageInterface,
+        module_interfaces: &[lang::ModuleInterface],
     ) -> HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface> {
-        package_interface
-            .modules()
+        module_interfaces
             .iter()
             .map(|module_interface| {
                 (
