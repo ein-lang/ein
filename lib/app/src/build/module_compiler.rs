@@ -83,7 +83,7 @@ impl<'a> ModuleCompiler<'a> {
             &module_path.external_unresolved()
         ))?;
 
-        let (bitcode, module_interface) =
+        let (module_object_data, module_interface) =
             lang::compile(
                 &module.resolve(
                     module_path.clone(),
@@ -108,7 +108,8 @@ impl<'a> ModuleCompiler<'a> {
                 },
             )?;
 
-        self.file_system.write(&object_file_path, &bitcode)?;
+        self.file_system
+            .write(&object_file_path, &module_object_data)?;
         self.file_system.write(
             &interface_file_path,
             &serde_json::to_string(&module_interface)?.as_bytes(),
