@@ -33,11 +33,10 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &file_system,
         &file_path_resolver,
     );
-    let module_interfaces_linker = app::ModuleInterfacesLinker::new(&file_system);
     let modules_linker = app::ModulesLinker::new(
         &module_objects_linker,
-        &module_interfaces_linker,
         &static_file_path_manager,
+        &file_system,
     );
 
     let package_configuration_reader = app::PackageConfigurationReader::new(
