@@ -62,12 +62,10 @@ impl<'a> ModuleCompiler<'a> {
 
         let module_id =
             self.generate_module_id(source_file_path, &source, &imported_module_interfaces);
-        let object_file_path = self
-            .file_path_resolver
-            .resolve_object_file_path(package_configuration.directory_path(), &module_id);
+        let object_file_path = self.file_path_resolver.resolve_object_file_path(&module_id);
         let interface_file_path = self
             .file_path_resolver
-            .resolve_interface_file_path(package_configuration.directory_path(), &module_id);
+            .resolve_interface_file_path(&module_id);
 
         if self.file_system.exists(&object_file_path) {
             return Ok((object_file_path, interface_file_path));
