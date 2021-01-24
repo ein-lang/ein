@@ -29,6 +29,8 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.command_runner.run(
             std::process::Command::new("clang")
+                .arg("-Werror") // cspell:disable-line
+                .arg("-Wno-incompatible-pointer-types-discards-qualifiers") // cspell:disable-line
                 .arg("-o")
                 .arg(command_name)
                 .arg("-O3")
