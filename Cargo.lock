@@ -230,7 +230,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#8f28bb2c529952ff109cb23c3c28c0d094758864"
+source = "git+https://github.com/raviqqe/fmm?branch=main#f308c3c70f9c0719796b6c2472d1fa2429bfc487"
 dependencies = [
  "petgraph",
 ]
@@ -238,7 +238,7 @@ dependencies = [
 [[package]]
 name = "fmm-c"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#8f28bb2c529952ff109cb23c3c28c0d094758864"
+source = "git+https://github.com/raviqqe/fmm?branch=main#f308c3c70f9c0719796b6c2472d1fa2429bfc487"
 dependencies = [
  "fmm",
  "tempfile",
@@ -273,9 +273,9 @@ checksum = "f6503fe142514ca4799d4c26297c4248239fe8838d827db6bd6065c6ed29a6ce"
 
 [[package]]
 name = "git2"
-version = "0.13.16"
+version = "0.13.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f28f83eecb0de4d4afb74aef4874963739d6d167752a7a5ba156e56b27a4ede7"
+checksum = "1d250f5f82326884bd39c2853577e70a121775db76818ffa452ed1e80de12986"
 dependencies = [
  "bitflags",
  "libc",
