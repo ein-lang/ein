@@ -21,6 +21,7 @@ jobs:
         with:
           command: build
           args: --release
+      - run: apt install clang
       - run: bundler install
       - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
   format:
