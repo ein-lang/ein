@@ -26,7 +26,8 @@ Feature: Command
     And a directory named "Foo"
     And I cd to "Foo"
     When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    Then I cd to ".."
+    And I successfully run `sh -c ./foo`
 
   Scenario: Build a command with a dependency
     Given a file named "ein.json" with:
