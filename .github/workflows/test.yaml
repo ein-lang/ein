@@ -4,8 +4,6 @@ on:
 jobs:
   unit-test:
     runs-on: ubuntu-latest
-    container:
-      image: einlang/ci
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -16,8 +14,6 @@ jobs:
           RUST_MIN_STACK: 8388608
   integration-test:
     runs-on: ubuntu-latest
-    container:
-      image: einlang/ci
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -25,6 +21,7 @@ jobs:
         with:
           command: build
           args: --release
+      - run: bundler install
       - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
   format:
     runs-on: ubuntu-latest
@@ -37,8 +34,6 @@ jobs:
           args: -- --check
   lint:
     runs-on: ubuntu-latest
-    container:
-      image: einlang/ci
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -46,11 +41,6 @@ jobs:
         with:
           command: clippy
           args: -- -D warnings
-  spell-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: npx cspell '**/*.{feature,md,rs}'
   audit:
     runs-on: ubuntu-latest
     steps:
@@ -58,10 +48,13 @@ jobs:
       - uses: actions-rs/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+  spell-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npx cspell '**/*.{feature,md,rs}'
   code-coverage:
     runs-on: ubuntu-latest
-    container:
-      image: einlang/ci
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
