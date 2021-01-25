@@ -13,7 +13,7 @@ jobs:
         env:
           RUST_MIN_STACK: 8388608
   integration-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - run: sudo apt install clang ruby-bundler
