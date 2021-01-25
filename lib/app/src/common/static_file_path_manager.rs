@@ -1,14 +1,11 @@
 use super::file_path::FilePath;
 use super::file_path_configuration::{
-    FilePathConfiguration, EXTERNAL_PACKAGES_DIRECTORY, INTERFACE_FILE_EXTENSION, OBJECT_DIRECTORY,
-    OBJECT_FILE_EXTENSION, PACKAGE_ARTIFACT_BASENAME, PRELUDE_PACKAGE_DIRECTORY,
+    FilePathConfiguration, EXTERNAL_PACKAGES_DIRECTORY, OBJECT_DIRECTORY, PRELUDE_PACKAGE_DIRECTORY,
 };
 
 pub struct StaticFilePathManager {
     build_configuration_file_path: FilePath,
     object_directory_path: FilePath,
-    package_object_file_path: FilePath,
-    package_interface_file_path: FilePath,
     external_packages_directory_path: FilePath,
     prelude_package_directory_path: FilePath,
     main_source_file_path: FilePath,
@@ -17,18 +14,10 @@ pub struct StaticFilePathManager {
 impl StaticFilePathManager {
     pub fn new(configuration: &FilePathConfiguration) -> Self {
         let output_directory_path = FilePath::new(&[configuration.output_directory_name]);
-        let package_object_filename =
-            format!("{}.{}", PACKAGE_ARTIFACT_BASENAME, OBJECT_FILE_EXTENSION);
-        let package_interface_filename =
-            format!("{}.{}", PACKAGE_ARTIFACT_BASENAME, INTERFACE_FILE_EXTENSION);
         let external_packages_directory_path =
             output_directory_path.join(&FilePath::new(&[EXTERNAL_PACKAGES_DIRECTORY]));
 
         Self {
-            package_object_file_path: output_directory_path
-                .join(&FilePath::new(&[&package_object_filename])),
-            package_interface_file_path: output_directory_path
-                .join(&FilePath::new(&[&package_interface_filename])),
             prelude_package_directory_path: external_packages_directory_path
                 .join(&FilePath::new(&[PRELUDE_PACKAGE_DIRECTORY])),
             external_packages_directory_path,
@@ -47,14 +36,6 @@ impl StaticFilePathManager {
 
     pub fn object_directory_path(&self) -> &FilePath {
         &self.object_directory_path
-    }
-
-    pub fn package_object_file_path(&self) -> &FilePath {
-        &self.package_object_file_path
-    }
-
-    pub fn package_interface_file_path(&self) -> &FilePath {
-        &self.package_interface_file_path
     }
 
     pub fn external_packages_directory_path(&self) -> &FilePath {

@@ -5,8 +5,9 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-combine = { version = "4.4.0", features = ["regex"] }
+combine = { version = "4.5.2", features = ["regex"] }
 derivative = "2"
+fmm-c = { git = "https://github.com/raviqqe/fmm", branch = "main" }
 indoc = "1.0"
 insta = { version = "1.5", features = ["backtrace"] }
 lazy_static = "1"
@@ -14,7 +15,7 @@ regex = "1"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 ssf = { git = "https://github.com/raviqqe/ssf", branch = "main" }
-ssf-llvm = { git = "https://github.com/raviqqe/ssf", branch = "main" }
+ssf-fmm = { git = "https://github.com/raviqqe/ssf", branch = "main" }
 
 [dev-dependencies]
 pretty_assertions = "0.6"

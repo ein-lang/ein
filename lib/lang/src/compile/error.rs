@@ -16,7 +16,6 @@ pub enum CompileError {
     FunctionExpected(Arc<SourceInformation>),
     MainFunctionNotFound(ModulePath),
     RecordEqualOperation(Arc<SourceInformation>),
-    SsfCompile(ssf_llvm::CompileError),
     TypeNotFound(types::Reference),
     TypesNotMatched(Arc<SourceInformation>, Arc<SourceInformation>),
     TypeNotInferred(Arc<SourceInformation>),
@@ -60,7 +59,6 @@ impl Display for CompileError {
                 "cannot compare records including functions or Any values\n{}",
                 source_information
             ),
-            Self::SsfCompile(error) => write!(formatter, "{}", error),
             Self::TypeNotFound(reference) => write!(
                 formatter,
                 "type \"{}\" not found\n{}",
@@ -86,9 +84,3 @@ impl Display for CompileError {
 }
 
 impl Error for CompileError {}
-
-impl From<ssf_llvm::CompileError> for CompileError {
-    fn from(error: ssf_llvm::CompileError) -> Self {
-        Self::SsfCompile(error)
-    }
-}

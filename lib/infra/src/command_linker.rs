@@ -29,8 +29,13 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.command_runner.run(
             std::process::Command::new("clang")
+                .arg("-Werror") // cspell:disable-line
+                .arg("-Wno-incompatible-pointer-types-discards-qualifiers") // cspell:disable-line
                 .arg("-o")
-                .arg(command_name)
+                .arg(
+                    self.file_path_converter
+                        .convert_to_os_path(&app::FilePath::new(&[command_name])),
+                )
                 .arg("-O3")
                 // TODO Replace this with the one of system packages.
                 // This double linking of the runtime library is to define

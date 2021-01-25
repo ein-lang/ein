@@ -2,7 +2,6 @@ use super::error::BuildError;
 use super::module_compiler::ModuleCompiler;
 use super::module_parser::ModuleParser;
 use super::modules_finder::ModulesFinder;
-use super::package_interface::PackageInterface;
 use crate::common::PackageConfiguration;
 use crate::common::{FilePath, FilePathResolver};
 use crate::infra::FileSystem;
@@ -42,7 +41,7 @@ impl<'a> ModulesBuilder<'a> {
             lang::ExternalUnresolvedModulePath,
             lang::ModuleInterface,
         >,
-        prelude_package_interface: Option<&PackageInterface>,
+        prelude_module_interfaces: &[lang::ModuleInterface],
     ) -> Result<(Vec<FilePath>, Vec<FilePath>), Box<dyn std::error::Error>> {
         let mut module_interfaces = external_module_interfaces
             .iter()
@@ -61,7 +60,7 @@ impl<'a> ModulesBuilder<'a> {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
                 &source_file_path,
                 &module_interfaces,
-                prelude_package_interface,
+                prelude_module_interfaces,
                 package_configuration,
             )?;
 
