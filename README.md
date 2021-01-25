@@ -8,7 +8,7 @@ The functional programming language for scalable development.
 
 ## Install
 
-- It requires LLVM 10 or later installed on your system.
+- It requires [`clang`](https://clang.llvm.org/) installed on your system.
 
 ```
 cargo install --git https://github.com/ein-lang/ein
