@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: sudo apt install clang
+      - run: sudo apt install clang ruby-bundler
       - run: bundler install
       - uses: actions-rs/toolchain@v1
       - uses: actions-rs/cargo@v1
