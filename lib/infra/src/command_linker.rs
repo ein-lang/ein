@@ -34,7 +34,7 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                 .arg("-o")
                 .arg(
                     self.file_path_converter
-                        .convert_to_os_path(&app::FilePath::new(&[command_name]))
+                        .convert_to_os_path(&app::FilePath::new(&[command_name])),
                 )
                 .arg("-O3")
                 // TODO Replace this with the one of system packages.
