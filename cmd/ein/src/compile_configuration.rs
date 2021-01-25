@@ -30,7 +30,7 @@ lazy_static! {
                 lang::MainModuleConfiguration {
                     source_main_function_name: "main".into(),
                     object_main_function_name: "ein_main".into(),
-                    argument_type_name: "System".into(),
+                    handle_main_function_name: "_handleMain".into(),
                 }
                 .into()
             ),
