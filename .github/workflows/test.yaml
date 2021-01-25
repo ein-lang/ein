@@ -16,13 +16,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: apt install clang
+      - run: bundler install
       - uses: actions-rs/toolchain@v1
       - uses: actions-rs/cargo@v1
         with:
           command: build
           args: --release
-      - run: apt install clang
-      - run: bundler install
       - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber
   format:
     runs-on: ubuntu-latest
