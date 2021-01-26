@@ -37,7 +37,8 @@ impl MainFunctionDefinitionTransformer {
 
         Ok(Module::new(
             module.path().clone(),
-            module.export().clone(),module.export_foreign().clone(),
+            module.export().clone(),
+            module.export_foreign().clone(),
             module.imports().to_vec(),
             module.import_foreigns().to_vec(),
             module.type_definitions().to_vec(),

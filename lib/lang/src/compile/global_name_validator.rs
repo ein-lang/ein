@@ -77,7 +77,8 @@ mod tests {
         assert_eq!(
             GlobalNameValidator::new().validate(&Module::new(
                 ModulePath::dummy(),
-                Export::new(Default::default()), ExportForeign::new(Default::default()),
+                Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![ImportForeign::new(
                     "foo",

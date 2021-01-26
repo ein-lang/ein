@@ -460,7 +460,8 @@ mod tests {
 
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()), ExportForeign::new(Default::default()),
+            Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![Import::new(
                 ModuleInterface::new(
                     ModulePath::new(Package::new("m", ""), vec![]),
@@ -536,7 +537,8 @@ mod tests {
     fn infer_types_of_variables_with_imports() {
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()), ExportForeign::new(Default::default()),
+            Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![Import::new(
                 ModuleInterface::new(
                     ModulePath::new(Package::new("m", ""), vec![]),
@@ -568,7 +570,8 @@ mod tests {
     fn infer_types_of_import_foreigns() {
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()), ExportForeign::new(Default::default()),
+            Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![ImportForeign::new(
                 "f",
@@ -823,7 +826,8 @@ mod tests {
     fn infer_types_with_imported_reference_types() {
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()), ExportForeign::new(Default::default()),
+            Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![Import::new(
                 ModuleInterface::new(
                     ModulePath::new(Package::new("P", ""), vec![]),

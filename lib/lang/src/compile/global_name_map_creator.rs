@@ -116,7 +116,8 @@ mod tests {
         assert_eq!(
             GlobalNameMapCreator::create(&Module::new(
                 ModulePath::dummy(),
-                Export::new(Default::default()), ExportForeign::new(Default::default()),
+                Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![Import::new(
                     ModuleInterface::new(
                         ModulePath::new(Package::new("p", ""), vec!["m".into()]),
@@ -147,7 +148,8 @@ mod tests {
         assert_eq!(
             GlobalNameMapCreator::create(&Module::new(
                 ModulePath::dummy(),
-                Export::new(Default::default()), ExportForeign::new(Default::default()),
+                Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![Import::new(
                     ModuleInterface::new(
                         ModulePath::new(Package::new("p", ""), vec!["m".into()]),
@@ -178,7 +180,8 @@ mod tests {
         assert_eq!(
             GlobalNameMapCreator::create(&Module::new(
                 ModulePath::dummy(),
-                Export::new(Default::default()), ExportForeign::new(Default::default()),
+                Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![ImportForeign::new(
                     "foo",

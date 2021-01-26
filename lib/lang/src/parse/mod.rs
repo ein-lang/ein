@@ -153,7 +153,8 @@ mod tests {
                 ""
             ),
             Ok(UnresolvedModule::new(
-                Export::new(Default::default()), ExportForeign::new(Default::default()),
+                Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![UnresolvedImport::new(ExternalUnresolvedModulePath::new(
                     vec!["package".into(), "Module".into()]
                 ))],
