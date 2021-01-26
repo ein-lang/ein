@@ -29,6 +29,7 @@
     "fdiv",
     "flto",
     "fmul",
+    "foreigns",
     "fsub",
     "hasher",
     "indoc",
