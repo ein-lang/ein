@@ -44,6 +44,7 @@ impl ModuleCompiler {
                     ))
                 })
                 .collect::<Result<_, _>>()?,
+            vec![],
             module
                 .imports()
                 .iter()
