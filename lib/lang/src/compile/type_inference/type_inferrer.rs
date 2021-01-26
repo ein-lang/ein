@@ -565,12 +565,12 @@ mod tests {
     }
 
     #[test]
-    fn infer_types_of_foreign_declarations() {
+    fn infer_types_of_import_foreigns() {
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
             Export::new(Default::default()),
             vec![],
-            vec![ForeignDeclaration::new(
+            vec![ImportForeign::new(
                 "f",
                 "",
                 types::Function::new(

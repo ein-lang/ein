@@ -3,14 +3,14 @@ use crate::types::Type;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct ForeignDeclaration {
+pub struct ImportForeign {
     name: String,
     foreign_name: String,
     type_: Type,
     source_information: Arc<SourceInformation>,
 }
 
-impl ForeignDeclaration {
+impl ImportForeign {
     pub fn new(
         name: impl Into<String>,
         foreign_name: impl Into<String>,

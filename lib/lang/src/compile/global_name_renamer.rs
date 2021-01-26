@@ -18,10 +18,10 @@ impl GlobalNameRenamer {
             module.export().clone(),
             module.imports().to_vec(),
             module
-                .foreign_declarations()
+                .import_foreigns()
                 .iter()
                 .map(|declaration| {
-                    ForeignDeclaration::new(
+                    ImportForeign::new(
                         self.rename_name(declaration.name(), &self.names),
                         declaration.foreign_name(),
                         declaration.type_().clone(),
@@ -625,12 +625,12 @@ mod tests {
     }
 
     #[test]
-    fn rename_names_in_foreign_declarations() {
+    fn rename_names_in_import_foreigns() {
         let module = Module::new(
             ModulePath::dummy(),
             Export::new(Default::default()),
             vec![],
-            vec![ForeignDeclaration::new(
+            vec![ImportForeign::new(
                 "x",
                 "x",
                 types::None::new(SourceInformation::dummy()),
@@ -652,7 +652,7 @@ mod tests {
                 ModulePath::dummy(),
                 Export::new(Default::default()),
                 vec![],
-                vec![ForeignDeclaration::new(
+                vec![ImportForeign::new(
                     "y",
                     "x",
                     types::None::new(SourceInformation::dummy()),

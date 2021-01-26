@@ -21,7 +21,7 @@ impl GlobalNameMapCreator {
             }
         }
 
-        for declaration in module.foreign_declarations() {
+        for declaration in module.import_foreigns() {
             names.insert(
                 declaration.name().into(),
                 module.path().fully_qualify_name(declaration.name()),
@@ -174,13 +174,13 @@ mod tests {
     }
 
     #[test]
-    fn create_name_map_from_foreign_declarations() {
+    fn create_name_map_from_import_foreigns() {
         assert_eq!(
             GlobalNameMapCreator::create(&Module::new(
                 ModulePath::dummy(),
                 Export::new(Default::default()),
                 vec![],
-                vec![ForeignDeclaration::new(
+                vec![ImportForeign::new(
                     "foo",
                     "foo",
                     types::Function::new(

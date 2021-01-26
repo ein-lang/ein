@@ -52,18 +52,18 @@ pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
     (
         optional(export()),
         many(import()),
-        many(foreign_declaration()),
+        many(import_foreign()),
         many(type_definition()),
         many(definition()),
     )
         .skip(blank())
         .skip(eof())
         .map(
-            |(export, imports, foreign_declarations, type_definitions, definitions)| {
+            |(export, imports, import_foreigns, type_definitions, definitions)| {
                 UnresolvedModule::new(
                     export.unwrap_or_else(|| Export::new(Default::default())),
                     imports,
-                    foreign_declarations,
+                    import_foreigns,
                     type_definitions,
                     definitions,
                 )
@@ -117,7 +117,7 @@ fn path_component<'a>() -> impl Parser<Stream<'a>, Output = String> {
         .map(|(head, tail): (String, String)| [head, tail].concat())
 }
 
-fn foreign_declaration<'a>() -> impl Parser<Stream<'a>, Output = ForeignDeclaration> {
+fn import_foreign<'a>() -> impl Parser<Stream<'a>, Output = ImportForeign> {
     (
         source_information(),
         keyword("import"),
@@ -125,9 +125,9 @@ fn foreign_declaration<'a>() -> impl Parser<Stream<'a>, Output = ForeignDeclarat
         type_annotation(),
     )
         .map(|(source_information, _, _, (name, type_))| {
-            ForeignDeclaration::new(&name, &name, type_, source_information)
+            ImportForeign::new(&name, &name, type_, source_information)
         })
-        .expected("foreign declaration")
+        .expected("import foreign")
 }
 
 fn definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
@@ -1122,13 +1122,13 @@ mod tests {
     }
 
     #[test]
-    fn parse_foreign_declaration() {
+    fn parse_import_foreign() {
         assert_eq!(
-            foreign_declaration()
+            import_foreign()
                 .parse(stream("import foreign foo : Number -> Number", ""))
                 .unwrap()
                 .0,
-            ForeignDeclaration::new(
+            ImportForeign::new(
                 "foo",
                 "foo",
                 types::Function::new(

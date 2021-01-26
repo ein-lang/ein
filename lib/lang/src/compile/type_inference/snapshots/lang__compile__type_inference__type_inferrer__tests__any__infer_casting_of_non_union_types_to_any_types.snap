@@ -56,6 +56,6 @@ Ok(
             names: {},
         },
         imports: [],
-        foreign_declarations: [],
+        import_foreigns: [],
     },
 )

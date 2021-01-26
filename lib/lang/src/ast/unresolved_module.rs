@@ -1,7 +1,7 @@
 use super::definition::Definition;
 use super::export::Export;
-use super::foreign_declaration::ForeignDeclaration;
 use super::import::Import;
+use super::import_foreign::ImportForeign;
 use super::module::Module;
 use super::type_definition::TypeDefinition;
 use super::unresolved_import::UnresolvedImport;
@@ -13,14 +13,14 @@ pub struct UnresolvedModule {
     definitions: Vec<Definition>,
     export: Export,
     imports: Vec<UnresolvedImport>,
-    foreign_declarations: Vec<ForeignDeclaration>,
+    import_foreigns: Vec<ImportForeign>,
 }
 
 impl UnresolvedModule {
     pub fn new(
         export: Export,
         imports: Vec<UnresolvedImport>,
-        foreign_declarations: Vec<ForeignDeclaration>,
+        import_foreigns: Vec<ImportForeign>,
         type_definitions: Vec<TypeDefinition>,
         definitions: Vec<Definition>,
     ) -> Self {
@@ -29,7 +29,7 @@ impl UnresolvedModule {
             definitions,
             export,
             imports,
-            foreign_declarations,
+            import_foreigns,
         }
     }
 
@@ -38,7 +38,7 @@ impl UnresolvedModule {
             path,
             self.export,
             imports,
-            self.foreign_declarations,
+            self.import_foreigns,
             self.type_definitions,
             self.definitions,
         )
@@ -67,7 +67,7 @@ impl UnresolvedModule {
         &self.imports
     }
 
-    pub fn foreign_declarations(&self) -> &[ForeignDeclaration] {
-        &self.foreign_declarations
+    pub fn import_foreigns(&self) -> &[ImportForeign] {
+        &self.import_foreigns
     }
 }

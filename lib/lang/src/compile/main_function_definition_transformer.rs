@@ -39,7 +39,7 @@ impl MainFunctionDefinitionTransformer {
             module.path().clone(),
             module.export().clone(),
             module.imports().to_vec(),
-            module.foreign_declarations().to_vec(),
+            module.import_foreigns().to_vec(),
             module.type_definitions().to_vec(),
             module
                 .definitions()

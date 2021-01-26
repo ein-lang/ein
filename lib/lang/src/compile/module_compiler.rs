@@ -27,7 +27,7 @@ impl ModuleCompiler {
     pub fn compile(&self, module: &Module) -> Result<ssf::ir::Module, CompileError> {
         Ok(ssf::ir::Module::new(
             module
-                .foreign_declarations()
+                .import_foreigns()
                 .iter()
                 .map(|declaration| -> Result<_, CompileError> {
                     Ok(ssf::ir::ForeignDeclaration::new(

@@ -14,7 +14,7 @@ impl GlobalNameValidator {
     pub fn validate(&self, module: &Module) -> Result<(), CompileError> {
         let mut names = HashMap::<&str, Arc<SourceInformation>>::new();
 
-        for declaration in module.foreign_declarations() {
+        for declaration in module.import_foreigns() {
             if let Some(source_information) = names.get(declaration.name()) {
                 return Err(CompileError::DuplicateNames(
                     source_information.clone(),
@@ -73,13 +73,13 @@ mod tests {
     }
 
     #[test]
-    fn validate_duplicate_names_with_foreign_declarations() {
+    fn validate_duplicate_names_with_import_foreigns() {
         assert_eq!(
             GlobalNameValidator::new().validate(&Module::new(
                 ModulePath::dummy(),
                 Export::new(Default::default()),
                 vec![],
-                vec![ForeignDeclaration::new(
+                vec![ImportForeign::new(
                     "foo",
                     "foo",
                     types::Function::new(

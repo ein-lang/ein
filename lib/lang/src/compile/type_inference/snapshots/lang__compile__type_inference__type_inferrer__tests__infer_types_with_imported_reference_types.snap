@@ -86,6 +86,6 @@ Ok(
                 qualified: true,
             },
         ],
-        foreign_declarations: [],
+        import_foreigns: [],
     },
 )
