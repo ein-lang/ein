@@ -1,5 +1,6 @@
 use super::definition::Definition;
 use super::export::Export;
+use super::export_foreign::ExportForeign;
 use super::import::Import;
 use super::import_foreign::ImportForeign;
 use super::module::Module;
@@ -12,6 +13,7 @@ pub struct UnresolvedModule {
     type_definitions: Vec<TypeDefinition>,
     definitions: Vec<Definition>,
     export: Export,
+    export_foreign: ExportForeign,
     imports: Vec<UnresolvedImport>,
     import_foreigns: Vec<ImportForeign>,
 }
@@ -19,6 +21,7 @@ pub struct UnresolvedModule {
 impl UnresolvedModule {
     pub fn new(
         export: Export,
+        export_foreign: ExportForeign,
         imports: Vec<UnresolvedImport>,
         import_foreigns: Vec<ImportForeign>,
         type_definitions: Vec<TypeDefinition>,
@@ -28,6 +31,7 @@ impl UnresolvedModule {
             type_definitions,
             definitions,
             export,
+            export_foreign,
             imports,
             import_foreigns,
         }
@@ -37,6 +41,7 @@ impl UnresolvedModule {
         Module::new(
             path,
             self.export,
+            self.export_foreign,
             imports,
             self.import_foreigns,
             self.type_definitions,
@@ -48,6 +53,7 @@ impl UnresolvedModule {
     pub fn from_definitions(definitions: Vec<Definition>) -> Self {
         Self::new(
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![],
@@ -61,6 +67,10 @@ impl UnresolvedModule {
 
     pub fn export(&self) -> &Export {
         &self.export
+    }
+
+    pub fn export_foreign(&self) -> &ExportForeign {
+        &self.export_foreign
     }
 
     pub fn imports(&self) -> &[UnresolvedImport] {

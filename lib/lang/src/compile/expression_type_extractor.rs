@@ -372,7 +372,7 @@ mod tests {
 
         let module = Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
-            Export::new(Default::default()),
+            Export::new(Default::default()), ExportForeign::new(Default::default()),
             vec![Import::new(
                 ModuleInterface::new(
                     ModulePath::new(Package::new("m", ""), vec![]),

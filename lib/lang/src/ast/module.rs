@@ -1,5 +1,6 @@
 use super::definition::Definition;
 use super::export::Export;
+use super::export_foreign::ExportForeign;
 use super::expression::Expression;
 use super::import::Import;
 use super::import_foreign::ImportForeign;
@@ -13,6 +14,7 @@ pub struct Module {
     type_definitions: Vec<TypeDefinition>,
     definitions: Vec<Definition>,
     export: Export,
+    export_foreign: ExportForeign,
     imports: Vec<Import>,
     import_foreigns: Vec<ImportForeign>,
 }
@@ -21,6 +23,7 @@ impl Module {
     pub fn new(
         path: ModulePath,
         export: Export,
+        export_foreign: ExportForeign,
         imports: Vec<Import>,
         import_foreigns: Vec<ImportForeign>,
         type_definitions: Vec<TypeDefinition>,
@@ -31,6 +34,7 @@ impl Module {
             type_definitions,
             definitions,
             export,
+            export_foreign,
             imports,
             import_foreigns,
         }
@@ -41,6 +45,7 @@ impl Module {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![],
@@ -53,6 +58,7 @@ impl Module {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![],
@@ -68,6 +74,7 @@ impl Module {
         Self::new(
             ModulePath::new(crate::package::Package::new("", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             type_definitions,
@@ -91,6 +98,10 @@ impl Module {
         &self.export
     }
 
+    pub fn export_foreign(&self) -> &ExportForeign {
+        &self.export_foreign
+    }
+
     pub fn imports(&self) -> &[Import] {
         &self.imports
     }
@@ -106,6 +117,7 @@ impl Module {
         Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
+            self.export_foreign.clone(),
             self.imports.clone(),
             self.import_foreigns.clone(),
             self.type_definitions.clone(),
@@ -123,6 +135,7 @@ impl Module {
         Ok(Self::new(
             self.path.clone(),
             self.export.clone(),
+            self.export_foreign.clone(),
             self.imports.clone(),
             self.import_foreigns
                 .iter()

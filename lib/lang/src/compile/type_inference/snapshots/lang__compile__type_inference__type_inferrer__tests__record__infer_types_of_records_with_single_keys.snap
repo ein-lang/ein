@@ -114,6 +114,9 @@ Ok(
         export: Export {
             names: {},
         },
+        export_foreign: ExportForeign {
+            names: {},
+        },
         imports: [],
         import_foreigns: [],
     },

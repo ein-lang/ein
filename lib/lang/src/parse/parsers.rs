@@ -51,6 +51,7 @@ pub fn stream<'a>(source: &'a str, source_name: &'a str) -> Stream<'a> {
 pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
     (
         optional(export()),
+        optional(export_foreign()),
         many(import()),
         many(import_foreign()),
         many(type_definition()),
@@ -59,9 +60,10 @@ pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
         .skip(blank())
         .skip(eof())
         .map(
-            |(export, imports, import_foreigns, type_definitions, definitions)| {
+            |(export, export_foreign, imports, import_foreigns, type_definitions, definitions)| {
                 UnresolvedModule::new(
                     export.unwrap_or_else(|| Export::new(Default::default())),
+                    export_foreign.unwrap_or_else(|| ExportForeign::new(Default::default())),
                     imports,
                     import_foreigns,
                     type_definitions,
@@ -115,6 +117,17 @@ fn path_component<'a>() -> impl Parser<Stream<'a>, Output = String> {
         many(choice!(alpha_num(), one_of(".-".chars()))),
     )
         .map(|(head, tail): (String, String)| [head, tail].concat())
+}
+
+fn export_foreign<'a>() -> impl Parser<Stream<'a>, Output = ExportForeign> {
+    (keyword("export"), keyword("foreign"))
+        .with(between(
+            sign("{"),
+            sign("}"),
+            sep_end_by1(identifier(), sign(",")),
+        ))
+        .map(ExportForeign::new)
+        .expected("export foreign statement")
 }
 
 fn import_foreign<'a>() -> impl Parser<Stream<'a>, Output = ImportForeign> {
@@ -927,6 +940,7 @@ mod tests {
             module().parse(stream("export { foo }", "")).unwrap().0,
             UnresolvedModule::new(
                 Export::new(vec!["foo".into()].drain(..).collect()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -940,6 +954,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(vec!["foo".into()].drain(..).collect()),
+                ExportForeign::new(Default::default()),
                 vec![UnresolvedImport::new(ExternalUnresolvedModulePath::new(
                     vec!["Foo".into(), "Bar".into()]
                 ))],
@@ -952,6 +967,7 @@ mod tests {
             module().parse(stream("x : Number\nx = 42", "")).unwrap().0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -971,6 +987,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -999,6 +1016,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -1119,6 +1137,17 @@ mod tests {
                 component.to_string()
             );
         }
+    }
+
+    #[test]
+    fn parse_export_foreign() {
+        assert_eq!(
+            export_foreign()
+                .parse(stream("export foreign { foo }", ""))
+                .unwrap()
+                .0,
+            ExportForeign::new(vec!["foo".into()].into_iter().collect()),
+        );
     }
 
     #[test]

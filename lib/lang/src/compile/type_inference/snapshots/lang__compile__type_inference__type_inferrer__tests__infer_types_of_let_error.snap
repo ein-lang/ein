@@ -237,6 +237,9 @@ Ok(
         export: Export {
             names: {},
         },
+        export_foreign: ExportForeign {
+            names: {},
+        },
         imports: [
             Import {
                 module_interface: ModuleInterface {
