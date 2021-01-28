@@ -48,17 +48,9 @@ impl MainFunctionDefinitionTransformer {
                 .chain(vec![FunctionDefinition::new(
                     &self.main_module_configuration.object_main_function_name,
                     vec![ARGUMENT_NAME.into()],
-                    Application::new(
-                        Variable::new(
-                            &self.main_module_configuration.handle_main_function_name,
-                            source_information.clone(),
-                        ),
-                        Variable::new(main_function_name, source_information.clone()),
-                        source_information.clone(),
-                    ),
-                    types::Function::new(
-                        types::None::new(source_information.clone()),
-                        types::None::new(source_information.clone()),
+                    Variable::new(main_function_name, source_information.clone()),
+                    types::Reference::new(
+                        &self.main_module_configuration.main_function_type_name,
                         source_information.clone(),
                     ),
                     source_information.clone(),
