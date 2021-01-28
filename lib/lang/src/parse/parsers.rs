@@ -51,19 +51,21 @@ pub fn stream<'a>(source: &'a str, source_name: &'a str) -> Stream<'a> {
 pub fn module<'a>() -> impl Parser<Stream<'a>, Output = UnresolvedModule> {
     (
         optional(export()),
+        optional(export_foreign()),
         many(import()),
-        many(foreign_declaration()),
+        many(import_foreign()),
         many(type_definition()),
         many(definition()),
     )
         .skip(blank())
         .skip(eof())
         .map(
-            |(export, imports, foreign_declarations, type_definitions, definitions)| {
+            |(export, export_foreign, imports, import_foreigns, type_definitions, definitions)| {
                 UnresolvedModule::new(
                     export.unwrap_or_else(|| Export::new(Default::default())),
+                    export_foreign.unwrap_or_else(|| ExportForeign::new(Default::default())),
                     imports,
-                    foreign_declarations,
+                    import_foreigns,
                     type_definitions,
                     definitions,
                 )
@@ -117,12 +119,28 @@ fn path_component<'a>() -> impl Parser<Stream<'a>, Output = String> {
         .map(|(head, tail): (String, String)| [head, tail].concat())
 }
 
-fn foreign_declaration<'a>() -> impl Parser<Stream<'a>, Output = ForeignDeclaration> {
-    (source_information(), keyword("foreign"), type_annotation())
-        .map(|(source_information, _, (name, type_))| {
-            ForeignDeclaration::new(&name, &name, type_, source_information)
+fn export_foreign<'a>() -> impl Parser<Stream<'a>, Output = ExportForeign> {
+    (keyword("export"), keyword("foreign"))
+        .with(between(
+            sign("{"),
+            sign("}"),
+            sep_end_by1(identifier(), sign(",")),
+        ))
+        .map(ExportForeign::new)
+        .expected("export foreign statement")
+}
+
+fn import_foreign<'a>() -> impl Parser<Stream<'a>, Output = ImportForeign> {
+    (
+        source_information(),
+        keyword("import"),
+        keyword("foreign"),
+        type_annotation(),
+    )
+        .map(|(source_information, _, _, (name, type_))| {
+            ImportForeign::new(&name, &name, type_, source_information)
         })
-        .expected("foreign declaration")
+        .expected("import foreign")
 }
 
 fn definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
@@ -922,6 +940,7 @@ mod tests {
             module().parse(stream("export { foo }", "")).unwrap().0,
             UnresolvedModule::new(
                 Export::new(vec!["foo".into()].drain(..).collect()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -935,6 +954,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(vec!["foo".into()].drain(..).collect()),
+                ExportForeign::new(Default::default()),
                 vec![UnresolvedImport::new(ExternalUnresolvedModulePath::new(
                     vec!["Foo".into(), "Bar".into()]
                 ))],
@@ -947,6 +967,7 @@ mod tests {
             module().parse(stream("x : Number\nx = 42", "")).unwrap().0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -966,6 +987,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -994,6 +1016,7 @@ mod tests {
                 .0,
             UnresolvedModule::new(
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -1117,13 +1140,24 @@ mod tests {
     }
 
     #[test]
-    fn parse_foreign_declaration() {
+    fn parse_export_foreign() {
         assert_eq!(
-            foreign_declaration()
-                .parse(stream("foreign foo : Number -> Number", ""))
+            export_foreign()
+                .parse(stream("export foreign { foo }", ""))
                 .unwrap()
                 .0,
-            ForeignDeclaration::new(
+            ExportForeign::new(vec!["foo".into()].into_iter().collect()),
+        );
+    }
+
+    #[test]
+    fn parse_import_foreign() {
+        assert_eq!(
+            import_foreign()
+                .parse(stream("import foreign foo : Number -> Number", ""))
+                .unwrap()
+                .0,
+            ImportForeign::new(
                 "foo",
                 "foo",
                 types::Function::new(

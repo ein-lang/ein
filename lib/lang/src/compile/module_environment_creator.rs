@@ -19,7 +19,7 @@ impl ModuleEnvironmentCreator {
             }
         }
 
-        for declaration in module.foreign_declarations() {
+        for declaration in module.import_foreigns() {
             variables.insert(declaration.name().into(), declaration.type_().clone());
         }
 

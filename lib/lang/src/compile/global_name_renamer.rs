@@ -16,12 +16,13 @@ impl GlobalNameRenamer {
         Module::new(
             module.path().clone(),
             module.export().clone(),
+            module.export_foreign().clone(),
             module.imports().to_vec(),
             module
-                .foreign_declarations()
+                .import_foreigns()
                 .iter()
                 .map(|declaration| {
-                    ForeignDeclaration::new(
+                    ImportForeign::new(
                         self.rename_name(declaration.name(), &self.names),
                         declaration.foreign_name(),
                         declaration.type_().clone(),
@@ -356,6 +357,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![],
@@ -379,6 +381,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![],
@@ -402,6 +405,7 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -421,6 +425,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(vec!["x".into()].into_iter().collect()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![],
@@ -438,6 +443,7 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(vec!["x".into()].into_iter().collect()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -451,6 +457,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![TypeDefinition::new(
@@ -471,6 +478,7 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![TypeDefinition::new(
@@ -487,6 +495,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![TypeDefinition::new(
@@ -513,6 +522,7 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![TypeDefinition::new(
@@ -535,6 +545,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![TypeDefinition::new(
@@ -555,6 +566,7 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![TypeDefinition::new(
@@ -571,6 +583,7 @@ mod tests {
         let module = Module::new(
             ModulePath::new(Package::new("M", ""), vec![]),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
             vec![],
             vec![],
@@ -602,6 +615,7 @@ mod tests {
             Module::new(
                 ModulePath::new(Package::new("M", ""), vec![]),
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
                 vec![],
                 vec![],
@@ -625,12 +639,13 @@ mod tests {
     }
 
     #[test]
-    fn rename_names_in_foreign_declarations() {
+    fn rename_names_in_import_foreigns() {
         let module = Module::new(
             ModulePath::dummy(),
             Export::new(Default::default()),
+            ExportForeign::new(Default::default()),
             vec![],
-            vec![ForeignDeclaration::new(
+            vec![ImportForeign::new(
                 "x",
                 "x",
                 types::None::new(SourceInformation::dummy()),
@@ -651,8 +666,9 @@ mod tests {
             Module::new(
                 ModulePath::dummy(),
                 Export::new(Default::default()),
+                ExportForeign::new(Default::default()),
                 vec![],
-                vec![ForeignDeclaration::new(
+                vec![ImportForeign::new(
                     "y",
                     "x",
                     types::None::new(SourceInformation::dummy()),

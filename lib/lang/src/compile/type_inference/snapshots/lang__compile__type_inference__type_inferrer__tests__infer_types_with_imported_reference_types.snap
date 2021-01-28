@@ -56,6 +56,9 @@ Ok(
         export: Export {
             names: {},
         },
+        export_foreign: ExportForeign {
+            names: {},
+        },
         imports: [
             Import {
                 module_interface: ModuleInterface {
@@ -86,6 +89,6 @@ Ok(
                 qualified: true,
             },
         ],
-        foreign_declarations: [],
+        import_foreigns: [],
     },
 )

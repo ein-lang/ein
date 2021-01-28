@@ -107,7 +107,10 @@ Ok(
         export: Export {
             names: {},
         },
+        export_foreign: ExportForeign {
+            names: {},
+        },
         imports: [],
-        foreign_declarations: [],
+        import_foreigns: [],
     },
 )

@@ -237,6 +237,9 @@ Ok(
         export: Export {
             names: {},
         },
+        export_foreign: ExportForeign {
+            names: {},
+        },
         imports: [
             Import {
                 module_interface: ModuleInterface {
@@ -269,6 +272,6 @@ Ok(
                 qualified: false,
             },
         ],
-        foreign_declarations: [],
+        import_foreigns: [],
     },
 )
