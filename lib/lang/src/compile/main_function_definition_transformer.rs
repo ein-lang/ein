@@ -40,7 +40,7 @@ impl MainFunctionDefinitionTransformer {
                 module
                     .export_foreign()
                     .names()
-                    .into_iter()
+                    .iter()
                     .cloned()
                     .chain(vec![self
                         .main_module_configuration
