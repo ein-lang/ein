@@ -174,7 +174,7 @@ pub fn compile(
                     expression_compiler,
                     type_compiler,
                     configuration.string_type_configuration.clone(),
-                    global_names.clone(),
+                    global_names,
                 )
                 .compile(&module)?,
             ),
