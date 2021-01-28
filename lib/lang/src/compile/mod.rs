@@ -68,13 +68,16 @@ pub fn compile(
 
     let module = transform_before_name_qualification(&module)?;
 
-    let names = GlobalNameMapCreator::create(&module);
-    let configuration = Arc::new(configuration.qualify(&names));
-    let module = GlobalNameRenamer::new(names.clone()).rename(&module);
+    let global_names = GlobalNameMapCreator::create(&module);
+    let configuration = Arc::new(configuration.qualify(&global_names));
+    let module = GlobalNameRenamer::new(global_names.clone()).rename(&module);
 
     let module = if let Some(main_module_configuration) = &configuration.main_module_configuration {
-        MainFunctionDefinitionTransformer::new(names, main_module_configuration.clone())
-            .transform(&module)?
+        MainFunctionDefinitionTransformer::new(
+            global_names.clone(),
+            main_module_configuration.clone(),
+        )
+        .transform(&module)?
     } else {
         module
     };
@@ -171,6 +174,7 @@ pub fn compile(
                     expression_compiler,
                     type_compiler,
                     configuration.string_type_configuration.clone(),
+                    global_names.clone(),
                 )
                 .compile(&module)?,
             ),
@@ -186,6 +190,7 @@ mod tests {
     use super::compile_configuration::COMPILE_CONFIGURATION;
     use super::*;
     use crate::debug::*;
+    use crate::path::ModulePath;
     use crate::types;
 
     #[test]
@@ -735,7 +740,6 @@ mod tests {
     mod let_error {
         use super::*;
         use crate::package::Package;
-        use crate::path::ModulePath;
 
         #[test]
         fn compile_let_error() {
@@ -896,5 +900,26 @@ mod tests {
 
             compile(&module, COMPILE_CONFIGURATION.clone()).unwrap();
         }
+    }
+
+    #[test]
+    fn compile_export_foreigns() {
+        let module = Module::new(
+            ModulePath::dummy(),
+            Export::new(Default::default()),
+            ExportForeign::new(vec!["foo".into()].into_iter().collect()),
+            vec![],
+            vec![],
+            vec![],
+            vec![VariableDefinition::new(
+                "foo",
+                Number::new(42.0, SourceInformation::dummy()),
+                types::Number::new(SourceInformation::dummy()),
+                SourceInformation::dummy(),
+            )
+            .into()],
+        );
+
+        compile(&module, COMPILE_CONFIGURATION.clone()).unwrap();
     }
 }

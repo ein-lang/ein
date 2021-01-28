@@ -3,12 +3,14 @@ use super::expression_compiler::ExpressionCompiler;
 use super::string_type_configuration::StringTypeConfiguration;
 use super::type_compiler::TypeCompiler;
 use crate::ast::*;
+use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,
     type_compiler: Arc<TypeCompiler>,
     string_type_configuration: Arc<StringTypeConfiguration>,
+    global_names: Arc<HashMap<String, String>>,
 }
 
 impl ModuleCompiler {
@@ -16,11 +18,13 @@ impl ModuleCompiler {
         expression_compiler: Arc<ExpressionCompiler>,
         type_compiler: Arc<TypeCompiler>,
         string_type_configuration: Arc<StringTypeConfiguration>,
+        global_names: Arc<HashMap<String, String>>,
     ) -> Self {
         Self {
             expression_compiler,
             type_compiler,
             string_type_configuration,
+            global_names,
         }
     }
 
@@ -44,7 +48,19 @@ impl ModuleCompiler {
                     ))
                 })
                 .collect::<Result<_, _>>()?,
-            vec![],
+            module
+                .export_foreign()
+                .names()
+                .iter()
+                .map(|name| {
+                    Ok(ssf::ir::ForeignDefinition::new(
+                        self.global_names.get(name).ok_or_else(|| {
+                            CompileError::ExportedNameNotFound { name: name.clone() }
+                        })?,
+                        name,
+                    ))
+                })
+                .collect::<Result<_, _>>()?,
             module
                 .imports()
                 .iter()
