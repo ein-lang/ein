@@ -10,13 +10,20 @@ pub enum Target {
 
 #[cfg(test)]
 mod tests {
+    use super::super::system_package_configuration::SystemPackageConfiguration;
     use super::*;
 
     #[test]
     fn parse_command_target() {
         assert_eq!(
-            serde_json::from_str::<Target>(r#"{"type":"Command","name":"foo"}"#).unwrap(),
-            Target::Command(CommandTarget::new("foo"))
+            serde_json::from_str::<Target>(
+                r#"{"type":"Command","name":"foo","systemPackage":{"name":"github.com/foo/bar","version":"baz"}}"#
+            )
+            .unwrap(),
+            Target::Command(CommandTarget::new(
+                "foo",
+                SystemPackageConfiguration::new("github.com/foo/bar", "baz")
+            ))
         );
     }
 

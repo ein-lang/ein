@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct CommandTarget {
     name: String,
+    #[serde(rename = "systemPackage")]
     system_package: SystemPackageConfiguration,
 }
 
