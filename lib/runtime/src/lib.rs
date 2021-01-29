@@ -1,4 +1,3 @@
-mod main_;
 mod string;
 
 use std::alloc::Layout;
