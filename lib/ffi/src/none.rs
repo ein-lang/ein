@@ -1,9 +1,11 @@
 #[repr(C)]
 #[derive(Default)]
-pub struct None {}
+pub struct None {
+    _private: [u8; 0],
+}
 
 impl None {
     pub fn new() -> Self {
-        Self {}
+        Self { _private: [] }
     }
 }
