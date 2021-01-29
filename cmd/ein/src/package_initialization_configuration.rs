@@ -1,3 +1,10 @@
+use lazy_static::lazy_static;
+
+lazy_static! {
+    pub static ref DEFAULT_SYSTEM_PACKAGE_CONFIGURATION: app::SystemPackageConfiguration =
+        app::SystemPackageConfiguration::new("github.com/ein-lang/system", "main");
+}
+
 pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfiguration =
     app::PackageInitializationConfiguration {
         command_main_file_content: "main : System -> Number\nmain system = 0\n",

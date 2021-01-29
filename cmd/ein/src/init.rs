@@ -1,5 +1,7 @@
 use super::file_path_configuration::FILE_PATH_CONFIGURATION;
-use super::package_initialization_configuration::PACKAGE_INITIALIZATION_CONFIGURATION;
+use super::package_initialization_configuration::{
+    DEFAULT_SYSTEM_PACKAGE_CONFIGURATION, PACKAGE_INITIALIZATION_CONFIGURATION,
+};
 use std::fs::create_dir_all;
 
 pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -36,6 +38,7 @@ fn parse_target(
                     )
                 })?
                 .to_string_lossy(),
+            DEFAULT_SYSTEM_PACKAGE_CONFIGURATION.clone(),
         ))),
         "library" => Ok(app::Target::Library),
         _ => Err(std::io::Error::new(
