@@ -63,15 +63,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
-name = "autotools"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b9f0494812b4a30c521d6122ff71c4f84ed4b1edae73e79cd7f38c9ae027943"
-dependencies = [
- "cc",
-]
-
-[[package]]
 name = "backtrace"
 version = "0.3.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -83,16 +74,6 @@ dependencies = [
  "miniz_oxide",
  "object",
  "rustc-demangle",
-]
-
-[[package]]
-name = "bdwgc-alloc"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "213bd7476d1f29299de16a11b16368bfbc9ed789768fce386fd2ef1ee239aebe"
-dependencies = [
- "autotools",
- "libc",
 ]
 
 [[package]]
@@ -653,7 +634,6 @@ dependencies = [
 name = "runtime"
 version = "0.1.0"
 dependencies = [
- "bdwgc-alloc",
  "ein-ffi",
 ]
 
