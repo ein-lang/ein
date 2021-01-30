@@ -48,11 +48,11 @@ impl<'a> MainPackageBuilder<'a> {
             .external_packages_downloader
             .download(&package_configuration)?;
 
-        let (external_package_object_file_paths, external_module_interfaces) = self
+        let (external_module_object_file_paths, external_module_interfaces) = self
             .external_packages_builder
             .build(&external_package_configurations, &prelude_module_interfaces)?;
 
-        let (package_object_file_paths, _) = self.package_builder.build(
+        let (module_object_file_paths, _) = self.package_builder.build(
             &package_configuration,
             &external_module_interfaces,
             &prelude_module_interfaces,
@@ -66,8 +66,8 @@ impl<'a> MainPackageBuilder<'a> {
                 self.command_linker.link(
                     &prelude_package_object_file_paths
                         .into_iter()
-                        .chain(package_object_file_paths)
-                        .chain(external_package_object_file_paths)
+                        .chain(module_object_file_paths)
+                        .chain(external_module_object_file_paths)
                         .collect::<Vec<_>>(),
                     command_target.name(),
                 )?;
