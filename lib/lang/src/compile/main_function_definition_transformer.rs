@@ -2,34 +2,26 @@ use super::error::CompileError;
 use super::main_module_configuration::MainModuleConfiguration;
 use crate::ast::*;
 use crate::types;
-use std::collections::HashMap;
 use std::sync::Arc;
 
 pub struct MainFunctionDefinitionTransformer {
-    global_names: Arc<HashMap<String, String>>,
     main_module_configuration: Arc<MainModuleConfiguration>,
 }
 
 impl MainFunctionDefinitionTransformer {
-    pub fn new(
-        global_names: Arc<HashMap<String, String>>,
-        main_module_configuration: Arc<MainModuleConfiguration>,
-    ) -> Self {
+    pub fn new(main_module_configuration: Arc<MainModuleConfiguration>) -> Self {
         Self {
-            global_names,
             main_module_configuration,
         }
     }
 
     pub fn transform(&self, module: &Module) -> Result<Module, CompileError> {
-        let main_function_name = self
-            .global_names
-            .get(&self.main_module_configuration.source_main_function_name)
-            .ok_or_else(|| CompileError::MainFunctionNotFound(module.path().clone()))?;
         let source_information = module
             .definitions()
             .iter()
-            .find(|definition| definition.name() == main_function_name)
+            .find(|definition| {
+                definition.name() == self.main_module_configuration.source_main_function_name
+            })
             .ok_or_else(|| CompileError::MainFunctionNotFound(module.path().clone()))?
             .source_information();
 
@@ -57,7 +49,10 @@ impl MainFunctionDefinitionTransformer {
                 .cloned()
                 .chain(vec![VariableDefinition::new(
                     &self.main_module_configuration.object_main_function_name,
-                    Variable::new(main_function_name, source_information.clone()),
+                    Variable::new(
+                        &self.main_module_configuration.source_main_function_name,
+                        source_information.clone(),
+                    ),
                     types::Reference::new(
                         &self.main_module_configuration.main_function_type_name,
                         source_information.clone(),
