@@ -4,7 +4,7 @@ use crate::common::ExternalPackage;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-// TODO Put this the adaptor layer.
+// TODO Put this in the adaptor layer.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct BuildConfiguration {
     target: Target,
