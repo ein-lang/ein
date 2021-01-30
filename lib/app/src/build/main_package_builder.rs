@@ -66,8 +66,8 @@ impl<'a> MainPackageBuilder<'a> {
                 self.command_linker.link(
                     &prelude_package_object_file_paths
                         .into_iter()
-                        .chain(module_object_file_paths)
                         .chain(external_module_object_file_paths)
+                        .chain(module_object_file_paths)
                         .collect::<Vec<_>>(),
                     command_target.name(),
                 )?;
