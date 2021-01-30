@@ -74,9 +74,15 @@ impl<'a> ExternalPackagesBuilder<'a> {
             );
         }
 
-        for package_configuration in package_configurations.values() {
-            for external_package in package_configuration.build_configuration().dependencies() {
-                graph.add_edge(indices[&external_package], indices[&external_package], ());
+        for (external_package, package_configuration) in package_configurations {
+            for dependency_external_package in
+                package_configuration.build_configuration().dependencies()
+            {
+                graph.add_edge(
+                    indices[&dependency_external_package],
+                    indices[&external_package],
+                    (),
+                );
             }
         }
 
