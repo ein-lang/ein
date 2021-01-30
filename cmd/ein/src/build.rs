@@ -74,12 +74,8 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &logger,
     );
     let external_packages_builder = app::ExternalPackagesBuilder::new(&package_builder);
-    let system_package_builder = app::SystemPackageBuilder::new(
-        &package_configuration_reader,
-        &package_builder,
-        &file_path_resolver,
-        &external_package_downloader,
-    );
+    let system_package_builder =
+        app::SystemPackageBuilder::new(&package_builder, &external_packages_downloader);
     let main_package_builder = app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,

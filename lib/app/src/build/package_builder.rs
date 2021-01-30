@@ -59,13 +59,13 @@ impl<'a> PackageBuilder<'a> {
         let external_module_interfaces = package_configuration
             .build_configuration()
             .dependencies()
-            .iter()
-            .map(|(name, configuration)| {
-                external_module_interfaces[&ExternalPackage::new(name, configuration.version())]
-                    .iter()
-                    .map(|(module_path, module_interface)| {
+            .into_iter()
+            .map(|external_package| {
+                external_module_interfaces[&external_package].iter().map(
+                    |(module_path, module_interface)| {
                         (module_path.clone(), module_interface.clone())
-                    })
+                    },
+                )
             })
             .flatten()
             .collect();

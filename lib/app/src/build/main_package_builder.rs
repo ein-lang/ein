@@ -19,6 +19,7 @@ pub struct MainPackageBuilder<'a> {
 }
 
 impl<'a> MainPackageBuilder<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         package_configuration_reader: &'a PackageConfigurationReader<'a>,
         package_builder: &'a PackageBuilder<'a>,
@@ -69,9 +70,13 @@ impl<'a> MainPackageBuilder<'a> {
             .chain(system_module_interfaces)
             .collect::<Vec<_>>();
 
-        let external_package_configurations = self
-            .external_packages_downloader
-            .download(&package_configuration)?;
+        let external_package_configurations = self.external_packages_downloader.download(
+            &package_configuration
+                .build_configuration()
+                .dependencies()
+                .into_iter()
+                .collect::<Vec<_>>(),
+        )?;
 
         let (external_module_object_paths, external_module_interfaces) = self
             .external_packages_builder
@@ -105,9 +110,13 @@ impl<'a> MainPackageBuilder<'a> {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let (_, prelude_module_interfaces) = self.prelude_package_builder.build()?;
 
-        let external_package_configurations = self
-            .external_packages_downloader
-            .download(&package_configuration)?;
+        let external_package_configurations = self.external_packages_downloader.download(
+            &package_configuration
+                .build_configuration()
+                .dependencies()
+                .into_iter()
+                .collect::<Vec<_>>(),
+        )?;
 
         let (_, external_module_interfaces) = self
             .external_packages_builder

@@ -1,27 +1,20 @@
+use super::external_packages_downloader::ExternalPackagesDownloader;
 use super::package_builder::PackageBuilder;
-use super::package_configuration_reader::PackageConfigurationReader;
-use crate::common::{ExternalPackage, FilePath, FilePathResolver, SystemPackageConfiguration};
-use crate::infra::ExternalPackageDownloader;
+use crate::common::{ExternalPackage, FilePath, SystemPackageConfiguration};
 
 pub struct SystemPackageBuilder<'a> {
-    package_configuration_reader: &'a PackageConfigurationReader<'a>,
     package_builder: &'a PackageBuilder<'a>,
-    file_path_resolver: &'a FilePathResolver<'a>,
-    external_package_downloader: &'a dyn ExternalPackageDownloader,
+    external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
 }
 
 impl<'a> SystemPackageBuilder<'a> {
     pub fn new(
-        package_configuration_reader: &'a PackageConfigurationReader<'a>,
         package_builder: &'a PackageBuilder<'a>,
-        file_path_resolver: &'a FilePathResolver<'a>,
-        external_package_downloader: &'a dyn ExternalPackageDownloader,
+        external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
     ) -> Self {
         Self {
-            package_configuration_reader,
             package_builder,
-            file_path_resolver,
-            external_package_downloader,
+            external_packages_downloader,
         }
     }
 
@@ -35,14 +28,9 @@ impl<'a> SystemPackageBuilder<'a> {
             system_package_configuration.version(),
         );
 
-        let directory_path = self
-            .file_path_resolver
-            .resolve_external_package_directory_path(&external_package);
-
-        self.external_package_downloader
-            .download(&external_package, &directory_path)?;
-
-        let package_configuration = self.package_configuration_reader.read(&directory_path)?;
+        let package_configuration = self
+            .external_packages_downloader
+            .download_one(&external_package)?;
 
         self.package_builder.build(
             &package_configuration,
