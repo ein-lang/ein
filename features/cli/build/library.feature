@@ -1,6 +1,8 @@
 Feature: Library
-  Scenario: Build a library
+  Background:
     Given I successfully run `ein init library .`
+
+  Scenario: Build a library
     When I run `ein build`
     Then the exit status should be 0
 
@@ -16,7 +18,7 @@ Feature: Library
       }
     }
     """
-    And a file named "Bar.ein" with:
+    And a file named "Foo.ein" with:
     """
     export { bar }
 
@@ -25,5 +27,16 @@ Feature: Library
     bar : Number -> Number
     bar = Foo.foo
     """
+    When I run `ein build`
+    Then the exit status should be 0
+
+  Scenario: Build a library twice
+    When I run `ein build`
+    And I run `ein build`
+    Then the exit status should be 0
+
+  Scenario: Build a library in an inner directory
+    Given a directory named "Foo"
+    And I cd to "Foo"
     When I run `ein build`
     Then the exit status should be 0

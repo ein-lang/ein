@@ -1,43 +1,30 @@
 Feature: String
   Background:
-    Given I successfully run `ein init command foo`
-    And I cd to "foo"
+    Given I successfully run `ein init library .`
 
   Scenario: Create an empty string
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     foo : String
     foo = ""
-
-    main : System -> Number
-    main system = 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
+    When I run `ein build`
     Then the exit status should be 0
 
   Scenario: Create a non-empty string
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     foo : String
     foo = "foo"
-
-    main : System -> Number
-    main system = 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
+    When I run `ein build`
     Then the exit status should be 0
 
   Scenario: Compare strings
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    main : System -> Number
-    main system =
-      if "foo" == "foo" && "foo" /= "bar"
-      then 0
-      else 1
+    x : Boolean
+    x = "foo" == "foo" && "foo" /= "bar"
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
+    When I run `ein build`
     Then the exit status should be 0

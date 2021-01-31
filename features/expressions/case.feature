@@ -1,54 +1,50 @@
 Feature: Case expressions
   Background:
-    Given I successfully run `ein init command foo`
-    And I cd to "foo"
+    Given I successfully run `ein init library .`
 
   Scenario: Use an argument of a union type
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    main : System -> Number
-    main system = case y = if True then 0 else None
+    x : Number
+    x = case y = if True then 0 else None
       Number => y
       None => 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
+    When I run `ein build`
     Then the exit status should be 0
 
   Scenario: Bind a variable with a union type
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Number | Boolean | None
     x = None
 
-    main : System -> Number
-    main system =
+    y : Number
+    y =
       case x = x
         Number | None => 0
         Boolean => 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
+    When I run `ein build`
     Then the exit status should be 0
 
   Scenario: Use an argument of any type
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Any
     x = 0
 
-    main : System -> Number
-    main system =
+    y : Number
+    y =
       case x = x
         Number => x
         Any => 1
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
+    When I run `ein build`
     Then the exit status should be 0
 
   Scenario: Distinguish different list types
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     y : List Any
     y = []
@@ -56,12 +52,11 @@ Feature: Case expressions
     z : List None
     z = []
 
-    main : System -> Number
-    main system =
+    x : Number
+    x =
       case y = if True then y else z
         List None => 1
         List Any => 0
     """
-    And I successfully run `ein build`
-    When I run `sh -c ./foo`
+    When I run `ein build`
     Then the exit status should be 0

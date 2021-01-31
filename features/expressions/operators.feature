@@ -1,52 +1,51 @@
 Feature: Operators
   Background:
-    Given I successfully run `ein init command foo`
-    And I cd to "foo"
+    Given I successfully run `ein init library .`
 
   Scenario: Use arithmetic operators
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    main : System -> Number
-    main system = 0 + 1 * 1 - 1 / 1
+    x : Number
+    x = 0 + 1 * 1 - 1 / 1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use boolean operators
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    main : System -> Number
-    main system = if False || True && True then 0 else 1
+    x : Number
+    x = if False || True && True then 0 else 1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use an equal operator with numbers
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    main : System -> Number
-    main system = if 0 == 1 then 1 else 0
+    x : Number
+    x = if 0 == 1 then 1 else 0
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use an equal operator with records
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     type Foo { foo : Number, bar : Boolean }
 
-    main : System -> Number
-    main system =
+    x : Number
+    x =
       if Foo{ foo = 42, bar = True } == Foo{ foo = 42, bar = True } then
         0
       else
         1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use an equal operator with unions
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     a : Number | None
     a = 0
@@ -54,23 +53,23 @@ Feature: Operators
     b : Number | None
     b = None
 
-    main : System -> Number
-    main system = if a == b then 1 else 0
+    x : Number
+    x = if a == b then 1 else 0
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use a not-equal operator
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
-    main : System -> Number
-    main system = if 1 /= 2 then 0 else 1
+    x : Number
+    x = if 1 /= 2 then 0 else 1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use a pipe operator
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     f : Number -> Number
     f x = x * 2
@@ -78,8 +77,8 @@ Feature: Operators
     g : Number -> Number
     g x = x - 1
 
-    main : System -> Number
-    main system = 0.5 |> f |> g
+    x : Number
+    x = 0.5 |> f |> g
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0

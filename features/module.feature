@@ -1,93 +1,79 @@
 Feature: Module
   Background:
-    Given I successfully run `ein init command foo`
-    And I cd to "foo"
+    Given I successfully run `ein init library .`
 
   Scenario: Import a module
-    Given a file named "Main.ein" with:
-    """
-    import "/Foo"
-
-    main : System -> Number
-    main system = 0
-    """
-    And a file named "Foo.ein" with:
+    Given a file named "Foo.ein" with:
     """
     export { foo }
 
     foo : Number
     foo = 0
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    And a file named "Bar.ein" with:
+    """
+    import "/Foo"
+    """
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Import a name in a module
-    Given a file named "Main.ein" with:
-    """
-    import "/Foo"
-
-    main : System -> Number
-    main system = Foo.foo
-    """
-    And a file named "Foo.ein" with:
+    Given a file named "Foo.ein" with:
     """
     export { foo }
 
     foo : Number
     foo = 0
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
-
-  Scenario: Allow diamond dependency
-    Given a file named "Main.ein" with:
+    And a file named "Bar.ein" with:
     """
-    import "/Bar"
     import "/Foo"
 
-    main : System -> Number
-    main system = Foo.foo - Bar.bar
+    bar : Number
+    bar = Foo.foo
     """
-    And a file named "Foo.ein" with:
+    When I run `ein build`
+    Then the exit status should be 0
+
+  Scenario: Allow diamond dependency
+    Given a file named "Foo.ein" with:
     """
     export { foo }
 
-    import "/Baz"
-
     foo : Number
-    foo = Baz.baz
+    foo = 42
     """
     And a file named "Bar.ein" with:
     """
     export { bar }
 
-    import "/Baz"
+    import "/Foo"
 
     bar : Number
-    bar = Baz.baz
+    bar = Foo.foo
     """
     And a file named "Baz.ein" with:
     """
     export { baz }
 
-    baz : Number
-    baz = 42
-    """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
-
-  Scenario: Use mutually recursive types only one of which is exported
-    Given a file named "Main.ein" with:
-    """
     import "/Foo"
 
-    foo : Foo.Foo
-    foo = Foo.foo
-
-    main : System -> Number
-    main system = 0
+    baz : Number
+    baz = Foo.foo
     """
-    And a file named "Foo.ein" with:
+    And a file named "Blah.ein" with:
+    """
+    import "/Bar"
+    import "/Foo"
+
+    blah : Number
+    blah = Foo.foo - Bar.bar
+    """
+    When I run `ein build`
+    Then the exit status should be 0
+
+  Scenario: Use mutually recursive types only one of which is exported
+    Given a file named "Foo.ein" with:
     """
     export { Foo, foo }
 
@@ -98,18 +84,18 @@ Feature: Module
     foo : Foo
     foo = Foo{ bar = None }
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
-
-  Scenario: Import a curried function
-    Given a file named "Main.ein" with:
+    And a file named "Bar.ein" with:
     """
     import "/Foo"
 
-    main : System -> Number
-    main system = Foo.f 0
+    foo : Foo.Foo
+    foo = Foo.foo
     """
-    And a file named "Foo.ein" with:
+    When I run `ein build`
+    Then the exit status should be 0
+
+  Scenario: Import a curried function
+    Given a file named "Foo.ein" with:
     """
     export { f }
 
@@ -119,5 +105,12 @@ Feature: Module
     g : Number -> Number
     g x = x
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    And a file named "Bar.ein" with:
+    """
+    import "/Foo"
+
+    bar : Number
+    bar = Foo.f 0
+    """
+    When I run `ein build`
+    Then the exit status should be 0

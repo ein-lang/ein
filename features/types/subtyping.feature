@@ -1,7 +1,6 @@
 Feature: Subtyping
   Background:
-    Given I successfully run `ein init command foo`
-    And I cd to "foo"
+    Given I successfully run `ein init library .`
 
   Scenario: Handle covariance and contravariance of functions
     Given a file named "Main.ein" with:
@@ -12,14 +11,14 @@ Feature: Subtyping
     g : Number -> Number | None
     g = f
 
-    main : System -> Number
-    main system =
+    x : Number
+    x =
       case x = g 0
         Number => 0
         None => 1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Handle covariance and contravariance of functions in lists
     Given a file named "Main.ein" with:
@@ -33,8 +32,8 @@ Feature: Subtyping
     ys : List (Number -> Number | None)
     ys = xs
 
-    main : System -> Number
-    main system =
+    x : Number
+    x =
       case ys
         [] => 1
         [ f, ...fs ] =>
@@ -42,8 +41,8 @@ Feature: Subtyping
             Number => 0
             None => 1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Let a function type subsume a union type in a list expression
     Given a file named "Main.ein" with:
@@ -57,8 +56,8 @@ Feature: Subtyping
     xs : List (Number -> Number | None)
     xs = [ f, g ]
 
-    main : System -> Number
-    main system =
+    x : Number
+    x =
       case xs
         [] => 1
         [ f, ...fs ] =>
@@ -66,5 +65,5 @@ Feature: Subtyping
             Number => 0
             None => 1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0

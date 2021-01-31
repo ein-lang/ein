@@ -1,22 +1,21 @@
 Feature: If
   Background:
-    Given I successfully run `ein init command foo`
-    And I cd to "foo"
+    Given I successfully run `ein init library .`
 
   Scenario: Use if expressions
     Given a file named "Main.ein" with:
     """
-    main : System -> Number
-    main system = if True then 0 else 1
+    x : Number
+    x = if True then 0 else 1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
 
   Scenario: Use nested if expressions
     Given a file named "Main.ein" with:
     """
-    main : System -> Number
-    main system =
+    x : Number
+    x =
       if False then
         1
       else if True then
@@ -24,5 +23,5 @@ Feature: If
       else
         1
     """
-    When I successfully run `ein build`
-    Then I successfully run `sh -c ./foo`
+    When I run `ein build`
+    Then the exit status should be 0
