@@ -3,7 +3,7 @@ Feature: String
     Given I successfully run `ein init library .`
 
   Scenario: Create an empty string
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     foo : String
     foo = ""
@@ -12,7 +12,7 @@ Feature: String
     Then the exit status should be 0
 
   Scenario: Create a non-empty string
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     foo : String
     foo = "foo"
@@ -21,7 +21,7 @@ Feature: String
     Then the exit status should be 0
 
   Scenario: Compare strings
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Boolean
     x = "foo" == "foo" && "foo" /= "bar"
