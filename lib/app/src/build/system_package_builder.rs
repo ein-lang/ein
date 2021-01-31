@@ -1,20 +1,20 @@
-use super::external_packages_downloader::ExternalPackagesDownloader;
+use super::cached_external_package_downloader::CachedExternalPackageDownloader;
 use super::package_builder::PackageBuilder;
 use crate::common::{ExternalPackage, FilePath, SystemPackageConfiguration};
 
 pub struct SystemPackageBuilder<'a> {
     package_builder: &'a PackageBuilder<'a>,
-    external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
+    cached_external_package_downloader: &'a CachedExternalPackageDownloader<'a>,
 }
 
 impl<'a> SystemPackageBuilder<'a> {
     pub fn new(
         package_builder: &'a PackageBuilder<'a>,
-        external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
+        cached_external_package_downloader: &'a CachedExternalPackageDownloader<'a>,
     ) -> Self {
         Self {
             package_builder,
-            external_packages_downloader,
+            cached_external_package_downloader,
         }
     }
 
@@ -29,8 +29,8 @@ impl<'a> SystemPackageBuilder<'a> {
         );
 
         let package_configuration = self
-            .external_packages_downloader
-            .download_one(&external_package)?;
+            .cached_external_package_downloader
+            .download(&external_package)?;
 
         self.package_builder.build(
             &package_configuration,

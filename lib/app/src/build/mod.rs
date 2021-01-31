@@ -1,3 +1,4 @@
+mod cached_external_package_downloader;
 mod error;
 mod external_packages_builder;
 mod external_packages_downloader;
@@ -11,6 +12,7 @@ mod package_configuration_reader;
 mod prelude_package_builder;
 mod system_package_builder;
 
+pub use cached_external_package_downloader::*;
 pub use error::*;
 pub use external_packages_builder::*;
 pub use external_packages_downloader::*;
