@@ -86,6 +86,15 @@ impl EinString {
 
 unsafe impl Sync for EinString {}
 
+impl Default for EinString {
+    fn default() -> Self {
+        Self {
+            bytes: null(),
+            length: 0,
+        }
+    }
+}
+
 impl PartialEq for EinString {
     fn eq(&self, other: &EinString) -> bool {
         self.as_slice() == other.as_slice()
