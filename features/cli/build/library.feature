@@ -27,3 +27,9 @@ Feature: Library
     """
     When I run `ein build`
     Then the exit status should be 0
+
+  Scenario: Build a library twice
+    Given I successfully run `ein init library .`
+    When I run `ein build`
+    And I run `ein build`
+    Then the exit status should be 0
