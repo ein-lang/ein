@@ -28,36 +28,48 @@ impl<'a> ExternalPackagesDownloader<'a> {
         }
     }
 
+    pub fn download_one(
+        &self,
+        external_package: &ExternalPackage,
+    ) -> Result<PackageConfiguration, Box<dyn std::error::Error>> {
+        let directory_path = self
+            .file_path_resolver
+            .resolve_external_package_directory_path(&external_package);
+
+        if !self.file_system.exists(&directory_path) {
+            self.logger.log(&format!(
+                "downloading package {} {}",
+                external_package.name(),
+                external_package.version()
+            ))?;
+
+            self.external_package_downloader
+                .download(&external_package, &directory_path)?;
+        }
+
+        self.package_configuration_reader.read(&directory_path)
+    }
+
     pub fn download(
         &self,
-        main_package_configuration: &PackageConfiguration,
+        external_packages: &[ExternalPackage],
     ) -> Result<HashMap<ExternalPackage, PackageConfiguration>, Box<dyn std::error::Error>> {
         let mut package_configurations = HashMap::new();
 
-        for (name, configuration) in main_package_configuration
-            .build_configuration()
-            .dependencies()
-        {
-            let external_package = ExternalPackage::new(name, configuration.version());
-            let directory_path = self
-                .file_path_resolver
-                .resolve_external_package_directory_path(&external_package);
+        for external_package in external_packages {
+            let package_configuration = self.download_one(&external_package)?;
 
-            if !self.file_system.exists(&directory_path) {
-                self.logger.log(&format!(
-                    "downloading package {} {}",
-                    external_package.name(),
-                    external_package.version()
-                ))?;
+            package_configurations.extend(
+                self.download(
+                    &package_configuration
+                        .build_configuration()
+                        .dependencies()
+                        .into_iter()
+                        .collect::<Vec<_>>(),
+                )?,
+            );
 
-                self.external_package_downloader
-                    .download(&external_package, &directory_path)?;
-            }
-
-            let package_configuration = self.package_configuration_reader.read(&directory_path)?;
-
-            package_configurations.extend(self.download(&package_configuration)?);
-            package_configurations.insert(external_package, package_configuration);
+            package_configurations.insert(external_package.clone(), package_configuration);
         }
 
         Ok(package_configurations)

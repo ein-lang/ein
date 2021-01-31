@@ -4,7 +4,7 @@ use std::sync::Arc;
 lazy_static! {
     pub static ref COMPILE_CONFIGURATION: Arc<lang::CompileConfiguration> =
         lang::CompileConfiguration {
-            malloc_function_name: "ein_malloc".into(),
+            malloc_function_name: "_ein_malloc".into(),
             list_type_configuration: lang::ListTypeConfiguration {
                 empty_list_variable_name: "_emptyList".into(),
                 concatenate_function_name: "_concatenateLists".into(),
@@ -29,8 +29,8 @@ lazy_static! {
             main_module_configuration: Some(
                 lang::MainModuleConfiguration {
                     source_main_function_name: "main".into(),
-                    object_main_function_name: "ein_main".into(),
-                    argument_type_name: "System".into(),
+                    object_main_function_name: "_ein_main".into(),
+                    main_function_type_name: "MainFunction".into(),
                 }
                 .into()
             ),

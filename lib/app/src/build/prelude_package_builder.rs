@@ -36,10 +36,10 @@ impl<'a> PreludePackageBuilder<'a> {
 
         let package_configuration = self.package_configuration_reader.read(&directory_path)?;
 
-        let (package_object_file_paths, package_interface) =
+        let (package_object_file_paths, module_interfaces) =
             self.package_builder
                 .build(&package_configuration, &Default::default(), &[])?;
 
-        Ok((package_object_file_paths, package_interface))
+        Ok((package_object_file_paths, module_interfaces))
     }
 }

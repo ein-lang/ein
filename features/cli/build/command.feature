@@ -35,7 +35,11 @@ Feature: Command
     {
       "target": {
         "type": "Command",
-        "name": "foo"
+        "name": "foo",
+        "systemPackage": {
+          "name": "github.com/ein-lang/system",
+          "version": "main"
+        }
       },
       "dependencies": {
         "github.com/ein-lang/sample-package": { "version": "HEAD" }

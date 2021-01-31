@@ -3,8 +3,8 @@ use super::external_packages_downloader::ExternalPackagesDownloader;
 use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::prelude_package_builder::PreludePackageBuilder;
-use crate::common::FilePath;
-use crate::common::Target;
+use super::system_package_builder::SystemPackageBuilder;
+use crate::common::{CommandTarget, FilePath, PackageConfiguration, Target};
 use crate::infra::{CommandLinker, Logger};
 
 pub struct MainPackageBuilder<'a> {
@@ -12,17 +12,20 @@ pub struct MainPackageBuilder<'a> {
     package_builder: &'a PackageBuilder<'a>,
     command_linker: &'a dyn CommandLinker,
     prelude_package_builder: &'a PreludePackageBuilder<'a>,
+    system_package_builder: &'a SystemPackageBuilder<'a>,
     external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
     external_packages_builder: &'a ExternalPackagesBuilder<'a>,
     logger: &'a dyn Logger,
 }
 
 impl<'a> MainPackageBuilder<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         package_configuration_reader: &'a PackageConfigurationReader<'a>,
         package_builder: &'a PackageBuilder<'a>,
         command_linker: &'a dyn CommandLinker,
         prelude_package_builder: &'a PreludePackageBuilder<'a>,
+        system_package_builder: &'a SystemPackageBuilder<'a>,
         external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
         external_packages_builder: &'a ExternalPackagesBuilder<'a>,
         logger: &'a dyn Logger,
@@ -32,6 +35,7 @@ impl<'a> MainPackageBuilder<'a> {
             package_builder,
             command_linker,
             prelude_package_builder,
+            system_package_builder,
             external_packages_downloader,
             external_packages_builder,
             logger,
@@ -41,39 +45,88 @@ impl<'a> MainPackageBuilder<'a> {
     pub fn build(&self) -> Result<(), Box<dyn std::error::Error>> {
         let package_configuration = self.package_configuration_reader.read(&FilePath::empty())?;
 
-        let (prelude_package_object_file_paths, prelude_module_interfaces) =
+        match package_configuration.build_configuration().target() {
+            Target::Command(command_target) => {
+                self.build_command(&package_configuration, command_target)
+            }
+            Target::Library => self.build_library(&package_configuration),
+        }
+    }
+
+    fn build_command(
+        &self,
+        package_configuration: &PackageConfiguration,
+        command_target: &CommandTarget,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let (prelude_module_object_paths, prelude_module_interfaces) =
             self.prelude_package_builder.build()?;
 
-        let external_package_configurations = self
-            .external_packages_downloader
-            .download(&package_configuration)?;
+        let (system_module_object_paths, system_module_interfaces) = self
+            .system_package_builder
+            .build(command_target.system_package(), &prelude_module_interfaces)?;
 
-        let (external_package_object_file_paths, external_module_interfaces) = self
+        let prelude_module_interfaces = prelude_module_interfaces
+            .into_iter()
+            .chain(system_module_interfaces)
+            .collect::<Vec<_>>();
+
+        let external_package_configurations = self.external_packages_downloader.download(
+            &package_configuration
+                .build_configuration()
+                .dependencies()
+                .into_iter()
+                .collect::<Vec<_>>(),
+        )?;
+
+        let (external_module_object_paths, external_module_interfaces) = self
             .external_packages_builder
             .build(&external_package_configurations, &prelude_module_interfaces)?;
 
-        let (package_object_file_paths, _) = self.package_builder.build(
+        let (module_object_paths, _) = self.package_builder.build(
             &package_configuration,
             &external_module_interfaces,
             &prelude_module_interfaces,
         )?;
 
-        match package_configuration.build_configuration().target() {
-            Target::Command(command_target) => {
-                self.logger
-                    .log(&format!("linking command {}", command_target.name()))?;
+        self.logger
+            .log(&format!("linking command {}", command_target.name()))?;
 
-                self.command_linker.link(
-                    &prelude_package_object_file_paths
-                        .into_iter()
-                        .chain(package_object_file_paths)
-                        .chain(external_package_object_file_paths)
-                        .collect::<Vec<_>>(),
-                    command_target.name(),
-                )?;
-            }
-            Target::Library => {}
-        }
+        self.command_linker.link(
+            &system_module_object_paths
+                .into_iter()
+                .chain(prelude_module_object_paths)
+                .chain(external_module_object_paths)
+                .chain(module_object_paths)
+                .collect::<Vec<_>>(),
+            command_target.name(),
+        )?;
+
+        Ok(())
+    }
+
+    fn build_library(
+        &self,
+        package_configuration: &PackageConfiguration,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let (_, prelude_module_interfaces) = self.prelude_package_builder.build()?;
+
+        let external_package_configurations = self.external_packages_downloader.download(
+            &package_configuration
+                .build_configuration()
+                .dependencies()
+                .into_iter()
+                .collect::<Vec<_>>(),
+        )?;
+
+        let (_, external_module_interfaces) = self
+            .external_packages_builder
+            .build(&external_package_configurations, &prelude_module_interfaces)?;
+
+        self.package_builder.build(
+            &package_configuration,
+            &external_module_interfaces,
+            &prelude_module_interfaces,
+        )?;
 
         Ok(())
     }

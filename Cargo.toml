@@ -7,3 +7,4 @@ members = [
   "lib/lang",
   "lib/runtime",
 ]
+exclude = ["tmp"]

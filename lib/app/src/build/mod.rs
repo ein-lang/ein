@@ -9,6 +9,7 @@ mod modules_finder;
 mod package_builder;
 mod package_configuration_reader;
 mod prelude_package_builder;
+mod system_package_builder;
 
 pub use error::*;
 pub use external_packages_builder::*;
@@ -21,3 +22,4 @@ pub use modules_finder::*;
 pub use package_builder::*;
 pub use package_configuration_reader::*;
 pub use prelude_package_builder::*;
+pub use system_package_builder::*;

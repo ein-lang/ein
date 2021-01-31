@@ -37,10 +37,6 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                         .convert_to_os_path(&app::FilePath::new(&[command_name])),
                 )
                 .arg("-O3")
-                // TODO Replace this with the one of system packages.
-                // This double linking of the runtime library is to define
-                // the global allocator symbols in Rust first.
-                .arg(&self.runtime_library_path)
                 .args(
                     object_file_paths
                         .iter()

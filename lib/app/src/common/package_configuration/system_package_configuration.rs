@@ -1,15 +1,21 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Hash, PartialEq, Serialize)]
-pub struct ExternalPackageConfiguration {
+pub struct SystemPackageConfiguration {
+    name: String,
     version: String,
 }
 
-impl ExternalPackageConfiguration {
-    pub fn new(version: impl Into<String>) -> Self {
+impl SystemPackageConfiguration {
+    pub fn new(name: impl Into<String>, version: impl Into<String>) -> Self {
         Self {
+            name: name.into(),
             version: version.into(),
         }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     pub fn version(&self) -> &str {
