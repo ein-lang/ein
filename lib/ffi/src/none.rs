@@ -1,5 +1,5 @@
 #[repr(C)]
-#[derive(Default)]
+#[derive(Clone, Copy, Default, PartialEq)]
 pub struct None {
     _private: [u8; 0],
 }
