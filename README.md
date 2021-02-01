@@ -18,7 +18,7 @@ To make such development efficient, it's focused on:
   - Its syntax and type system are simple and easy to learn.
   - Its minimal language features keep codes maintainable.
 - Portability (WIP)
-  - Software written in the language can be ported easily to different platforms including operating systems, web browsers and [WASI](https://wasi.dev/).
+  - Software written in the language can be ported to different platforms including operating systems, web browsers and [WASI](https://wasi.dev/).
   - Libraries written in the language can be used by other languages via FFI compatible with C ABI.
 
 ## Features
