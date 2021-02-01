@@ -48,6 +48,7 @@ cargo install --git https://github.com/ein-lang/ein
 - [ ] CPS transformation
 - [ ] Asynchronous operations
 - [ ] Parallel and concurrent computation
+- [ ] WASM target
 
 ## License
 

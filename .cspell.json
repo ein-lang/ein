@@ -52,6 +52,7 @@
     "prepend",
     "renamer",
     "repr",
+    "roadmap",
     "semver",
     "subcommand",
     "submodule",
