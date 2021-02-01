@@ -41,6 +41,13 @@ cargo install --git https://github.com/ein-lang/ein
 - [Guides](doc/guides.md)
 - [Language specification](doc/language_specification.md)
 
+## Roadmap
+
+- [ ] Automatic reference counting
+- [ ] CPS transformation
+- [ ] Asynchronous operations
+- [ ] Parallel and concurrent computation
+
 ## License
 
 [MIT](LICENSE)
