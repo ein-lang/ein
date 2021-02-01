@@ -3,7 +3,7 @@ Feature: If
     Given I successfully run `ein init library .`
 
   Scenario: Use if expressions
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Number
     x = if True then 0 else 1
@@ -12,7 +12,7 @@ Feature: If
     Then the exit status should be 0
 
   Scenario: Use nested if expressions
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Number
     x =
