@@ -114,8 +114,13 @@ impl From<&'static str> for EinString {
 
 impl From<String> for EinString {
     fn from(string: String) -> Self {
-        // TODO Use Vec::into_raw_parts() instead when it's stabilized.
-        let bytes = string.into_bytes().leak::<'static>();
+        string.into_bytes().into()
+    }
+}
+
+impl From<Vec<u8>> for EinString {
+    fn from(bytes: Vec<u8>) -> Self {
+        let bytes = bytes.leak::<'static>();
 
         Self {
             bytes: bytes.as_ptr(),
