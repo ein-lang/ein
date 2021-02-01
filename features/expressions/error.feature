@@ -3,7 +3,7 @@ Feature: Error
     Given I successfully run `ein init library .`
 
   Scenario: Define an error value
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Error
     x = error 42
@@ -12,7 +12,7 @@ Feature: Error
     Then the exit status should be 0
 
   Scenario: Use a let-error expression
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Number | Error
     x = error 42
@@ -28,7 +28,7 @@ Feature: Error
     Then the exit status should be 0
 
   Scenario: Use a let-error expression with multiple definitions
-    Given a file named "Main.ein" with:
+    Given a file named "Foo.ein" with:
     """
     x : Number | Error
     x = error 42

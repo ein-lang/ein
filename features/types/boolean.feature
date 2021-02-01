@@ -17,8 +17,8 @@ Feature: Boolean
   Scenario: Use not function
     Given a file named "Foo.ein" with:
     """
-    foo : System -> Number
-    foo system = if not False then 0 else 1
+    x : Number
+    x = if not False then 0 else 1
     """
     When I run `ein build`
     Then the exit status should be 0
