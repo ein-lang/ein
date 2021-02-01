@@ -15,7 +15,7 @@ Ein is designed for software developed by a large number of people and/or over a
 To make such development efficient, it's focused on:
 
 - Simplicity
-  - Its syntax and type system are minimal and easy to learn.
+  - Its syntax and type system are simple and easy to learn.
   - Its minimal language features keep codes maintainable.
 - Portability (WIP)
   - Software written in Ein is easy to port to other platforms including different operating systems, web browsers and [WASI](https://wasi.dev/).
