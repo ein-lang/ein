@@ -63,6 +63,7 @@
     "toposort",
     "uint",
     "uninit",
-    "wasi"
+    "wasi",
+    "wasm"
   ]
 }
