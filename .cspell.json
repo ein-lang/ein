@@ -52,6 +52,7 @@
     "prepend",
     "renamer",
     "repr",
+    "roadmap",
     "semver",
     "subcommand",
     "submodule",
@@ -61,6 +62,8 @@
     "termcolor",
     "toposort",
     "uint",
-    "uninit"
+    "uninit",
+    "wasi",
+    "wasm"
   ]
 }
