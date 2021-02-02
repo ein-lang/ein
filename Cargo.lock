@@ -701,7 +701,7 @@ checksum = "2c2c5334976f6000d0c36cf95a0b70ff4daa310b935aa4ce190d02f1012c81d0"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#98556178ce0eb6e1419dd55ea6c3844ba9d97bd9"
+source = "git+https://github.com/raviqqe/ssf?branch=main#b91532873fbd19eae5f051748dd67c594f9ea76a"
 dependencies = [
  "pretty_assertions",
 ]
@@ -709,7 +709,7 @@ dependencies = [
 [[package]]
 name = "ssf-fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#98556178ce0eb6e1419dd55ea6c3844ba9d97bd9"
+source = "git+https://github.com/raviqqe/ssf?branch=main#b91532873fbd19eae5f051748dd67c594f9ea76a"
 dependencies = [
  "fmm",
  "fmm-c",
