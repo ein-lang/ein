@@ -9,7 +9,7 @@ combine = { version = "4.5.2", features = ["regex"] }
 derivative = "2"
 fmm-c = { git = "https://github.com/raviqqe/fmm", branch = "main" }
 indoc = "1.0"
-insta = { version = "1.5", features = ["backtrace"] }
+insta = { version = "1.6", features = ["backtrace"] }
 lazy_static = "1"
 regex = "1"
 serde = { version = "1", features = ["derive", "rc"] }
