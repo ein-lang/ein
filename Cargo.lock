@@ -701,7 +701,7 @@ checksum = "9a04629d2e8ecdcf30e0188e3699ed6d50d5750d0219db146a790065fe92a897"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=chore/refactor#ffbd60c26af4b608fe6c0451cca759993074d1e4"
+source = "git+https://github.com/raviqqe/ssf?branch=main#025a5cb1a5c972fb4a47685883f046ec2a647784"
 dependencies = [
  "pretty_assertions",
 ]
@@ -709,7 +709,7 @@ dependencies = [
 [[package]]
 name = "ssf-fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=chore/refactor#ffbd60c26af4b608fe6c0451cca759993074d1e4"
+source = "git+https://github.com/raviqqe/ssf?branch=main#025a5cb1a5c972fb4a47685883f046ec2a647784"
 dependencies = [
  "fmm",
  "fmm-c",
