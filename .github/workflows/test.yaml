@@ -54,6 +54,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: streetsidesoftware/cspell-action@master
+        with:
+          files: **/*.{feature,md,rs}
   code-coverage:
     runs-on: ubuntu-latest
     steps:
