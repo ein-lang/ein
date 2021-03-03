@@ -175,7 +175,10 @@ pub fn compile(
                 )
                 .compile(&module)?,
             ),
-            Some(configuration.malloc_function_name.clone()),
+            Some(fmm_c::MallocConfiguration {
+                malloc_function_name: configuration.malloc_function_name.clone(),
+                realloc_function_name: configuration.realloc_function_name.clone(),
+            }),
         )
         .into(),
         ModuleInterfaceCompiler::new().compile(&module)?,
