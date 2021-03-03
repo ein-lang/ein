@@ -68,8 +68,7 @@ pub fn compile(
 
     let module = transform_before_name_qualification(&module)?;
 
-    let module = if let Some(main_module_configuration) = &configuration.main_module_configuration
-    {
+    let module = if let Some(main_module_configuration) = &configuration.main_module_configuration {
         MainFunctionDefinitionTransformer::new(main_module_configuration.clone())
             .transform(&module)?
     } else {
@@ -86,8 +85,7 @@ pub fn compile(
     )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let type_comparability_checker =
-        TypeComparabilityChecker::new(reference_type_resolver.clone());
+    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let type_canonicalizer = TypeCanonicalizer::new(
         reference_type_resolver.clone(),
@@ -178,8 +176,8 @@ pub fn compile(
                 .compile(&module)?,
             ),
             Some(fmm_c::MallocConfiguration {
-                malloc_function_name: configuration.malloc_function_name.into(),
-                realloc_function_name: configuration.realloc_function_name.into(),
+                malloc_function_name: configuration.malloc_function_name.clone(),
+                realloc_function_name: configuration.realloc_function_name.clone(),
             }),
         )
         .into(),

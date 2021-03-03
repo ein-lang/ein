@@ -15,8 +15,7 @@ lazy_static! {
         list_type_configuration: super::list_type_configuration::LIST_TYPE_CONFIGURATION.clone(),
         string_type_configuration: super::string_type_configuration::STRING_TYPE_CONFIGURATION
             .clone(),
-        error_type_configuration: super::error_type_configuration::ERROR_TYPE_CONFIGURATION
-            .clone(),
+        error_type_configuration: super::error_type_configuration::ERROR_TYPE_CONFIGURATION.clone(),
         main_module_configuration: None,
     }
     .into();
