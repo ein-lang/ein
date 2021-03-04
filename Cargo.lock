@@ -356,6 +356,7 @@ version = "0.1.0"
 dependencies = [
  "combine",
  "derivative",
+ "fmm",
  "fmm-c",
  "indoc",
  "insta",

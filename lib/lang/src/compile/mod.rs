@@ -166,15 +166,19 @@ pub fn compile(
 
     Ok((
         fmm_c::compile(
-            &ssf_fmm::compile(
-                &ModuleCompiler::new(
-                    expression_compiler,
-                    type_compiler,
-                    configuration.string_type_configuration.clone(),
-                    global_names,
-                )
-                .compile(&module)?,
-            ),
+            &fmm::analysis::transform_to_cps(
+                &ssf_fmm::compile(
+                    &ModuleCompiler::new(
+                        expression_compiler,
+                        type_compiler,
+                        configuration.string_type_configuration.clone(),
+                        global_names,
+                    )
+                    .compile(&module)?,
+                ),
+                fmm::types::Record::new(vec![]),
+            )
+            .unwrap(),
             Some(fmm_c::MallocConfiguration {
                 malloc_function_name: configuration.malloc_function_name.clone(),
                 realloc_function_name: configuration.realloc_function_name.clone(),
