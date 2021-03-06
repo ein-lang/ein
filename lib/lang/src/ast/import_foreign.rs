@@ -1,3 +1,4 @@
+use super::calling_convention::CallingConvention;
 use crate::debug::SourceInformation;
 use crate::types::Type;
 use std::sync::Arc;
@@ -6,6 +7,7 @@ use std::sync::Arc;
 pub struct ImportForeign {
     name: String,
     foreign_name: String,
+    calling_convention: CallingConvention,
     type_: Type,
     source_information: Arc<SourceInformation>,
 }
@@ -14,12 +16,14 @@ impl ImportForeign {
     pub fn new(
         name: impl Into<String>,
         foreign_name: impl Into<String>,
+        calling_convention: CallingConvention,
         type_: impl Into<Type>,
         source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             name: name.into(),
             foreign_name: foreign_name.into(),
+            calling_convention,
             type_: type_.into(),
             source_information: source_information.into(),
         }
@@ -31,6 +35,10 @@ impl ImportForeign {
 
     pub fn foreign_name(&self) -> &str {
         &self.foreign_name
+    }
+
+    pub fn calling_convention(&self) -> CallingConvention {
+        self.calling_convention
     }
 
     pub fn type_(&self) -> &Type {
@@ -48,6 +56,7 @@ impl ImportForeign {
         Ok(Self::new(
             self.name.clone(),
             self.foreign_name.clone(),
+            self.calling_convention,
             self.type_.transform_types(transform)?,
             self.source_information.clone(),
         ))
