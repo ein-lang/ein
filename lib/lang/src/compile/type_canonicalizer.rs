@@ -42,7 +42,7 @@ impl TypeCanonicalizer {
             .map(|type_| self.reference_type_resolver.resolve_to_any(type_))
             .collect::<Result<Vec<_>, _>>()?
             .into_iter()
-            .filter_map(|type_| type_)
+            .flatten()
             .next()
         {
             Ok(type_.into())
