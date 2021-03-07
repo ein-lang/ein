@@ -31,19 +31,6 @@ It requires [`clang`](https://clang.llvm.org/) on your system.
 cargo install --git https://github.com/ein-lang/ein
 ```
 
-## Documentation
-
-- [Guides](doc/guides.md)
-- [Language specification](doc/language-specification.md)
-
-## Roadmap
-
-- [x] CPS transformation
-- [ ] Automatic reference counting
-- [ ] Asynchronous operations
-- [ ] Parallel and concurrent computation
-- [ ] WASM target
-
 ## License
 
 [Apache 2.0](LICENSE)
