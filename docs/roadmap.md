@@ -20,5 +20,5 @@ Priority is top to bottom.
 - [ ] Web browser interface
 - [ ] IDE/editor support
   - Language server
-- [ ] Internal DSL
 - [ ] Self-hosting
+- [ ] Internal DSL
