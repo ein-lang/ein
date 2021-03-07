@@ -13,7 +13,10 @@ Priority is top to bottom.
 - [ ] Foreign function interface
 - [ ] WASM backend
 - [ ] Efficient persistent data structures
-- [ ] Testing tools
+  - [ ] Array type
+  - [ ] Map type
+- [ ] Testing framework
+- [ ] Stream type
 - [ ] Parallel computation
 - [ ] HTTP server framework
 - [ ] Binary support
