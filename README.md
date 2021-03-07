@@ -31,7 +31,7 @@ To make such development efficient, it focuses on:
 
 ## Install
 
-It requires [`clang`](https://clang.llvm.org/) installed on your system.
+It requires [`clang`](https://clang.llvm.org/) on your system.
 
 ```
 cargo install --git https://github.com/ein-lang/ein
