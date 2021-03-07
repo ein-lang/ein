@@ -12,7 +12,7 @@ The functional programming language for scalable development.
 
 Ein is designed for software developed by a large number of people and/or over a long period of time.
 
-To make such development efficient, it's focused on:
+To make such development efficient, it focuses on:
 
 - Simplicity
   - Its syntax and type system are simple and easy to learn.
