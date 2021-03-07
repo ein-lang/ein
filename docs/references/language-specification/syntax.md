@@ -2,15 +2,19 @@
 
 ## Statements
 
+Variables and functions can be defined using the `:` sign to specify their types and the `=` sign to specify their values.
+
 ### Variable definition
 
 ```
+x : Number
 x = ...
 ```
 
 ### Function definition
 
 ```
+f : Number -> Number -> Number
 f x y = ...
 ```
 
