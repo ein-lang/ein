@@ -23,14 +23,6 @@ To make such development efficient, it focuses on:
 - Pure functions by default
 - No runtime error
 
-## Install
-
-It requires [`clang`](https://clang.llvm.org/) on your system.
-
-```
-cargo install --git https://github.com/ein-lang/ein
-```
-
 ## License
 
 [Apache 2.0](https://github.com/ein-lang/ein/blob/main/LICENSE)
