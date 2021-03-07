@@ -137,3 +137,25 @@ let
 in
   f 2 + g 3
 ```
+
+#### `let`-error expression
+
+- Using `case` expressions for error handling is hard because the expressions get nested every time when you use them.
+- `let`-error expressions put those error handlings in a sequence propagating each errors in variable definitions into values of the expressions.
+
+Given `x : Number | Error`,
+
+```
+let
+  y ?= x
+in
+  y + 1
+```
+
+is equivalent to
+
+```
+case y = x
+  Error => y
+  Number => y + 1
+```
