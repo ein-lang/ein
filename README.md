@@ -40,7 +40,7 @@ cargo install --git https://github.com/ein-lang/ein
 ## Documentation
 
 - [Guides](doc/guides.md)
-- [Language specification](doc/language_specification.md)
+- [Language specification](doc/language-specification.md)
 
 ## Roadmap
 

@@ -1,4 +1,4 @@
 # Language specification
 
-- [Expressions](expressions.md)
+- [Syntax](syntax.md)
 - [Types](types.md)
