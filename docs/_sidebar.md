@@ -1,5 +1,5 @@
 - [Home](/)
-- [Guides](/guides.md)
+- [Getting started](/getting-started.md)
 - References
   - [Language specification](/references/language-specification/)
 - [Roadmap](/roadmap.md)
