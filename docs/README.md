@@ -33,4 +33,4 @@ cargo install --git https://github.com/ein-lang/ein
 
 ## License
 
-[Apache 2.0](LICENSE)
+[Apache 2.0](https://github.com/ein-lang/ein/blob/main/LICENSE)
