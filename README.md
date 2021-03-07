@@ -45,7 +45,7 @@ cargo install --git https://github.com/ein-lang/ein
 ## Roadmap
 
 - [ ] Automatic reference counting
-- [ ] CPS transformation
+- [x] CPS transformation
 - [ ] Asynchronous operations
 - [ ] Parallel and concurrent computation
 - [ ] WASM target
