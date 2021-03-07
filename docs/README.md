@@ -22,6 +22,8 @@ To make such development efficient, it focuses on:
 - Immutable values
 - Pure functions by default
 - No runtime error
+- Parallel computation (WIP)
+- Thread safety (WIP)
 
 ## License
 
