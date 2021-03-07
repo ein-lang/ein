@@ -1,7 +1,7 @@
 - [Home](/)
 - [Getting started](/getting-started.md)
 - References
-  - [Language specification](/references/language-specification/)
+  - Language specification
     - [Syntax](/references/language-specification/syntax)
     - [Types](/references/language-specification/types)
 - [Roadmap](/roadmap.md)
