@@ -110,3 +110,30 @@ case x = ...
   Foo => ...
   Bar | Baz => ...
 ```
+
+### Bindings
+
+#### `let` expression
+
+- Variable and function definitions can be used in the `let` expressions.
+- They cannot be mixed in a `let` expression.
+
+##### Variables
+
+```
+let
+  x = 1
+  y = 2
+in
+  x + y
+```
+
+##### Functions
+
+```
+let
+  f x = 1
+  g x = f x
+in
+  f 2 + g 3
+```
