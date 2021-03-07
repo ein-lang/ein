@@ -2,9 +2,7 @@
 
 ## Operators
 
-### Number
-
-#### Arithmetics
+### Arithmetic
 
 ```
 1 + 1
@@ -13,7 +11,7 @@
 1 / 1
 ```
 
-#### Comparison
+### Comparison
 
 ```
 1 == 1
@@ -24,14 +22,9 @@
 1 => 1
 ```
 
-### Boolean
+#### Generic equality
 
-```
-True && True
-True || True
-```
-
-### Generic equality
+`==` and `/=` operators can be used for any types except functions and types which might include them.
 
 ```
 "foo" == "bar"
@@ -39,13 +32,22 @@ Foo{ foo : 0 } == Foo{ foo : 1 }
 42 /= None
 ```
 
-## Function applications
+### Boolean
+
+```
+True && True
+True || True
+```
+
+## Function application
 
 ```
 f x y z
 ```
 
-## If expressions
+## Conditionals
+
+### `if` expression
 
 ```
 if True then
@@ -54,9 +56,9 @@ else
   ...
 ```
 
-## Case expressions
+### `case` expression
 
-### Lists
+#### Lists
 
 ```
 case xs
@@ -64,7 +66,7 @@ case xs
   [ y, ...ys ] => ...
 ```
 
-### Types
+#### Types
 
 ```
 case x = y
