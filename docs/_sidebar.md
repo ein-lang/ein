@@ -1,5 +1,6 @@
 - [Home](/)
-- [Getting started](/getting-started.md)
+- Guides
+  - [Getting started](/guides/getting-started.md)
 - References
   - Language specification
     - [Syntax](/references/language-specification/syntax)
