@@ -1,6 +1,6 @@
 # Ein
 
-The functional programming language for scalable development.
+The functional programming language for scalable development
 
 ## Goals
 
