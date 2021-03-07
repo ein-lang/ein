@@ -50,7 +50,7 @@ f x
 ### `if` expression
 
 ```
-if True then
+if x then
   ...
 else
   ...
