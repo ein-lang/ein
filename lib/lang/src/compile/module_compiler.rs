@@ -33,18 +33,20 @@ impl ModuleCompiler {
             module
                 .import_foreigns()
                 .iter()
-                .map(|declaration| -> Result<_, CompileError> {
+                .map(|import| -> Result<_, CompileError> {
                     Ok(ssf::ir::ForeignDeclaration::new(
-                        declaration.name(),
-                        declaration.foreign_name(),
+                        import.name(),
+                        import.foreign_name(),
                         self.type_compiler
-                            .compile(declaration.type_())?
+                            .compile(import.type_())?
                             .into_function()
                             .ok_or_else(|| {
-                                CompileError::FunctionExpected(
-                                    declaration.source_information().clone(),
-                                )
+                                CompileError::FunctionExpected(import.source_information().clone())
                             })?,
+                        match import.calling_convention() {
+                            CallingConvention::Native => ssf::ir::CallingConvention::Source,
+                            CallingConvention::C => ssf::ir::CallingConvention::Target,
+                        },
                     ))
                 })
                 .collect::<Result<_, _>>()?,

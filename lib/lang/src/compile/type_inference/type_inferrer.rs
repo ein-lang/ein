@@ -576,6 +576,7 @@ mod tests {
             vec![ImportForeign::new(
                 "f",
                 "",
+                CallingConvention::Native,
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),

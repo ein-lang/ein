@@ -135,12 +135,30 @@ fn import_foreign<'a>() -> impl Parser<Stream<'a>, Output = ImportForeign> {
         source_information(),
         keyword("import"),
         keyword("foreign"),
+        optional(calling_convention()),
         type_annotation(),
     )
-        .map(|(source_information, _, _, (name, type_))| {
-            ImportForeign::new(&name, &name, type_, source_information)
-        })
+        .map(
+            |(source_information, _, _, calling_convention, (name, type_))| {
+                ImportForeign::new(
+                    &name,
+                    &name,
+                    calling_convention.unwrap_or(CallingConvention::Native),
+                    type_,
+                    source_information,
+                )
+            },
+        )
         .expected("import foreign")
+}
+
+fn calling_convention<'a>() -> impl Parser<Stream<'a>, Output = CallingConvention> {
+    string_literal()
+        .expected("calling convention")
+        .then(|string| match string.value() {
+            "c" => value(CallingConvention::C).left(),
+            _ => unexpected_any("unknown calling convention").right(),
+        })
 }
 
 fn definition<'a>() -> impl Parser<Stream<'a>, Output = Definition> {
@@ -1160,6 +1178,28 @@ mod tests {
             ImportForeign::new(
                 "foo",
                 "foo",
+                CallingConvention::Native,
+                types::Function::new(
+                    types::Number::new(SourceInformation::dummy()),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                ),
+                SourceInformation::dummy()
+            ),
+        );
+    }
+
+    #[test]
+    fn parse_import_foreign_with_calling_convention() {
+        assert_eq!(
+            import_foreign()
+                .parse(stream("import foreign \"c\" foo : Number -> Number", ""))
+                .unwrap()
+                .0,
+            ImportForeign::new(
+                "foo",
+                "foo",
+                CallingConvention::C,
                 types::Function::new(
                     types::Number::new(SourceInformation::dummy()),
                     types::Number::new(SourceInformation::dummy()),

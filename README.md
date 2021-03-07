@@ -52,4 +52,4 @@ cargo install --git https://github.com/ein-lang/ein
 
 ## License
 
-[MIT](LICENSE)
+[Apache 2.0](LICENSE)

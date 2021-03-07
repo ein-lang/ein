@@ -21,12 +21,13 @@ impl GlobalNameRenamer {
             module
                 .import_foreigns()
                 .iter()
-                .map(|declaration| {
+                .map(|import| {
                     ImportForeign::new(
-                        self.rename_name(declaration.name(), &self.names),
-                        declaration.foreign_name(),
-                        declaration.type_().clone(),
-                        declaration.source_information().clone(),
+                        self.rename_name(import.name(), &self.names),
+                        import.foreign_name(),
+                        import.calling_convention(),
+                        import.type_().clone(),
+                        import.source_information().clone(),
                     )
                 })
                 .collect(),
@@ -648,6 +649,7 @@ mod tests {
             vec![ImportForeign::new(
                 "x",
                 "x",
+                CallingConvention::Native,
                 types::None::new(SourceInformation::dummy()),
                 SourceInformation::dummy(),
             )],
@@ -671,6 +673,7 @@ mod tests {
                 vec![ImportForeign::new(
                     "y",
                     "x",
+                    CallingConvention::Native,
                     types::None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )],
