@@ -1,5 +1,5 @@
 - [Home](/)
-- [Guide](/guide.md)
+- [Guides](/guides.md)
 - References
   - [Language specification](/references/language-specification/)
 - [Roadmap](/roadmap.md)
