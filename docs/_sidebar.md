@@ -1,0 +1,8 @@
+- [Home](/)
+- Guides
+  - [Getting started](/guides/getting-started.md)
+- References
+  - Language specification
+    - [Syntax](/references/language-specification/syntax)
+    - [Types](/references/language-specification/types)
+- [Roadmap](/roadmap.md)

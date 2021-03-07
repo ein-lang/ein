@@ -78,9 +78,9 @@ type Person {
 }
 ```
 
-### Operations
+### Literals
 
-- Elements are private outside modules.
+- Fields are private outside modules where they are defined.
 
 ```
 Person.name person
@@ -88,7 +88,7 @@ Person{ name = "foo", age = 42 }
 Person{ ...person, name = "bar" }
 ```
 
-## Enumerated types
+## Singletons
 
 ```
 type Foo
@@ -96,17 +96,24 @@ type Foo
 
 ### Literals
 
+- Singleton values can be referenced by their type names.
+
 ```
 Foo
 ```
 
 ## Unions
 
+- Unions combine different types into a type.
+
 ```
-Foo | Bar | Baz
+Foo | Bar
 ```
 
 ## Any
+
+- `Any` is something called a "top" type.
+- Any types can be casted to `Any` type.
 
 ```
 Any
