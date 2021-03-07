@@ -19,7 +19,7 @@ The functional programming language for scalable development.
 
 ## Documentation
 
-- [The website](https://ein-lang.org)
+[Here](https://ein-lang.org)
 
 ## License
 
