@@ -42,7 +42,7 @@ True || True
 ## Function application
 
 ```
-f x y z
+f x
 ```
 
 ## Conditionals
