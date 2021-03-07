@@ -100,10 +100,13 @@ case xs
   [ y, ...ys ] => ...
 ```
 
-##### Types
+##### Unions and `Any`
+
+- Values of unions and `Any` types can be downcasted using the `case` expression.
+- In each branch, the variable `x` is bound to different types of the branch.
 
 ```
-case x = y
+case x = ...
   Foo => ...
   Bar | Baz => ...
 ```
