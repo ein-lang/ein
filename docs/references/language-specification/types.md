@@ -78,9 +78,9 @@ type Person {
 }
 ```
 
-### Operations
+### Literals
 
-- Elements are private outside modules.
+- Fields are private outside modules where they are defined.
 
 ```
 Person.name person

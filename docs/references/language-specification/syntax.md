@@ -18,17 +18,19 @@ f : Number -> Number -> Number
 f x y = ...
 ```
 
-### Record type definitions
+### Record type definition
 
-See [Type system](type_system.md#records).
+See [Records](types.md#records).
 
 ### Type alias
 
-See [Type system](type_system.md#type-alias).
+```
+type Foo = ...
+```
 
 ### Module import and export
 
-See [Module system](module_system.md).
+See [Modules](modules.md).
 
 ## Expressions
 
