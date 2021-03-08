@@ -5,6 +5,7 @@
   - Language reference
     - [Syntax](/references/language-reference/syntax)
     - [Types](/references/language-reference/types)
+    - [Built-ins](/references/language-reference/built-ins)
     - [Modules](/references/language-reference/modules)
     - [Packages](/references/language-reference/packages)
 - [Roadmap](/roadmap.md)
