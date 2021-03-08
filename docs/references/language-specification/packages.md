@@ -3,7 +3,8 @@
 - Each repository of some version control system (VCS) composes a package.
   - Currently, only [Git](https://git-scm.com/) is supported.
 - Packages contain modules.
-- Modules in packages of the `Library` type can be imported by other packages.
+- Packages are either application or library packages.
+- Modules in library packages can be imported by other packages.
 
 ## Package names
 
@@ -13,17 +14,31 @@ To import modules in other packages, see [Modules](modules.md).
 
 ## Package configuration
 
-- Each package has a configuration file named `ein.json` at its root directory.
-- Packages have types of either `Command` or `Library`.
+- Each package has its configuration file named `ein.json` at its root directory.
 
-### Command
+### Configuration file format
+
+- Packages are considered to be applications if they have `application` fields.
+
+| Field                                 | Required | Description                                                     |
+| ------------------------------------- | -------- | --------------------------------------------------------------- |
+| `application`                         | No       | Application configuration                                       |
+| `application.name`                    | Yes      | Application name                                                |
+| `application.system`                  | Yes      | System package configuration                                    |
+| `application.system.name`             | Yes      | System package name. See the `dependencies` field.              |
+| `application.system.version`          | Yes      | System package version. See the `dependencies` field.           |
+| `dependencies`                        | Yes      | Dependent packages as a map from names to their configurations. |
+| `dependencies.<package name>.version` | Yes      | A version of a package. For Git, they are branch names.         |
+
+### Examples
+
+#### Application
 
 ```json
 {
-  "target": {
-    "type": "Command",
+  "application": {
     "name": "foo",
-    "systemPackage": {
+    "system": {
       "name": "github.com/ein-lang/system",
       "version": "main"
     }
@@ -34,13 +49,10 @@ To import modules in other packages, see [Modules](modules.md).
 }
 ```
 
-### Library
+#### Library
 
 ```json
 {
-  "target": {
-    "type": "Library"
-  },
   "dependencies": {
     "github.com/foo/bar": { "version": "main" }
   }
