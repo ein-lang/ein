@@ -9,5 +9,6 @@
     - [Built-ins](/references/language/built-ins.md)
     - [Modules](/references/language/modules.md)
     - [Packages](/references/language/packages.md)
+  - [Command line tools](/references/command-line-tools.md)
 - [Roadmap](/roadmap.md)
 - [The Zen](/the-zen.md)
