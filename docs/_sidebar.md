@@ -5,4 +5,5 @@
   - Language specification
     - [Syntax](/references/language-specification/syntax)
     - [Types](/references/language-specification/types)
+    - [Modules](/references/language-specification/modules)
 - [Roadmap](/roadmap.md)
