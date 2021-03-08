@@ -4,10 +4,10 @@
   - [Naming convention](/guides/naming-convention.md)
 - References
   - Language reference
-    - [Syntax](/references/language-reference/syntax.md)
-    - [Types](/references/language-reference/types.md)
-    - [Built-ins](/references/language-reference/built-ins.md)
-    - [Modules](/references/language-reference/modules.md)
-    - [Packages](/references/language-reference/packages.md)
+    - [Syntax](/references/language/syntax.md)
+    - [Types](/references/language/types.md)
+    - [Built-ins](/references/language/built-ins.md)
+    - [Modules](/references/language/modules.md)
+    - [Packages](/references/language/packages.md)
 - [Roadmap](/roadmap.md)
 - [The Zen](/the-zen.md)
