@@ -7,3 +7,4 @@
     - [Types](/references/language-specification/types)
     - [Modules](/references/language-specification/modules)
 - [Roadmap](/roadmap.md)
+- [The Zen](/the-zen.md)
