@@ -2,10 +2,10 @@
 - Guides
   - [Getting started](/guides/getting-started.md)
 - References
-  - Language specification
-    - [Syntax](/references/language-specification/syntax)
-    - [Types](/references/language-specification/types)
-    - [Modules](/references/language-specification/modules)
-    - [Packages](/references/language-specification/packages)
+  - Language reference
+    - [Syntax](/references/language-reference/syntax)
+    - [Types](/references/language-reference/types)
+    - [Modules](/references/language-reference/modules)
+    - [Packages](/references/language-reference/packages)
 - [Roadmap](/roadmap.md)
 - [The Zen](/the-zen.md)
