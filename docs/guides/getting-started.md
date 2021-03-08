@@ -9,7 +9,7 @@ It requires the following software on your system.
 
 After you install them, run the following command.
 
-```
+```sh
 cargo install --git https://github.com/ein-lang/ein
 ```
 
@@ -21,13 +21,13 @@ ein --help
 
 ## Initializing a package
 
-When you run the following command, you should see a `foo` directory under the current directory.
+To initialize your first package, run the following command.
 
 ```sh
 ein init foo
 ```
 
-When you switch your directory to the `foo` directory, you should see a `Main.ein` source file and a `ein.json` package configuration file.
+Then, you should see a `foo` directory under the current directory. When you switch your directory to the `foo` directory, you should see a `Main.ein` source file and a `ein.json` package configuration file.
 
 ## Building a package
 
