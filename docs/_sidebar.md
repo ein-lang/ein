@@ -3,7 +3,7 @@
   - [Getting started](/guides/getting-started.md)
   - [Naming convention](/guides/naming-convention.md)
 - References
-  - Language reference
+  - Language
     - [Syntax](/references/language/syntax.md)
     - [Types](/references/language/types.md)
     - [Built-ins](/references/language/built-ins.md)
