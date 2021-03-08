@@ -50,6 +50,8 @@ import "github.com/foo/bar/Foo/Bar"
 
 ### Custom prefixes
 
+> WIP
+
 Imported modules can have different prefixes.
 
 ```
