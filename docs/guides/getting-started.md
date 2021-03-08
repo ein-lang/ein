@@ -42,3 +42,5 @@ Then, you will see an executable file named `foo` in the directory.
 ## For more information...
 
 Now, you can start editing `*.ein` files and build your own application!
+
+- To know more about the language, see [the language reference](/references/language/syntax.md).
