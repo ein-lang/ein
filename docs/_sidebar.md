@@ -1,12 +1,13 @@
 - [Home](/)
 - Guides
   - [Getting started](/guides/getting-started.md)
+  - [Naming convention](/guides/naming-convention.md)
 - References
   - Language reference
-    - [Syntax](/references/language-reference/syntax)
-    - [Types](/references/language-reference/types)
-    - [Built-ins](/references/language-reference/built-ins)
-    - [Modules](/references/language-reference/modules)
-    - [Packages](/references/language-reference/packages)
+    - [Syntax](/references/language-reference/syntax.md)
+    - [Types](/references/language-reference/types.md)
+    - [Built-ins](/references/language-reference/built-ins.md)
+    - [Modules](/references/language-reference/modules.md)
+    - [Packages](/references/language-reference/packages.md)
 - [Roadmap](/roadmap.md)
 - [The Zen](/the-zen.md)
