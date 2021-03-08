@@ -29,7 +29,7 @@ To import modules in other packages, see [Modules](modules.md).
     }
   },
   "dependencies": {
-    "github.com/bar/baz": { "version": "main" }
+    "github.com/foo/bar": { "version": "main" }
   }
 }
 ```
@@ -42,7 +42,7 @@ To import modules in other packages, see [Modules](modules.md).
     "type": "Library"
   },
   "dependencies": {
-    "github.com/bar/baz": { "version": "main" }
+    "github.com/foo/bar": { "version": "main" }
   }
 }
 ```
