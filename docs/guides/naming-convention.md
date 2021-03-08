@@ -19,7 +19,7 @@
 
 ## Acronyms
 
-Acronyms are considered as single words.
+Acronyms are treated as single words.
 
 - `Cpu`
 - `Ast`
