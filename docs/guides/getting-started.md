@@ -27,7 +27,7 @@ To initialize your first package, run the following command.
 ein init foo
 ```
 
-Then, you should see a `foo` directory under your current directory. When you switch your directory to the `foo` directory, you should see a `Main.ein` source file and a `ein.json` package configuration file.
+Then, you should see a `foo` directory under your current directory. When you switch to the `foo` directory, you should see a `Main.ein` source file and a `ein.json` package configuration file.
 
 ## Building a package
 
