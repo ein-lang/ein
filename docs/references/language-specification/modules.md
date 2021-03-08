@@ -1,6 +1,8 @@
 # Modules
 
-In Ein, each source file composes a module.
+- Each source file composes a module.
+- Modules contain their variables, functions and types.
+- They are exported to and imported from other modules.
 
 ## `export` statement
 

@@ -6,5 +6,6 @@
     - [Syntax](/references/language-specification/syntax)
     - [Types](/references/language-specification/types)
     - [Modules](/references/language-specification/modules)
+    - [Packages](/references/language-specification/packages)
 - [Roadmap](/roadmap.md)
 - [The Zen](/the-zen.md)
