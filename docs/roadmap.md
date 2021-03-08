@@ -1,6 +1,6 @@
 # Roadmap
 
-Priority is top to bottom.
+Items are ordered by priority.
 
 - [x] Basic syntax
 - [x] CPS transformation
