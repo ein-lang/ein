@@ -22,10 +22,14 @@ To import modules in other packages, see [Modules](modules.md).
 {
   "target": {
     "type": "Command",
-    "name": "foo"
+    "name": "foo",
+    "systemPackage": {
+      "name": "github.com/ein-lang/system",
+      "version": "main"
+    }
   },
   "dependencies": {
-    "github.com/bar/baz": { "version": "master" }
+    "github.com/bar/baz": { "version": "main" }
   }
 }
 ```
@@ -38,7 +42,7 @@ To import modules in other packages, see [Modules](modules.md).
     "type": "Library"
   },
   "dependencies": {
-    "github.com/bar/baz": { "version": "master" }
+    "github.com/bar/baz": { "version": "main" }
   }
 }
 ```
