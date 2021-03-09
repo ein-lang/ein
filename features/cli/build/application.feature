@@ -1,6 +1,6 @@
 Feature: Application
   Background:
-    Given I successfully run `ein init application foo`
+    Given I successfully run `ein init foo`
     And I cd to "foo"
 
   Scenario: Build a application
