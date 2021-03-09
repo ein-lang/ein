@@ -1,6 +1,6 @@
 Feature: List
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Create an empty list
     Given a file named "Foo.ein" with:

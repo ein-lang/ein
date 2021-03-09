@@ -60,7 +60,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &prelude_package_downloader,
         &static_file_path_manager,
     );
-    let command_linker = infra::CommandLinker::new(
+    let application_linker = infra::ApplicationLinker::new(
         &command_runner,
         &file_path_converter,
         root_directory.join("target/release/libruntime.a"),
@@ -81,7 +81,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let main_package_builder = app::MainPackageBuilder::new(
         &package_configuration_reader,
         &package_builder,
-        &command_linker,
+        &application_linker,
         &prelude_package_builder,
         &system_package_builder,
         &external_packages_downloader,

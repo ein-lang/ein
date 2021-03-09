@@ -1,12 +1,12 @@
+mod application_target;
 mod build_configuration;
-mod command_target;
 mod external_package_configuration;
 mod system_package_configuration;
 mod target;
 
 use crate::common::FilePath;
+pub use application_target::ApplicationTarget;
 pub use build_configuration::BuildConfiguration;
-pub use command_target::CommandTarget;
 pub use external_package_configuration::ExternalPackageConfiguration;
 pub use system_package_configuration::SystemPackageConfiguration;
 pub use target::Target;

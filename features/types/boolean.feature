@@ -1,6 +1,6 @@
 Feature: Boolean
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Use Boolean type
     Given a file named "Foo.ein" with:

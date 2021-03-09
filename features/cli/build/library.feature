@@ -1,6 +1,6 @@
 Feature: Library
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Build a library
     When I run `ein build`

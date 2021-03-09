@@ -1,6 +1,6 @@
 Feature: Let expressions
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Use let-values expression
     Given a file named "Foo.ein" with:

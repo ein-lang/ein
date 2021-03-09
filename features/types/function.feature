@@ -1,6 +1,6 @@
 Feature: Function
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Use an argument
     Given a file named "Main.ein" with:

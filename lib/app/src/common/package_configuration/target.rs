@@ -1,10 +1,10 @@
-use super::command_target::CommandTarget;
+use super::application_target::ApplicationTarget;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "type")]
 pub enum Target {
-    Command(CommandTarget),
+    Application(ApplicationTarget),
     Library,
 }
 
@@ -14,13 +14,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_command_target() {
+    fn parse_application_target() {
         assert_eq!(
             serde_json::from_str::<Target>(
-                r#"{"type":"Command","name":"foo","systemPackage":{"name":"github.com/foo/bar","version":"baz"}}"#
+                r#"{"type":"Application","name":"foo","systemPackage":{"name":"github.com/foo/bar","version":"baz"}}"#
             )
             .unwrap(),
-            Target::Command(CommandTarget::new(
+            Target::Application(ApplicationTarget::new(
                 "foo",
                 SystemPackageConfiguration::new("github.com/foo/bar", "baz")
             ))

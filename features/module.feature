@@ -1,6 +1,6 @@
 Feature: Module
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Import a module
     Given a file named "Foo.ein" with:
