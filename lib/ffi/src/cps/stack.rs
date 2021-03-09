@@ -21,7 +21,7 @@ impl Stack {
                 alloc(Layout::from_size_align(capacity, DEFAULT_ALIGNMENT).unwrap())
             },
             size: 0,
-            capacity: INITIAL_CAPACITY,
+            capacity,
         }
     }
 }
