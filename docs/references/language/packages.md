@@ -39,7 +39,7 @@ To import modules in other packages, see [Modules](modules.md).
   "application": {
     "name": "foo",
     "system": {
-      "name": "github.com/ein-lang/system",
+      "name": "github.com/ein-lang/os",
       "version": "main"
     }
   },

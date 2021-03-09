@@ -15,7 +15,7 @@ Feature: Command
         "type": "Command",
         "name": "foo",
         "systemPackage": {
-          "name": "github.com/ein-lang/system",
+          "name": "github.com/ein-lang/os",
           "version": "main"
         }
       },

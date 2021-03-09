@@ -2,7 +2,7 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     pub static ref DEFAULT_SYSTEM_PACKAGE_CONFIGURATION: app::SystemPackageConfiguration =
-        app::SystemPackageConfiguration::new("github.com/ein-lang/system", "main");
+        app::SystemPackageConfiguration::new("github.com/ein-lang/os", "main");
 }
 
 pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfiguration =
