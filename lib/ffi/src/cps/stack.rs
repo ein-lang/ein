@@ -21,3 +21,9 @@ impl Stack {
         }
     }
 }
+
+impl Default for Stack {
+    fn default() -> Self {
+        Self::new()
+    }
+}
