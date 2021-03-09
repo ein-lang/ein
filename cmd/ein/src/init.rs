@@ -4,7 +4,7 @@ use super::package_initialization_configuration::{
 };
 use std::fs::create_dir_all;
 
-pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn init(directory: &str, is_library: bool) -> Result<(), Box<dyn std::error::Error>> {
     let file_path_converter = infra::FilePathConverter::new(directory);
     let file_system = infra::FileSystem::new(&file_path_converter);
     let static_file_path_manager = app::StaticFilePathManager::new(&FILE_PATH_CONFIGURATION);
@@ -16,17 +16,19 @@ pub fn init(target: &str, directory: &str) -> Result<(), Box<dyn std::error::Err
     );
 
     create_dir_all(directory)?;
-    package_initializer.initialize(&parse_target(target, directory)?)?;
+    package_initializer.initialize(&create_target(directory, is_library)?)?;
 
     Ok(())
 }
 
-fn parse_target(
-    target: &str,
+fn create_target(
     directory: impl AsRef<std::path::Path>,
+    is_library: bool,
 ) -> Result<app::Target, Box<dyn std::error::Error>> {
-    match target {
-        "application" => Ok(app::Target::Application(app::ApplicationTarget::new(
+    Ok(if is_library {
+        app::Target::Library
+    } else {
+        app::Target::Application(app::ApplicationTarget::new(
             directory
                 .as_ref()
                 .canonicalize()?
@@ -39,12 +41,6 @@ fn parse_target(
                 })?
                 .to_string_lossy(),
             DEFAULT_SYSTEM_PACKAGE_CONFIGURATION.clone(),
-        ))),
-        "library" => Ok(app::Target::Library),
-        _ => Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidInput,
-            format!("target \"{}\" not supported", target),
-        )
-        .into()),
-    }
+        ))
+    })
 }
