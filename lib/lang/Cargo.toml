@@ -19,4 +19,4 @@ ssf = { git = "https://github.com/raviqqe/ssf", branch = "main" }
 ssf-fmm = { git = "https://github.com/raviqqe/ssf", branch = "main" }
 
 [dev-dependencies]
-pretty_assertions = "0.6"
+pretty_assertions = "0.7"
