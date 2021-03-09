@@ -2,13 +2,13 @@ use super::system_package_configuration::SystemPackageConfiguration;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct CommandTarget {
+pub struct ApplicationTarget {
     name: String,
     #[serde(rename = "systemPackage")]
     system_package: SystemPackageConfiguration,
 }
 
-impl CommandTarget {
+impl ApplicationTarget {
     pub fn new(name: impl Into<String>, system_package: SystemPackageConfiguration) -> Self {
         Self {
             name: name.into(),

@@ -1,9 +1,9 @@
 use crate::common::FilePath;
 
-pub trait CommandLinker {
+pub trait ApplicationLinker {
     fn link(
         &self,
         object_file_paths: &[FilePath],
-        command_name: &str,
+        application_name: &str,
     ) -> Result<(), Box<dyn std::error::Error>>;
 }

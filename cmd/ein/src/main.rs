@@ -23,7 +23,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             clap::SubCommand::with_name("init")
                 .arg(
                     clap::Arg::with_name("target")
-                        .possible_values(&["command", "library"])
+                        .possible_values(&["application", "library"])
                         .required(true),
                 )
                 .arg(clap::Arg::with_name("directory").required(true)),

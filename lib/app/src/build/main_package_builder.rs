@@ -4,13 +4,13 @@ use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::prelude_package_builder::PreludePackageBuilder;
 use super::system_package_builder::SystemPackageBuilder;
-use crate::common::{CommandTarget, FilePath, PackageConfiguration, Target};
-use crate::infra::{CommandLinker, Logger};
+use crate::common::{ApplicationTarget, FilePath, PackageConfiguration, Target};
+use crate::infra::{ApplicationLinker, Logger};
 
 pub struct MainPackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,
     package_builder: &'a PackageBuilder<'a>,
-    command_linker: &'a dyn CommandLinker,
+    application_linker: &'a dyn ApplicationLinker,
     prelude_package_builder: &'a PreludePackageBuilder<'a>,
     system_package_builder: &'a SystemPackageBuilder<'a>,
     external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
@@ -23,7 +23,7 @@ impl<'a> MainPackageBuilder<'a> {
     pub fn new(
         package_configuration_reader: &'a PackageConfigurationReader<'a>,
         package_builder: &'a PackageBuilder<'a>,
-        command_linker: &'a dyn CommandLinker,
+        application_linker: &'a dyn ApplicationLinker,
         prelude_package_builder: &'a PreludePackageBuilder<'a>,
         system_package_builder: &'a SystemPackageBuilder<'a>,
         external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
@@ -33,7 +33,7 @@ impl<'a> MainPackageBuilder<'a> {
         Self {
             package_configuration_reader,
             package_builder,
-            command_linker,
+            application_linker,
             prelude_package_builder,
             system_package_builder,
             external_packages_downloader,
@@ -46,24 +46,24 @@ impl<'a> MainPackageBuilder<'a> {
         let package_configuration = self.package_configuration_reader.read(&FilePath::empty())?;
 
         match package_configuration.build_configuration().target() {
-            Target::Command(command_target) => {
-                self.build_command(&package_configuration, command_target)
+            Target::Application(application_target) => {
+                self.build_application(&package_configuration, application_target)
             }
             Target::Library => self.build_library(&package_configuration),
         }
     }
 
-    fn build_command(
+    fn build_application(
         &self,
         package_configuration: &PackageConfiguration,
-        command_target: &CommandTarget,
+        application_target: &ApplicationTarget,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let (prelude_module_object_paths, prelude_module_interfaces) =
             self.prelude_package_builder.build()?;
 
         let (system_module_object_paths, system_module_interfaces) = self
             .system_package_builder
-            .build(command_target.system_package(), &prelude_module_interfaces)?;
+            .build(application_target.system_package(), &prelude_module_interfaces)?;
 
         let prelude_module_interfaces = prelude_module_interfaces
             .into_iter()
@@ -89,16 +89,16 @@ impl<'a> MainPackageBuilder<'a> {
         )?;
 
         self.logger
-            .log(&format!("linking command {}", command_target.name()))?;
+            .log(&format!("linking application {}", application_target.name()))?;
 
-        self.command_linker.link(
+        self.application_linker.link(
             &system_module_object_paths
                 .into_iter()
                 .chain(prelude_module_object_paths)
                 .chain(external_module_object_paths)
                 .chain(module_object_paths)
                 .collect::<Vec<_>>(),
-            command_target.name(),
+            application_target.name(),
         )?;
 
         Ok(())

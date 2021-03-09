@@ -1,4 +1,4 @@
-mod command_linker;
+mod application_linker;
 mod command_runner;
 mod error;
 mod external_package_downloader;
@@ -9,7 +9,7 @@ mod file_system;
 mod logger;
 mod prelude_package_downloader;
 
-pub use command_linker::*;
+pub use application_linker::*;
 pub use command_runner::*;
 pub use error::*;
 pub use external_package_downloader::*;

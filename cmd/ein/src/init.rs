@@ -26,7 +26,7 @@ fn parse_target(
     directory: impl AsRef<std::path::Path>,
 ) -> Result<app::Target, Box<dyn std::error::Error>> {
     match target {
-        "command" => Ok(app::Target::Command(app::CommandTarget::new(
+        "application" => Ok(app::Target::Application(app::ApplicationTarget::new(
             directory
                 .as_ref()
                 .canonicalize()?
@@ -34,7 +34,7 @@ fn parse_target(
                 .ok_or_else(|| {
                     std::io::Error::new(
                         std::io::ErrorKind::InvalidInput,
-                        "cannot determine command name",
+                        "cannot determine application name",
                     )
                 })?
                 .to_string_lossy(),
