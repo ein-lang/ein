@@ -1,5 +1,6 @@
 #[cfg(test)]
 use lazy_static::lazy_static;
+use std::collections::HashMap;
 #[cfg(test)]
 use std::sync::Arc;
 
@@ -14,4 +15,16 @@ lazy_static! {
 
 pub struct StringTypeConfiguration {
     pub equal_function_name: String,
+}
+
+impl StringTypeConfiguration {
+    pub fn qualify(&self, names: &HashMap<String, String>) -> Self {
+        Self {
+            equal_function_name: self.qualify_name(&self.equal_function_name, &names),
+        }
+    }
+
+    fn qualify_name(&self, name: &str, names: &HashMap<String, String>) -> String {
+        names.get(name).cloned().unwrap_or_else(|| name.into())
+    }
 }

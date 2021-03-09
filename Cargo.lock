@@ -191,6 +191,12 @@ name = "ein-ffi"
 version = "0.3.2"
 
 [[package]]
+name = "ein-ffi"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7e660f2bb989a30467fcbb30610fffce3ee2b9a5691aae9d72704913dc5395d"
+
+[[package]]
 name = "encode_unicode"
 version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -527,6 +533,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac74c624d6b2d21f425f752262f42188365d7b8ff1aff74c82e45136510a4857"
 
 [[package]]
+name = "prelude"
+version = "0.1.0"
+dependencies = [
+ "ein-ffi 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "pretty_assertions"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -630,13 +643,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "runtime"
-version = "0.1.0"
-dependencies = [
- "ein-ffi",
 ]
 
 [[package]]

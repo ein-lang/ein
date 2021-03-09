@@ -68,7 +68,8 @@ pub fn compile(
 
     let module = transform_before_name_qualification(&module)?;
 
-    let module = if let Some(main_module_configuration) = &configuration.main_module_configuration {
+    let module = if let Some(main_module_configuration) = &configuration.main_module_configuration
+    {
         MainFunctionDefinitionTransformer::new(main_module_configuration.clone())
             .transform(&module)?
     } else {
@@ -85,7 +86,8 @@ pub fn compile(
     )?;
 
     let reference_type_resolver = ReferenceTypeResolver::new(&module);
-    let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver.clone());
+    let type_comparability_checker =
+        TypeComparabilityChecker::new(reference_type_resolver.clone());
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let type_canonicalizer = TypeCanonicalizer::new(
         reference_type_resolver.clone(),
@@ -168,13 +170,8 @@ pub fn compile(
         fmm_c::compile(
             &fmm::analysis::transform_to_cps(
                 &ssf_fmm::compile(
-                    &ModuleCompiler::new(
-                        expression_compiler,
-                        type_compiler,
-                        configuration.string_type_configuration.clone(),
-                        global_names,
-                    )
-                    .compile(&module)?,
+                    &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
+                        .compile(&module)?,
                 ),
                 fmm::types::Record::new(vec![]),
             )

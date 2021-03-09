@@ -360,7 +360,9 @@ impl ExpressionCompiler {
                             }
                         }
                         Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
-                        Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
+                        Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => {
+                            unreachable!()
+                        }
                     }
                 }
             }

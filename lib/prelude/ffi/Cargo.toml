@@ -1,12 +1,12 @@
 [package]
-name = "runtime"
+name = "prelude"
 version = "0.1.0"
 publish = false
 edition = "2018"
 
 [lib]
-name = "runtime"
+name = "prelude"
 crate-type = ["staticlib"]
 
 [dependencies]
-ffi = { path = "../ffi", package = "ein-ffi" }
+ffi = { package = "ein-ffi", "version" = "0.3" }
