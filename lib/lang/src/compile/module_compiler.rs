@@ -1,6 +1,5 @@
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
-use super::string_type_configuration::StringTypeConfiguration;
 use super::type_compiler::TypeCompiler;
 use crate::ast::*;
 use std::collections::HashMap;
@@ -9,7 +8,6 @@ use std::sync::Arc;
 pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,
     type_compiler: Arc<TypeCompiler>,
-    string_type_configuration: Arc<StringTypeConfiguration>,
     global_names: Arc<HashMap<String, String>>,
 }
 
@@ -17,13 +15,11 @@ impl ModuleCompiler {
     pub fn new(
         expression_compiler: Arc<ExpressionCompiler>,
         type_compiler: Arc<TypeCompiler>,
-        string_type_configuration: Arc<StringTypeConfiguration>,
         global_names: Arc<HashMap<String, String>>,
     ) -> Self {
         Self {
             expression_compiler,
             type_compiler,
-            string_type_configuration,
             global_names,
         }
     }
@@ -87,19 +83,7 @@ impl ModuleCompiler {
                             ))
                         })
                 })
-                .collect::<Result<Vec<_>, CompileError>>()?
-                .into_iter()
-                .chain(vec![ssf::ir::Declaration::new(
-                    &self.string_type_configuration.equal_function_name,
-                    ssf::types::Function::new(
-                        self.type_compiler.compile_string(),
-                        ssf::types::Function::new(
-                            self.type_compiler.compile_string(),
-                            self.type_compiler.compile_boolean(),
-                        ),
-                    ),
-                )])
-                .collect(),
+                .collect::<Result<Vec<_>, CompileError>>()?,
             module
                 .definitions()
                 .iter()

@@ -5,6 +5,6 @@ members = [
   "lib/ffi",
   "lib/infra",
   "lib/lang",
-  "lib/runtime",
+  "lib/prelude/ffi"
 ]
 exclude = ["tmp"]

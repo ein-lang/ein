@@ -20,7 +20,7 @@ lazy_static! {
             }
             .into(),
             string_type_configuration: lang::StringTypeConfiguration {
-                equal_function_name: "_ein_equal_strings".into(),
+                equal_function_name: "_equalStrings".into(),
             }
             .into(),
             error_type_configuration: lang::ErrorTypeConfiguration {

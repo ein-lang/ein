@@ -1,0 +1,6 @@
+export { _equalStrings }
+
+import foreign "c" _ein_equal_strings : String -> String -> Boolean
+
+_equalStrings : String -> String -> Boolean
+_equalStrings = _ein_equal_strings

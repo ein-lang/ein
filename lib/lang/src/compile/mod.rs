@@ -168,13 +168,8 @@ pub fn compile(
         fmm_c::compile(
             &fmm::analysis::transform_to_cps(
                 &ssf_fmm::compile(
-                    &ModuleCompiler::new(
-                        expression_compiler,
-                        type_compiler,
-                        configuration.string_type_configuration.clone(),
-                        global_names,
-                    )
-                    .compile(&module)?,
+                    &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
+                        .compile(&module)?,
                 ),
                 fmm::types::Record::new(vec![]),
             )

@@ -1,13 +1,5 @@
-use std::os::raw::c_void;
-
 #[no_mangle]
-pub static _ein_equal_strings: ffi::Closure = ffi::Closure::new(equal_strings as *mut c_void, 2);
-
-extern "C" fn equal_strings(
-    _environment: *const c_void,
-    one: ffi::EinString,
-    other: ffi::EinString,
-) -> ffi::Boolean {
+extern "C" fn _ein_equal_strings(one: ffi::EinString, other: ffi::EinString) -> ffi::Boolean {
     (one.as_slice() == other.as_slice()).into()
 }
 
@@ -20,14 +12,14 @@ mod tests {
     fn equal_empty_strings() {
         let string = ffi::EinString::new(null(), 0);
 
-        assert_eq!(equal_strings(null(), string, string), true.into());
+        assert_eq!(_ein_equal_strings(string, string), true.into());
     }
 
     #[test]
     fn equal_one_byte_strings() {
         let string = ffi::EinString::new([0u8].as_ptr(), 1);
 
-        assert_eq!(equal_strings(null(), string, string), true.into());
+        assert_eq!(_ein_equal_strings(string, string), true.into());
     }
 
     #[test]
@@ -35,7 +27,7 @@ mod tests {
         let one = ffi::EinString::new(null(), 0);
         let other = ffi::EinString::new([0u8].as_ptr(), 1);
 
-        assert_eq!(equal_strings(null(), one, other), false.into());
+        assert_eq!(_ein_equal_strings(one, other), false.into());
     }
 
     #[test]
@@ -44,7 +36,7 @@ mod tests {
 
         let string = ffi::EinString::new(TEXT.as_ptr(), TEXT.len());
 
-        assert_eq!(equal_strings(null(), string, string), true.into());
+        assert_eq!(_ein_equal_strings(string, string), true.into());
     }
 
     #[test]
@@ -53,8 +45,7 @@ mod tests {
         const OTHER_TEXT: &[u8] = "hell0".as_bytes();
 
         assert_eq!(
-            equal_strings(
-                null(),
+            _ein_equal_strings(
                 ffi::EinString::new(TEXT.as_ptr(), TEXT.len()),
                 ffi::EinString::new(OTHER_TEXT.as_ptr(), OTHER_TEXT.len()),
             ),

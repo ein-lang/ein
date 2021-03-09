@@ -3,11 +3,11 @@ Feature: Application
     Given I successfully run `ein init foo`
     And I cd to "foo"
 
-  Scenario: Build a application
+  Scenario: Build an application
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
 
-  Scenario: Build a application with a dependency
+  Scenario: Build an application with a dependency
     Given a file named "ein.json" with:
     """
     {

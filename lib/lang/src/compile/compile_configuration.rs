@@ -38,6 +38,8 @@ impl CompileConfiguration {
         configuration.error_type_configuration =
             self.error_type_configuration.qualify(names).into();
         configuration.list_type_configuration = self.list_type_configuration.qualify(names).into();
+        configuration.string_type_configuration =
+            self.string_type_configuration.qualify(names).into();
         configuration.main_module_configuration = self
             .main_module_configuration
             .as_ref()
