@@ -1,8 +1,14 @@
 - [Home](/)
 - Guides
   - [Getting started](/guides/getting-started.md)
+  - [Naming convention](/guides/naming-convention.md)
 - References
-  - Language specification
-    - [Syntax](/references/language-specification/syntax)
-    - [Types](/references/language-specification/types)
+  - Language
+    - [Syntax](/references/language/syntax.md)
+    - [Types](/references/language/types.md)
+    - [Built-ins](/references/language/built-ins.md)
+    - [Modules](/references/language/modules.md)
+    - [Packages](/references/language/packages.md)
+  - [Command line tools](/references/command-line-tools.md)
 - [Roadmap](/roadmap.md)
+- [The Zen](/the-zen.md)
