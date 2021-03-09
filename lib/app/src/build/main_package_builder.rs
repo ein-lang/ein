@@ -61,9 +61,11 @@ impl<'a> MainPackageBuilder<'a> {
         let (prelude_module_object_paths, prelude_module_interfaces) =
             self.prelude_package_builder.build()?;
 
-        let (system_module_object_paths, system_module_interfaces) = self
-            .system_package_builder
-            .build(application_target.system_package(), &prelude_module_interfaces)?;
+        let (system_module_object_paths, system_module_interfaces) =
+            self.system_package_builder.build(
+                application_target.system_package(),
+                &prelude_module_interfaces,
+            )?;
 
         let prelude_module_interfaces = prelude_module_interfaces
             .into_iter()
@@ -88,8 +90,10 @@ impl<'a> MainPackageBuilder<'a> {
             &prelude_module_interfaces,
         )?;
 
-        self.logger
-            .log(&format!("linking application {}", application_target.name()))?;
+        self.logger.log(&format!(
+            "linking application {}",
+            application_target.name()
+        ))?;
 
         self.application_linker.link(
             &system_module_object_paths
