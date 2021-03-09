@@ -1,6 +1,6 @@
 Feature: FFI
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Export a foreign function
     Given a file named "Foo.ein" with:

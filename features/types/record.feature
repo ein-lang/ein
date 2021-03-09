@@ -1,6 +1,6 @@
 Feature: Record
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Define a record value
     Given a file named "Main.ein" with:
