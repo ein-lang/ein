@@ -1,13 +1,13 @@
 use super::command_runner::CommandRunner;
 use super::file_path_converter::FilePathConverter;
 
-pub struct CommandLinker<'a> {
+pub struct ApplicationLinker<'a> {
     command_runner: &'a CommandRunner,
     file_path_converter: &'a FilePathConverter,
     runtime_library_path: std::path::PathBuf,
 }
 
-impl<'a> CommandLinker<'a> {
+impl<'a> ApplicationLinker<'a> {
     pub fn new(
         command_runner: &'a CommandRunner,
         file_path_converter: &'a FilePathConverter,
@@ -21,11 +21,11 @@ impl<'a> CommandLinker<'a> {
     }
 }
 
-impl<'a> app::CommandLinker for CommandLinker<'a> {
+impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
     fn link(
         &self,
         object_file_paths: &[app::FilePath],
-        command_name: &str,
+        application_name: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.command_runner.run(
             std::process::Command::new("clang")
@@ -34,7 +34,7 @@ impl<'a> app::CommandLinker for CommandLinker<'a> {
                 .arg("-o")
                 .arg(
                     self.file_path_converter
-                        .convert_to_os_path(&app::FilePath::new(&[command_name])),
+                        .convert_to_os_path(&app::FilePath::new(&[application_name])),
                 )
                 .arg("-O3")
                 .args(

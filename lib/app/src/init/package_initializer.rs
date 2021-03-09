@@ -37,11 +37,11 @@ impl<'a> PackageInitializer<'a> {
         )?;
 
         match target {
-            Target::Command(_) => {
+            Target::Application(_) => {
                 self.file_system.write(
                     self.static_file_path_manager.main_source_file_path(),
                     self.package_initialization_configuration
-                        .command_main_file_content
+                        .application_main_file_content
                         .as_bytes(),
                 )?;
             }

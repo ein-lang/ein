@@ -95,7 +95,7 @@ impl<'a> ModuleCompiler<'a> {
                 ),
                 // TODO Refactor this by creating the following classes.
                 // - MainModuleCompiler
-                // - CommandPackageBuilder
+                // - ApplicationPackageBuilder
                 // - LibraryPackageBuilder
                 if self.is_main_module(&module_path, package_configuration) {
                     self.compile_configuration.clone()
@@ -141,7 +141,7 @@ impl<'a> ModuleCompiler<'a> {
     ) -> bool {
         matches!(
             package_configuration.build_configuration().target(),
-            Target::Command(_)
+            Target::Application(_)
         ) && module_path.components().collect::<Vec<&str>>()
             == vec![self.file_path_configuration.main_file_basename]
     }

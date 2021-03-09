@@ -1,6 +1,6 @@
 Feature: Case expressions
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Use an argument of a union type
     Given a file named "Foo.ein" with:

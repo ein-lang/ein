@@ -1,6 +1,6 @@
 Feature: Error
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Fail to build due to type check
     Given a file named "Main.ein" with:

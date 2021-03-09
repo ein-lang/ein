@@ -1,21 +1,21 @@
-Feature: Command
+Feature: Application
   Background:
-    Given I successfully run `ein init command foo`
+    Given I successfully run `ein init foo`
     And I cd to "foo"
 
-  Scenario: Build a command
+  Scenario: Build a application
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
 
-  Scenario: Build a command with a dependency
+  Scenario: Build a application with a dependency
     Given a file named "ein.json" with:
     """
     {
       "target": {
-        "type": "Command",
+        "type": "Application",
         "name": "foo",
         "systemPackage": {
-          "name": "github.com/ein-lang/system",
+          "name": "github.com/ein-lang/os",
           "version": "main"
         }
       },

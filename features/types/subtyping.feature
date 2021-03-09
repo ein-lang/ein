@@ -1,6 +1,6 @@
 Feature: Subtyping
   Background:
-    Given I successfully run `ein init library .`
+    Given I successfully run `ein init -l .`
 
   Scenario: Handle covariance and contravariance of functions
     Given a file named "Main.ein" with:
