@@ -4,19 +4,16 @@ use super::file_path_converter::FilePathConverter;
 pub struct ApplicationLinker<'a> {
     command_runner: &'a CommandRunner,
     file_path_converter: &'a FilePathConverter,
-    runtime_library_path: std::path::PathBuf,
 }
 
 impl<'a> ApplicationLinker<'a> {
     pub fn new(
         command_runner: &'a CommandRunner,
         file_path_converter: &'a FilePathConverter,
-        runtime_library_path: impl AsRef<std::path::Path>,
     ) -> Self {
         Self {
             command_runner,
             file_path_converter,
-            runtime_library_path: runtime_library_path.as_ref().into(),
         }
     }
 }
@@ -42,7 +39,6 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
                         .iter()
                         .map(|path| self.file_path_converter.convert_to_os_path(path)),
                 )
-                .arg(&self.runtime_library_path)
                 .arg("-ldl")
                 .arg("-lpthread"),
         )?;

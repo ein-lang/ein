@@ -60,11 +60,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &prelude_package_downloader,
         &static_file_path_manager,
     );
-    let application_linker = infra::ApplicationLinker::new(
-        &command_runner,
-        &file_path_converter,
-        root_directory.join("target/release/libruntime.a"),
-    );
+    let application_linker = infra::ApplicationLinker::new(&command_runner, &file_path_converter);
     let external_package_downloader = infra::ExternalPackageDownloader::new(&file_path_converter);
     let cached_external_package_downloader = app::CachedExternalPackageDownloader::new(
         &package_configuration_reader,
