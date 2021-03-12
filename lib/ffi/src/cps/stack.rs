@@ -1,6 +1,5 @@
 use std::alloc::{alloc, Layout};
 
-const INITIAL_CAPACITY: usize = 256;
 const DEFAULT_ALIGNMENT: usize = 8;
 
 #[repr(C)]
@@ -11,19 +10,13 @@ pub struct Stack {
 }
 
 impl Stack {
-    pub fn new() -> Self {
+    pub fn new(capacity: usize) -> Self {
         Self {
             base_pointer: unsafe {
-                alloc(Layout::from_size_align(INITIAL_CAPACITY, DEFAULT_ALIGNMENT).unwrap())
+                alloc(Layout::from_size_align(capacity, DEFAULT_ALIGNMENT).unwrap())
             },
             size: 0,
-            capacity: INITIAL_CAPACITY,
+            capacity,
         }
-    }
-}
-
-impl Default for Stack {
-    fn default() -> Self {
-        Self::new()
     }
 }

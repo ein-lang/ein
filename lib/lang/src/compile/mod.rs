@@ -164,16 +164,20 @@ pub fn compile(
         configuration.string_type_configuration.clone(),
     );
 
+    let fmm_module = fmm::analysis::transform_to_cps(
+        &ssf_fmm::compile(
+            &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
+                .compile(&module)?,
+        ),
+        fmm::types::Record::new(vec![]),
+    )
+    .unwrap();
+
+    fmm::analysis::check_types(&fmm_module).unwrap();
+
     Ok((
         fmm_c::compile(
-            &fmm::analysis::transform_to_cps(
-                &ssf_fmm::compile(
-                    &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
-                        .compile(&module)?,
-                ),
-                fmm::types::Record::new(vec![]),
-            )
-            .unwrap(),
+            &fmm_module,
             Some(fmm_c::MallocConfiguration {
                 malloc_function_name: configuration.malloc_function_name.clone(),
                 realloc_function_name: configuration.realloc_function_name.clone(),
