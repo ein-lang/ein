@@ -5,6 +5,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
+      - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 11
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
       - uses: actions-rs/cargo@v1
@@ -15,6 +16,7 @@ jobs:
   integration-test:
     runs-on: ubuntu-20.04
     steps:
+      - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 11
       - uses: actions/checkout@v2
       - run: sudo apt install clang ruby-bundler
       - run: bundler install
@@ -36,6 +38,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 11
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
       - uses: actions-rs/cargo@v1
