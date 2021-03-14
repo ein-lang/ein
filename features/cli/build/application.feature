@@ -64,3 +64,4 @@ Feature: Application
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
+    And stdout from "sh -c ./foo" should contain "Hello, world!"
