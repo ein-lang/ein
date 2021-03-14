@@ -8,7 +8,7 @@ edition = "2018"
 combine = { version = "4.5.2", features = ["regex"] }
 derivative = "2"
 fmm = { git = "https://github.com/raviqqe/fmm", branch = "main" }
-fmm-c = { git = "https://github.com/raviqqe/fmm", branch = "main" }
+fmm-llvm = { git = "https://github.com/raviqqe/fmm", branch = "main" }
 indoc = "1.0"
 insta = { version = "1.7", features = ["backtrace"] }
 lazy_static = "1"

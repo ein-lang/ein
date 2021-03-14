@@ -28,6 +28,7 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
             std::process::Command::new("clang")
                 .arg("-Werror") // cspell:disable-line
                 .arg("-Wno-incompatible-pointer-types-discards-qualifiers") // cspell:disable-line
+                .arg("-Wno-override-module") // cspell:disable-line
                 .arg("-o")
                 .arg(
                     self.file_path_converter
