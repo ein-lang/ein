@@ -33,3 +33,34 @@ Feature: Application
     """
     When I successfully run `ein build`
     Then I successfully run `sh -c ./foo`
+
+  Scenario: Build an application of hello world
+    Given a file named "ein.json" with:
+    """
+    {
+      "target": {
+        "type": "Application",
+        "name": "foo",
+        "systemPackage": {
+          "name": "github.com/ein-lang/os",
+          "version": "main"
+        }
+      },
+      "dependencies": {
+        "github.com/ein-lang/sample-package": { "version": "HEAD" }
+      }
+    }
+    """
+    And a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/sample-package/Foo"
+
+    main : System -> Number
+    main system =
+      let
+        _ = fdWrite system stdout "Hello, world!"
+      in
+        0
+    """
+    When I successfully run `ein build`
+    Then I successfully run `sh -c ./foo`
