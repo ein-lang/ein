@@ -35,7 +35,6 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
                         .convert_to_os_path(&app::FilePath::new(&[application_name])),
                 )
                 .arg("-O3")
-                .arg("-flto")
                 .args(
                     object_file_paths
                         .iter()
