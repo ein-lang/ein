@@ -176,14 +176,15 @@ pub fn compile(
     fmm::analysis::check_types(&fmm_module).unwrap();
 
     Ok((
-        fmm_c::compile(
+        fmm_llvm::compile(
             &fmm_module,
-            Some(fmm_c::MallocConfiguration {
-                malloc_function_name: configuration.malloc_function_name.clone(),
-                realloc_function_name: configuration.realloc_function_name.clone(),
-            }),
+            &fmm_llvm::HeapConfiguration {
+                allocate_function_name: configuration.malloc_function_name.clone(),
+                reallocate_function_name: configuration.realloc_function_name.clone(),
+            },
+            None,
         )
-        .into(),
+        .unwrap(),
         ModuleInterfaceCompiler::new().compile(&module)?,
     ))
 }
