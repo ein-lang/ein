@@ -140,9 +140,9 @@ dependencies = [
 
 [[package]]
 name = "console"
-version = "0.14.0"
+version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cc80946b3480f421c2f17ed1cb841753a371c7c5104f51d507e13f532c856aa"
+checksum = "3993e6445baa160675931ec041a5e03ca84b9c6e32a056150d3aa2bdda0a1f45"
 dependencies = [
  "encode_unicode",
  "lazy_static",
@@ -226,7 +226,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#dcd89c898a0968f91a24deee49d7f6787f683bec"
+source = "git+https://github.com/raviqqe/fmm?branch=main#20bc8629a2a415f2ae538b44c56b4228d3aec51b"
 dependencies = [
  "once_cell",
  "petgraph",
@@ -235,7 +235,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#dcd89c898a0968f91a24deee49d7f6787f683bec"
+source = "git+https://github.com/raviqqe/fmm?branch=main#20bc8629a2a415f2ae538b44c56b4228d3aec51b"
 dependencies = [
  "fmm",
  "inkwell",
@@ -422,9 +422,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.88"
+version = "0.2.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03b07a082330a35e43f63177cc01689da34fbffa0105e1246cf0311472cac73a"
+checksum = "538c092e5586f4cdd7dd8078c4a79220e3e168880218124dcbce860f0ea938c6"
 
 [[package]]
 name = "libgit2-sys"
@@ -778,7 +778,7 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#845a4dde73139e3cab038746c02285472fbede9a"
+source = "git+https://github.com/raviqqe/ssf?branch=main#7af48dd6848c1eceacfa777685762cd4b27ab85c"
 dependencies = [
  "pretty_assertions",
 ]
@@ -786,7 +786,7 @@ dependencies = [
 [[package]]
 name = "ssf-fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#845a4dde73139e3cab038746c02285472fbede9a"
+source = "git+https://github.com/raviqqe/ssf?branch=main#7af48dd6848c1eceacfa777685762cd4b27ab85c"
 dependencies = [
  "fmm",
  "ssf",
