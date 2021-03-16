@@ -36,7 +36,7 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
             self.command_runner.run(
                 std::process::Command::new("llc")
                     .arg("-O3")
-                    .arg("-tailcallopt") // cspell:disable-line
+                    .arg("-tailcallopt")
                     .arg("-filetype=obj")
                     .arg(path),
             )?;
