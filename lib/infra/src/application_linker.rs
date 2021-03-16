@@ -35,10 +35,10 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
             // to optimize all tail calls.
             self.command_runner.run(
                 std::process::Command::new("llc")
-                .arg("-O3")
-                .arg("-tailcallopt")// cspell:disable-line
-                .arg("-filetype=obj")
-                .arg(path),
+                    .arg("-O3")
+                    .arg("-tailcallopt") // cspell:disable-line
+                    .arg("-filetype=obj")
+                    .arg(path),
             )?;
         }
 
