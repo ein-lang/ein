@@ -176,7 +176,7 @@ pub fn compile(
     fmm::analysis::check_types(&fmm_module).unwrap();
 
     Ok((
-        fmm_llvm::compile_to_object(
+        fmm_llvm::compile_to_bitcode(
             &fmm_module,
             &fmm_llvm::HeapConfiguration {
                 allocate_function_name: configuration.malloc_function_name.clone(),
