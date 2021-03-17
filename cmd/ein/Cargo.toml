@@ -8,5 +8,6 @@ edition = "2018"
 app = { path = "../../lib/app" }
 clap = "2"
 lang = { path = "../../lib/lang" }
+indoc = "1"
 infra = { path = "../../lib/infra" }
 lazy_static = "1"

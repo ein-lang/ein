@@ -2,12 +2,38 @@
 
 ## Install
 
-It requires the following software on your system.
+### Requirements
+
+Ein requires the following software on your system.
 
 - [`cargo`](https://github.com/rust-lang/cargo), the Rust package manager
+- [`git`](https://git-scm.com/), the version control system
 - [`clang`](https://clang.llvm.org/), the C compiler
+- [LLVM](https://llvm.org), the compiler infrastructure
+  - Both the library and tools
 
-After you install them, run the following command.
+#### On Ubuntu
+
+Run the following commands in your terminal to install the required software.
+Note that we need to install LLVM from the external repository to install the specific version.
+
+```sh
+sudo apt install cargo git
+curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 11
+```
+
+#### On macOS
+
+To install `clang` and `llc`, install Xcode from the App Store.
+Also, install the `cargo` and `git` commands via [Homebrew](https://brew.sh/) by running the following command in your terminal.
+
+```sh
+brew install git rust
+```
+
+### Installing `ein` command
+
+Run the following command in your terminal.
 
 ```sh
 cargo install --git https://github.com/ein-lang/ein
@@ -37,7 +63,11 @@ To build the package, run the following command in the `foo` directory.
 ein build
 ```
 
-Then, you will see an executable file named `foo` in the directory.
+Then, you will see an executable file named `foo` in the directory. Run the command to see your first "Hello, world!"
+
+```sh
+./foo
+```
 
 ## For more information...
 
