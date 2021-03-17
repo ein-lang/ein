@@ -7,7 +7,23 @@ lazy_static! {
 
 pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfiguration =
     app::PackageInitializationConfiguration {
-        application_main_file_content: "main : System -> Number\nmain system = 0\n",
-        library_main_file_content: "export { foo }\n\nfoo : Number -> Number\nfoo x = x\n",
+        application_main_file_content: indoc::indoc!(
+            "
+            main : System -> Number
+            main sys =
+              let
+                _ = fdWrite sys stdout \"Hello, world!\\n\"
+              in
+                0
+            "
+        ),
+        library_main_file_content: indoc::indoc!(
+            "
+            export { foo }
+
+            foo : Number -> Number
+            foo x = x
+            "
+        ),
         library_main_basename: "Foo",
     };
