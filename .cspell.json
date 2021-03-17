@@ -63,6 +63,7 @@
     "uint",
     "uninit",
     "wasi",
-    "wasm"
+    "wasm",
+    "xcode"
   ]
 }
