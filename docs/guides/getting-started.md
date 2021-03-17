@@ -7,6 +7,7 @@
 Ein requires the following software on your system.
 
 - [`cargo`](https://github.com/rust-lang/cargo), the Rust package manager
+- [`git`](https://git-scm.com/), the version control system
 - [`clang`](https://clang.llvm.org/), the C compiler
 - [LLVM](https://llvm.org), the compiler infrastructure
   - Both the library and tools
