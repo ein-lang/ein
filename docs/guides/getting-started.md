@@ -31,7 +31,7 @@ Also, install the `cargo` and `git` commands via [Homebrew](https://brew.sh/) by
 brew install git rust
 ```
 
-### Installing `ein` command
+### Installing the `ein` command
 
 Run the following command in your terminal.
 
