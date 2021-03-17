@@ -10,7 +10,7 @@ Ein requires the following software on your system.
 - [`clang`](https://clang.llvm.org/), the C compiler
 - [LLVM library and tools](https://llvm.org), the compiler infrastructure
 
-#### Ubuntu
+#### On Ubuntu
 
 Run the following commands in your terminal to install the required software.
 Note that we need to install the LLVM tools from the external repository to install the specific version.
@@ -20,7 +20,7 @@ sudo apt install cargo
 curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 11
 ```
 
-#### macOS
+#### On macOS
 
 To install `clang` and `llc`, install Xcode from the App Store.
 Also, install the `cargo` command via [Homebrew](https://brew.sh/) by running the following command in your terminal.
