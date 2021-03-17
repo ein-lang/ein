@@ -15,7 +15,7 @@ Ein requires the following software on your system.
 #### On Ubuntu
 
 Run the following commands in your terminal to install the required software.
-Note that we need to install LLVM from the external repository to install the specific version.
+Note that we need to install LLVM from the external repository to get the specific version of it.
 
 ```sh
 sudo apt install cargo git
@@ -36,7 +36,7 @@ brew install git rust
 Run the following command in your terminal.
 
 ```sh
-cargo install --git https://github.com/ein-lang/ein
+cargo install --git https://github.com/ein-lang/ein --branch main
 ```
 
 Then, you should be able to run an `ein` command in your shell. Make sure that the `cargo`'s binary directory is included in your `PATH` environment variable.
@@ -53,7 +53,7 @@ To initialize your first package, run the following command.
 ein init foo
 ```
 
-Then, you should see a `foo` directory under your current directory. When you switch to the `foo` directory, you should see a `Main.ein` source file and a `ein.json` package configuration file.
+Then, you should see a `foo` directory under your current directory. When you switch to the `foo` directory, you should see a `Main.ein` source file and a `ein.json` package configuration file there.
 
 ## Building a package
 
