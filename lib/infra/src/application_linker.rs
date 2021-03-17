@@ -24,6 +24,28 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
         object_file_paths: &[app::FilePath],
         application_name: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        let (bitcode_paths, ffi_paths) = object_file_paths
+            .iter()
+            .map(|path| self.file_path_converter.convert_to_os_path(path))
+            .partition::<Vec<_>, _>(|path| path.extension() == Some(std::ffi::OsStr::new("bc")));
+        let llc = which::which("llc-13")
+            .or_else(|_| which::which("llc-12"))
+            .or_else(|_| which::which("llc-11"))
+            .or_else(|_| which::which("llc"))?;
+
+        for path in &bitcode_paths {
+            // LLVM C API doesn't seem to support the tailcallopt pass directly.
+            // So we compile each bitcode file with the pass manually in order
+            // to optimize all tail calls.
+            self.command_runner.run(
+                std::process::Command::new(&llc)
+                    .arg("-O3")
+                    .arg("-tailcallopt")
+                    .arg("-filetype=obj")
+                    .arg(path),
+            )?;
+        }
+
         self.command_runner.run(
             std::process::Command::new("clang")
                 .arg("-Werror") // cspell:disable-line
@@ -35,11 +57,12 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
                         .convert_to_os_path(&app::FilePath::new(&[application_name])),
                 )
                 .arg("-O3")
-                .args(
-                    object_file_paths
-                        .iter()
-                        .map(|path| self.file_path_converter.convert_to_os_path(path)),
-                )
+                .args(bitcode_paths.iter().map(|path| {
+                    let mut path = path.clone();
+                    path.set_extension("o");
+                    path
+                }))
+                .args(ffi_paths)
                 .arg("-ldl")
                 .arg("-lpthread"),
         )?;

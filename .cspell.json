@@ -57,6 +57,7 @@
     "subpath",
     "substitutor",
     "subtyping",
+    "tailcallopt",
     "termcolor",
     "toposort",
     "uint",
