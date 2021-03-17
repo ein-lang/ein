@@ -14,7 +14,7 @@ Ein requires the following software on your system.
 #### On Ubuntu
 
 Run the following commands in your terminal to install the required software.
-Note that we need to install the LLVM tools from the external repository to install the specific version.
+Note that we need to install LLVM from the external repository to install the specific version.
 
 ```sh
 sudo apt install cargo
@@ -62,7 +62,11 @@ To build the package, run the following command in the `foo` directory.
 ein build
 ```
 
-Then, you will see an executable file named `foo` in the directory.
+Then, you will see an executable file named `foo` in the directory. Run the command to see your first "Hello, world!"
+
+```sh
+./foo
+```
 
 ## For more information...
 
