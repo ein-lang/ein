@@ -18,17 +18,17 @@ Run the following commands in your terminal to install the required software.
 Note that we need to install LLVM from the external repository to install the specific version.
 
 ```sh
-sudo apt install cargo
+sudo apt install cargo git
 curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 11
 ```
 
 #### On macOS
 
 To install `clang` and `llc`, install Xcode from the App Store.
-Also, install the `cargo` command via [Homebrew](https://brew.sh/) by running the following command in your terminal.
+Also, install the `cargo` and `git` commands via [Homebrew](https://brew.sh/) by running the following command in your terminal.
 
 ```sh
-brew install rust
+brew install git rust
 ```
 
 ### Installing `ein` command
