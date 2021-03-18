@@ -12,9 +12,11 @@ pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfi
             main : System -> Number
             main sys =
               let
-                _ = fdWrite sys stdout \"Hello, world!\\n\"
+                result = fdWrite sys stdout \"Hello, world!\\n\"
               in
-                0
+                case _ = result
+                  Number => 0
+                  Error => 1
             "
         ),
         library_main_file_content: indoc::indoc!(
