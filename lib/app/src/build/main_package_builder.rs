@@ -76,7 +76,7 @@ impl<'a> MainPackageBuilder<'a> {
             &package_configuration
                 .build_configuration()
                 .dependencies()
-                .into_iter()
+                .iter()
                 .collect::<Vec<_>>(),
         )?;
 
@@ -118,7 +118,7 @@ impl<'a> MainPackageBuilder<'a> {
             &package_configuration
                 .build_configuration()
                 .dependencies()
-                .into_iter()
+                .iter()
                 .collect::<Vec<_>>(),
         )?;
 

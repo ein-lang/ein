@@ -31,7 +31,7 @@ impl<'a> ExternalPackagesDownloader<'a> {
                     &package_configuration
                         .build_configuration()
                         .dependencies()
-                        .into_iter()
+                        .iter()
                         .collect::<Vec<_>>(),
                 )?,
             );
