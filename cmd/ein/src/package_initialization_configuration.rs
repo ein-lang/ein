@@ -10,9 +10,9 @@ pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfi
         application_main_file_content: indoc::indoc!(
             "
             main : System -> Number
-            main sys =
+            main system =
               let
-                result = fdWrite sys stdout \"Hello, world!\\n\"
+                result = fdWrite system stdout \"Hello, world!\\n\"
               in
                 case _ = result
                   Number => 0
