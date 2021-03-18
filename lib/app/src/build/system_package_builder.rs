@@ -1,6 +1,6 @@
 use super::cached_external_package_downloader::CachedExternalPackageDownloader;
 use super::package_builder::PackageBuilder;
-use crate::common::{ExternalPackage, FilePath, SystemPackageConfiguration};
+use crate::common::{ExternalPackage, FilePath, SystemPackage};
 
 pub struct SystemPackageBuilder<'a> {
     package_builder: &'a PackageBuilder<'a>,
@@ -20,7 +20,7 @@ impl<'a> SystemPackageBuilder<'a> {
 
     pub fn build(
         &self,
-        system_package_configuration: &SystemPackageConfiguration,
+        system_package_configuration: &SystemPackage,
         prelude_module_interfaces: &[lang::ModuleInterface],
     ) -> Result<(Vec<FilePath>, Vec<lang::ModuleInterface>), Box<dyn std::error::Error>> {
         let external_package = ExternalPackage::new(

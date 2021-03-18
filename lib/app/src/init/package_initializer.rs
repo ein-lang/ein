@@ -1,8 +1,9 @@
 use super::package_initialization_configuration::PackageInitializationConfiguration;
-use crate::common::{
-    BuildConfiguration, FilePath, FilePathConfiguration, StaticFilePathManager, Target,
-};
 use crate::infra::FileSystem;
+use crate::{
+    adoptors::JsonBuildConfiguration,
+    common::{BuildConfiguration, FilePath, FilePathConfiguration, StaticFilePathManager, Target},
+};
 
 pub struct PackageInitializer<'a> {
     file_system: &'a dyn FileSystem,
@@ -29,9 +30,8 @@ impl<'a> PackageInitializer<'a> {
     pub fn initialize(&self, target: &Target) -> Result<(), Box<dyn std::error::Error>> {
         self.file_system.write(
             &FilePath::new(&[self.file_path_configuration.build_configuration_filename]),
-            serde_json::to_string_pretty(&BuildConfiguration::new(
-                target.clone(),
-                Default::default(),
+            serde_json::to_string_pretty(&JsonBuildConfiguration::serialize(
+                &BuildConfiguration::new(target.clone(), Default::default()),
             ))?
             .as_bytes(),
         )?;

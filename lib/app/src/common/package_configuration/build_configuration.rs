@@ -1,21 +1,15 @@
-use super::external_package_configuration::ExternalPackageConfiguration;
 use super::target::Target;
 use crate::common::ExternalPackage;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::HashSet;
 
-// TODO Put this in the adaptor layer.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug)]
 pub struct BuildConfiguration {
     target: Target,
-    dependencies: HashMap<String, ExternalPackageConfiguration>,
+    dependencies: HashSet<ExternalPackage>,
 }
 
 impl BuildConfiguration {
-    pub fn new(
-        target: Target,
-        dependencies: HashMap<String, ExternalPackageConfiguration>,
-    ) -> Self {
+    pub fn new(target: Target, dependencies: HashSet<ExternalPackage>) -> Self {
         Self {
             target,
             dependencies,
@@ -26,9 +20,7 @@ impl BuildConfiguration {
         &self.target
     }
 
-    pub fn dependencies(&self) -> impl IntoIterator<Item = ExternalPackage> + '_ {
-        self.dependencies
-            .iter()
-            .map(|(name, configuration)| ExternalPackage::new(name, configuration.version()))
+    pub fn dependencies(&self) -> &HashSet<ExternalPackage> {
+        &self.dependencies
     }
 }

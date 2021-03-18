@@ -1,6 +1,6 @@
-use crate::common::PackageConfiguration;
 use crate::common::{FilePath, StaticFilePathManager};
 use crate::infra::{FilePathDisplayer, FileSystem};
+use crate::{adoptors::JsonBuildConfiguration, common::PackageConfiguration};
 
 pub struct PackageConfigurationReader<'a> {
     file_system: &'a dyn FileSystem,
@@ -45,7 +45,7 @@ impl<'a> PackageConfigurationReader<'a> {
             } else {
                 lang::Package::new(self.file_path_displayer.display(directory_path), "")
             },
-            serde_json::from_str(
+            serde_json::from_str::<JsonBuildConfiguration>(
                 &self.file_system.read_to_string(
                     &directory_path.join(
                         &self
@@ -53,7 +53,8 @@ impl<'a> PackageConfigurationReader<'a> {
                             .build_configuration_file_path(),
                     ),
                 )?,
-            )?,
+            )?
+            .deserialize(),
             directory_path.clone(),
         ))
     }

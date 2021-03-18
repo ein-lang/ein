@@ -17,11 +17,11 @@ impl<'a> ExternalPackagesDownloader<'a> {
 
     pub fn download(
         &self,
-        external_packages: &[ExternalPackage],
+        external_packages: &[&ExternalPackage],
     ) -> Result<HashMap<ExternalPackage, PackageConfiguration>, Box<dyn std::error::Error>> {
         let mut package_configurations = HashMap::new();
 
-        for external_package in external_packages {
+        for &external_package in external_packages {
             let package_configuration = self
                 .cached_external_package_downloader
                 .download(&external_package)?;
