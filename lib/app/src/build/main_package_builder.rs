@@ -105,9 +105,9 @@ impl<'a> MainPackageBuilder<'a> {
         ))?;
 
         self.application_linker.link(
-            &system_module_object_paths
+            &prelude_module_object_paths
                 .into_iter()
-                .chain(prelude_module_object_paths)
+                .chain(system_module_object_paths)
                 .chain(external_module_object_paths)
                 .chain(module_object_paths)
                 .collect::<Vec<_>>(),
