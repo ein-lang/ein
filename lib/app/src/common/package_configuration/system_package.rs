@@ -1,12 +1,10 @@
-use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Debug, Deserialize, Hash, PartialEq, Serialize)]
-pub struct SystemPackageConfiguration {
+#[derive(Clone, Debug, Hash, PartialEq)]
+pub struct SystemPackage {
     name: String,
     version: String,
 }
 
-impl SystemPackageConfiguration {
+impl SystemPackage {
     pub fn new(name: impl Into<String>, version: impl Into<String>) -> Self {
         Self {
             name: name.into(),

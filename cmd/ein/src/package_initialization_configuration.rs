@@ -1,8 +1,8 @@
 use lazy_static::lazy_static;
 
 lazy_static! {
-    pub static ref DEFAULT_SYSTEM_PACKAGE_CONFIGURATION: app::SystemPackageConfiguration =
-        app::SystemPackageConfiguration::new("github.com/ein-lang/os", "main");
+    pub static ref DEFAULT_SYSTEM_PACKAGE_CONFIGURATION: app::SystemPackage =
+        app::SystemPackage::new("github.com/ein-lang/os", "main");
 }
 
 pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfiguration =
@@ -10,11 +10,13 @@ pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfi
         application_main_file_content: indoc::indoc!(
             "
             main : System -> Number
-            main sys =
+            main system =
               let
-                _ = fdWrite sys stdout \"Hello, world!\\n\"
+                result = fdWrite system stdout \"Hello, world!\\n\"
               in
-                0
+                case _ = result
+                  Number => 0
+                  Error => 1
             "
         ),
         library_main_file_content: indoc::indoc!(

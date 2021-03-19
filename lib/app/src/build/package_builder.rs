@@ -59,7 +59,7 @@ impl<'a> PackageBuilder<'a> {
         let external_module_interfaces = package_configuration
             .build_configuration()
             .dependencies()
-            .into_iter()
+            .iter()
             .map(|external_package| {
                 external_module_interfaces[&external_package].iter().map(
                     |(module_path, module_interface)| {

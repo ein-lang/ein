@@ -1,15 +1,13 @@
-use super::system_package_configuration::SystemPackageConfiguration;
-use serde::{Deserialize, Serialize};
+use super::system_package::SystemPackage;
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct ApplicationTarget {
     name: String,
-    #[serde(rename = "systemPackage")]
-    system_package: SystemPackageConfiguration,
+    system_package: SystemPackage,
 }
 
 impl ApplicationTarget {
-    pub fn new(name: impl Into<String>, system_package: SystemPackageConfiguration) -> Self {
+    pub fn new(name: impl Into<String>, system_package: SystemPackage) -> Self {
         Self {
             name: name.into(),
             system_package,
@@ -20,7 +18,7 @@ impl ApplicationTarget {
         &self.name
     }
 
-    pub fn system_package(&self) -> &SystemPackageConfiguration {
+    pub fn system_package(&self) -> &SystemPackage {
         &self.system_package
     }
 }
