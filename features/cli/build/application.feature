@@ -11,10 +11,9 @@ Feature: Application
     Given a file named "ein.json" with:
     """
     {
-      "target": {
-        "type": "Application",
+      "application": {
         "name": "foo",
-        "systemPackage": {
+        "system": {
           "name": "github.com/ein-lang/os",
           "version": "main"
         }
@@ -38,10 +37,9 @@ Feature: Application
     Given a file named "ein.json" with:
     """
     {
-      "target": {
-        "type": "Application",
+      "application": {
         "name": "foo",
-        "systemPackage": {
+        "system": {
           "name": "github.com/ein-lang/os",
           "version": "main"
         }
