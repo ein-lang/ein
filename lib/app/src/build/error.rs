@@ -12,6 +12,7 @@ pub enum BuildError {
     ModuleCircularDependency(FilePath),
     ModuleNotFound {
         module_path: lang::UnresolvedModulePath,
+        source_file_path: FilePath,
     },
     PackageCircularDependency(ExternalPackage),
 }
@@ -40,8 +41,15 @@ impl std::fmt::Display for BuildError {
                 "circular module dependency detected: {}",
                 file_path
             ),
-            Self::ModuleNotFound { module_path } => {
-                write!(formatter, "module \"{}\" not found", module_path)
+            Self::ModuleNotFound {
+                module_path,
+                source_file_path,
+            } => {
+                write!(
+                    formatter,
+                    "module \"{}\" not found imported by \"{}\"",
+                    module_path, source_file_path
+                )
             }
             Self::PackageCircularDependency(external_package) => write!(
                 formatter,
