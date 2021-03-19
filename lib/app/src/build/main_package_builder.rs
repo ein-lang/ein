@@ -1,11 +1,15 @@
+use super::error::BuildError;
 use super::external_packages_builder::ExternalPackagesBuilder;
 use super::external_packages_downloader::ExternalPackagesDownloader;
 use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::prelude_package_builder::PreludePackageBuilder;
 use super::system_package_builder::SystemPackageBuilder;
+use super::system_package_configuration::SystemPackageConfiguration;
+use super::utilities::convert_module_interface_vec_to_map;
 use crate::common::{ApplicationTarget, FilePath, PackageConfiguration, Target};
 use crate::infra::{ApplicationLinker, Logger};
+use std::collections::HashMap;
 
 pub struct MainPackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,
@@ -16,6 +20,7 @@ pub struct MainPackageBuilder<'a> {
     external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
     external_packages_builder: &'a ExternalPackagesBuilder<'a>,
     logger: &'a dyn Logger,
+    system_package_configuration: &'a SystemPackageConfiguration,
 }
 
 impl<'a> MainPackageBuilder<'a> {
@@ -29,6 +34,7 @@ impl<'a> MainPackageBuilder<'a> {
         external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
         external_packages_builder: &'a ExternalPackagesBuilder<'a>,
         logger: &'a dyn Logger,
+        system_package_configuration: &'a SystemPackageConfiguration,
     ) -> Self {
         Self {
             package_configuration_reader,
@@ -39,6 +45,7 @@ impl<'a> MainPackageBuilder<'a> {
             external_packages_downloader,
             external_packages_builder,
             logger,
+            system_package_configuration,
         }
     }
 
@@ -66,10 +73,26 @@ impl<'a> MainPackageBuilder<'a> {
                 application_target.system_package(),
                 &prelude_module_interfaces,
             )?;
+        let (main_function_module_interfaces, system_module_interfaces) = system_module_interfaces
+            .into_iter()
+            .partition::<Vec<_>, _>(|interface| {
+                interface.path().components().collect::<Vec<_>>() == vec!["MainFunction"]
+            });
 
+        if main_function_module_interfaces.is_empty() {
+            return Err(BuildError::MainFunctionModuleNotFound {
+                main_function_module_name: self
+                    .system_package_configuration
+                    .main_function_module_name,
+                external_package: application_target.system_package().clone(),
+            }
+            .into());
+        }
+
+        // TODO Combine only the MainFunction module.
         let prelude_module_interfaces = prelude_module_interfaces
             .into_iter()
-            .chain(system_module_interfaces)
+            .chain(main_function_module_interfaces)
             .collect::<Vec<_>>();
 
         let external_package_configurations = self.external_packages_downloader.download(
@@ -80,13 +103,19 @@ impl<'a> MainPackageBuilder<'a> {
                 .collect::<Vec<_>>(),
         )?;
 
-        let (external_module_object_paths, external_module_interfaces) = self
+        let (external_module_object_paths, mut external_module_interfaces) = self
             .external_packages_builder
             .build(&external_package_configurations, &prelude_module_interfaces)?;
 
         let (module_object_paths, _) = self.package_builder.build(
             &package_configuration,
-            &external_module_interfaces,
+            &external_module_interfaces
+                .drain()
+                .chain(vec![(
+                    application_target.system_package().clone(),
+                    convert_module_interface_vec_to_map(&system_module_interfaces),
+                )])
+                .collect::<HashMap<_, _>>(),
             &prelude_module_interfaces,
         )?;
 
@@ -96,9 +125,9 @@ impl<'a> MainPackageBuilder<'a> {
         ))?;
 
         self.application_linker.link(
-            &system_module_object_paths
+            &prelude_module_object_paths
                 .into_iter()
-                .chain(prelude_module_object_paths)
+                .chain(system_module_object_paths)
                 .chain(external_module_object_paths)
                 .chain(module_object_paths)
                 .collect::<Vec<_>>(),

@@ -60,6 +60,13 @@ impl<'a> PackageBuilder<'a> {
             .build_configuration()
             .dependencies()
             .iter()
+            .chain(
+                package_configuration
+                    .build_configuration()
+                    .target()
+                    .as_application()
+                    .map(|application| application.system_package()),
+            )
             .map(|external_package| {
                 external_module_interfaces[&external_package].iter().map(
                     |(module_path, module_interface)| {

@@ -55,6 +55,7 @@ impl<'a> ModuleCompiler<'a> {
                     .get(import.module_path())
                     .ok_or(BuildError::ModuleNotFound {
                         module_path: import.module_path().clone(),
+                        source_file_path: source_file_path.clone(),
                     })?
                     .clone())
             })

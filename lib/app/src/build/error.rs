@@ -5,9 +5,14 @@ pub enum BuildError {
     ExternalPackageConfigurationFileNotFound {
         package_name: String,
     },
+    MainFunctionModuleNotFound {
+        main_function_module_name: &'static str,
+        external_package: ExternalPackage,
+    },
     ModuleCircularDependency(FilePath),
     ModuleNotFound {
         module_path: lang::UnresolvedModulePath,
+        source_file_path: FilePath,
     },
     PackageCircularDependency(ExternalPackage),
 }
@@ -22,13 +27,29 @@ impl std::fmt::Display for BuildError {
                 "package configuration file not found in external package \"{}\"",
                 package_name
             ),
+            Self::MainFunctionModuleNotFound {
+                main_function_module_name,
+                external_package,
+            } => write!(
+                formatter,
+                "\"{}\" module not found in system package \"{}\"",
+                &main_function_module_name,
+                external_package.name(),
+            ),
             Self::ModuleCircularDependency(file_path) => write!(
                 formatter,
                 "circular module dependency detected: {}",
                 file_path
             ),
-            Self::ModuleNotFound { module_path } => {
-                write!(formatter, "module \"{}\" not found", module_path)
+            Self::ModuleNotFound {
+                module_path,
+                source_file_path,
+            } => {
+                write!(
+                    formatter,
+                    "module \"{}\" not found imported by \"{}\"",
+                    module_path, source_file_path
+                )
             }
             Self::PackageCircularDependency(external_package) => write!(
                 formatter,

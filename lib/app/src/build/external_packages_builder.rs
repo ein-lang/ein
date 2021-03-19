@@ -1,5 +1,6 @@
 use super::error::BuildError;
 use super::package_builder::PackageBuilder;
+use super::utilities::convert_module_interface_vec_to_map;
 use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
 use petgraph::algo::toposort;
 use petgraph::graph::Graph;
@@ -38,26 +39,11 @@ impl<'a> ExternalPackagesBuilder<'a> {
 
             external_module_interfaces.insert(
                 external_package.clone(),
-                self.convert_module_interfaces(&module_interfaces),
+                convert_module_interface_vec_to_map(&module_interfaces),
             );
         }
 
         Ok((package_object_file_paths, external_module_interfaces))
-    }
-
-    fn convert_module_interfaces(
-        &self,
-        module_interfaces: &[lang::ModuleInterface],
-    ) -> HashMap<lang::ExternalUnresolvedModulePath, lang::ModuleInterface> {
-        module_interfaces
-            .iter()
-            .map(|module_interface| {
-                (
-                    module_interface.path().external_unresolved(),
-                    module_interface.clone(),
-                )
-            })
-            .collect()
     }
 
     fn sort_external_packages(
