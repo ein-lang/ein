@@ -83,8 +83,7 @@ impl<'a> MainPackageBuilder<'a> {
             return Err(BuildError::MainFunctionModuleNotFound {
                 main_function_module_name: self
                     .system_package_configuration
-                    .main_function_module_name
-                    .into(),
+                    .main_function_module_name,
                 external_package: application_target.system_package().clone(),
             }
             .into());
