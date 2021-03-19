@@ -1,4 +1,4 @@
-mod adoptors;
+mod adaptors;
 mod build;
 mod common;
 mod infra;

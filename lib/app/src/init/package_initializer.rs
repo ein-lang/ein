@@ -1,7 +1,7 @@
 use super::package_initialization_configuration::PackageInitializationConfiguration;
 use crate::infra::FileSystem;
 use crate::{
-    adoptors::JsonBuildConfiguration,
+    adaptors::JsonBuildConfiguration,
     common::{BuildConfiguration, FilePath, FilePathConfiguration, StaticFilePathManager, Target},
 };
 
