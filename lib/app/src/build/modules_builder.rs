@@ -101,14 +101,15 @@ impl<'a> ModulesBuilder<'a> {
                 if let lang::UnresolvedModulePath::Internal(internal_module_path) =
                     import.module_path()
                 {
-                    graph.add_edge(
-                        indices[&self.file_path_resolver.resolve_source_file_path(
+                    // Continue even if a module path is invalid.
+                    if let Some(&index) =
+                        indices.get(&self.file_path_resolver.resolve_source_file_path(
                             package_configuration.directory_path(),
                             internal_module_path,
-                        )],
-                        indices[&source_file_path],
-                        (),
-                    );
+                        ))
+                    {
+                        graph.add_edge(index, indices[&source_file_path], ());
+                    }
                 }
             }
         }
