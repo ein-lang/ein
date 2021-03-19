@@ -4,8 +4,10 @@ use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::prelude_package_builder::PreludePackageBuilder;
 use super::system_package_builder::SystemPackageBuilder;
+use super::utilities::convert_module_interface_vec_to_map;
 use crate::common::{ApplicationTarget, FilePath, PackageConfiguration, Target};
 use crate::infra::{ApplicationLinker, Logger};
+use std::collections::HashMap;
 
 pub struct MainPackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,
@@ -67,9 +69,10 @@ impl<'a> MainPackageBuilder<'a> {
                 &prelude_module_interfaces,
             )?;
 
+        // TODO Combine only the MainFunction module.
         let prelude_module_interfaces = prelude_module_interfaces
             .into_iter()
-            .chain(system_module_interfaces)
+            .chain(system_module_interfaces.clone())
             .collect::<Vec<_>>();
 
         let external_package_configurations = self.external_packages_downloader.download(
@@ -80,13 +83,19 @@ impl<'a> MainPackageBuilder<'a> {
                 .collect::<Vec<_>>(),
         )?;
 
-        let (external_module_object_paths, external_module_interfaces) = self
+        let (external_module_object_paths, mut external_module_interfaces) = self
             .external_packages_builder
             .build(&external_package_configurations, &prelude_module_interfaces)?;
 
         let (module_object_paths, _) = self.package_builder.build(
             &package_configuration,
-            &external_module_interfaces,
+            &external_module_interfaces
+                .drain()
+                .chain(vec![(
+                    application_target.system_package().clone(),
+                    convert_module_interface_vec_to_map(&system_module_interfaces),
+                )])
+                .collect::<HashMap<_, _>>(),
             &prelude_module_interfaces,
         )?;
 

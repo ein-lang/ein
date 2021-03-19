@@ -11,6 +11,7 @@ mod package_builder;
 mod package_configuration_reader;
 mod prelude_package_builder;
 mod system_package_builder;
+mod utilities;
 
 pub use cached_external_package_downloader::*;
 pub use error::*;
