@@ -1,8 +1,8 @@
-use super::external_package::ExternalPackage;
 use super::file_path::FilePath;
 use super::file_path_configuration::{
     FilePathConfiguration, INTERFACE_FILE_EXTENSION, OBJECT_FILE_EXTENSION,
 };
+use super::package_configuration::ExternalPackage;
 use super::static_file_path_manager::StaticFilePathManager;
 
 pub struct FilePathResolver<'a> {
