@@ -20,15 +20,12 @@ impl<'a> SystemPackageBuilder<'a> {
 
     pub fn build(
         &self,
-        system_package: &ExternalPackage,
+        external_package: &ExternalPackage,
         prelude_module_interfaces: &[lang::ModuleInterface],
     ) -> Result<(Vec<FilePath>, Vec<lang::ModuleInterface>), Box<dyn std::error::Error>> {
-        let package_configuration =
-            self.cached_external_package_downloader
-                .download(&ExternalPackage::new(
-                    system_package.name(),
-                    system_package.version(),
-                ))?;
+        let package_configuration = self
+            .cached_external_package_downloader
+            .download(&external_package)?;
 
         self.package_builder.build(
             &package_configuration,
