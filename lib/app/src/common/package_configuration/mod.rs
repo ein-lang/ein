@@ -1,12 +1,12 @@
 mod application_target;
 mod build_configuration;
-mod system_package;
+mod external_package;
 mod target;
 
 use crate::common::FilePath;
 pub use application_target::ApplicationTarget;
 pub use build_configuration::BuildConfiguration;
-pub use system_package::SystemPackage;
+pub use external_package::ExternalPackage;
 pub use target::Target;
 
 #[derive(Clone, Debug)]

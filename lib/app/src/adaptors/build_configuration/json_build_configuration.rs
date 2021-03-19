@@ -3,9 +3,7 @@ use super::{
     json_application_build_configuration::JsonApplicationBuildConfiguration,
     json_system_package_configuration::JsonSystemPackageConfiguration,
 };
-use crate::{
-    common::ApplicationTarget, common::BuildConfiguration, ExternalPackage, SystemPackage, Target,
-};
+use crate::{common::ApplicationTarget, common::BuildConfiguration, ExternalPackage, Target};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -58,7 +56,7 @@ impl JsonBuildConfiguration {
                 .map(|application| {
                     ApplicationTarget::new(
                         application.name(),
-                        SystemPackage::new(
+                        ExternalPackage::new(
                             application.system().name(),
                             application.system().version(),
                         ),
