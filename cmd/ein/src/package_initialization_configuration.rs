@@ -9,10 +9,12 @@ pub static PACKAGE_INITIALIZATION_CONFIGURATION: app::PackageInitializationConfi
     app::PackageInitializationConfiguration {
         application_main_file_content: indoc::indoc!(
             "
-            main : System -> Number
-            main system =
+            import \"github.com/ein-lang/os/Os\"
+
+            main : Os.Os -> Number
+            main os =
               let
-                result = fdWrite system stdout \"Hello, world!\\n\"
+                result = Os.fdWrite os Os.stdout \"Hello, world!\\n\"
               in
                 case _ = result
                   Number => 0
