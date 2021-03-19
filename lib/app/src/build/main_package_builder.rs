@@ -1,9 +1,11 @@
+use super::error::BuildError;
 use super::external_packages_builder::ExternalPackagesBuilder;
 use super::external_packages_downloader::ExternalPackagesDownloader;
 use super::package_builder::PackageBuilder;
 use super::package_configuration_reader::PackageConfigurationReader;
 use super::prelude_package_builder::PreludePackageBuilder;
 use super::system_package_builder::SystemPackageBuilder;
+use super::system_package_configuration::SystemPackageConfiguration;
 use super::utilities::convert_module_interface_vec_to_map;
 use crate::common::{ApplicationTarget, FilePath, PackageConfiguration, Target};
 use crate::infra::{ApplicationLinker, Logger};
@@ -18,6 +20,7 @@ pub struct MainPackageBuilder<'a> {
     external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
     external_packages_builder: &'a ExternalPackagesBuilder<'a>,
     logger: &'a dyn Logger,
+    system_package_configuration: &'a SystemPackageConfiguration,
 }
 
 impl<'a> MainPackageBuilder<'a> {
@@ -31,6 +34,7 @@ impl<'a> MainPackageBuilder<'a> {
         external_packages_downloader: &'a ExternalPackagesDownloader<'a>,
         external_packages_builder: &'a ExternalPackagesBuilder<'a>,
         logger: &'a dyn Logger,
+        system_package_configuration: &'a SystemPackageConfiguration,
     ) -> Self {
         Self {
             package_configuration_reader,
@@ -41,6 +45,7 @@ impl<'a> MainPackageBuilder<'a> {
             external_packages_downloader,
             external_packages_builder,
             logger,
+            system_package_configuration,
         }
     }
 
@@ -68,11 +73,27 @@ impl<'a> MainPackageBuilder<'a> {
                 application_target.system_package(),
                 &prelude_module_interfaces,
             )?;
+        let (main_function_module_interfaces, system_module_interfaces) = system_module_interfaces
+            .into_iter()
+            .partition::<Vec<_>, _>(|interface| {
+                interface.path().components().collect::<Vec<_>>() == vec!["MainFunction"]
+            });
+
+        if main_function_module_interfaces.is_empty() {
+            return Err(BuildError::MainFunctionModuleNotFound {
+                main_function_module_name: self
+                    .system_package_configuration
+                    .main_function_module_name
+                    .into(),
+                external_package: application_target.system_package().clone(),
+            }
+            .into());
+        }
 
         // TODO Combine only the MainFunction module.
         let prelude_module_interfaces = prelude_module_interfaces
             .into_iter()
-            .chain(system_module_interfaces.clone())
+            .chain(main_function_module_interfaces)
             .collect::<Vec<_>>();
 
         let external_package_configurations = self.external_packages_downloader.download(

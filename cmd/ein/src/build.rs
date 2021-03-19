@@ -1,5 +1,6 @@
 use super::compile_configuration::COMPILE_CONFIGURATION;
 use super::file_path_configuration::FILE_PATH_CONFIGURATION;
+use super::system_package_configuration::SYSTEM_PACKAGE_CONFIGURATION;
 
 pub fn build() -> Result<(), Box<dyn std::error::Error>> {
     let package_directory = find_package_directory()?;
@@ -83,6 +84,7 @@ pub fn build() -> Result<(), Box<dyn std::error::Error>> {
         &external_packages_downloader,
         &external_packages_builder,
         &logger,
+        &SYSTEM_PACKAGE_CONFIGURATION,
     );
 
     main_package_builder.build()

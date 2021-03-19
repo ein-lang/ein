@@ -11,6 +11,7 @@ mod package_builder;
 mod package_configuration_reader;
 mod prelude_package_builder;
 mod system_package_builder;
+mod system_package_configuration;
 mod utilities;
 
 pub use cached_external_package_downloader::*;
@@ -26,3 +27,4 @@ pub use package_builder::*;
 pub use package_configuration_reader::*;
 pub use prelude_package_builder::*;
 pub use system_package_builder::*;
+pub use system_package_configuration::*;
