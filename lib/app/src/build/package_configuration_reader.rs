@@ -1,6 +1,6 @@
 use crate::common::{FilePath, StaticFilePathManager};
 use crate::infra::{FilePathDisplayer, FileSystem};
-use crate::{adoptors::JsonBuildConfiguration, common::PackageConfiguration};
+use crate::{adaptors::JsonBuildConfiguration, common::PackageConfiguration};
 
 pub struct PackageConfigurationReader<'a> {
     file_system: &'a dyn FileSystem,
