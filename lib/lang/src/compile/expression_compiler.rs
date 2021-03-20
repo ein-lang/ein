@@ -113,8 +113,8 @@ impl ExpressionCompiler {
             )?,
             Expression::Number(number) => ssf::ir::Primitive::Float64(number.value()).into(),
             Expression::Operation(operation) => match operation {
-                Operation::Arithmetic(operation) => ssf::ir::PrimitiveOperation::new(
-                    operation.operator().into(),
+                Operation::Arithmetic(operation) => ssf::ir::ArithmeticOperation::new(
+                    Self::compile_arithmetic_operator(operation.operator()),
                     self.compile(operation.lhs())?,
                     self.compile(operation.rhs())?,
                 )
@@ -131,8 +131,8 @@ impl ExpressionCompiler {
                             Type::Number(_) => self
                                 .expression_compiler_set
                                 .boolean_compiler
-                                .compile_conversion(ssf::ir::PrimitiveOperation::new(
-                                    operation.operator().into(),
+                                .compile_conversion(ssf::ir::ComparisonOperation::new(
+                                    Self::compile_equality_operator(operation.operator()),
                                     self.compile(operation.lhs())?,
                                     self.compile(operation.rhs())?,
                                 )),
@@ -164,8 +164,8 @@ impl ExpressionCompiler {
                 Operation::Order(operation) => self
                     .expression_compiler_set
                     .boolean_compiler
-                    .compile_conversion(ssf::ir::PrimitiveOperation::new(
-                        operation.operator().into(),
+                    .compile_conversion(ssf::ir::ComparisonOperation::new(
+                        Self::compile_order_operator(operation.operator()),
                         self.compile(operation.lhs())?,
                         self.compile(operation.rhs())?,
                     )),
@@ -560,6 +560,31 @@ impl ExpressionCompiler {
                 }
             },
         )
+    }
+
+    fn compile_arithmetic_operator(operator: ArithmeticOperator) -> ssf::ir::ArithmeticOperator {
+        match operator {
+            ArithmeticOperator::Add => ssf::ir::ArithmeticOperator::Add,
+            ArithmeticOperator::Subtract => ssf::ir::ArithmeticOperator::Subtract,
+            ArithmeticOperator::Multiply => ssf::ir::ArithmeticOperator::Multiply,
+            ArithmeticOperator::Divide => ssf::ir::ArithmeticOperator::Divide,
+        }
+    }
+
+    fn compile_equality_operator(operator: EqualityOperator) -> ssf::ir::ComparisonOperator {
+        match operator {
+            EqualityOperator::Equal => ssf::ir::ComparisonOperator::Equal,
+            EqualityOperator::NotEqual => ssf::ir::ComparisonOperator::NotEqual,
+        }
+    }
+
+    fn compile_order_operator(operator: OrderOperator) -> ssf::ir::ComparisonOperator {
+        match operator {
+            OrderOperator::LessThan => ssf::ir::ComparisonOperator::LessThan,
+            OrderOperator::LessThanOrEqual => ssf::ir::ComparisonOperator::LessThanOrEqual,
+            OrderOperator::GreaterThan => ssf::ir::ComparisonOperator::GreaterThan,
+            OrderOperator::GreaterThanOrEqual => ssf::ir::ComparisonOperator::GreaterThanOrEqual,
+        }
     }
 }
 
