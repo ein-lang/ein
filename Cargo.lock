@@ -193,7 +193,7 @@ dependencies = [
  "indoc",
  "infra",
  "lang",
- "lazy_static",
+ "once_cell",
 ]
 
 [[package]]
