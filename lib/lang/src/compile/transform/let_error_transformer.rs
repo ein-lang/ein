@@ -114,10 +114,10 @@ mod tests {
     use crate::debug::*;
     use crate::package::Package;
     use crate::path::ModulePath;
-    use lazy_static::lazy_static;
+    use once_cell::sync::Lazy;
 
-    lazy_static! {
-        static ref MODULE: Module = Module::new(
+    static MODULE: Lazy<Module> = Lazy::new(|| {
+        Module::new(
             ModulePath::new(Package::new("", ""), vec![]),
             Export::new(Default::default()),
             ExportForeign::new(Default::default()),
@@ -139,8 +139,8 @@ mod tests {
             vec![],
             vec![],
             vec![],
-        );
-    }
+        )
+    });
 
     fn create_let_error_transformer() -> Arc<LetErrorTransformer> {
         let reference_type_resolver = ReferenceTypeResolver::new(&MODULE);

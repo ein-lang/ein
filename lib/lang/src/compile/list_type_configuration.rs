@@ -1,12 +1,12 @@
 #[cfg(test)]
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 #[cfg(test)]
 use std::sync::Arc;
 
 #[cfg(test)]
-lazy_static! {
-    pub static ref LIST_TYPE_CONFIGURATION: Arc<ListTypeConfiguration> = ListTypeConfiguration {
+pub static LIST_TYPE_CONFIGURATION: Lazy<Arc<ListTypeConfiguration>> = Lazy::new(|| {
+    ListTypeConfiguration {
         empty_list_variable_name: "emptyList".into(),
         concatenate_function_name: "concatenateLists".into(),
         equal_function_name: "equalLists".into(),
@@ -18,8 +18,8 @@ lazy_static! {
         first_rest_type_name: "FirstRest".into(),
         map_function_name: "mapList".into(),
     }
-    .into();
-}
+    .into()
+});
 
 pub struct ListTypeConfiguration {
     pub empty_list_variable_name: String,
