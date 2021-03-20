@@ -423,9 +423,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.89"
+version = "0.2.90"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "538c092e5586f4cdd7dd8078c4a79220e3e168880218124dcbce860f0ea938c6"
+checksum = "ba4aede83fc3617411dc6993bc8c70919750c1c257c6ca6a502aed6e0e2394ae"
 
 [[package]]
 name = "libgit2-sys"
@@ -779,7 +779,7 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#742799605d9826e9ecd271d5078ce79de4d80935"
+source = "git+https://github.com/raviqqe/ssf?branch=main#9771d0559904c6c71d24bfbf2d66b2ca73c3a52e"
 dependencies = [
  "pretty_assertions",
 ]
@@ -787,7 +787,7 @@ dependencies = [
 [[package]]
 name = "ssf-fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#742799605d9826e9ecd271d5078ce79de4d80935"
+source = "git+https://github.com/raviqqe/ssf?branch=main#9771d0559904c6c71d24bfbf2d66b2ca73c3a52e"
 dependencies = [
  "fmm",
  "ssf",
