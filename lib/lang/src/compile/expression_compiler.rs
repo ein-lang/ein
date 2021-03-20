@@ -712,7 +712,7 @@ mod tests {
                     .into(),
                 ),
                 Ok(
-                    ssf::ir::PrimitiveOperation::new(ssf::ir::PrimitiveOperator::Add, 1.0, 2.0)
+                    ssf::ir::ArithmeticOperation::new(ssf::ir::ArithmeticOperator::Add, 1.0, 2.0)
                         .into()
                 )
             );
@@ -734,8 +734,8 @@ mod tests {
                     .into(),
                 ),
                 Ok(ssf::ir::PrimitiveCase::new(
-                    ssf::ir::PrimitiveOperation::new(
-                        ssf::ir::PrimitiveOperator::LessThan,
+                    ssf::ir::ComparisonOperation::new(
+                        ssf::ir::ComparisonOperator::LessThan,
                         1.0,
                         2.0
                     ),
