@@ -3,14 +3,14 @@ use super::list_type_configuration::ListTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::union_tag_calculator::UnionTagCalculator;
 use crate::types::{self, Type};
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-lazy_static! {
-    // Algebraic data type entries which make sure that all union and any types
-    // have 2 word size.
-    static ref UNION_PADDING_ENTRIES: Vec<(u64, ssf::types::Constructor)> = vec![
+// Algebraic data type entries which make sure that all union and any types
+// have 2 word size.
+static UNION_PADDING_ENTRIES: Lazy<Vec<(u64, ssf::types::Constructor)>> = Lazy::new(|| {
+    vec![
         (
             0,
             ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
@@ -18,9 +18,9 @@ lazy_static! {
         (
             1,
             ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
-        )
-    ];
-}
+        ),
+    ]
+});
 
 pub struct TypeCompiler {
     record_names: Vec<Option<String>>,

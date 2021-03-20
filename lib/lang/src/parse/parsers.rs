@@ -13,7 +13,7 @@ use combine::stream::state;
 use combine::{
     easy, from_str, none_of, one_of, sep_by1, unexpected_any, value, Parser, Positioned,
 };
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -23,11 +23,9 @@ const KEYWORDS: &[&str] = &[
 const OPERATOR_CHARACTERS: &str = "+-*/=<>&|";
 const SPACE_CHARACTERS: &str = " \t\r";
 
-lazy_static! {
-    static ref NUMBER_REGEX: regex::Regex =
-        regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap();
-    static ref STRING_REGEX: regex::Regex = regex::Regex::new(r#"^[^\\"]"#).unwrap();
-}
+static NUMBER_REGEX: Lazy<regex::Regex> =
+    Lazy::new(|| regex::Regex::new(r"^-?([123456789][0123456789]*|0)(\.[0123456789]+)?").unwrap());
+static STRING_REGEX: Lazy<regex::Regex> = Lazy::new(|| regex::Regex::new(r#"^[^\\"]"#).unwrap());
 
 pub struct State<'a> {
     source_name: &'a str,

@@ -3,13 +3,13 @@ use super::list_type_configuration::ListTypeConfiguration;
 use super::main_module_configuration::MainModuleConfiguration;
 use super::string_type_configuration::StringTypeConfiguration;
 #[cfg(test)]
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use std::sync::Arc;
 
 #[cfg(test)]
-lazy_static! {
-    pub static ref COMPILE_CONFIGURATION: Arc<CompileConfiguration> = CompileConfiguration {
+pub static COMPILE_CONFIGURATION: Lazy<Arc<CompileConfiguration>> = Lazy::new(|| {
+    CompileConfiguration {
         malloc_function_name: "foo_malloc".into(),
         realloc_function_name: "foo_realloc".into(),
         list_type_configuration: super::list_type_configuration::LIST_TYPE_CONFIGURATION.clone(),
@@ -18,8 +18,8 @@ lazy_static! {
         error_type_configuration: super::error_type_configuration::ERROR_TYPE_CONFIGURATION.clone(),
         main_module_configuration: None,
     }
-    .into();
-}
+    .into()
+});
 
 #[derive(Clone)]
 pub struct CompileConfiguration {

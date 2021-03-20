@@ -1,17 +1,16 @@
 #[cfg(test)]
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 #[cfg(test)]
 use std::sync::Arc;
 
 #[cfg(test)]
-lazy_static! {
-    pub static ref STRING_TYPE_CONFIGURATION: Arc<StringTypeConfiguration> =
-        StringTypeConfiguration {
-            equal_function_name: "equalStrings".into(),
-        }
-        .into();
-}
+pub static STRING_TYPE_CONFIGURATION: Lazy<Arc<StringTypeConfiguration>> = Lazy::new(|| {
+    StringTypeConfiguration {
+        equal_function_name: "equalStrings".into(),
+    }
+    .into()
+});
 
 pub struct StringTypeConfiguration {
     pub equal_function_name: String,

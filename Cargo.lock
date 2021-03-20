@@ -406,7 +406,7 @@ dependencies = [
  "fmm-llvm",
  "indoc",
  "insta",
- "lazy_static",
+ "once_cell",
  "pretty_assertions",
  "regex",
  "serde",

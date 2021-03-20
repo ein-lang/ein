@@ -1,13 +1,16 @@
+#[cfg(test)]
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
+#[cfg(test)]
+use std::sync::Arc;
 
 #[cfg(test)]
-lazy_static::lazy_static! {
-    pub static ref ERROR_TYPE_CONFIGURATION: std::sync::Arc<ErrorTypeConfiguration> =
-        ErrorTypeConfiguration {
-            error_type_name: "Error".into(),
-        }
-        .into();
-}
+pub static ERROR_TYPE_CONFIGURATION: Lazy<Arc<ErrorTypeConfiguration>> = Lazy::new(|| {
+    ErrorTypeConfiguration {
+        error_type_name: "Error".into(),
+    }
+    .into()
+});
 
 pub struct ErrorTypeConfiguration {
     pub error_type_name: String,
