@@ -11,17 +11,6 @@ pub enum OrderOperator {
     GreaterThanOrEqual,
 }
 
-impl From<OrderOperator> for ssf::ir::PrimitiveOperator {
-    fn from(operator: OrderOperator) -> Self {
-        match operator {
-            OrderOperator::LessThan => ssf::ir::PrimitiveOperator::LessThan,
-            OrderOperator::LessThanOrEqual => ssf::ir::PrimitiveOperator::LessThanOrEqual,
-            OrderOperator::GreaterThan => ssf::ir::PrimitiveOperator::GreaterThan,
-            OrderOperator::GreaterThanOrEqual => ssf::ir::PrimitiveOperator::GreaterThanOrEqual,
-        }
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct OrderOperation {
     operator: OrderOperator,

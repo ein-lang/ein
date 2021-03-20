@@ -9,15 +9,6 @@ pub enum EqualityOperator {
     NotEqual,
 }
 
-impl From<EqualityOperator> for ssf::ir::PrimitiveOperator {
-    fn from(operator: EqualityOperator) -> Self {
-        match operator {
-            EqualityOperator::Equal => ssf::ir::PrimitiveOperator::Equal,
-            EqualityOperator::NotEqual => ssf::ir::PrimitiveOperator::NotEqual,
-        }
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct EqualityOperation {
     type_: Type,

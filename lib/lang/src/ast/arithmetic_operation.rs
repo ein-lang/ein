@@ -11,17 +11,6 @@ pub enum ArithmeticOperator {
     Divide,
 }
 
-impl From<ArithmeticOperator> for ssf::ir::PrimitiveOperator {
-    fn from(operator: ArithmeticOperator) -> Self {
-        match operator {
-            ArithmeticOperator::Add => ssf::ir::PrimitiveOperator::Add,
-            ArithmeticOperator::Subtract => ssf::ir::PrimitiveOperator::Subtract,
-            ArithmeticOperator::Multiply => ssf::ir::PrimitiveOperator::Multiply,
-            ArithmeticOperator::Divide => ssf::ir::PrimitiveOperator::Divide,
-        }
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct ArithmeticOperation {
     operator: ArithmeticOperator,
