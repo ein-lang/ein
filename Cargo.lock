@@ -227,7 +227,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#7f48fc0138bae7d260a040a22f5f3546508ce6df"
+source = "git+https://github.com/raviqqe/fmm?branch=main#11e57775a5edd934024487737e780bf4fb90d46e"
 dependencies = [
  "once_cell",
  "petgraph",
@@ -779,7 +779,7 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#9771d0559904c6c71d24bfbf2d66b2ca73c3a52e"
+source = "git+https://github.com/raviqqe/ssf?branch=main#01230806add87626dd2148bc5cf636e7556ae13e"
 dependencies = [
  "pretty_assertions",
 ]
@@ -787,7 +787,7 @@ dependencies = [
 [[package]]
 name = "ssf-fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#9771d0559904c6c71d24bfbf2d66b2ca73c3a52e"
+source = "git+https://github.com/raviqqe/ssf?branch=main#01230806add87626dd2148bc5cf636e7556ae13e"
 dependencies = [
  "fmm",
  "ssf",
