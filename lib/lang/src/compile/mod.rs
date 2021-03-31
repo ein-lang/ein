@@ -181,6 +181,7 @@ pub fn compile(
             &fmm_llvm::HeapConfiguration {
                 allocate_function_name: configuration.malloc_function_name.clone(),
                 reallocate_function_name: configuration.realloc_function_name.clone(),
+                free_function_name: "free".into(),
             },
             None,
         )
