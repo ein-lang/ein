@@ -16,6 +16,7 @@ pub enum CompileError {
     FunctionExpected(Arc<SourceInformation>),
     MainFunctionNotFound(ModulePath),
     RecordEqualOperation(Arc<SourceInformation>),
+    SsfFmmCompile(ssf_fmm::CompileError),
     TypeNotFound(types::Reference),
     TypesNotMatched(Arc<SourceInformation>, Arc<SourceInformation>),
     TypeNotInferred(Arc<SourceInformation>),
@@ -59,6 +60,9 @@ impl Display for CompileError {
                 "cannot compare records including functions or Any values\n{}",
                 source_information
             ),
+            Self::SsfFmmCompile(error) => {
+                write!(formatter, "failed to compile ssf to fmm: {:?}", error)
+            }
             Self::TypeNotFound(reference) => write!(
                 formatter,
                 "type \"{}\" not found\n{}",
@@ -84,3 +88,9 @@ impl Display for CompileError {
 }
 
 impl Error for CompileError {}
+
+impl From<ssf_fmm::CompileError> for CompileError {
+    fn from(error: ssf_fmm::CompileError) -> Self {
+        Self::SsfFmmCompile(error)
+    }
+}

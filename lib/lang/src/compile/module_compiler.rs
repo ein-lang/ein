@@ -58,7 +58,7 @@ impl ModuleCompiler {
                         name,
                     ))
                 })
-                .collect::<Result<_, _>>()?,
+                .collect::<Result<_, CompileError>>()?,
             module
                 .imports()
                 .iter()
