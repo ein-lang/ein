@@ -168,7 +168,7 @@ pub fn compile(
         &ssf_fmm::compile(
             &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
                 .compile(&module)?,
-        ),
+        )?,
         fmm::types::Record::new(vec![]),
     )
     .unwrap();
