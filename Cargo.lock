@@ -227,7 +227,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#2768be005930884914c47a2f385b0535bdb39514"
+source = "git+https://github.com/raviqqe/fmm?branch=main#456fdbda1465408d91ae8215939bfd69cc2e7f0a"
 dependencies = [
  "once_cell",
  "petgraph",
@@ -236,7 +236,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#2768be005930884914c47a2f385b0535bdb39514"
+source = "git+https://github.com/raviqqe/fmm?branch=main#456fdbda1465408d91ae8215939bfd69cc2e7f0a"
 dependencies = [
  "fmm",
  "inkwell",
@@ -779,7 +779,7 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 [[package]]
 name = "ssf"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#4039f5fd0a29be4719eb5a9d5358cb76bf96f1f4"
+source = "git+https://github.com/raviqqe/ssf?branch=main#f1d354a14bbf6ec9af216ea13ec4cfea6b91f591"
 dependencies = [
  "pretty_assertions",
 ]
@@ -787,7 +787,7 @@ dependencies = [
 [[package]]
 name = "ssf-fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#4039f5fd0a29be4719eb5a9d5358cb76bf96f1f4"
+source = "git+https://github.com/raviqqe/ssf?branch=main#f1d354a14bbf6ec9af216ea13ec4cfea6b91f591"
 dependencies = [
  "fmm",
  "ssf",
@@ -801,9 +801,9 @@ checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
 
 [[package]]
 name = "syn"
-version = "1.0.69"
+version = "1.0.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48fe99c6bd8b1cc636890bcc071842de909d902c81ac7dab53ba33c421ab8ffb"
+checksum = "b9505f307c872bab8eb46f77ae357c8eba1fdacead58ee5a850116b1d7f82883"
 dependencies = [
  "proc-macro2",
  "quote",
