@@ -87,8 +87,8 @@ Ok(
             expression: Case(
                 Algebraic(
                     AlgebraicCase {
-                        argument: Bitcast(
-                            Bitcast {
+                        argument: BitCast(
+                            BitCast {
                                 expression: Variable(
                                     Variable {
                                         name: "x",

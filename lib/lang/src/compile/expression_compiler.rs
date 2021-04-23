@@ -229,7 +229,7 @@ impl ExpressionCompiler {
                 ssf::ir::ConstructorApplication::new(
                     ssf::ir::Constructor::new(self.type_compiler.compile_string(), 0),
                     vec![
-                        ssf::ir::Bitcast::new(
+                        ssf::ir::BitCast::new(
                             ssf::ir::ConstructorApplication::new(
                                 ssf::ir::Constructor::new(
                                     self.type_compiler.compile_string_buffer(length),
@@ -328,7 +328,7 @@ impl ExpressionCompiler {
                         | Type::Record(_)
                         | Type::String(_) => {
                             if self.reference_type_resolver.is_any(coercion.to())? {
-                                ssf::ir::Bitcast::new(
+                                ssf::ir::BitCast::new(
                                     ssf::ir::ConstructorApplication::new(
                                         ssf::ir::Constructor::new(
                                             self.type_compiler
@@ -359,7 +359,7 @@ impl ExpressionCompiler {
                                 .into()
                             }
                         }
-                        Type::Union(_) => ssf::ir::Bitcast::new(argument, to_type).into(),
+                        Type::Union(_) => ssf::ir::BitCast::new(argument, to_type).into(),
                         Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => {
                             unreachable!()
                         }
@@ -463,7 +463,7 @@ impl ExpressionCompiler {
             self.compile(case.argument())?,
             ssf::ir::AlgebraicCase::new(
                 if self.reference_type_resolver.is_any(case.type_())? {
-                    ssf::ir::Expression::from(ssf::ir::Bitcast::new(
+                    ssf::ir::Expression::from(ssf::ir::BitCast::new(
                         ssf::ir::Variable::new(case.name()),
                         argument_type.clone(),
                     ))
@@ -1295,7 +1295,7 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(ssf::ir::Bitcast::new(
+                Ok(ssf::ir::BitCast::new(
                     ssf::ir::Variable::new("x"),
                     type_compiler
                         .compile(&upper_union_type.into())
@@ -1341,7 +1341,7 @@ mod tests {
                     .into(),
                 ),
                 Ok(
-                    ssf::ir::Bitcast::new(
+                    ssf::ir::BitCast::new(
                         ssf::ir::ConstructorApplication::new(
                             ssf::ir::Constructor::new(
                                 type_compiler
@@ -1395,7 +1395,7 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(ssf::ir::Bitcast::new(
+                Ok(ssf::ir::BitCast::new(
                     ssf::ir::Variable::new("x"),
                     type_compiler
                         .compile(&types::Any::new(SourceInformation::dummy()).into())
