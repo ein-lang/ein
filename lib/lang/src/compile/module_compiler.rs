@@ -24,13 +24,14 @@ impl ModuleCompiler {
         }
     }
 
-    pub fn compile(&self, module: &Module) -> Result<ssf::ir::Module, CompileError> {
-        Ok(ssf::ir::Module::new(
+    pub fn compile(&self, module: &Module) -> Result<eir::ir::Module, CompileError> {
+        Ok(eir::ir::Module::new(
+            todo!(),
             module
                 .import_foreigns()
                 .iter()
                 .map(|import| -> Result<_, CompileError> {
-                    Ok(ssf::ir::ForeignDeclaration::new(
+                    Ok(eir::ir::ForeignDeclaration::new(
                         import.name(),
                         import.foreign_name(),
                         self.type_compiler
@@ -40,8 +41,8 @@ impl ModuleCompiler {
                                 CompileError::FunctionExpected(import.source_information().clone())
                             })?,
                         match import.calling_convention() {
-                            CallingConvention::Native => ssf::ir::CallingConvention::Source,
-                            CallingConvention::C => ssf::ir::CallingConvention::Target,
+                            CallingConvention::Native => eir::ir::CallingConvention::Source,
+                            CallingConvention::C => eir::ir::CallingConvention::Target,
                         },
                     ))
                 })
@@ -51,7 +52,7 @@ impl ModuleCompiler {
                 .names()
                 .iter()
                 .map(|name| {
-                    Ok(ssf::ir::ForeignDefinition::new(
+                    Ok(eir::ir::ForeignDefinition::new(
                         self.global_names.get(name).ok_or_else(|| {
                             CompileError::ExportedNameNotFound { name: name.clone() }
                         })?,
@@ -70,12 +71,12 @@ impl ModuleCompiler {
                         .map(|(name, type_)| {
                             let type_ = self.type_compiler.compile(type_)?;
 
-                            Ok(ssf::ir::Declaration::new(
+                            Ok(eir::ir::Declaration::new(
                                 name,
-                                if let ssf::types::Type::Function(function_type) = type_ {
+                                if let eir::types::Type::Function(function_type) = type_ {
                                     function_type
                                 } else {
-                                    ssf::types::Function::new(
+                                    eir::types::Function::new(
                                         self.type_compiler.compile_thunk_argument(),
                                         type_,
                                     )
@@ -107,23 +108,23 @@ impl ModuleCompiler {
     fn compile_function_definition(
         &self,
         function_definition: &FunctionDefinition,
-    ) -> Result<ssf::ir::Definition, CompileError> {
+    ) -> Result<eir::ir::Definition, CompileError> {
         let core_type = self
             .type_compiler
             .compile_function(function_definition.type_())?;
 
-        Ok(ssf::ir::Definition::new(
+        Ok(eir::ir::Definition::new(
             function_definition.name(),
             function_definition
                 .arguments()
                 .iter()
                 .zip(core_type.arguments())
-                .map(|(name, type_)| ssf::ir::Argument::new(name.clone(), type_.clone()))
+                .map(|(name, type_)| eir::ir::Argument::new(name.clone(), type_.clone()))
                 .collect::<Vec<_>>(),
             self.expression_compiler
                 .compile(function_definition.body())?,
             (0..function_definition.arguments().len())
-                .fold(core_type.into(), |type_: ssf::types::Type, _| {
+                .fold(core_type.into(), |type_: eir::types::Type, _| {
                     type_.into_function().unwrap().result().clone()
                 }),
         ))
@@ -132,11 +133,11 @@ impl ModuleCompiler {
     fn compile_variable_definition(
         &self,
         variable_definition: &VariableDefinition,
-    ) -> Result<Vec<ssf::ir::Definition>, CompileError> {
+    ) -> Result<Vec<eir::ir::Definition>, CompileError> {
         let core_type = self.type_compiler.compile(variable_definition.type_())?;
 
         Ok(
-            if let ssf::types::Type::Function(function_type) = core_type {
+            if let eir::types::Type::Function(function_type) = core_type {
                 self.compile_function_variable_definition(
                     variable_definition.name(),
                     variable_definition.body(),
@@ -156,39 +157,33 @@ impl ModuleCompiler {
         &self,
         name: &str,
         body: &Expression,
-        function_type: &ssf::types::Function,
-    ) -> Result<Vec<ssf::ir::Definition>, CompileError> {
+        function_type: &eir::types::Function,
+    ) -> Result<Vec<eir::ir::Definition>, CompileError> {
         let thunk_name = format!("{}.thunk", name);
         const ARGUMENT_NAME: &str = "$arg";
 
         Ok(vec![
-            ssf::ir::Definition::thunk(
+            eir::ir::Definition::thunk(
                 &thunk_name,
-                vec![ssf::ir::Argument::new(
+                vec![eir::ir::Argument::new(
                     "",
                     self.type_compiler.compile_thunk_argument(),
                 )],
                 self.expression_compiler.compile(body)?,
                 function_type.clone(),
             ),
-            ssf::ir::Definition::new(
+            eir::ir::Definition::new(
                 name,
-                vec![ssf::ir::Argument::new(
+                vec![eir::ir::Argument::new(
                     ARGUMENT_NAME,
                     function_type.argument().clone(),
                 )],
-                ssf::ir::FunctionApplication::new(
-                    ssf::ir::FunctionApplication::new(
-                        ssf::ir::Variable::new(&thunk_name),
-                        ssf::ir::ConstructorApplication::new(
-                            ssf::ir::Constructor::new(
-                                self.type_compiler.compile_thunk_argument(),
-                                0,
-                            ),
-                            vec![],
-                        ),
+                eir::ir::FunctionApplication::new(
+                    eir::ir::FunctionApplication::new(
+                        eir::ir::Variable::new(&thunk_name),
+                        eir::ir::Record::new(self.type_compiler.compile_thunk_argument(), vec![]),
                     ),
-                    ssf::ir::Variable::new(ARGUMENT_NAME),
+                    eir::ir::Variable::new(ARGUMENT_NAME),
                 ),
                 function_type.result().clone(),
             ),
@@ -199,11 +194,11 @@ impl ModuleCompiler {
         &self,
         name: &str,
         body: &Expression,
-        type_: &ssf::types::Type,
-    ) -> Result<ssf::ir::Definition, CompileError> {
-        Ok(ssf::ir::Definition::thunk(
+        type_: &eir::types::Type,
+    ) -> Result<eir::ir::Definition, CompileError> {
+        Ok(eir::ir::Definition::thunk(
             name,
-            vec![ssf::ir::Argument::new(
+            vec![eir::ir::Argument::new(
                 "",
                 self.type_compiler.compile_thunk_argument(),
             )],

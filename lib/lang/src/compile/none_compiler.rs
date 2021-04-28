@@ -10,9 +10,9 @@ impl NoneCompiler {
         Self { type_compiler }.into()
     }
 
-    pub fn compile(&self) -> ssf::ir::ConstructorApplication {
-        ssf::ir::ConstructorApplication::new(
-            ssf::ir::Constructor::new(self.type_compiler.compile_none(), 0),
+    pub fn compile(&self) -> eir::ir::ConstructorApplication {
+        eir::ir::ConstructorApplication::new(
+            eir::ir::Constructor::new(self.type_compiler.compile_none(), 0),
             vec![],
         )
     }

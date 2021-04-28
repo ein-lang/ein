@@ -51,18 +51,18 @@ impl VariableCompiler {
         .into())
     }
 
-    pub fn compile(&self, variable: &Variable) -> ssf::ir::Expression {
+    pub fn compile(&self, variable: &Variable) -> eir::ir::Expression {
         if self.variable_names.contains(variable.name()) {
-            ssf::ir::FunctionApplication::new(
-                ssf::ir::Variable::new(variable.name()),
-                ssf::ir::ConstructorApplication::new(
-                    ssf::ir::Constructor::new(self.type_compiler.compile_thunk_argument(), 0),
+            eir::ir::FunctionApplication::new(
+                eir::ir::Variable::new(variable.name()),
+                eir::ir::ConstructorApplication::new(
+                    eir::ir::Constructor::new(self.type_compiler.compile_thunk_argument(), 0),
                     vec![],
                 ),
             )
             .into()
         } else {
-            ssf::ir::Variable::new(variable.name()).into()
+            eir::ir::Variable::new(variable.name()).into()
         }
     }
 }

@@ -10,26 +10,26 @@ impl BooleanCompiler {
         Self { type_compiler }.into()
     }
 
-    pub fn compile(&self, value: bool) -> ssf::ir::ConstructorApplication {
-        ssf::ir::ConstructorApplication::new(
-            ssf::ir::Constructor::new(self.type_compiler.compile_boolean(), value as u64),
+    pub fn compile(&self, value: bool) -> eir::ir::ConstructorApplication {
+        eir::ir::ConstructorApplication::new(
+            eir::ir::Constructor::new(self.type_compiler.compile_boolean(), value as u64),
             vec![],
         )
     }
 
     pub fn compile_conversion(
         &self,
-        expression: impl Into<ssf::ir::Expression>,
-    ) -> ssf::ir::Expression {
-        ssf::ir::PrimitiveCase::new(
+        expression: impl Into<eir::ir::Expression>,
+    ) -> eir::ir::Expression {
+        eir::ir::PrimitiveCase::new(
             expression.into(),
             vec![
-                ssf::ir::PrimitiveAlternative::new(
-                    ssf::ir::Primitive::Boolean(false),
+                eir::ir::PrimitiveAlternative::new(
+                    eir::ir::Primitive::Boolean(false),
                     self.compile(false),
                 ),
-                ssf::ir::PrimitiveAlternative::new(
-                    ssf::ir::Primitive::Boolean(true),
+                eir::ir::PrimitiveAlternative::new(
+                    eir::ir::Primitive::Boolean(true),
                     self.compile(true),
                 ),
             ],

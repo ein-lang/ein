@@ -82,6 +82,7 @@ impl ReferenceTypeResolver {
         })
     }
 
+    // TODO Return an error if the dereferenced type is not a record.
     pub fn resolve_to_record(&self, type_: &Type) -> Result<Option<types::Record>, CompileError> {
         Ok(match self.resolve(type_)? {
             Type::Record(record) => Some(record),

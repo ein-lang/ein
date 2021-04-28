@@ -24,7 +24,6 @@ mod type_comparability_checker;
 mod type_compiler;
 mod type_equality_checker;
 mod type_inference;
-mod union_tag_calculator;
 mod variable_compiler;
 
 use crate::ast::*;
@@ -57,7 +56,6 @@ use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
 use type_equality_checker::TypeEqualityChecker;
 use type_inference::infer_types;
-use union_tag_calculator::UnionTagCalculator;
 use variable_compiler::VariableCompiler;
 
 pub fn compile(
@@ -93,10 +91,8 @@ pub fn compile(
     );
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
-    let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
-        union_tag_calculator.clone(),
         configuration.list_type_configuration.clone(),
     );
     let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
@@ -159,13 +155,12 @@ pub fn compile(
         .into(),
         reference_type_resolver,
         last_result_type_calculator,
-        union_tag_calculator,
         type_compiler.clone(),
         configuration.string_type_configuration.clone(),
     );
 
     let fmm_module = fmm::analysis::transform_to_cps(
-        &ssf_fmm::compile(
+        &eir_fmm::compile(
             &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
                 .compile(&module)?,
         )?,

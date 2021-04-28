@@ -1,68 +1,52 @@
 use super::error::CompileError;
 use super::list_type_configuration::ListTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
-use super::union_tag_calculator::UnionTagCalculator;
 use crate::types::{self, Type};
-use once_cell::sync::Lazy;
-use std::collections::BTreeMap;
 use std::sync::Arc;
 
-// Algebraic data type entries which make sure that all union and any types
-// have 2 word size.
-static UNION_PADDING_ENTRIES: Lazy<Vec<(u64, ssf::types::Constructor)>> = Lazy::new(|| {
-    vec![
-        (
-            0,
-            ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
-        ),
-        (
-            1,
-            ssf::types::Constructor::unboxed(vec![ssf::types::Primitive::Integer64.into()]),
-        ),
-    ]
-});
+const NONE_TYPE_NAME: &str = "ein_None";
 
 pub struct TypeCompiler {
-    record_names: Vec<Option<String>>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    union_tag_calculator: Arc<UnionTagCalculator>,
     list_type_configuration: Arc<ListTypeConfiguration>,
 }
 
 impl TypeCompiler {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
-        union_tag_calculator: Arc<UnionTagCalculator>,
         list_type_configuration: Arc<ListTypeConfiguration>,
     ) -> Arc<Self> {
         Self {
-            record_names: vec![],
             reference_type_resolver,
-            union_tag_calculator,
             list_type_configuration,
         }
         .into()
     }
 
-    pub fn compile(&self, type_: &Type) -> Result<ssf::types::Type, CompileError> {
+    pub fn compile(&self, type_: &Type) -> Result<eir::types::Type, CompileError> {
         Ok(match type_ {
             Type::Any(_) => self.compile_any().into(),
             Type::Boolean(_) => self.compile_boolean().into(),
-            Type::Function(function) => ssf::types::Function::new(
+            Type::Function(function) => eir::types::Function::new(
                 self.compile(function.argument())?,
                 self.compile(function.result())?,
             )
             .into(),
-            Type::List(list) => self.compile_reference(&types::Reference::new(
-                &self.list_type_configuration.list_type_name,
-                list.source_information().clone(),
-            ))?,
+            Type::List(list) => {
+                // TODO
+                // self.compile_reference(&types::Reference::new(
+                //     &self.list_type_configuration.list_type_name,
+                //     list.source_information().clone(),
+                // ))?;
+
+                eir::types::Reference::new(self.compile_list_type_name(list)).into()
+            }
             Type::None(_) => self.compile_none().into(),
-            Type::Number(_) => self.compile_number().into(),
-            Type::Record(record) => self.compile_record_recursively(record)?,
+            Type::Number(_) => eir::types::Primitive::Number.into(),
+            Type::Record(record) => eir::types::Reference::new(record.name()).into(),
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::String(_) => self.compile_string().into(),
-            Type::Union(union) => self.compile_union(union)?.into(),
+            Type::Union(union) => self.compile_union().into(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
     }
@@ -70,192 +54,56 @@ impl TypeCompiler {
     fn compile_reference(
         &self,
         reference: &types::Reference,
-    ) -> Result<ssf::types::Type, CompileError> {
-        self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
+    ) -> Result<eir::types::Type, CompileError> {
+        Ok(self.compile(&self.reference_type_resolver.resolve_reference(reference)?)?)
     }
 
     pub fn compile_function(
         &self,
         type_: &types::Type,
-    ) -> Result<ssf::types::Function, CompileError> {
+    ) -> Result<eir::types::Function, CompileError> {
         Ok(self.compile(type_)?.into_function().unwrap())
     }
 
     pub fn compile_record(
         &self,
         record: &types::Record,
-    ) -> Result<ssf::types::Algebraic, CompileError> {
-        let other = self.push_record_name(Some(record.name().into()));
-        let elements = record
-            .elements()
-            .iter()
-            .map(|(_, type_)| other.compile(type_))
-            .collect::<Result<Vec<_>, _>>()?;
-        // TODO Unbox small records.
-        let boxed = !elements.is_empty();
-
-        Ok(ssf::types::Algebraic::new(vec![
-            ssf::types::Constructor::new(elements, boxed),
-        ]))
-    }
-
-    fn compile_record_recursively(
-        &self,
-        record: &types::Record,
-    ) -> Result<ssf::types::Type, CompileError> {
-        Ok(
-            if let Some(index) = self
-                .record_names
+    ) -> Result<eir::types::Record, CompileError> {
+        Ok(eir::types::Record::new(
+            record
+                .elements()
                 .iter()
-                .rev()
-                .position(|name| name.as_deref() == Some(record.name()))
-            {
-                ssf::types::Type::Index(index)
-            } else {
-                self.compile_record(record)?.into()
-            },
-        )
-    }
-
-    pub fn compile_union(
-        &self,
-        union: &types::Union,
-    ) -> Result<ssf::types::Algebraic, CompileError> {
-        let other = self.push_record_name(None);
-
-        Ok(ssf::types::Algebraic::with_tags(
-            UNION_PADDING_ENTRIES
-                .iter()
-                .cloned()
-                .map(Ok)
-                .chain(union.types().iter().map(|type_| {
-                    Ok(match type_ {
-                        Type::Boolean(_)
-                        | Type::Function(_)
-                        | Type::List(_)
-                        | Type::None(_)
-                        | Type::Number(_)
-                        | Type::Record(_)
-                        | Type::Reference(_)
-                        | Type::String(_) => other.compile_union_type_member(type_)?,
-                        Type::Any(_) | Type::Union(_) | Type::Unknown(_) | Type::Variable(_) => {
-                            unreachable!()
-                        }
-                    })
-                }))
-                .collect::<Result<_, CompileError>>()?,
+                .map(|(_, type_)| self.compile(type_))
+                .collect::<Result<Vec<_>, _>>()?,
         ))
     }
 
-    // Any types are compiled as union types which subsume all types.
-    pub fn compile_any(&self) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::with_tags(UNION_PADDING_ENTRIES.iter().cloned().collect())
+    pub fn compile_union(&self) -> eir::types::Type {
+        eir::types::Type::Variant
     }
 
-    pub fn compile_union_for_case<'a>(
-        &self,
-        types: impl IntoIterator<Item = &'a Type>,
-    ) -> Result<ssf::types::Algebraic, CompileError> {
-        Ok(ssf::types::Algebraic::with_tags(
-            self.compile_union_type_members(types)?,
-        ))
+    pub fn compile_any(&self) -> eir::types::Type {
+        eir::types::Type::Variant
     }
 
-    fn compile_union_type_members<'a>(
-        &self,
-        types: impl IntoIterator<Item = &'a Type>,
-    ) -> Result<BTreeMap<u64, ssf::types::Constructor>, CompileError> {
-        Ok(UNION_PADDING_ENTRIES
-            .iter()
-            .cloned()
-            .chain(
-                types
-                    .into_iter()
-                    .map(|type_| {
-                        Ok(match type_ {
-                            Type::Boolean(_)
-                            | Type::Function(_)
-                            | Type::List(_)
-                            | Type::None(_)
-                            | Type::Number(_)
-                            | Type::Record(_)
-                            | Type::Reference(_)
-                            | Type::String(_) => vec![self.compile_union_type_member(type_)?]
-                                .into_iter()
-                                .collect(),
-                            Type::Union(union) => self.compile_union_type_members(union.types())?,
-                            Type::Any(_) => Default::default(),
-
-                            Type::Unknown(_) | Type::Variable(_) => unreachable!(),
-                        })
-                    })
-                    .collect::<Result<Vec<BTreeMap<u64, ssf::types::Constructor>>, CompileError>>()?
-                    .into_iter()
-                    .flatten(),
-            )
-            .collect())
+    pub fn compile_boolean(&self) -> eir::types::Primitive {
+        eir::types::Primitive::Boolean
     }
 
-    fn compile_union_type_member(
-        &self,
-        type_: &Type,
-    ) -> Result<(u64, ssf::types::Constructor), CompileError> {
-        Ok((
-            self.union_tag_calculator.calculate(&type_)?,
-            match type_ {
-                Type::String(_) => ssf::types::Constructor::boxed(vec![self.compile(&type_)?]),
-                _ => ssf::types::Constructor::unboxed(vec![self.compile(&type_)?]),
-            },
-        ))
+    pub fn compile_string(&self) -> eir::types::Type {
+        eir::types::Type::String
     }
 
-    pub fn compile_boolean(&self) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::new(vec![
-            ssf::types::Constructor::unboxed(vec![]),
-            ssf::types::Constructor::unboxed(vec![]),
-        ])
+    pub fn compile_none(&self) -> eir::types::Reference {
+        eir::types::Reference::new(NONE_TYPE_NAME)
     }
 
-    pub fn compile_none(&self) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![])])
+    pub fn compile_thunk_argument(&self) -> eir::types::Reference {
+        self.compile_none()
     }
 
-    pub fn compile_thunk_argument(&self) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![])])
-    }
-
-    fn compile_number(&self) -> ssf::types::Primitive {
-        ssf::types::Primitive::Float64
-    }
-
-    pub fn compile_string(&self) -> ssf::types::Algebraic {
-        // TODO Use a real pointer type.
-        ssf::types::Algebraic::new(vec![ssf::types::Constructor::unboxed(vec![
-            ssf::types::Primitive::Integer64.into(), // buffer pointer
-            ssf::types::Primitive::Integer64.into(), // buffer length in bytes
-        ])])
-    }
-
-    pub fn compile_string_buffer(&self, size: usize) -> ssf::types::Algebraic {
-        ssf::types::Algebraic::new(vec![ssf::types::Constructor::boxed(
-            (0..size)
-                .map(|_| ssf::types::Primitive::Integer8.into())
-                .collect(),
-        )])
-    }
-
-    fn push_record_name(&self, name: Option<String>) -> Self {
-        Self {
-            record_names: self
-                .record_names
-                .clone()
-                .into_iter()
-                .chain(vec![name])
-                .collect(),
-            reference_type_resolver: self.reference_type_resolver.clone(),
-            union_tag_calculator: self.union_tag_calculator.clone(),
-            list_type_configuration: self.list_type_configuration.clone(),
-        }
+    pub fn compile_list_type_name(&self, list: &types::List) -> String {
+        todo!()
     }
 }
 
@@ -282,7 +130,7 @@ mod tests {
     fn compile_number_type() {
         assert_eq!(
             create_type_compiler().compile(&types::Number::new(SourceInformation::dummy()).into()),
-            Ok(ssf::types::Primitive::Float64.into())
+            Ok(eir::types::Primitive::Number.into())
         );
     }
 
@@ -297,9 +145,9 @@ mod tests {
                 )
                 .into()
             ),
-            Ok(ssf::types::Function::new(
-                ssf::types::Primitive::Float64,
-                ssf::types::Primitive::Float64
+            Ok(eir::types::Function::new(
+                eir::types::Primitive::Number,
+                eir::types::Primitive::Number
             )
             .into())
         );
@@ -332,8 +180,8 @@ mod tests {
             )
             .compile(&reference_type.into()),
             Ok(
-                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                    vec![ssf::types::Type::Index(0)],
+                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
+                    vec![eir::types::Type::Index(0)],
                     true
                 )])
                 .into()
@@ -383,10 +231,10 @@ mod tests {
             )
             .compile(&reference_type.into()),
             Ok(
-                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
                     vec![
-                        ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                            vec![ssf::types::Type::Index(1)],
+                        eir::types::Algebraic::new(vec![eir::types::Constructor::new(
+                            vec![eir::types::Type::Index(1)],
                             true
                         )])
                         .into()
@@ -450,27 +298,27 @@ mod tests {
             )
             .compile(&reference_type.into()),
             Ok(
-                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
+                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
                     vec![
-                        ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                            vec![ssf::types::Algebraic::with_tags(
+                        eir::types::Algebraic::new(vec![eir::types::Constructor::new(
+                            vec![eir::types::Algebraic::with_tags(
                                 UNION_PADDING_ENTRIES
                                     .clone()
                                     .into_iter()
                                     .chain(vec![
                                         (
                                             5752548472714560345,
-                                            ssf::types::Constructor::unboxed(vec![
-                                                ssf::types::Algebraic::new(vec![
-                                                    ssf::types::Constructor::unboxed(vec![])
+                                            eir::types::Constructor::unboxed(vec![
+                                                eir::types::Algebraic::new(vec![
+                                                    eir::types::Constructor::unboxed(vec![])
                                                 ])
                                                 .into()
                                             ])
                                         ),
                                         (
                                             461893210254723387,
-                                            ssf::types::Constructor::new(
-                                                vec![ssf::types::Type::Index(2)],
+                                            eir::types::Constructor::new(
+                                                vec![eir::types::Type::Index(2)],
                                                 false
                                             )
                                         )
@@ -497,27 +345,27 @@ mod tests {
             )
             .compile(&types::Reference::new("Bar", SourceInformation::dummy()).into()),
             Ok(
-                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(
-                    vec![ssf::types::Algebraic::with_tags(
+                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
+                    vec![eir::types::Algebraic::with_tags(
                         UNION_PADDING_ENTRIES
                             .clone()
                             .into_iter()
                             .chain(vec![
                                 (
                                     5752548472714560345,
-                                    ssf::types::Constructor::unboxed(vec![
-                                        ssf::types::Algebraic::new(vec![
-                                            ssf::types::Constructor::unboxed(vec![])
+                                    eir::types::Constructor::unboxed(vec![
+                                        eir::types::Algebraic::new(vec![
+                                            eir::types::Constructor::unboxed(vec![])
                                         ])
                                         .into()
                                     ])
                                 ),
                                 (
                                     461893210254723387,
-                                    ssf::types::Constructor::new(
-                                        vec![ssf::types::Algebraic::new(vec![
-                                            ssf::types::Constructor::new(
-                                                vec![ssf::types::Type::Index(2)],
+                                    eir::types::Constructor::new(
+                                        vec![eir::types::Algebraic::new(vec![
+                                            eir::types::Constructor::new(
+                                                vec![eir::types::Type::Index(2)],
                                                 true
                                             )
                                         ])
@@ -583,22 +431,22 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(ssf::types::Algebraic::with_tags(
+                Ok(eir::types::Algebraic::with_tags(
                     UNION_PADDING_ENTRIES
                         .clone()
                         .into_iter()
                         .chain(vec![
                             (
                                 461893210254723387,
-                                ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
-                                    vec![ssf::types::Constructor::unboxed(vec![])]
+                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
+                                    vec![eir::types::Constructor::unboxed(vec![])]
                                 )
                                 .into()])
                             ),
                             (
                                 7277881248784541008,
-                                ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
-                                    vec![ssf::types::Constructor::unboxed(vec![])]
+                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
+                                    vec![eir::types::Constructor::unboxed(vec![])]
                                 )
                                 .into()])
                             )
@@ -623,25 +471,25 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(ssf::types::Algebraic::with_tags(
+                Ok(eir::types::Algebraic::with_tags(
                     UNION_PADDING_ENTRIES
                         .clone()
                         .into_iter()
                         .chain(vec![
                             (
                                 4919337809186972848,
-                                ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
+                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
                                     vec![
-                                        ssf::types::Constructor::unboxed(vec![]),
-                                        ssf::types::Constructor::unboxed(vec![])
+                                        eir::types::Constructor::unboxed(vec![]),
+                                        eir::types::Constructor::unboxed(vec![])
                                     ]
                                 )
                                 .into()])
                             ),
                             (
                                 5752548472714560345,
-                                ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
-                                    vec![ssf::types::Constructor::unboxed(vec![])]
+                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
+                                    vec![eir::types::Constructor::unboxed(vec![])]
                                 )
                                 .into()])
                             )
@@ -666,21 +514,21 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(ssf::types::Algebraic::with_tags(
+                Ok(eir::types::Algebraic::with_tags(
                     UNION_PADDING_ENTRIES
                         .clone()
                         .into_iter()
                         .chain(vec![
                             (
                                 17146441699440925146,
-                                ssf::types::Constructor::unboxed(vec![
-                                    ssf::types::Primitive::Float64.into()
+                                eir::types::Constructor::unboxed(vec![
+                                    eir::types::Primitive::Number.into()
                                 ])
                             ),
                             (
                                 5752548472714560345,
-                                ssf::types::Constructor::unboxed(vec![ssf::types::Algebraic::new(
-                                    vec![ssf::types::Constructor::unboxed(vec![])]
+                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
+                                    vec![eir::types::Constructor::unboxed(vec![])]
                                 )
                                 .into()])
                             )
@@ -697,7 +545,7 @@ mod tests {
     fn compile_any_type() {
         assert_eq!(
             create_type_compiler().compile(&types::Any::new(SourceInformation::dummy()).into(),),
-            Ok(ssf::types::Algebraic::with_tags(
+            Ok(eir::types::Algebraic::with_tags(
                 UNION_PADDING_ENTRIES.clone().into_iter().collect()
             )
             .into())
@@ -734,7 +582,7 @@ mod tests {
                 .into(),
             ),
             Ok(
-                ssf::types::Algebraic::new(vec![ssf::types::Constructor::new(vec![], false)])
+                eir::types::Algebraic::new(vec![eir::types::Constructor::new(vec![], false)])
                     .into()
             )
         );

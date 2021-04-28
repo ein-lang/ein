@@ -207,6 +207,23 @@ name = "ein-ffi"
 version = "0.4.0"
 
 [[package]]
+name = "eir"
+version = "0.1.0"
+source = "git+https://github.com/ein-lang/eir?branch=main#e1eaaee36b09651a0bde0ec28b9765832297efee"
+dependencies = [
+ "pretty_assertions",
+]
+
+[[package]]
+name = "eir-fmm"
+version = "0.1.0"
+source = "git+https://github.com/ein-lang/eir?branch=main#e1eaaee36b09651a0bde0ec28b9765832297efee"
+dependencies = [
+ "eir",
+ "fmm",
+]
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -402,6 +419,8 @@ version = "0.1.0"
 dependencies = [
  "combine",
  "derivative",
+ "eir",
+ "eir-fmm",
  "fmm",
  "fmm-llvm",
  "indoc",
@@ -411,8 +430,6 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "ssf",
- "ssf-fmm",
 ]
 
 [[package]]
@@ -775,23 +792,6 @@ name = "smallvec"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
-
-[[package]]
-name = "ssf"
-version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#3eb73e54dccecc77ee4580b56f3485300caf204e"
-dependencies = [
- "pretty_assertions",
-]
-
-[[package]]
-name = "ssf-fmm"
-version = "0.1.0"
-source = "git+https://github.com/raviqqe/ssf?branch=main#3eb73e54dccecc77ee4580b56f3485300caf204e"
-dependencies = [
- "fmm",
- "ssf",
-]
 
 [[package]]
 name = "strsim"
