@@ -20,6 +20,7 @@ mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
 mod type_compiler;
+mod type_definition_compiler;
 mod type_equality_checker;
 mod type_id_calculator;
 mod type_inference;
@@ -51,6 +52,7 @@ use transform::{
 use type_canonicalizer::TypeCanonicalizer;
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
+use type_definition_compiler::TypeDefinitionCompiler;
 use type_equality_checker::TypeEqualityChecker;
 use type_id_calculator::TypeIdCalculator;
 use type_inference::infer_types;
@@ -96,6 +98,11 @@ pub fn compile(
         reference_type_resolver.clone(),
         &module,
     )?;
+    let type_definition_compiler = TypeDefinitionCompiler::new(
+        type_compiler.clone(),
+        reference_type_resolver.clone(),
+        configuration.list_type_configuration.clone(),
+    );
 
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
@@ -150,8 +157,13 @@ pub fn compile(
 
     let fmm_module = fmm::analysis::transform_to_cps(
         &eir_fmm::compile(
-            &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
-                .compile(&module)?,
+            &ModuleCompiler::new(
+                expression_compiler,
+                type_compiler,
+                type_definition_compiler,
+                global_names,
+            )
+            .compile(&module)?,
         )?,
         fmm::types::Record::new(vec![]),
     )

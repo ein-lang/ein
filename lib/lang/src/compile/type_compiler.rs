@@ -4,7 +4,7 @@ use super::type_id_calculator::TypeIdCalculator;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
-const NONE_TYPE_NAME: &str = "ein_None";
+pub const NONE_TYPE_NAME: &str = "ein_None";
 
 pub struct TypeCompiler {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -96,7 +96,7 @@ impl TypeCompiler {
         self.compile_none()
     }
 
-    fn compile_list_type_name(&self, list: &types::List) -> Result<String, CompileError> {
+    pub fn compile_list_type_name(&self, list: &types::List) -> Result<String, CompileError> {
         Ok(format!(
             "List_{}",
             self.type_id_calculator.calculate(list.element())?

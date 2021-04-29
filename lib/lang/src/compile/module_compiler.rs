@@ -1,6 +1,7 @@
 use super::error::CompileError;
 use super::expression_compiler::ExpressionCompiler;
 use super::type_compiler::TypeCompiler;
+use super::type_definition_compiler::TypeDefinitionCompiler;
 use crate::ast::*;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -8,6 +9,7 @@ use std::sync::Arc;
 pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,
     type_compiler: Arc<TypeCompiler>,
+    type_definition_compiler: Arc<TypeDefinitionCompiler>,
     global_names: Arc<HashMap<String, String>>,
 }
 
@@ -15,18 +17,20 @@ impl ModuleCompiler {
     pub fn new(
         expression_compiler: Arc<ExpressionCompiler>,
         type_compiler: Arc<TypeCompiler>,
+        type_definition_compiler: Arc<TypeDefinitionCompiler>,
         global_names: Arc<HashMap<String, String>>,
     ) -> Self {
         Self {
             expression_compiler,
             type_compiler,
+            type_definition_compiler,
             global_names,
         }
     }
 
     pub fn compile(&self, module: &Module) -> Result<eir::ir::Module, CompileError> {
         Ok(eir::ir::Module::new(
-            todo!(),
+            self.type_definition_compiler.compile(module)?,
             module
                 .import_foreigns()
                 .iter()
