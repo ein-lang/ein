@@ -1,7 +1,5 @@
-use super::boolean_compiler::BooleanCompiler;
 use super::error::CompileError;
 use super::last_result_type_calculator::LastResultTypeCalculator;
-use super::none_compiler::NoneCompiler;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::string_type_configuration::StringTypeConfiguration;
 use super::transform::{
@@ -16,8 +14,6 @@ use crate::types::Type;
 use std::sync::Arc;
 
 pub struct ExpressionCompilerSet {
-    pub boolean_compiler: Arc<BooleanCompiler>,
-    pub none_compiler: Arc<NoneCompiler>,
     pub variable_compiler: Arc<VariableCompiler>,
 }
 
@@ -68,11 +64,7 @@ impl ExpressionCompiler {
                 self.compile(application.argument())?,
             )
             .into(),
-            Expression::Boolean(boolean) => self
-                .expression_compiler_set
-                .boolean_compiler
-                .compile(boolean.value())
-                .into(),
+            Expression::Boolean(boolean) => eir::ir::Primitive::Boolean(boolean.value()).into(),
             Expression::Case(case) => self.compile_case(case)?,
             Expression::If(if_) => eir::ir::PrimitiveCase::new(
                 self.compile(if_.condition())?,
@@ -86,7 +78,9 @@ impl ExpressionCompiler {
             Expression::Let(let_) => self.compile_let(let_)?,
             Expression::LetError(let_) => self.compile_let_error(let_)?,
             Expression::LetRecursive(let_) => self.compile_let_recursive(let_)?.into(),
-            Expression::None(_) => self.expression_compiler_set.none_compiler.compile().into(),
+            Expression::None(_) => {
+                eir::ir::Record::new(self.type_compiler.compile_none(), vec![]).into()
+            }
             Expression::List(list) => self.compile(
                 &self
                     .expression_transformer_set
@@ -116,14 +110,12 @@ impl ExpressionCompiler {
                 Operation::Equality(operation) => match operation.operator() {
                     EqualityOperator::Equal => {
                         match self.reference_type_resolver.resolve(operation.type_())? {
-                            Type::Number(_) => self
-                                .expression_compiler_set
-                                .boolean_compiler
-                                .compile_conversion(eir::ir::ComparisonOperation::new(
-                                    Self::compile_equality_operator(operation.operator()),
-                                    self.compile(operation.lhs())?,
-                                    self.compile(operation.rhs())?,
-                                )),
+                            Type::Number(_) => eir::ir::ComparisonOperation::new(
+                                Self::compile_equality_operator(operation.operator()),
+                                self.compile(operation.lhs())?,
+                                self.compile(operation.rhs())?,
+                            )
+                            .into(),
                             Type::String(_) => eir::ir::FunctionApplication::new(
                                 eir::ir::FunctionApplication::new(
                                     eir::ir::Variable::new(
@@ -149,14 +141,12 @@ impl ExpressionCompiler {
                             .transform(operation),
                     )?,
                 },
-                Operation::Order(operation) => self
-                    .expression_compiler_set
-                    .boolean_compiler
-                    .compile_conversion(eir::ir::ComparisonOperation::new(
-                        Self::compile_order_operator(operation.operator()),
-                        self.compile(operation.lhs())?,
-                        self.compile(operation.rhs())?,
-                    )),
+                Operation::Order(operation) => eir::ir::ComparisonOperation::new(
+                    Self::compile_order_operator(operation.operator()),
+                    self.compile(operation.lhs())?,
+                    self.compile(operation.rhs())?,
+                )
+                .into(),
                 Operation::Pipe(operation) => self.compile(
                     &Application::new(
                         operation.rhs().clone(),
@@ -499,11 +489,9 @@ mod tests {
             LastResultTypeCalculator::new(reference_type_resolver.clone());
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
-            union_tag_calculator.clone(),
+            type_id_calculator.clone(),
             LIST_TYPE_CONFIGURATION.clone(),
         );
-        let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
-        let none_compiler = NoneCompiler::new(type_compiler.clone());
         let variable_compiler = VariableCompiler::new(
             type_compiler.clone(),
             reference_type_resolver.clone(),
@@ -551,12 +539,7 @@ mod tests {
 
         (
             ExpressionCompiler::new(
-                ExpressionCompilerSet {
-                    boolean_compiler,
-                    none_compiler,
-                    variable_compiler,
-                }
-                .into(),
+                ExpressionCompilerSet { variable_compiler }.into(),
                 ExpressionTransformerSet {
                     equal_operation_transformer,
                     not_equal_operation_transformer,
@@ -570,12 +553,12 @@ mod tests {
                 .into(),
                 reference_type_resolver,
                 last_result_type_calculator,
-                union_tag_calculator.clone(),
+                type_id_calculator.clone(),
                 type_compiler.clone(),
                 STRING_TYPE_CONFIGURATION.clone(),
             ),
             type_compiler,
-            union_tag_calculator,
+            type_id_calculator,
         )
     }
 
@@ -1068,7 +1051,7 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_boolean() {
-            let (expression_compiler, type_compiler, union_tag_calculator) =
+            let (expression_compiler, type_compiler, type_id_calculator) =
                 create_expression_compiler(&Module::dummy());
 
             let union_type = types::Union::new(
@@ -1096,7 +1079,7 @@ mod tests {
                             .unwrap()
                             .into_algebraic()
                             .unwrap(),
-                        union_tag_calculator
+                        type_id_calculator
                             .calculate(&types::Boolean::new(SourceInformation::dummy()).into())
                             .unwrap()
                     ),
@@ -1112,7 +1095,7 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_record() {
-            let (expression_compiler, type_compiler, union_tag_calculator) =
+            let (expression_compiler, type_compiler, type_id_calculator) =
                 create_expression_compiler(&Module::dummy());
 
             let record_type =
@@ -1142,7 +1125,7 @@ mod tests {
                             .unwrap()
                             .into_algebraic()
                             .unwrap(),
-                        union_tag_calculator.calculate(&record_type.into()).unwrap()
+                        type_id_calculator.calculate(&record_type.into()).unwrap()
                     ),
                     vec![eir::ir::Variable::new("x").into()]
                 )
@@ -1213,7 +1196,7 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_from_non_union_type_to_any_type() {
-            let (expression_compiler, type_compiler, union_tag_calculator) =
+            let (expression_compiler, type_compiler, type_id_calculator) =
                 create_expression_compiler(&Module::dummy());
 
             assert_eq!(
@@ -1242,7 +1225,7 @@ mod tests {
                                     .unwrap()
                                     .into_algebraic()
                                     .unwrap(),
-                                union_tag_calculator
+                                type_id_calculator
                                     .calculate(
                                         &types::Boolean::new(SourceInformation::dummy()).into()
                                     )

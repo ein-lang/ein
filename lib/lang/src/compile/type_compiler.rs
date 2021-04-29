@@ -1,6 +1,6 @@
 use super::error::CompileError;
-use super::list_type_configuration::ListTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
+use super::type_id_calculator::TypeIdCalculator;
 use crate::types::{self, Type};
 use std::sync::Arc;
 
@@ -8,17 +8,17 @@ const NONE_TYPE_NAME: &str = "ein_None";
 
 pub struct TypeCompiler {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    list_type_configuration: Arc<ListTypeConfiguration>,
+    type_id_calculator: Arc<TypeIdCalculator>,
 }
 
 impl TypeCompiler {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
-        list_type_configuration: Arc<ListTypeConfiguration>,
+        type_id_calculator: Arc<TypeIdCalculator>,
     ) -> Arc<Self> {
         Self {
             reference_type_resolver,
-            list_type_configuration,
+            type_id_calculator,
         }
         .into()
     }
@@ -33,20 +33,14 @@ impl TypeCompiler {
             )
             .into(),
             Type::List(list) => {
-                // TODO
-                // self.compile_reference(&types::Reference::new(
-                //     &self.list_type_configuration.list_type_name,
-                //     list.source_information().clone(),
-                // ))?;
-
-                eir::types::Reference::new(self.compile_list_type_name(list)).into()
+                eir::types::Reference::new(self.compile_list_type_name(list)?).into()
             }
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => eir::types::Primitive::Number.into(),
             Type::Record(record) => eir::types::Reference::new(record.name()).into(),
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::String(_) => self.compile_string().into(),
-            Type::Union(union) => self.compile_union().into(),
+            Type::Union(_) => self.compile_union().into(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
     }
@@ -102,8 +96,11 @@ impl TypeCompiler {
         self.compile_none()
     }
 
-    pub fn compile_list_type_name(&self, list: &types::List) -> String {
-        todo!()
+    fn compile_list_type_name(&self, list: &types::List) -> Result<String, CompileError> {
+        Ok(format!(
+            "List_{}",
+            self.type_id_calculator.calculate(list.element())?
+        ))
     }
 }
 
@@ -117,11 +114,11 @@ mod tests {
 
     fn create_type_compiler() -> Arc<TypeCompiler> {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
-        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+        let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
 
         TypeCompiler::new(
             reference_type_resolver,
-            union_tag_calculator,
+            type_id_calculator,
             LIST_TYPE_CONFIGURATION.clone(),
         )
     }
@@ -170,12 +167,12 @@ mod tests {
                 )],
                 vec![],
             ));
-        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+        let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
 
         assert_eq!(
             TypeCompiler::new(
                 reference_type_resolver,
-                union_tag_calculator,
+                type_id_calculator,
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(&reference_type.into()),
@@ -221,12 +218,12 @@ mod tests {
                 ],
                 vec![],
             ));
-        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+        let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
 
         assert_eq!(
             TypeCompiler::new(
                 reference_type_resolver,
-                union_tag_calculator,
+                type_id_calculator,
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(&reference_type.into()),
@@ -293,7 +290,7 @@ mod tests {
         assert_eq!(
             TypeCompiler::new(
                 reference_type_resolver.clone(),
-                UnionTagCalculator::new(reference_type_resolver.clone()),
+                TypeIdCalculator::new(reference_type_resolver.clone()),
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(&reference_type.into()),
@@ -340,7 +337,7 @@ mod tests {
         assert_eq!(
             TypeCompiler::new(
                 reference_type_resolver.clone(),
-                UnionTagCalculator::new(reference_type_resolver),
+                TypeIdCalculator::new(reference_type_resolver),
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(&types::Reference::new("Bar", SourceInformation::dummy()).into()),
@@ -413,12 +410,12 @@ mod tests {
                     ],
                     vec![],
                 ));
-            let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+            let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
 
             assert_eq!(
                 TypeCompiler::new(
                     reference_type_resolver,
-                    union_tag_calculator,
+                    type_id_calculator,
                     LIST_TYPE_CONFIGURATION.clone()
                 )
                 .compile(
@@ -566,12 +563,12 @@ mod tests {
                 )],
                 vec![],
             ));
-        let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+        let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
 
         assert_eq!(
             TypeCompiler::new(
                 reference_type_resolver,
-                union_tag_calculator,
+                type_id_calculator,
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(

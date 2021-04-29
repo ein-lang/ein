@@ -55,10 +55,7 @@ impl VariableCompiler {
         if self.variable_names.contains(variable.name()) {
             eir::ir::FunctionApplication::new(
                 eir::ir::Variable::new(variable.name()),
-                eir::ir::ConstructorApplication::new(
-                    eir::ir::Constructor::new(self.type_compiler.compile_thunk_argument(), 0),
-                    vec![],
-                ),
+                eir::ir::Record::new(self.type_compiler.compile_thunk_argument(), vec![]),
             )
             .into()
         } else {
