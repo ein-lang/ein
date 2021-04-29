@@ -264,7 +264,6 @@ impl ExpressionCompiler {
                     match &from_type {
                         Type::Boolean(_)
                         | Type::Function(_)
-                        | Type::List(_)
                         | Type::None(_)
                         | Type::Number(_)
                         | Type::Record(_)
@@ -273,6 +272,7 @@ impl ExpressionCompiler {
                             argument,
                         )
                         .into(),
+                        Type::List(_) => todo!(),
                         Type::Any(_) | Type::Union(_) => argument,
                         Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => {
                             unreachable!()
@@ -406,7 +406,6 @@ impl ExpressionCompiler {
                 Type::Any(_) => None,
                 Type::Boolean(_)
                 | Type::Function(_)
-                | Type::List(_)
                 | Type::None(_)
                 | Type::Number(_)
                 | Type::Record(_)
@@ -415,6 +414,7 @@ impl ExpressionCompiler {
                     variable_name,
                     self.compile(alternative.expression())?,
                 )]),
+                Type::List(list_type) => todo!(),
                 Type::Union(union_type) => Some(
                     union_type
                         .types()
