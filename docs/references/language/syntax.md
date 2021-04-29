@@ -102,8 +102,8 @@ case xs
 
 ##### Unions and `Any`
 
-- Values of unions and `Any` types can be downcasted using the `case` expression.
-- In each branch, the variable `x` is bound to different types of the branch.
+- Values of union and `Any` types can be downcasted using the `case` expression.
+- The variable (`x` in the code below) is bound as a different type in each branch.
 
 ```
 case x = ...
@@ -140,8 +140,8 @@ in
 
 #### `let`-error expression
 
-- Using `case` expressions for error handling is hard because the expressions get nested every time when you use them.
-- `let`-error expressions put those error handlings in a sequence propagating each errors in variable definitions into values of the expressions.
+- Using `case` expressions for error handling is hard because the expressions often get nested deeply.
+- `let`-error expression flattens those error handlings by propagating errors in variable definitions to a value of the whole expression.
 
 Given `x : Number | Error`,
 
