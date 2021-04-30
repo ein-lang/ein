@@ -37,22 +37,10 @@ impl TypeDefinitionCompiler {
     fn collect_variant_types(&self, module: &Module) -> Result<HashSet<Type>, CompileError> {
         let mut types = HashSet::new();
 
-        module.transform_expressions(&mut |expression| -> Result<Expression, CompileError> {
-            match expression {
-                Expression::TypeCoercion(coercion) => {
-                    if !self.is_variant(coercion.from())? && self.is_variant(coercion.to())? {
-                        types.insert(coercion.from().clone());
-                    }
-                }
-                Expression::Case(case) => {
-                    for alternative in case.alternatives() {
-                        types.insert(alternative.type_().clone());
-                    }
-                }
-                _ => {}
-            };
+        module.transform_types(&mut |type_| -> Result<Type, CompileError> {
+            types.insert(type_.clone());
 
-            Ok(expression.clone())
+            Ok(type_.clone())
         })?;
 
         Ok(types)
@@ -90,10 +78,5 @@ impl TypeDefinitionCompiler {
             | Type::String(_) => vec![],
             Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
-    }
-
-    fn is_variant(&self, type_: &Type) -> Result<bool, CompileError> {
-        Ok(self.reference_type_resolver.is_union(type_)?
-            || self.reference_type_resolver.is_any(type_)?)
     }
 }
