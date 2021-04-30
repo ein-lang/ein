@@ -402,7 +402,7 @@ impl ExpressionCompiler {
         variable_name: &str,
     ) -> Result<Option<Vec<eir::ir::VariantAlternative>>, CompileError> {
         Ok(
-            match self.reference_type_resolver.resolve(alternative.type_())? {
+            match &self.reference_type_resolver.resolve(alternative.type_())? {
                 Type::Any(_) => None,
                 Type::Boolean(_)
                 | Type::Function(_)
@@ -414,7 +414,24 @@ impl ExpressionCompiler {
                     variable_name,
                     self.compile(alternative.expression())?,
                 )]),
-                Type::List(list_type) => todo!(),
+                Type::List(list_type) => {
+                    let list_type = self.type_compiler.compile_list(list_type)?;
+
+                    Some(vec![eir::ir::VariantAlternative::new(
+                        list_type.clone(),
+                        variable_name,
+                        eir::ir::Let::new(
+                            variable_name,
+                            self.type_compiler.compile_any_list(),
+                            eir::ir::RecordElement::new(
+                                list_type.clone(),
+                                0,
+                                eir::ir::Variable::new(variable_name),
+                            ),
+                            self.compile(alternative.expression())?,
+                        ),
+                    )])
+                }
                 Type::Union(union_type) => Some(
                     union_type
                         .types()

@@ -1,5 +1,4 @@
 use super::error::CompileError;
-use super::list_type_configuration::ListTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_compiler::{TypeCompiler, NONE_TYPE_NAME};
 use crate::ast::*;
@@ -10,24 +9,32 @@ use std::sync::Arc;
 pub struct TypeDefinitionCompiler {
     type_compiler: Arc<TypeCompiler>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
-    list_type_configuration: Arc<ListTypeConfiguration>,
 }
 
 impl TypeDefinitionCompiler {
     pub fn new(
         type_compiler: Arc<TypeCompiler>,
         reference_type_resolver: Arc<ReferenceTypeResolver>,
-        list_type_configuration: Arc<ListTypeConfiguration>,
     ) -> Arc<Self> {
         Self {
             type_compiler,
             reference_type_resolver,
-            list_type_configuration,
         }
         .into()
     }
 
     pub fn compile(&self, module: &Module) -> Result<Vec<eir::ir::TypeDefinition>, CompileError> {
+        Ok(self
+            .collect_variant_types(module)?
+            .iter()
+            .map(|type_| self.compile_type_definitions(type_))
+            .collect::<Result<Vec<_>, _>>()?
+            .into_iter()
+            .flatten()
+            .collect())
+    }
+
+    fn collect_variant_types(&self, module: &Module) -> Result<HashSet<Type>, CompileError> {
         let mut types = HashSet::new();
 
         module.transform_expressions(&mut |expression| -> Result<Expression, CompileError> {
@@ -48,13 +55,7 @@ impl TypeDefinitionCompiler {
             Ok(expression.clone())
         })?;
 
-        Ok(types
-            .iter()
-            .map(|type_| self.compile_type_definitions(type_))
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
-            .flatten()
-            .collect())
+        Ok(types)
     }
 
     fn compile_type_definitions(
@@ -63,11 +64,8 @@ impl TypeDefinitionCompiler {
     ) -> Result<Vec<eir::ir::TypeDefinition>, CompileError> {
         Ok(match &self.reference_type_resolver.resolve(type_)? {
             Type::List(list) => vec![eir::ir::TypeDefinition::new(
-                self.type_compiler.compile_list_type_name(list)?,
-                eir::types::Record::new(vec![eir::types::Reference::new(
-                    &self.list_type_configuration.list_type_name,
-                )
-                .into()]),
+                self.type_compiler.compile_list(list)?.name(),
+                eir::types::Record::new(vec![self.type_compiler.compile_any_list().into()]),
             )],
             Type::None(_) => vec![eir::ir::TypeDefinition::new(
                 NONE_TYPE_NAME,

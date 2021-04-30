@@ -1,4 +1,5 @@
 use super::error::CompileError;
+use super::list_type_configuration::ListTypeConfiguration;
 use super::reference_type_resolver::ReferenceTypeResolver;
 use super::type_id_calculator::TypeIdCalculator;
 use crate::types::{self, Type};
@@ -9,16 +10,19 @@ pub const NONE_TYPE_NAME: &str = "ein_None";
 pub struct TypeCompiler {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
     type_id_calculator: Arc<TypeIdCalculator>,
+    list_type_configuration: Arc<ListTypeConfiguration>,
 }
 
 impl TypeCompiler {
     pub fn new(
         reference_type_resolver: Arc<ReferenceTypeResolver>,
         type_id_calculator: Arc<TypeIdCalculator>,
+        list_type_configuration: Arc<ListTypeConfiguration>,
     ) -> Arc<Self> {
         Self {
             reference_type_resolver,
             type_id_calculator,
+            list_type_configuration,
         }
         .into()
     }
@@ -32,9 +36,7 @@ impl TypeCompiler {
                 self.compile(function.result())?,
             )
             .into(),
-            Type::List(list) => {
-                eir::types::Reference::new(self.compile_list_type_name(list)?).into()
-            }
+            Type::List(list) => self.compile_list(list)?.into(),
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => eir::types::Primitive::Number.into(),
             Type::Record(record) => eir::types::Reference::new(record.name()).into(),
@@ -57,6 +59,17 @@ impl TypeCompiler {
         type_: &types::Type,
     ) -> Result<eir::types::Function, CompileError> {
         Ok(self.compile(type_)?.into_function().unwrap())
+    }
+
+    pub fn compile_list(&self, list: &types::List) -> Result<eir::types::Reference, CompileError> {
+        Ok(eir::types::Reference::new(format!(
+            "ein_List_{}",
+            self.type_id_calculator.calculate(list.element())?
+        )))
+    }
+
+    pub fn compile_any_list(&self) -> eir::types::Reference {
+        eir::types::Reference::new(&self.list_type_configuration.list_type_name)
     }
 
     pub fn compile_record(
@@ -94,13 +107,6 @@ impl TypeCompiler {
 
     pub fn compile_thunk_argument(&self) -> eir::types::Reference {
         self.compile_none()
-    }
-
-    pub fn compile_list_type_name(&self, list: &types::List) -> Result<String, CompileError> {
-        Ok(format!(
-            "List_{}",
-            self.type_id_calculator.calculate(list.element())?
-        ))
     }
 }
 

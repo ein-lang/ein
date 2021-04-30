@@ -92,17 +92,18 @@ pub fn compile(
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
     let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
-    let type_compiler = TypeCompiler::new(reference_type_resolver.clone(), type_id_calculator);
+    let type_compiler = TypeCompiler::new(
+        reference_type_resolver.clone(),
+        type_id_calculator,
+        configuration.list_type_configuration.clone(),
+    );
     let variable_compiler = VariableCompiler::new(
         type_compiler.clone(),
         reference_type_resolver.clone(),
         &module,
     )?;
-    let type_definition_compiler = TypeDefinitionCompiler::new(
-        type_compiler.clone(),
-        reference_type_resolver.clone(),
-        configuration.list_type_configuration.clone(),
-    );
+    let type_definition_compiler =
+        TypeDefinitionCompiler::new(type_compiler.clone(), reference_type_resolver.clone());
 
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
