@@ -272,7 +272,14 @@ impl ExpressionCompiler {
                             argument,
                         )
                         .into(),
-                        Type::List(_) => todo!(),
+                        Type::List(list_type) => eir::ir::Variant::new(
+                            self.type_compiler.compile(coercion.from())?,
+                            eir::ir::Record::new(
+                                self.type_compiler.compile_list(list_type)?,
+                                vec![argument],
+                            ),
+                        )
+                        .into(),
                         Type::Any(_) | Type::Union(_) => argument,
                         Type::Reference(_) | Type::Unknown(_) | Type::Variable(_) => {
                             unreachable!()
