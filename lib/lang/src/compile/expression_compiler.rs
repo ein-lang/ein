@@ -69,8 +69,8 @@ impl ExpressionCompiler {
             Expression::If(if_) => eir::ir::PrimitiveCase::new(
                 self.compile(if_.condition())?,
                 vec![
-                    eir::ir::PrimitiveAlternative::new(false, self.compile(if_.else_())?),
                     eir::ir::PrimitiveAlternative::new(true, self.compile(if_.then())?),
+                    eir::ir::PrimitiveAlternative::new(false, self.compile(if_.else_())?),
                 ],
                 None,
             )
