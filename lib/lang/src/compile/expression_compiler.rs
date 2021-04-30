@@ -198,7 +198,7 @@ impl ExpressionCompiler {
                 )
                 .into()
             }
-            Expression::String(string) => eir::ir::EirString::new(string.value().into()).into(),
+            Expression::String(string) => eir::ir::EirString::new(string.value()).into(),
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_list(coercion.from())?
                     && self.reference_type_resolver.is_list(coercion.to())?
@@ -468,13 +468,6 @@ impl ExpressionCompiler {
             ArithmeticOperator::Subtract => eir::ir::ArithmeticOperator::Subtract,
             ArithmeticOperator::Multiply => eir::ir::ArithmeticOperator::Multiply,
             ArithmeticOperator::Divide => eir::ir::ArithmeticOperator::Divide,
-        }
-    }
-
-    fn compile_equality_operator(operator: EqualityOperator) -> eir::ir::ComparisonOperator {
-        match operator {
-            EqualityOperator::Equal => eir::ir::ComparisonOperator::Equal,
-            EqualityOperator::NotEqual => eir::ir::ComparisonOperator::NotEqual,
         }
     }
 
