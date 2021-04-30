@@ -111,7 +111,7 @@ impl ExpressionCompiler {
                     EqualityOperator::Equal => {
                         match self.reference_type_resolver.resolve(operation.type_())? {
                             Type::Number(_) => eir::ir::ComparisonOperation::new(
-                                Self::compile_equality_operator(operation.operator()),
+                                eir::ir::ComparisonOperator::Equal,
                                 self.compile(operation.lhs())?,
                                 self.compile(operation.rhs())?,
                             )
