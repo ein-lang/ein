@@ -64,7 +64,7 @@ impl TypeCompiler {
 
     pub fn compile_list(&self, list: &types::List) -> Result<eir::types::Reference, CompileError> {
         Ok(eir::types::Reference::new(format!(
-            "ein_List_{}",
+            "ein_List_{:x}",
             self.type_id_calculator.calculate(list.element())?
         )))
     }

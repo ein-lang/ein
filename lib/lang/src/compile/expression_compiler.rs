@@ -273,7 +273,7 @@ impl ExpressionCompiler {
                         )
                         .into(),
                         Type::List(list_type) => eir::ir::Variant::new(
-                            self.type_compiler.compile(coercion.from())?,
+                            self.type_compiler.compile_list(list_type)?,
                             eir::ir::Record::new(
                                 self.type_compiler.compile_list(list_type)?,
                                 vec![argument],
