@@ -37,7 +37,7 @@ impl TypeCompiler {
                 self.compile(function.result())?,
             )
             .into(),
-            Type::List(list) => self.compile_list(list)?.into(),
+            Type::List(_) => self.compile_any_list().into(),
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => eir::types::Primitive::Number.into(),
             Type::Record(record) => eir::types::Reference::new(record.name()).into(),
