@@ -1,6 +1,6 @@
 use super::error::CompileError;
 use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_compiler::{TypeCompiler, NONE_TYPE_NAME};
+use super::type_compiler::{TypeCompiler, NONE_TYPE_NAME, THUNK_ARGUMENT_TYPE_NAME};
 use crate::ast::*;
 use crate::types::Type;
 use std::collections::HashSet;
@@ -24,14 +24,20 @@ impl TypeDefinitionCompiler {
     }
 
     pub fn compile(&self, module: &Module) -> Result<Vec<eir::ir::TypeDefinition>, CompileError> {
-        Ok(self
-            .collect_variant_types(module)?
-            .iter()
-            .map(|type_| self.compile_type_definitions(type_))
-            .collect::<Result<Vec<_>, _>>()?
-            .into_iter()
-            .flatten()
-            .collect())
+        Ok(vec![eir::ir::TypeDefinition::new(
+            THUNK_ARGUMENT_TYPE_NAME,
+            eir::types::Record::new(vec![]),
+        )]
+        .into_iter()
+        .chain(
+            self.collect_variant_types(module)?
+                .iter()
+                .map(|type_| self.compile_type_definitions(type_))
+                .collect::<Result<Vec<_>, _>>()?
+                .into_iter()
+                .flatten(),
+        )
+        .collect())
     }
 
     fn collect_variant_types(&self, module: &Module) -> Result<HashSet<Type>, CompileError> {

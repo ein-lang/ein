@@ -6,6 +6,7 @@ use crate::types::{self, Type};
 use std::sync::Arc;
 
 pub const NONE_TYPE_NAME: &str = "ein_None";
+pub const THUNK_ARGUMENT_TYPE_NAME: &str = "ein_thunk_argument";
 
 pub struct TypeCompiler {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -106,7 +107,7 @@ impl TypeCompiler {
     }
 
     pub fn compile_thunk_argument(&self) -> eir::types::Reference {
-        self.compile_none()
+        eir::types::Reference::new(THUNK_ARGUMENT_TYPE_NAME)
     }
 }
 
