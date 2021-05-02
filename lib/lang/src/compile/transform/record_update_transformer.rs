@@ -45,8 +45,6 @@ impl RecordUpdateTransformer {
                                         record_update.type_().clone(),
                                         key,
                                         Variable::new(&name, source_information.clone()),
-                                        "$element",
-                                        Variable::new("$element", source_information.clone()),
                                         source_information.clone(),
                                     )
                                     .into(),
@@ -135,8 +133,6 @@ mod tests {
                                             "record_update_argument_0",
                                             SourceInformation::dummy()
                                         ),
-                                        "$element",
-                                        Variable::new("$element", SourceInformation::dummy()),
                                         SourceInformation::dummy(),
                                     )
                                     .into()

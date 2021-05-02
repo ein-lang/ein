@@ -326,21 +326,6 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 operation.type_().clone(),
                 operation.key(),
                 self.transform_expression(operation.argument(), variables)?,
-                operation.variable(),
-                {
-                    let mut variables = variables.clone();
-
-                    variables.insert(
-                        operation.variable().into(),
-                        self.reference_type_resolver
-                            .resolve_to_record(operation.type_())?
-                            .unwrap()
-                            .elements()[operation.key()]
-                        .clone(),
-                    );
-
-                    self.transform_expression(operation.expression(), &variables)?
-                },
                 operation.source_information().clone(),
             )
             .into(),

@@ -7,8 +7,6 @@ pub struct RecordElementOperation {
     type_: Type,
     key: String,
     argument: Arc<Expression>,
-    variable: String,
-    expression: Arc<Expression>,
     source_information: Arc<SourceInformation>,
 }
 
@@ -17,16 +15,12 @@ impl RecordElementOperation {
         type_: impl Into<Type>,
         key: impl Into<String>,
         argument: impl Into<Expression>,
-        variable: impl Into<String>,
-        expression: impl Into<Expression>,
         source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
             type_: type_.into(),
             key: key.into(),
             argument: Arc::new(argument.into()),
-            variable: variable.into(),
-            expression: Arc::new(expression.into()),
             source_information: source_information.into(),
         }
     }
@@ -43,14 +37,6 @@ impl RecordElementOperation {
         &self.argument
     }
 
-    pub fn variable(&self) -> &str {
-        &self.variable
-    }
-
-    pub fn expression(&self) -> &Expression {
-        &self.expression
-    }
-
     pub fn source_information(&self) -> &Arc<SourceInformation> {
         &self.source_information
     }
@@ -63,8 +49,6 @@ impl RecordElementOperation {
             self.type_.clone(),
             &self.key,
             self.argument.transform_expressions(transform)?,
-            &self.variable,
-            self.expression.transform_expressions(transform)?,
             self.source_information.clone(),
         ))
     }
@@ -77,8 +61,6 @@ impl RecordElementOperation {
             self.type_.transform_types(transform)?,
             &self.key,
             self.argument.transform_types(transform)?,
-            &self.variable,
-            self.expression.transform_types(transform)?,
             self.source_information.clone(),
         ))
     }

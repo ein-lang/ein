@@ -170,35 +170,21 @@ impl ExpressionCompiler {
                     .collect::<Result<_, _>>()?,
             )
             .into(),
-            Expression::RecordElementOperation(operation) => {
-                let reference_type = self
-                    .type_compiler
+            Expression::RecordElementOperation(operation) => eir::ir::RecordElement::new(
+                self.type_compiler
                     .compile(operation.type_())?
                     .into_record()
-                    .unwrap();
-                let record_type = self
-                    .reference_type_resolver
+                    .unwrap(),
+                self.reference_type_resolver
                     .resolve_to_record(operation.type_())?
-                    .unwrap();
-                let (element_index, (_, element_type)) = record_type
+                    .unwrap()
                     .elements()
-                    .iter()
-                    .enumerate()
-                    .find(|(_, (key, _))| key.as_str() == operation.key())
-                    .unwrap();
-
-                eir::ir::Let::new(
-                    operation.variable(),
-                    self.type_compiler.compile(element_type)?,
-                    eir::ir::RecordElement::new(
-                        reference_type,
-                        element_index,
-                        self.compile(operation.argument())?,
-                    ),
-                    self.compile(operation.expression())?,
-                )
-                .into()
-            }
+                    .keys()
+                    .position(|key| key.as_str() == operation.key())
+                    .unwrap(),
+                self.compile(operation.argument())?,
+            )
+            .into(),
             Expression::String(string) => eir::ir::EirString::new(string.value()).into(),
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_list(coercion.from())?

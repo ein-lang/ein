@@ -159,20 +159,12 @@ impl ExpressionTypeExtractor {
                     .clone(),
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
-            Expression::RecordElementOperation(operation) => {
-                let mut variables = variables.clone();
-
-                variables.insert(
-                    operation.variable().into(),
-                    self.reference_type_resolver
-                        .resolve_to_record(operation.type_())?
-                        .unwrap()
-                        .elements()[operation.key()]
-                    .clone(),
-                );
-
-                self.extract(operation.expression(), &variables)?
-            }
+            Expression::RecordElementOperation(operation) => self
+                .reference_type_resolver
+                .resolve_to_record(operation.type_())?
+                .unwrap()
+                .elements()[operation.key()]
+            .clone(),
             Expression::String(string) => {
                 types::EinString::new(string.source_information().clone()).into()
             }
@@ -269,19 +261,12 @@ mod tests {
                         .collect(),
                         SourceInformation::dummy()
                     ),
-                    "bar",
-                    OrderOperation::new(
-                        OrderOperator::LessThan,
-                        Variable::new("bar", SourceInformation::dummy()),
-                        Variable::new("bar", SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
                     SourceInformation::dummy()
                 )
                 .into(),
                 &Default::default(),
             ),
-            Ok(types::Boolean::new(SourceInformation::dummy()).into())
+            Ok(types::Number::new(SourceInformation::dummy()).into())
         );
     }
 

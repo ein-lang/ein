@@ -1568,60 +1568,12 @@ mod tests {
                                 .collect(),
                             SourceInformation::dummy(),
                         ),
-                        "element",
-                        Variable::new("element", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
                     types::None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into()],
-            )));
-        }
-
-        #[test]
-        fn infer_type_of_comparison_operation_in_record_element_operation() {
-            let record_type = types::Record::new(
-                "Foo",
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy(),
-            );
-
-            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![VariableDefinition::new(
-                    "x",
-                    RecordElementOperation::new(
-                        record_type.clone(),
-                        "foo",
-                        RecordConstruction::new(
-                            record_type,
-                            vec![(
-                                "foo".into(),
-                                Number::new(42.0, SourceInformation::dummy()).into()
-                            )]
-                            .into_iter()
-                            .collect(),
-                            SourceInformation::dummy()
-                        ),
-                        "bar",
-                        OrderOperation::new(
-                            OrderOperator::LessThan,
-                            Variable::new("bar", SourceInformation::dummy()),
-                            Variable::new("bar", SourceInformation::dummy()),
-                            SourceInformation::dummy()
-                        ),
-                        SourceInformation::dummy()
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()]
             )));
         }
     }
