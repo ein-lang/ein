@@ -496,14 +496,17 @@ mod tests {
     use super::super::type_canonicalizer::TypeCanonicalizer;
     use super::super::type_comparability_checker::TypeComparabilityChecker;
     use super::super::type_equality_checker::TypeEqualityChecker;
+    use super::super::type_id_calculator::TypeIdCalculator;
     use super::*;
     use crate::debug::SourceInformation;
+    use crate::types;
     use pretty_assertions::assert_eq;
 
     fn create_expression_compiler(module: &Module) -> (Arc<ExpressionCompiler>, Arc<TypeCompiler>) {
         let reference_type_resolver = ReferenceTypeResolver::new(&module);
         let last_result_type_calculator =
             LastResultTypeCalculator::new(reference_type_resolver.clone());
+        let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
             type_id_calculator.clone(),
@@ -570,12 +573,10 @@ mod tests {
                 .into(),
                 reference_type_resolver,
                 last_result_type_calculator,
-                type_id_calculator.clone(),
                 type_compiler.clone(),
                 STRING_TYPE_CONFIGURATION.clone(),
             ),
             type_compiler,
-            type_id_calculator,
         )
     }
 
@@ -585,7 +586,7 @@ mod tests {
 
         #[test]
         fn compile_arithmetic_operation() {
-            let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             assert_eq!(
                 expression_compiler.compile(
@@ -606,8 +607,7 @@ mod tests {
 
         #[test]
         fn compile_number_comparison_operation() {
-            let (expression_compiler, type_compiler, _) =
-                create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             assert_eq!(
                 expression_compiler.compile(
@@ -619,29 +619,10 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::PrimitiveCase::new(
-                    eir::ir::ComparisonOperation::new(
-                        eir::ir::ComparisonOperator::LessThan,
-                        1.0,
-                        2.0
-                    ),
-                    vec![
-                        eir::ir::PrimitiveAlternative::new(
-                            eir::ir::Primitive::Boolean(false),
-                            eir::ir::ConstructorApplication::new(
-                                eir::ir::Constructor::new(type_compiler.compile_boolean(), 0),
-                                vec![],
-                            ),
-                        ),
-                        eir::ir::PrimitiveAlternative::new(
-                            eir::ir::Primitive::Boolean(true),
-                            eir::ir::ConstructorApplication::new(
-                                eir::ir::Constructor::new(type_compiler.compile_boolean(), 1),
-                                vec![],
-                            ),
-                        ),
-                    ],
-                    None,
+                Ok(eir::ir::ComparisonOperation::new(
+                    eir::ir::ComparisonOperator::LessThan,
+                    1.0,
+                    2.0
                 )
                 .into())
             );
@@ -649,7 +630,7 @@ mod tests {
 
         #[test]
         fn compile_pipe_operation() {
-            let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             assert_eq!(
                 expression_compiler.compile(
@@ -667,7 +648,7 @@ mod tests {
 
     #[test]
     fn compile_let() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -695,7 +676,7 @@ mod tests {
 
     #[test]
     fn compile_let_with_multiple_definitions() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -736,7 +717,7 @@ mod tests {
 
     #[test]
     fn compile_let_recursive() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -772,7 +753,7 @@ mod tests {
 
     #[test]
     fn compile_let_recursive_with_recursive_functions() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -815,7 +796,7 @@ mod tests {
 
     #[test]
     fn compile_nested_let_recursive() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -873,7 +854,7 @@ mod tests {
 
     #[test]
     fn compile_let_with_free_variables() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -923,8 +904,7 @@ mod tests {
 
     #[test]
     fn compile_if_expressions() {
-        let (expression_compiler, type_compiler, _) = create_expression_compiler(&Module::dummy());
-        let boolean_type = type_compiler.compile_boolean();
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -936,22 +916,11 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(eir::ir::AlgebraicCase::new(
-                eir::ir::ConstructorApplication::new(
-                    eir::ir::Constructor::new(boolean_type.clone(), 1),
-                    vec![]
-                ),
+            Ok(eir::ir::PrimitiveCase::new(
+                eir::ir::Primitive::Boolean(true),
                 vec![
-                    eir::ir::AlgebraicAlternative::new(
-                        eir::ir::Constructor::new(boolean_type.clone(), 0),
-                        vec![],
-                        2.0
-                    ),
-                    eir::ir::AlgebraicAlternative::new(
-                        eir::ir::Constructor::new(boolean_type, 1),
-                        vec![],
-                        1.0
-                    )
+                    eir::ir::PrimitiveAlternative::new(eir::ir::Primitive::Boolean(true), 1.0),
+                    eir::ir::PrimitiveAlternative::new(eir::ir::Primitive::Boolean(false), 2.0),
                 ],
                 None
             )
@@ -961,22 +930,13 @@ mod tests {
 
     #[test]
     fn compile_case_expression_with_any_type_argument() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         insta::assert_debug_snapshot!(expression_compiler.compile(
             &Case::with_type(
                 types::Any::new(SourceInformation::dummy()),
                 "x",
-                Let::new(
-                    vec![VariableDefinition::new(
-                        "y",
-                        None::new(SourceInformation::dummy()),
-                        types::Any::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )],
-                    Variable::new("y", SourceInformation::dummy()),
-                    SourceInformation::dummy()
-                ),
+                Variable::new("y", SourceInformation::dummy()),
                 vec![
                     Alternative::new(
                         types::None::new(SourceInformation::dummy()),
@@ -995,7 +955,7 @@ mod tests {
 
     #[test]
     fn fail_to_compile_case_expression_with_argument_type_invalid() {
-        let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+        let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
@@ -1029,7 +989,7 @@ mod tests {
             .collect(),
             SourceInformation::dummy(),
         );
-        let (expression_compiler, _, _) =
+        let (expression_compiler, _) =
             create_expression_compiler(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", type_)],
                 vec![],
@@ -1049,16 +1009,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(eir::ir::ConstructorApplication::new(
-                eir::ir::Constructor::new(
-                    eir::types::Algebraic::new(vec![eir::types::Constructor::boxed(vec![
-                        eir::types::Primitive::Number.into()
-                    ])]),
-                    0
-                ),
-                vec![eir::ir::Primitive::Float64(42.0).into()]
-            )
-            .into())
+            Ok(eir::ir::Record::new(eir::types::Reference::new("Foo"), vec![42.0.into()]).into())
         );
     }
 
@@ -1068,8 +1019,7 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_boolean() {
-            let (expression_compiler, type_compiler, type_id_calculator) =
-                create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             let union_type = types::Union::new(
                 vec![
@@ -1089,22 +1039,9 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::ConstructorApplication::new(
-                    eir::ir::Constructor::new(
-                        type_compiler
-                            .compile(&union_type.into())
-                            .unwrap()
-                            .into_algebraic()
-                            .unwrap(),
-                        type_id_calculator
-                            .calculate(&types::Boolean::new(SourceInformation::dummy()).into())
-                            .unwrap()
-                    ),
-                    vec![eir::ir::ConstructorApplication::new(
-                        eir::ir::Constructor::new(type_compiler.compile_boolean(), 1),
-                        vec![]
-                    )
-                    .into()]
+                Ok(eir::ir::Variant::new(
+                    eir::types::Primitive::Boolean,
+                    eir::ir::Primitive::Boolean(true)
                 )
                 .into())
             );
@@ -1112,8 +1049,7 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_record() {
-            let (expression_compiler, type_compiler, type_id_calculator) =
-                create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             let record_type =
                 types::Record::new("Foo", Default::default(), SourceInformation::dummy());
@@ -1135,16 +1071,9 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::ConstructorApplication::new(
-                    eir::ir::Constructor::new(
-                        type_compiler
-                            .compile(&union_type.into())
-                            .unwrap()
-                            .into_algebraic()
-                            .unwrap(),
-                        type_id_calculator.calculate(&record_type.into()).unwrap()
-                    ),
-                    vec![eir::ir::Variable::new("x").into()]
+                Ok(eir::ir::Variant::new(
+                    eir::types::Reference::new("Foo"),
+                    eir::ir::Variable::new("x")
                 )
                 .into())
             );
@@ -1152,8 +1081,7 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_of_union() {
-            let (expression_compiler, type_compiler, _) =
-                create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             let lower_union_type = types::Union::new(
                 vec![
@@ -1181,21 +1109,13 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::BitCast::new(
-                    eir::ir::Variable::new("x"),
-                    type_compiler
-                        .compile(&upper_union_type.into())
-                        .unwrap()
-                        .into_algebraic()
-                        .unwrap(),
-                )
-                .into())
+                Ok(eir::ir::Variable::new("x").into())
             );
         }
 
         #[test]
         fn compile_type_coercion_from_any_type_to_any_type() {
-            let (expression_compiler, _, _) = create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             assert_eq!(
                 expression_compiler.compile(
@@ -1213,8 +1133,7 @@ mod tests {
 
         #[test]
         fn compile_type_coercion_from_non_union_type_to_any_type() {
-            let (expression_compiler, type_compiler, type_id_calculator) =
-                create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             assert_eq!(
                 expression_compiler.compile(
@@ -1226,45 +1145,17 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(
-                    eir::ir::BitCast::new(
-                        eir::ir::ConstructorApplication::new(
-                            eir::ir::Constructor::new(
-                                type_compiler
-                                    .compile(
-                                        &types::Union::new(
-                                            vec![types::Boolean::new(SourceInformation::dummy())
-                                                .into()],
-                                            SourceInformation::dummy()
-                                        )
-                                        .into()
-                                    )
-                                    .unwrap()
-                                    .into_algebraic()
-                                    .unwrap(),
-                                type_id_calculator
-                                    .calculate(
-                                        &types::Boolean::new(SourceInformation::dummy()).into()
-                                    )
-                                    .unwrap()
-                            ),
-                            vec![eir::ir::Variable::new("x").into()]
-                        ),
-                        type_compiler
-                            .compile(&types::Any::new(SourceInformation::dummy()).into())
-                            .unwrap()
-                            .into_algebraic()
-                            .unwrap(),
-                    )
-                    .into()
+                Ok(eir::ir::Variant::new(
+                    eir::types::Primitive::Boolean,
+                    eir::ir::Variable::new("x")
                 )
+                .into())
             );
         }
 
         #[test]
         fn compile_type_coercion_from_union_type_to_any_type() {
-            let (expression_compiler, type_compiler, _) =
-                create_expression_compiler(&Module::dummy());
+            let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
             let union_type = types::Union::new(
                 vec![types::Boolean::new(SourceInformation::dummy()).into()],
@@ -1281,15 +1172,7 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::BitCast::new(
-                    eir::ir::Variable::new("x"),
-                    type_compiler
-                        .compile(&types::Any::new(SourceInformation::dummy()).into())
-                        .unwrap()
-                        .into_algebraic()
-                        .unwrap(),
-                )
-                .into())
+                Ok(eir::ir::Variable::new("x").into())
             );
         }
     }

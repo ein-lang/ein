@@ -158,19 +158,13 @@ mod tests {
     }
 
     #[test]
-    fn compile_recursive_record_type() {
+    fn compile_record_type() {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
         let reference_type_resolver =
             ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
                     "Foo",
-                    types::Record::new(
-                        "Bar",
-                        vec![("foo".into(), reference_type.clone().into())]
-                            .into_iter()
-                            .collect(),
-                        SourceInformation::dummy(),
-                    ),
+                    types::Record::new("Bar", Default::default(), SourceInformation::dummy()),
                 )],
                 vec![],
             ));
@@ -183,376 +177,32 @@ mod tests {
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(&reference_type.into()),
-            Ok(
-                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
-                    vec![eir::types::Type::Index(0)],
-                    true
-                )])
-                .into()
-            )
+            Ok(eir::types::Reference::new("Bar").into())
         );
     }
 
     #[test]
-    fn compile_nested_recursive_record_type() {
-        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
-        let reference_type_resolver =
-            ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
-                vec![
-                    TypeDefinition::new(
-                        "Foo",
-                        types::Record::new(
-                            "Foo",
-                            vec![(
-                                "foo".into(),
-                                types::Reference::new("Bar", SourceInformation::dummy()).into(),
-                            )]
-                            .into_iter()
-                            .collect(),
-                            SourceInformation::dummy(),
-                        ),
-                    ),
-                    TypeDefinition::new(
-                        "Bar",
-                        types::Record::new(
-                            "Bar",
-                            vec![("bar".into(), reference_type.clone().into())]
-                                .into_iter()
-                                .collect(),
-                            SourceInformation::dummy(),
-                        ),
-                    ),
-                ],
-                vec![],
-            ));
-        let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
-
+    fn compile_union_type() {
         assert_eq!(
-            TypeCompiler::new(
-                reference_type_resolver,
-                type_id_calculator,
-                LIST_TYPE_CONFIGURATION.clone()
-            )
-            .compile(&reference_type.into()),
-            Ok(
-                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
+            create_type_compiler().compile(
+                &types::Union::new(
                     vec![
-                        eir::types::Algebraic::new(vec![eir::types::Constructor::new(
-                            vec![eir::types::Type::Index(1)],
-                            true
-                        )])
-                        .into()
+                        types::Number::new(SourceInformation::dummy()).into(),
+                        types::Boolean::new(SourceInformation::dummy()).into(),
                     ],
-                    true
-                )])
-                .into()
-            )
+                    SourceInformation::dummy()
+                )
+                .into(),
+            ),
+            Ok(eir::types::Type::Variant)
         );
-    }
-
-    #[test]
-    fn compile_nested_recursive_record_type_with_union_field() {
-        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
-
-        let reference_type_resolver =
-            ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
-                vec![
-                    TypeDefinition::new(
-                        "Foo",
-                        types::Record::new(
-                            "Foo",
-                            vec![(
-                                "foo".into(),
-                                types::Reference::new("Bar", SourceInformation::dummy()).into(),
-                            )]
-                            .into_iter()
-                            .collect(),
-                            SourceInformation::dummy(),
-                        ),
-                    ),
-                    TypeDefinition::new(
-                        "Bar",
-                        types::Record::new(
-                            "Bar",
-                            vec![(
-                                "bar".into(),
-                                types::Union::new(
-                                    vec![
-                                        reference_type.clone().into(),
-                                        types::None::new(SourceInformation::dummy()).into(),
-                                    ],
-                                    SourceInformation::dummy(),
-                                )
-                                .into(),
-                            )]
-                            .into_iter()
-                            .collect(),
-                            SourceInformation::dummy(),
-                        ),
-                    ),
-                ],
-                vec![],
-            ));
-
-        assert_eq!(
-            TypeCompiler::new(
-                reference_type_resolver.clone(),
-                TypeIdCalculator::new(reference_type_resolver.clone()),
-                LIST_TYPE_CONFIGURATION.clone()
-            )
-            .compile(&reference_type.into()),
-            Ok(
-                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
-                    vec![
-                        eir::types::Algebraic::new(vec![eir::types::Constructor::new(
-                            vec![eir::types::Algebraic::with_tags(
-                                UNION_PADDING_ENTRIES
-                                    .clone()
-                                    .into_iter()
-                                    .chain(vec![
-                                        (
-                                            5752548472714560345,
-                                            eir::types::Constructor::unboxed(vec![
-                                                eir::types::Algebraic::new(vec![
-                                                    eir::types::Constructor::unboxed(vec![])
-                                                ])
-                                                .into()
-                                            ])
-                                        ),
-                                        (
-                                            461893210254723387,
-                                            eir::types::Constructor::new(
-                                                vec![eir::types::Type::Index(2)],
-                                                false
-                                            )
-                                        )
-                                    ])
-                                    .into_iter()
-                                    .collect()
-                            )
-                            .into()],
-                            true
-                        )])
-                        .into()
-                    ],
-                    true
-                )])
-                .into()
-            )
-        );
-
-        assert_eq!(
-            TypeCompiler::new(
-                reference_type_resolver.clone(),
-                TypeIdCalculator::new(reference_type_resolver),
-                LIST_TYPE_CONFIGURATION.clone()
-            )
-            .compile(&types::Reference::new("Bar", SourceInformation::dummy()).into()),
-            Ok(
-                eir::types::Algebraic::new(vec![eir::types::Constructor::new(
-                    vec![eir::types::Algebraic::with_tags(
-                        UNION_PADDING_ENTRIES
-                            .clone()
-                            .into_iter()
-                            .chain(vec![
-                                (
-                                    5752548472714560345,
-                                    eir::types::Constructor::unboxed(vec![
-                                        eir::types::Algebraic::new(vec![
-                                            eir::types::Constructor::unboxed(vec![])
-                                        ])
-                                        .into()
-                                    ])
-                                ),
-                                (
-                                    461893210254723387,
-                                    eir::types::Constructor::new(
-                                        vec![eir::types::Algebraic::new(vec![
-                                            eir::types::Constructor::new(
-                                                vec![eir::types::Type::Index(2)],
-                                                true
-                                            )
-                                        ])
-                                        .into()],
-                                        false
-                                    )
-                                )
-                            ])
-                            .into_iter()
-                            .collect()
-                    )
-                    .into()],
-                    true
-                )])
-                .into()
-            )
-        );
-    }
-
-    mod union {
-        use super::*;
-        use pretty_assertions::assert_eq;
-
-        #[test]
-        fn compile_union_type_of_records() {
-            let reference_type_resolver =
-                ReferenceTypeResolver::new(&Module::from_definitions_and_type_definitions(
-                    vec![
-                        TypeDefinition::new(
-                            "Foo",
-                            types::Record::new(
-                                "Foo",
-                                Default::default(),
-                                SourceInformation::dummy(),
-                            ),
-                        ),
-                        TypeDefinition::new(
-                            "Bar",
-                            types::Record::new(
-                                "Bar",
-                                Default::default(),
-                                SourceInformation::dummy(),
-                            ),
-                        ),
-                    ],
-                    vec![],
-                ));
-            let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
-
-            assert_eq!(
-                TypeCompiler::new(
-                    reference_type_resolver,
-                    type_id_calculator,
-                    LIST_TYPE_CONFIGURATION.clone()
-                )
-                .compile(
-                    &types::Union::new(
-                        vec![
-                            types::Reference::new("Foo", SourceInformation::dummy()).into(),
-                            types::Reference::new("Bar", SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    )
-                    .into(),
-                ),
-                Ok(eir::types::Algebraic::with_tags(
-                    UNION_PADDING_ENTRIES
-                        .clone()
-                        .into_iter()
-                        .chain(vec![
-                            (
-                                461893210254723387,
-                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
-                                    vec![eir::types::Constructor::unboxed(vec![])]
-                                )
-                                .into()])
-                            ),
-                            (
-                                7277881248784541008,
-                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
-                                    vec![eir::types::Constructor::unboxed(vec![])]
-                                )
-                                .into()])
-                            )
-                        ])
-                        .into_iter()
-                        .collect()
-                )
-                .into())
-            );
-        }
-
-        #[test]
-        fn compile_union_type_including_boolean() {
-            assert_eq!(
-                create_type_compiler().compile(
-                    &types::Union::new(
-                        vec![
-                            types::Boolean::new(SourceInformation::dummy()).into(),
-                            types::None::new(SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    )
-                    .into(),
-                ),
-                Ok(eir::types::Algebraic::with_tags(
-                    UNION_PADDING_ENTRIES
-                        .clone()
-                        .into_iter()
-                        .chain(vec![
-                            (
-                                4919337809186972848,
-                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
-                                    vec![
-                                        eir::types::Constructor::unboxed(vec![]),
-                                        eir::types::Constructor::unboxed(vec![])
-                                    ]
-                                )
-                                .into()])
-                            ),
-                            (
-                                5752548472714560345,
-                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
-                                    vec![eir::types::Constructor::unboxed(vec![])]
-                                )
-                                .into()])
-                            )
-                        ])
-                        .into_iter()
-                        .collect()
-                )
-                .into())
-            );
-        }
-
-        #[test]
-        fn compile_union_type_including_number() {
-            assert_eq!(
-                create_type_compiler().compile(
-                    &types::Union::new(
-                        vec![
-                            types::Number::new(SourceInformation::dummy()).into(),
-                            types::None::new(SourceInformation::dummy()).into()
-                        ],
-                        SourceInformation::dummy()
-                    )
-                    .into(),
-                ),
-                Ok(eir::types::Algebraic::with_tags(
-                    UNION_PADDING_ENTRIES
-                        .clone()
-                        .into_iter()
-                        .chain(vec![
-                            (
-                                17146441699440925146,
-                                eir::types::Constructor::unboxed(vec![
-                                    eir::types::Primitive::Number.into()
-                                ])
-                            ),
-                            (
-                                5752548472714560345,
-                                eir::types::Constructor::unboxed(vec![eir::types::Algebraic::new(
-                                    vec![eir::types::Constructor::unboxed(vec![])]
-                                )
-                                .into()])
-                            )
-                        ])
-                        .into_iter()
-                        .collect()
-                )
-                .into())
-            );
-        }
     }
 
     #[test]
     fn compile_any_type() {
         assert_eq!(
             create_type_compiler().compile(&types::Any::new(SourceInformation::dummy()).into(),),
-            Ok(eir::types::Algebraic::with_tags(
-                UNION_PADDING_ENTRIES.clone().into_iter().collect()
-            )
-            .into())
+            Ok(eir::types::Type::Variant)
         );
     }
 
@@ -585,10 +235,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(
-                eir::types::Algebraic::new(vec![eir::types::Constructor::new(vec![], false)])
-                    .into()
-            )
+            Ok(eir::types::Reference::new(&LIST_TYPE_CONFIGURATION.list_type_name).into())
         );
     }
 }
