@@ -2024,21 +2024,19 @@ mod tests {
 
         #[test]
         fn infer_type_of_list_with_spread_element() {
-            let list_type = types::List::new(
-                types::Number::new(SourceInformation::dummy()),
-                SourceInformation::dummy(),
-            );
-
             assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
                 VariableDefinition::new(
                     "x",
                     List::new(
                         vec![ListElement::Multiple(
-                            List::new(vec![], SourceInformation::dummy(),).into()
+                            List::new(vec![], SourceInformation::dummy()).into()
                         )],
                         SourceInformation::dummy(),
                     ),
-                    list_type,
+                    types::List::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
                     SourceInformation::dummy(),
                 )
                 .into()

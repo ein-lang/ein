@@ -1,6 +1,7 @@
 use crate::{debug::SourceInformation, types::Type};
 use std::{collections::BTreeSet, sync::Arc};
 
+#[derive(Debug)]
 pub struct VariableConstraint {
     lower_types: BTreeSet<Type>,
     upper_types: BTreeSet<Type>,

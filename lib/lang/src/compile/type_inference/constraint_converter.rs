@@ -5,6 +5,7 @@ use super::{
 use crate::types::{self, Type};
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct ConstraintConverter {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
