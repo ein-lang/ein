@@ -1,11 +1,12 @@
-use super::error_type_configuration::ErrorTypeConfiguration;
-use super::list_type_configuration::ListTypeConfiguration;
-use super::main_module_configuration::MainModuleConfiguration;
-use super::string_type_configuration::StringTypeConfiguration;
+use super::{
+    error_type_configuration::ErrorTypeConfiguration,
+    list_type_configuration::ListTypeConfiguration,
+    main_module_configuration::MainModuleConfiguration,
+    string_type_configuration::StringTypeConfiguration,
+};
 #[cfg(test)]
 use once_cell::sync::Lazy;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 #[cfg(test)]
 pub static COMPILE_CONFIGURATION: Lazy<Arc<CompileConfiguration>> = Lazy::new(|| {

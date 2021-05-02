@@ -1,16 +1,17 @@
-use super::error::CompileError;
-use super::last_result_type_calculator::LastResultTypeCalculator;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::string_type_configuration::StringTypeConfiguration;
-use super::transform::{
-    BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, ListTypeCoercionTransformer,
-    NotEqualOperationTransformer,
+use super::{
+    error::CompileError,
+    last_result_type_calculator::LastResultTypeCalculator,
+    reference_type_resolver::ReferenceTypeResolver,
+    string_type_configuration::StringTypeConfiguration,
+    transform::{
+        BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
+        LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer,
+        ListTypeCoercionTransformer, NotEqualOperationTransformer,
+    },
+    type_compiler::TypeCompiler,
+    variable_compiler::VariableCompiler,
 };
-use super::type_compiler::TypeCompiler;
-use super::variable_compiler::VariableCompiler;
-use crate::ast::*;
-use crate::types::Type;
+use crate::{ast::*, types::Type};
 use std::sync::Arc;
 
 pub struct ExpressionCompilerSet {
@@ -159,7 +160,7 @@ impl ExpressionCompiler {
             Expression::RecordConstruction(record) => eir::ir::Record::new(
                 self.type_compiler
                     .compile(record.type_())?
-                    .into_reference()
+                    .into_record()
                     .unwrap(),
                 // TODO Fix element order.
                 record
@@ -169,35 +170,21 @@ impl ExpressionCompiler {
                     .collect::<Result<_, _>>()?,
             )
             .into(),
-            Expression::RecordElementOperation(operation) => {
-                let reference_type = self
-                    .type_compiler
+            Expression::RecordElementOperation(operation) => eir::ir::RecordElement::new(
+                self.type_compiler
                     .compile(operation.type_())?
-                    .into_reference()
-                    .unwrap();
-                let record_type = self
-                    .reference_type_resolver
+                    .into_record()
+                    .unwrap(),
+                self.reference_type_resolver
                     .resolve_to_record(operation.type_())?
-                    .unwrap();
-                let (element_index, (_, element_type)) = record_type
+                    .unwrap()
                     .elements()
-                    .iter()
-                    .enumerate()
-                    .find(|(_, (key, _))| key.as_str() == operation.key())
-                    .unwrap();
-
-                eir::ir::Let::new(
-                    operation.variable(),
-                    self.type_compiler.compile(element_type)?,
-                    eir::ir::RecordElement::new(
-                        reference_type,
-                        element_index,
-                        self.compile(operation.argument())?,
-                    ),
-                    self.compile(operation.expression())?,
-                )
-                .into()
-            }
+                    .keys()
+                    .position(|key| key.as_str() == operation.key())
+                    .unwrap(),
+                self.compile(operation.argument())?,
+            )
+            .into(),
             Expression::String(string) => eir::ir::EirString::new(string.value()).into(),
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_list(coercion.from())?
@@ -490,16 +477,18 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
-    use super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
-    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
-    use super::super::string_type_configuration::STRING_TYPE_CONFIGURATION;
-    use super::super::type_canonicalizer::TypeCanonicalizer;
-    use super::super::type_comparability_checker::TypeComparabilityChecker;
-    use super::super::type_equality_checker::TypeEqualityChecker;
-    use super::super::type_id_calculator::TypeIdCalculator;
-    use super::*;
-    use crate::debug::SourceInformation;
-    use crate::types;
+    use super::{
+        super::{
+            error_type_configuration::ERROR_TYPE_CONFIGURATION,
+            list_type_configuration::LIST_TYPE_CONFIGURATION,
+            string_type_configuration::STRING_TYPE_CONFIGURATION,
+            type_canonicalizer::TypeCanonicalizer,
+            type_comparability_checker::TypeComparabilityChecker,
+            type_equality_checker::TypeEqualityChecker, type_id_calculator::TypeIdCalculator,
+        },
+        *,
+    };
+    use crate::{debug::SourceInformation, types};
     use pretty_assertions::assert_eq;
 
     fn create_expression_compiler(module: &Module) -> (Arc<ExpressionCompiler>, Arc<TypeCompiler>) {
@@ -1009,7 +998,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(eir::ir::Record::new(eir::types::Reference::new("Foo"), vec![42.0.into()]).into())
+            Ok(eir::ir::Record::new(eir::types::Record::new("Foo"), vec![42.0.into()]).into())
         );
     }
 
@@ -1072,7 +1061,7 @@ mod tests {
                     .into(),
                 ),
                 Ok(eir::ir::Variant::new(
-                    eir::types::Reference::new("Foo"),
+                    eir::types::Record::new("Foo"),
                     eir::ir::Variable::new("x")
                 )
                 .into())

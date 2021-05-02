@@ -1,13 +1,13 @@
-use super::error::BuildError;
-use super::module_parser::ModuleParser;
-use crate::common::{
-    FilePath, FilePathConfiguration, FilePathResolver, PackageConfiguration, Target,
+use super::{error::BuildError, module_parser::ModuleParser};
+use crate::{
+    common::{FilePath, FilePathConfiguration, FilePathResolver, PackageConfiguration, Target},
+    infra::{FileSystem, Logger},
 };
-use crate::infra::{FileSystem, Logger};
-use std::collections::hash_map::DefaultHasher;
-use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
-use std::sync::Arc;
+use std::{
+    collections::{hash_map::DefaultHasher, HashMap},
+    hash::{Hash, Hasher},
+    sync::Arc,
+};
 
 pub struct ModuleCompiler<'a> {
     module_parser: &'a ModuleParser<'a>,

@@ -1,5 +1,7 @@
-use crate::ast::*;
-use crate::types::{self, Type};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
 
 pub struct RecordElementFunctionTransformer {}
 
@@ -39,11 +41,6 @@ impl RecordElementFunctionTransformer {
                                                 type_definition.type_().clone(),
                                                 key,
                                                 Variable::new("record", source_information.clone()),
-                                                "$element",
-                                                Variable::new(
-                                                    "$element",
-                                                    source_information.clone(),
-                                                ),
                                                 source_information.clone(),
                                             ),
                                             types::Function::new(
@@ -70,8 +67,7 @@ impl RecordElementFunctionTransformer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::*;
-    use crate::types;
+    use crate::{debug::*, types};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -103,8 +99,6 @@ mod tests {
                         record_type.clone(),
                         "foo",
                         Variable::new("record", SourceInformation::dummy()),
-                        "$element",
-                        Variable::new("$element", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
                     types::Function::new(

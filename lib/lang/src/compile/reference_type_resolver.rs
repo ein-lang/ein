@@ -1,8 +1,9 @@
 use super::error::CompileError;
-use crate::ast::*;
-use crate::types::{self, Type};
-use std::collections::HashMap;
-use std::sync::Arc;
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
+use std::{collections::HashMap, sync::Arc};
 
 #[derive(Debug)]
 pub struct ReferenceTypeResolver {
@@ -116,10 +117,7 @@ impl ReferenceTypeResolver {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::SourceInformation;
-    use crate::package::Package;
-    use crate::path::ModulePath;
-    use crate::types;
+    use crate::{debug::SourceInformation, package::Package, path::ModulePath, types};
 
     #[test]
     fn resolve_resolved_type() {

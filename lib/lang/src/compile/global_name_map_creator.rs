@@ -1,6 +1,5 @@
 use crate::ast::*;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 pub struct GlobalNameMapCreator {}
 
@@ -49,10 +48,7 @@ impl GlobalNameMapCreator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::SourceInformation;
-    use crate::package::Package;
-    use crate::path::ModulePath;
-    use crate::types;
+    use crate::{debug::SourceInformation, package::Package, path::ModulePath, types};
     use pretty_assertions::assert_eq;
 
     #[test]

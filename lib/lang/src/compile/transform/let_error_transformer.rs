@@ -1,11 +1,13 @@
-use super::super::error::CompileError;
-use super::super::error_type_configuration::ErrorTypeConfiguration;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_canonicalizer::TypeCanonicalizer;
-use super::super::type_equality_checker::TypeEqualityChecker;
-use crate::ast::*;
-use crate::debug::SourceInformation;
-use crate::types::{self, Type};
+use super::super::{
+    error::CompileError, error_type_configuration::ErrorTypeConfiguration,
+    reference_type_resolver::ReferenceTypeResolver, type_canonicalizer::TypeCanonicalizer,
+    type_equality_checker::TypeEqualityChecker,
+};
+use crate::{
+    ast::*,
+    debug::SourceInformation,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 pub struct LetErrorTransformer {
@@ -109,11 +111,8 @@ impl LetErrorTransformer {
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
-    use super::*;
-    use crate::debug::*;
-    use crate::package::Package;
-    use crate::path::ModulePath;
+    use super::{super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION, *};
+    use crate::{debug::*, package::Package, path::ModulePath};
     use once_cell::sync::Lazy;
 
     static MODULE: Lazy<Module> = Lazy::new(|| {

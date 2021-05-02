@@ -1,12 +1,19 @@
-use super::super::error::CompileError;
-use super::super::error_type_configuration::ErrorTypeConfiguration;
-use super::super::module_environment_creator::ModuleEnvironmentCreator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::subsumption_set::SubsumptionSet;
-use crate::ast::*;
-use crate::types::{self, Type};
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use super::{
+    super::{
+        error::CompileError, error_type_configuration::ErrorTypeConfiguration,
+        module_environment_creator::ModuleEnvironmentCreator,
+        reference_type_resolver::ReferenceTypeResolver,
+    },
+    subsumption_set::SubsumptionSet,
+};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 pub struct ConstraintCollector {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -381,14 +388,7 @@ impl ConstraintCollector {
                 self.solved_subsumption_set
                     .add(argument, operation.type_().clone());
 
-                let mut variables = variables.clone();
-
-                variables.insert(
-                    operation.variable().into(),
-                    record_type.elements()[operation.key()].clone(),
-                );
-
-                self.infer_expression(operation.expression(), &variables)
+                Ok(record_type.elements()[operation.key()].clone())
             }
             Expression::String(string) => {
                 Ok(types::EinString::new(string.source_information().clone()).into())

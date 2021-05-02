@@ -1,8 +1,6 @@
-use super::error::CompileError;
-use super::reference_type_resolver::ReferenceTypeResolver;
+use super::{error::CompileError, reference_type_resolver::ReferenceTypeResolver};
 use crate::types::Type;
-use std::collections::HashSet;
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 pub struct TypeComparabilityChecker {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -69,9 +67,7 @@ impl TypeComparabilityChecker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::*;
-    use crate::debug::*;
-    use crate::types;
+    use crate::{ast::*, debug::*, types};
 
     #[test]
     fn check_comparability_of_record_type() {

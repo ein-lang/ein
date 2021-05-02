@@ -8,12 +8,12 @@ mod variable_constraint;
 mod variable_constraint_set;
 mod variable_substitutor;
 
-use super::compile_configuration::CompileConfiguration;
-use super::error::CompileError;
-use super::module_environment_creator::ModuleEnvironmentCreator;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_canonicalizer::TypeCanonicalizer;
-use super::type_equality_checker::TypeEqualityChecker;
+use super::{
+    compile_configuration::CompileConfiguration, error::CompileError,
+    module_environment_creator::ModuleEnvironmentCreator,
+    reference_type_resolver::ReferenceTypeResolver, type_canonicalizer::TypeCanonicalizer,
+    type_equality_checker::TypeEqualityChecker,
+};
 use crate::ast::*;
 use constraint_collector::ConstraintCollector;
 use constraint_converter::ConstraintConverter;

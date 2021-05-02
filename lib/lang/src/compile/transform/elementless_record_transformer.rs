@@ -1,5 +1,4 @@
-use crate::ast::*;
-use crate::types::Type;
+use crate::{ast::*, types::Type};
 
 pub struct ElementlessRecordTransformer {}
 
@@ -55,8 +54,7 @@ impl ElementlessRecordTransformer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::*;
-    use crate::types;
+    use crate::{debug::*, types};
     use pretty_assertions::assert_eq;
 
     #[test]

@@ -1,9 +1,9 @@
-use super::error::CompileError;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_compiler::TypeCompiler;
+use super::{
+    error::CompileError, reference_type_resolver::ReferenceTypeResolver,
+    type_compiler::TypeCompiler,
+};
 use crate::ast::*;
-use std::collections::HashSet;
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 pub struct VariableCompiler {
     type_compiler: Arc<TypeCompiler>,

@@ -1,6 +1,5 @@
 use super::expression::Expression;
-use crate::debug::*;
-use crate::types::Type;
+use crate::{debug::*, types::Type};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]

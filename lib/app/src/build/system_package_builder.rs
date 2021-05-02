@@ -1,5 +1,7 @@
-use super::cached_external_package_downloader::CachedExternalPackageDownloader;
-use super::package_builder::PackageBuilder;
+use super::{
+    cached_external_package_downloader::CachedExternalPackageDownloader,
+    package_builder::PackageBuilder,
+};
 use crate::common::{ExternalPackage, FilePath};
 
 pub struct SystemPackageBuilder<'a> {

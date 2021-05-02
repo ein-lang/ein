@@ -1,7 +1,8 @@
-use super::expression::Expression;
-use super::variable_definition::VariableDefinition;
-use crate::debug::SourceInformation;
-use crate::types::{self, Type};
+use super::{expression::Expression, variable_definition::VariableDefinition};
+use crate::{
+    debug::SourceInformation,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]

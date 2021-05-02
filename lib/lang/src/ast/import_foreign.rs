@@ -1,6 +1,5 @@
 use super::calling_convention::CallingConvention;
-use crate::debug::SourceInformation;
-use crate::types::Type;
+use crate::{debug::SourceInformation, types::Type};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]

@@ -1,13 +1,17 @@
-use super::super::error::CompileError;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_canonicalizer::TypeCanonicalizer;
-use super::super::type_equality_checker::TypeEqualityChecker;
-use super::constraint_checker::ConstraintChecker;
-use super::constraint_collector::ConstraintCollector;
-use super::constraint_solver::ConstraintSolver;
-use super::variable_substitutor::VariableSubstitutor;
-use crate::ast::*;
-use crate::types::{self, Type};
+use super::{
+    super::{
+        error::CompileError, reference_type_resolver::ReferenceTypeResolver,
+        type_canonicalizer::TypeCanonicalizer, type_equality_checker::TypeEqualityChecker,
+    },
+    constraint_checker::ConstraintChecker,
+    constraint_collector::ConstraintCollector,
+    constraint_solver::ConstraintSolver,
+    variable_substitutor::VariableSubstitutor,
+};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 pub struct TypeInferrer {
@@ -68,15 +72,23 @@ impl TypeInferrer {
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
-    use super::super::super::module_environment_creator::ModuleEnvironmentCreator;
-    use super::super::constraint_collector::ConstraintCollector;
-    use super::super::constraint_converter::ConstraintConverter;
-    use super::*;
-    use crate::debug::*;
-    use crate::package::Package;
-    use crate::path::*;
-    use crate::types::{self, Type};
+    use super::{
+        super::{
+            super::{
+                error_type_configuration::ERROR_TYPE_CONFIGURATION,
+                module_environment_creator::ModuleEnvironmentCreator,
+            },
+            constraint_collector::ConstraintCollector,
+            constraint_converter::ConstraintConverter,
+        },
+        *,
+    };
+    use crate::{
+        debug::*,
+        package::Package,
+        path::*,
+        types::{self, Type},
+    };
     use insta::assert_debug_snapshot;
     use pretty_assertions::assert_eq;
 
@@ -1556,60 +1568,12 @@ mod tests {
                                 .collect(),
                             SourceInformation::dummy(),
                         ),
-                        "element",
-                        Variable::new("element", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
                     types::None::new(SourceInformation::dummy()),
                     SourceInformation::dummy(),
                 )
                 .into()],
-            )));
-        }
-
-        #[test]
-        fn infer_type_of_comparison_operation_in_record_element_operation() {
-            let record_type = types::Record::new(
-                "Foo",
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy(),
-            );
-
-            assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
-                vec![TypeDefinition::new("Foo", record_type.clone())],
-                vec![VariableDefinition::new(
-                    "x",
-                    RecordElementOperation::new(
-                        record_type.clone(),
-                        "foo",
-                        RecordConstruction::new(
-                            record_type,
-                            vec![(
-                                "foo".into(),
-                                Number::new(42.0, SourceInformation::dummy()).into()
-                            )]
-                            .into_iter()
-                            .collect(),
-                            SourceInformation::dummy()
-                        ),
-                        "bar",
-                        OrderOperation::new(
-                            OrderOperator::LessThan,
-                            Variable::new("bar", SourceInformation::dummy()),
-                            Variable::new("bar", SourceInformation::dummy()),
-                            SourceInformation::dummy()
-                        ),
-                        SourceInformation::dummy()
-                    ),
-                    types::Boolean::new(SourceInformation::dummy()),
-                    SourceInformation::dummy(),
-                )
-                .into()]
             )));
         }
     }

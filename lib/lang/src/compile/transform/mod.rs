@@ -14,15 +14,15 @@ mod type_coercion_transformer;
 mod typed_meta_transformer;
 mod utilities;
 
-use super::compile_configuration::CompileConfiguration;
-use super::error::CompileError;
-use super::expression_type_extractor::ExpressionTypeExtractor;
-use super::last_result_type_calculator::LastResultTypeCalculator;
-use super::module_environment_creator::ModuleEnvironmentCreator;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_canonicalizer::TypeCanonicalizer;
-use super::type_comparability_checker::TypeComparabilityChecker;
-use super::type_equality_checker::TypeEqualityChecker;
+use super::{
+    compile_configuration::CompileConfiguration, error::CompileError,
+    expression_type_extractor::ExpressionTypeExtractor,
+    last_result_type_calculator::LastResultTypeCalculator,
+    module_environment_creator::ModuleEnvironmentCreator,
+    reference_type_resolver::ReferenceTypeResolver, type_canonicalizer::TypeCanonicalizer,
+    type_comparability_checker::TypeComparabilityChecker,
+    type_equality_checker::TypeEqualityChecker,
+};
 use crate::ast::*;
 pub use boolean_operation_transformer::BooleanOperationTransformer;
 use elementless_record_transformer::ElementlessRecordTransformer;
@@ -92,10 +92,8 @@ pub fn transform_with_types(
 
 #[cfg(test)]
 mod tests {
-    use super::super::compile_configuration::COMPILE_CONFIGURATION;
-    use super::*;
-    use crate::debug::SourceInformation;
-    use crate::types;
+    use super::{super::compile_configuration::COMPILE_CONFIGURATION, *};
+    use crate::{debug::SourceInformation, types};
     use insta::assert_debug_snapshot;
 
     fn transform_with_types(module: &Module) -> Result<Module, CompileError> {

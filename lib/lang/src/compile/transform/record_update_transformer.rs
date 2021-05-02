@@ -1,6 +1,7 @@
-use super::super::error::CompileError;
-use super::super::name_generator::NameGenerator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::super::{
+    error::CompileError, name_generator::NameGenerator,
+    reference_type_resolver::ReferenceTypeResolver,
+};
 use crate::ast::*;
 
 pub struct RecordUpdateTransformer {
@@ -44,8 +45,6 @@ impl RecordUpdateTransformer {
                                         record_update.type_().clone(),
                                         key,
                                         Variable::new(&name, source_information.clone()),
-                                        "$element",
-                                        Variable::new("$element", source_information.clone()),
                                         source_information.clone(),
                                     )
                                     .into(),
@@ -68,8 +67,7 @@ impl RecordUpdateTransformer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::*;
-    use crate::types;
+    use crate::{debug::*, types};
     use pretty_assertions::assert_eq;
 
     #[test]
@@ -135,8 +133,6 @@ mod tests {
                                             "record_update_argument_0",
                                             SourceInformation::dummy()
                                         ),
-                                        "$element",
-                                        Variable::new("$element", SourceInformation::dummy()),
                                         SourceInformation::dummy(),
                                     )
                                     .into()

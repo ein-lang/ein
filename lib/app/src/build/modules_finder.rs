@@ -1,5 +1,7 @@
-use crate::common::{FilePath, FilePathConfiguration};
-use crate::infra::FileSystem;
+use crate::{
+    common::{FilePath, FilePathConfiguration},
+    infra::FileSystem,
+};
 
 pub struct ModulesFinder<'a> {
     file_system: &'a dyn FileSystem,

@@ -23,15 +23,15 @@ Ok(
                         ),
                         alternatives: [
                             VariantAlternative {
-                                type_: Reference(
-                                    Reference {
+                                type_: Record(
+                                    Record {
                                         name: "ein_None",
                                     },
                                 ),
                                 name: "x",
                                 expression: Record(
                                     Record {
-                                        type_: Reference {
+                                        type_: Record {
                                             name: "ein_None",
                                         },
                                         elements: [],
@@ -42,7 +42,7 @@ Ok(
                         default_alternative: Some(
                             Record(
                                 Record {
-                                    type_: Reference {
+                                    type_: Record {
                                         name: "ein_None",
                                     },
                                     elements: [],

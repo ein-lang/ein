@@ -1,9 +1,12 @@
-use super::json_external_package_configuration::JsonExternalPackageConfiguration;
 use super::{
     json_application_build_configuration::JsonApplicationBuildConfiguration,
+    json_external_package_configuration::JsonExternalPackageConfiguration,
     json_system_package_configuration::JsonSystemPackageConfiguration,
 };
-use crate::{common::ApplicationTarget, common::BuildConfiguration, ExternalPackage, Target};
+use crate::{
+    common::{ApplicationTarget, BuildConfiguration},
+    ExternalPackage, Target,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 

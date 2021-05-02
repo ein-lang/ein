@@ -1,13 +1,17 @@
-use super::super::error::CompileError;
-use super::super::list_type_configuration::ListTypeConfiguration;
-use super::super::name_generator::NameGenerator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_comparability_checker::TypeComparabilityChecker;
-use super::super::type_equality_checker::TypeEqualityChecker;
-use super::utilities;
-use crate::ast::*;
-use crate::debug::SourceInformation;
-use crate::types::{self, Type};
+use super::{
+    super::{
+        error::CompileError, list_type_configuration::ListTypeConfiguration,
+        name_generator::NameGenerator, reference_type_resolver::ReferenceTypeResolver,
+        type_comparability_checker::TypeComparabilityChecker,
+        type_equality_checker::TypeEqualityChecker,
+    },
+    utilities,
+};
+use crate::{
+    ast::*,
+    debug::SourceInformation,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 pub struct EqualOperationTransformer {

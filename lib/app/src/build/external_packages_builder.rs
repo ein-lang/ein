@@ -1,9 +1,9 @@
-use super::error::BuildError;
-use super::package_builder::PackageBuilder;
-use super::utilities::convert_module_interface_vec_to_map;
+use super::{
+    error::BuildError, package_builder::PackageBuilder,
+    utilities::convert_module_interface_vec_to_map,
+};
 use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
-use petgraph::algo::toposort;
-use petgraph::graph::Graph;
+use petgraph::{algo::toposort, graph::Graph};
 use std::collections::HashMap;
 
 type ExternalModuleInterfaces =

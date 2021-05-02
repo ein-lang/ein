@@ -1,8 +1,11 @@
-use super::super::error::CompileError;
-use super::super::type_comparability_checker::TypeComparabilityChecker;
-use super::utilities;
-use crate::ast::*;
-use crate::types::{self, Type};
+use super::{
+    super::{error::CompileError, type_comparability_checker::TypeComparabilityChecker},
+    utilities,
+};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 pub struct RecordEqualFunctionTransformer {
@@ -60,16 +63,12 @@ impl RecordEqualFunctionTransformer {
                         record_type.clone(),
                         key,
                         Variable::new("lhs", source_information.clone()),
-                        "$element",
-                        Variable::new("$element", source_information.clone()),
                         source_information.clone(),
                     ),
                     RecordElementOperation::new(
                         record_type.clone(),
                         key,
                         Variable::new("rhs", source_information.clone()),
-                        "$element",
-                        Variable::new("$element", source_information.clone()),
                         source_information.clone(),
                     ),
                     source_information.clone(),

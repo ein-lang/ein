@@ -1,8 +1,6 @@
 use super::error::CompileError;
-use crate::ast::*;
-use crate::debug::SourceInformation;
-use std::collections::HashMap;
-use std::sync::Arc;
+use crate::{ast::*, debug::SourceInformation};
+use std::{collections::HashMap, sync::Arc};
 
 pub struct GlobalNameValidator {}
 
@@ -43,8 +41,7 @@ impl GlobalNameValidator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::path::ModulePath;
-    use crate::types;
+    use crate::{path::ModulePath, types};
 
     #[test]
     fn validate_duplicate_names() {

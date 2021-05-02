@@ -1,12 +1,12 @@
-use super::error::BuildError;
-use super::module_compiler::ModuleCompiler;
-use super::module_parser::ModuleParser;
-use super::modules_finder::ModulesFinder;
-use crate::common::PackageConfiguration;
-use crate::common::{FilePath, FilePathResolver};
-use crate::infra::FileSystem;
-use petgraph::algo::toposort;
-use petgraph::graph::Graph;
+use super::{
+    error::BuildError, module_compiler::ModuleCompiler, module_parser::ModuleParser,
+    modules_finder::ModulesFinder,
+};
+use crate::{
+    common::{FilePath, FilePathResolver, PackageConfiguration},
+    infra::FileSystem,
+};
+use petgraph::{algo::toposort, graph::Graph};
 use std::collections::HashMap;
 
 pub struct ModulesBuilder<'a> {

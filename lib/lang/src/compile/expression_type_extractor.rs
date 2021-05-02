@@ -1,11 +1,12 @@
-use super::error::CompileError;
-use super::error_type_configuration::ErrorTypeConfiguration;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_canonicalizer::TypeCanonicalizer;
-use crate::ast::*;
-use crate::types::{self, Type};
-use std::collections::HashMap;
-use std::sync::Arc;
+use super::{
+    error::CompileError, error_type_configuration::ErrorTypeConfiguration,
+    reference_type_resolver::ReferenceTypeResolver, type_canonicalizer::TypeCanonicalizer,
+};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
+use std::{collections::HashMap, sync::Arc};
 
 pub struct ExpressionTypeExtractor {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -158,20 +159,12 @@ impl ExpressionTypeExtractor {
                     .clone(),
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
-            Expression::RecordElementOperation(operation) => {
-                let mut variables = variables.clone();
-
-                variables.insert(
-                    operation.variable().into(),
-                    self.reference_type_resolver
-                        .resolve_to_record(operation.type_())?
-                        .unwrap()
-                        .elements()[operation.key()]
-                    .clone(),
-                );
-
-                self.extract(operation.expression(), &variables)?
-            }
+            Expression::RecordElementOperation(operation) => self
+                .reference_type_resolver
+                .resolve_to_record(operation.type_())?
+                .unwrap()
+                .elements()[operation.key()]
+            .clone(),
             Expression::String(string) => {
                 types::EinString::new(string.source_information().clone()).into()
             }
@@ -184,13 +177,15 @@ impl ExpressionTypeExtractor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
-    use super::super::reference_type_resolver::ReferenceTypeResolver;
-    use super::super::type_equality_checker::TypeEqualityChecker;
-    use super::*;
-    use crate::debug::SourceInformation;
-    use crate::package::Package;
-    use crate::path::ModulePath;
+    use super::{
+        super::{
+            error_type_configuration::ERROR_TYPE_CONFIGURATION,
+            reference_type_resolver::ReferenceTypeResolver,
+            type_equality_checker::TypeEqualityChecker,
+        },
+        *,
+    };
+    use crate::{debug::SourceInformation, package::Package, path::ModulePath};
 
     fn create_expression_type_extractor(module: &Module) -> Arc<ExpressionTypeExtractor> {
         let reference_type_resolver = ReferenceTypeResolver::new(module);
@@ -266,19 +261,12 @@ mod tests {
                         .collect(),
                         SourceInformation::dummy()
                     ),
-                    "bar",
-                    OrderOperation::new(
-                        OrderOperator::LessThan,
-                        Variable::new("bar", SourceInformation::dummy()),
-                        Variable::new("bar", SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    ),
                     SourceInformation::dummy()
                 )
                 .into(),
                 &Default::default(),
             ),
-            Ok(types::Boolean::new(SourceInformation::dummy()).into())
+            Ok(types::Number::new(SourceInformation::dummy()).into())
         );
     }
 

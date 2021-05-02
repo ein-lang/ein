@@ -1,8 +1,11 @@
-use super::super::error::CompileError;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_equality_checker::TypeEqualityChecker;
-use super::subsumption_set::SubsumptionSet;
-use super::variable_substitutor::VariableSubstitutor;
+use super::{
+    super::{
+        error::CompileError, reference_type_resolver::ReferenceTypeResolver,
+        type_equality_checker::TypeEqualityChecker,
+    },
+    subsumption_set::SubsumptionSet,
+    variable_substitutor::VariableSubstitutor,
+};
 use crate::types::Type;
 use std::sync::Arc;
 

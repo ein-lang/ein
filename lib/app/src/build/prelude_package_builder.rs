@@ -1,7 +1,10 @@
-use super::package_builder::PackageBuilder;
-use super::package_configuration_reader::PackageConfigurationReader;
-use crate::common::{FilePath, StaticFilePathManager};
-use crate::infra::PreludePackageDownloader;
+use super::{
+    package_builder::PackageBuilder, package_configuration_reader::PackageConfigurationReader,
+};
+use crate::{
+    common::{FilePath, StaticFilePathManager},
+    infra::PreludePackageDownloader,
+};
 
 pub struct PreludePackageBuilder<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,

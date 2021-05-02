@@ -48,11 +48,13 @@ impl ModuleInterfaceCompiler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::{Export, Number, VariableDefinition};
-    use crate::debug::SourceInformation;
-    use crate::package::Package;
-    use crate::path::ModulePath;
-    use crate::types;
+    use crate::{
+        ast::{Export, Number, VariableDefinition},
+        debug::SourceInformation,
+        package::Package,
+        path::ModulePath,
+        types,
+    };
     use pretty_assertions::assert_eq;
 
     #[test]

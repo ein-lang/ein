@@ -1,7 +1,5 @@
-use super::error::CompileError;
-use super::main_module_configuration::MainModuleConfiguration;
-use crate::ast::*;
-use crate::types;
+use super::{error::CompileError, main_module_configuration::MainModuleConfiguration};
+use crate::{ast::*, types};
 use std::sync::Arc;
 
 pub struct MainFunctionDefinitionTransformer {

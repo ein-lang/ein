@@ -210,7 +210,7 @@ version = "0.4.0"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#1fb1e44dc1aba5e4f8902d348afa404008ba8f02"
+source = "git+https://github.com/ein-lang/eir?branch=main#ce67f6e2e242187bb255dac5e6639d1bef61802d"
 dependencies = [
  "pretty_assertions",
 ]
@@ -218,7 +218,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#1fb1e44dc1aba5e4f8902d348afa404008ba8f02"
+source = "git+https://github.com/ein-lang/eir?branch=main#ce67f6e2e242187bb255dac5e6639d1bef61802d"
 dependencies = [
  "eir",
  "fmm",
@@ -245,7 +245,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#0aafb31b861f4bceccfea23fe69e2cf80a19e22d"
+source = "git+https://github.com/raviqqe/fmm?branch=main#434bba87ecfa0b3e0bd84123f47d4aa2ae79d920"
 dependencies = [
  "once_cell",
  "petgraph",
@@ -254,7 +254,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#0aafb31b861f4bceccfea23fe69e2cf80a19e22d"
+source = "git+https://github.com/raviqqe/fmm?branch=main#434bba87ecfa0b3e0bd84123f47d4aa2ae79d920"
 dependencies = [
  "fmm",
  "inkwell",
@@ -688,9 +688,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.5.2"
+version = "1.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1efb2352a0f4d4b128f734b5c44c79ff80117351138733f12f982fe3e2b13343"
+checksum = "ce5f1ceb7f74abbce32601642fcf8e8508a8a8991e0621c7d750295b9095702b"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -699,9 +699,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.24"
+version = "0.6.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00efb87459ba4f6fb2169d20f68565555688e1250ee6825cdf6254f8b48fafb2"
+checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 
 [[package]]
 name = "rustc-demangle"

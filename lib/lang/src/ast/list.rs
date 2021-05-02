@@ -1,7 +1,8 @@
-use super::expression::Expression;
-use super::list_element::ListElement;
-use crate::debug::SourceInformation;
-use crate::types::{self, Type};
+use super::{expression::Expression, list_element::ListElement};
+use crate::{
+    debug::SourceInformation,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]

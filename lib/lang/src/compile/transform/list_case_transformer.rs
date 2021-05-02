@@ -1,9 +1,8 @@
-use super::super::error::CompileError;
-use super::super::list_type_configuration::ListTypeConfiguration;
-use super::super::name_generator::NameGenerator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use crate::ast::*;
-use crate::types;
+use super::super::{
+    error::CompileError, list_type_configuration::ListTypeConfiguration,
+    name_generator::NameGenerator, reference_type_resolver::ReferenceTypeResolver,
+};
+use crate::{ast::*, types};
 use std::sync::Arc;
 
 pub struct ListCaseTransformer {
@@ -113,8 +112,7 @@ impl ListCaseTransformer {
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
-    use super::*;
+    use super::{super::super::list_type_configuration::LIST_TYPE_CONFIGURATION, *};
     use crate::debug::*;
 
     fn create_list_case_transformer() -> Arc<ListCaseTransformer> {
