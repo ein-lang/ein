@@ -1,4 +1,3 @@
-mod boolean_compiler;
 mod compile_configuration;
 mod error;
 mod error_type_configuration;
@@ -15,20 +14,19 @@ mod module_compiler;
 mod module_environment_creator;
 mod module_interface_compiler;
 mod name_generator;
-mod none_compiler;
 mod reference_type_resolver;
 mod string_type_configuration;
 mod transform;
 mod type_canonicalizer;
 mod type_comparability_checker;
 mod type_compiler;
+mod type_definition_compiler;
 mod type_equality_checker;
+mod type_id_calculator;
 mod type_inference;
-mod union_tag_calculator;
 mod variable_compiler;
 
 use crate::ast::*;
-use boolean_compiler::BooleanCompiler;
 pub use compile_configuration::CompileConfiguration;
 use error::CompileError;
 pub use error_type_configuration::ErrorTypeConfiguration;
@@ -42,7 +40,6 @@ use main_function_definition_transformer::MainFunctionDefinitionTransformer;
 pub use main_module_configuration::MainModuleConfiguration;
 use module_compiler::ModuleCompiler;
 use module_interface_compiler::ModuleInterfaceCompiler;
-use none_compiler::NoneCompiler;
 use reference_type_resolver::ReferenceTypeResolver;
 use std::sync::Arc;
 pub use string_type_configuration::StringTypeConfiguration;
@@ -55,9 +52,10 @@ use transform::{
 use type_canonicalizer::TypeCanonicalizer;
 use type_comparability_checker::TypeComparabilityChecker;
 use type_compiler::TypeCompiler;
+use type_definition_compiler::TypeDefinitionCompiler;
 use type_equality_checker::TypeEqualityChecker;
+use type_id_calculator::TypeIdCalculator;
 use type_inference::infer_types;
-use union_tag_calculator::UnionTagCalculator;
 use variable_compiler::VariableCompiler;
 
 pub fn compile(
@@ -93,19 +91,19 @@ pub fn compile(
     );
     let last_result_type_calculator =
         LastResultTypeCalculator::new(reference_type_resolver.clone());
-    let union_tag_calculator = UnionTagCalculator::new(reference_type_resolver.clone());
+    let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
     let type_compiler = TypeCompiler::new(
         reference_type_resolver.clone(),
-        union_tag_calculator.clone(),
+        type_id_calculator,
         configuration.list_type_configuration.clone(),
     );
-    let boolean_compiler = BooleanCompiler::new(type_compiler.clone());
-    let none_compiler = NoneCompiler::new(type_compiler.clone());
     let variable_compiler = VariableCompiler::new(
         type_compiler.clone(),
         reference_type_resolver.clone(),
         &module,
     )?;
+    let type_definition_compiler =
+        TypeDefinitionCompiler::new(type_compiler.clone(), reference_type_resolver.clone());
 
     let equal_operation_transformer = EqualOperationTransformer::new(
         reference_type_resolver.clone(),
@@ -140,12 +138,7 @@ pub fn compile(
     );
 
     let expression_compiler = ExpressionCompiler::new(
-        ExpressionCompilerSet {
-            boolean_compiler,
-            none_compiler,
-            variable_compiler,
-        }
-        .into(),
+        ExpressionCompilerSet { variable_compiler }.into(),
         ExpressionTransformerSet {
             equal_operation_transformer,
             not_equal_operation_transformer,
@@ -159,15 +152,19 @@ pub fn compile(
         .into(),
         reference_type_resolver,
         last_result_type_calculator,
-        union_tag_calculator,
         type_compiler.clone(),
         configuration.string_type_configuration.clone(),
     );
 
     let fmm_module = fmm::analysis::transform_to_cps(
-        &ssf_fmm::compile(
-            &ModuleCompiler::new(expression_compiler, type_compiler, global_names)
-                .compile(&module)?,
+        &eir_fmm::compile(
+            &ModuleCompiler::new(
+                expression_compiler,
+                type_compiler,
+                type_definition_compiler,
+                global_names,
+            )
+            .compile(&module)?,
         )?,
         fmm::types::Record::new(vec![]),
     )

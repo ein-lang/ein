@@ -5,11 +5,11 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
-pub struct UnionTagCalculator {
+pub struct TypeIdCalculator {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
-impl UnionTagCalculator {
+impl TypeIdCalculator {
     pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Arc<Self> {
         Self {
             reference_type_resolver,
@@ -18,16 +18,12 @@ impl UnionTagCalculator {
     }
 
     pub fn calculate(&self, type_: &Type) -> Result<u64, CompileError> {
-        Ok(self.convert_type_id_to_tag(&self.calculate_type_id(&type_)?))
-    }
-
-    fn convert_type_id_to_tag(&self, type_id: &str) -> u64 {
         // TODO Use safer Hasher.
         let mut hasher = DefaultHasher::new();
 
-        type_id.hash(&mut hasher);
+        self.calculate_type_id(&type_)?.hash(&mut hasher);
 
-        hasher.finish()
+        Ok(hasher.finish())
     }
 
     fn calculate_type_id(&self, type_: &Type) -> Result<String, CompileError> {
@@ -68,14 +64,13 @@ mod tests {
     #[test]
     fn calculate_none_list_type_id() {
         assert_eq!(
-            UnionTagCalculator::new(ReferenceTypeResolver::new(&Module::dummy()))
-                .calculate_type_id(
-                    &types::List::new(
-                        types::None::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )
-                    .into()
-                ),
+            TypeIdCalculator::new(ReferenceTypeResolver::new(&Module::dummy())).calculate_type_id(
+                &types::List::new(
+                    types::None::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            ),
             Ok("[None]".into())
         );
     }
@@ -83,14 +78,13 @@ mod tests {
     #[test]
     fn calculate_any_list_type_id() {
         assert_eq!(
-            UnionTagCalculator::new(ReferenceTypeResolver::new(&Module::dummy()))
-                .calculate_type_id(
-                    &types::List::new(
-                        types::Any::new(SourceInformation::dummy()),
-                        SourceInformation::dummy()
-                    )
-                    .into()
-                ),
+            TypeIdCalculator::new(ReferenceTypeResolver::new(&Module::dummy())).calculate_type_id(
+                &types::List::new(
+                    types::Any::new(SourceInformation::dummy()),
+                    SourceInformation::dummy()
+                )
+                .into()
+            ),
             Ok("[Any]".into())
         );
     }
@@ -98,20 +92,19 @@ mod tests {
     #[test]
     fn calculate_union_list_type_id() {
         assert_eq!(
-            UnionTagCalculator::new(ReferenceTypeResolver::new(&Module::dummy()))
-                .calculate_type_id(
-                    &types::List::new(
-                        types::Union::new(
-                            vec![
-                                types::Number::new(SourceInformation::dummy()).into(),
-                                types::None::new(SourceInformation::dummy()).into(),
-                            ],
-                            SourceInformation::dummy()
-                        ),
+            TypeIdCalculator::new(ReferenceTypeResolver::new(&Module::dummy())).calculate_type_id(
+                &types::List::new(
+                    types::Union::new(
+                        vec![
+                            types::Number::new(SourceInformation::dummy()).into(),
+                            types::None::new(SourceInformation::dummy()).into(),
+                        ],
                         SourceInformation::dummy()
-                    )
-                    .into()
-                ),
+                    ),
+                    SourceInformation::dummy()
+                )
+                .into()
+            ),
             Ok("[(None|Number)]".into())
         );
     }

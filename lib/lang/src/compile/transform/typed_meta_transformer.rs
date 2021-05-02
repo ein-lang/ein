@@ -185,8 +185,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 let mut definitions = vec![];
 
                 for variable_definition in let_.definitions() {
-                    // TODO Fix this hack.
-                    // Combine TypedMetaTransformer and TypeCoercionTransformer?
+                    // TODO Combine TypedMetaTransformer and TypeCoercionTransformer?
                     definitions.push(VariableDefinition::new(
                         variable_definition.name(),
                         self.transform_expression(variable_definition.body(), &variables)?,

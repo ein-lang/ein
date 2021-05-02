@@ -1,265 +1,51 @@
 ---
 source: lib/lang/src/compile/expression_compiler.rs
-expression: "expression_compiler.compile(&Case::with_type(types::Any::new(SourceInformation::dummy()),\n                                             \"x\",\n                                             Let::new(vec![VariableDefinition\n                                                           ::\n                                                           new(\"y\", None ::\n                                                               new(SourceInformation\n                                                                   ::\n                                                                   dummy()),\n                                                               types :: Any ::\n                                                               new(SourceInformation\n                                                                   ::\n                                                                   dummy()),\n                                                               SourceInformation\n                                                               :: dummy()) .\n                                                           into()],\n                                                      Variable::new(\"y\",\n                                                                    SourceInformation::dummy()),\n                                                      SourceInformation::dummy()),\n                                             vec![Alternative ::\n                                                  new(types :: None ::\n                                                      new(SourceInformation ::\n                                                          dummy()), None ::\n                                                      new(SourceInformation ::\n                                                          dummy())),\n                                                  Alternative ::\n                                                  new(types :: Any ::\n                                                      new(SourceInformation ::\n                                                          dummy()), None ::\n                                                      new(SourceInformation ::\n                                                          dummy()))],\n                                             SourceInformation::dummy()).into())"
+expression: "expression_compiler.compile(&Case::with_type(types::Any::new(SourceInformation::dummy()),\n                                             \"x\",\n                                             Variable::new(\"y\",\n                                                           SourceInformation::dummy()),\n                                             vec![Alternative ::\n                                                  new(types :: None ::\n                                                      new(SourceInformation ::\n                                                          dummy()), None ::\n                                                      new(SourceInformation ::\n                                                          dummy())),\n                                                  Alternative ::\n                                                  new(types :: Any ::\n                                                      new(SourceInformation ::\n                                                          dummy()), None ::\n                                                      new(SourceInformation ::\n                                                          dummy()))],\n                                             SourceInformation::dummy()).into())"
+
 ---
 Ok(
     Let(
         Let {
             name: "x",
-            type_: Algebraic(
-                Algebraic {
-                    constructors: {
-                        0: Constructor {
-                            elements: [
-                                Primitive(
-                                    Integer64,
-                                ),
-                            ],
-                            boxed: false,
-                        },
-                        1: Constructor {
-                            elements: [
-                                Primitive(
-                                    Integer64,
-                                ),
-                            ],
-                            boxed: false,
-                        },
-                    },
-                },
-            ),
-            bound_expression: Let(
-                Let {
+            type_: Variant,
+            bound_expression: Variable(
+                Variable {
                     name: "y",
-                    type_: Algebraic(
-                        Algebraic {
-                            constructors: {
-                                0: Constructor {
-                                    elements: [
-                                        Primitive(
-                                            Integer64,
-                                        ),
-                                    ],
-                                    boxed: false,
-                                },
-                                1: Constructor {
-                                    elements: [
-                                        Primitive(
-                                            Integer64,
-                                        ),
-                                    ],
-                                    boxed: false,
-                                },
-                            },
-                        },
-                    ),
-                    bound_expression: ConstructorApplication(
-                        ConstructorApplication {
-                            constructor: Constructor {
-                                type_: Algebraic {
-                                    constructors: {
-                                        0: Constructor {
-                                            elements: [],
-                                            boxed: false,
-                                        },
-                                    },
-                                },
-                                unfolded_type: Algebraic {
-                                    constructors: {
-                                        0: Constructor {
-                                            elements: [],
-                                            boxed: false,
-                                        },
-                                    },
-                                },
-                                tag: 0,
-                            },
-                            arguments: [],
-                        },
-                    ),
-                    expression: Variable(
-                        Variable {
-                            name: "y",
-                        },
-                    ),
                 },
             ),
             expression: Case(
-                Algebraic(
-                    AlgebraicCase {
-                        argument: BitCast(
-                            BitCast {
-                                expression: Variable(
-                                    Variable {
-                                        name: "x",
-                                    },
-                                ),
-                                type_: Algebraic(
-                                    Algebraic {
-                                        constructors: {
-                                            0: Constructor {
-                                                elements: [
-                                                    Primitive(
-                                                        Integer64,
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                            1: Constructor {
-                                                elements: [
-                                                    Primitive(
-                                                        Integer64,
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                            5752548472714560345: Constructor {
-                                                elements: [
-                                                    Algebraic(
-                                                        Algebraic {
-                                                            constructors: {
-                                                                0: Constructor {
-                                                                    elements: [],
-                                                                    boxed: false,
-                                                                },
-                                                            },
-                                                        },
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                        },
-                                    },
-                                ),
+                Variant(
+                    VariantCase {
+                        argument: Variable(
+                            Variable {
+                                name: "x",
                             },
                         ),
                         alternatives: [
-                            AlgebraicAlternative {
-                                constructor: Constructor {
-                                    type_: Algebraic {
-                                        constructors: {
-                                            0: Constructor {
-                                                elements: [
-                                                    Primitive(
-                                                        Integer64,
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                            1: Constructor {
-                                                elements: [
-                                                    Primitive(
-                                                        Integer64,
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                            5752548472714560345: Constructor {
-                                                elements: [
-                                                    Algebraic(
-                                                        Algebraic {
-                                                            constructors: {
-                                                                0: Constructor {
-                                                                    elements: [],
-                                                                    boxed: false,
-                                                                },
-                                                            },
-                                                        },
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                        },
+                            VariantAlternative {
+                                type_: Reference(
+                                    Reference {
+                                        name: "ein_None",
                                     },
-                                    unfolded_type: Algebraic {
-                                        constructors: {
-                                            0: Constructor {
-                                                elements: [
-                                                    Primitive(
-                                                        Integer64,
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                            1: Constructor {
-                                                elements: [
-                                                    Primitive(
-                                                        Integer64,
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
-                                            5752548472714560345: Constructor {
-                                                elements: [
-                                                    Algebraic(
-                                                        Algebraic {
-                                                            constructors: {
-                                                                0: Constructor {
-                                                                    elements: [],
-                                                                    boxed: false,
-                                                                },
-                                                            },
-                                                        },
-                                                    ),
-                                                ],
-                                                boxed: false,
-                                            },
+                                ),
+                                name: "x",
+                                expression: Record(
+                                    Record {
+                                        type_: Reference {
+                                            name: "ein_None",
                                         },
-                                    },
-                                    tag: 5752548472714560345,
-                                },
-                                element_names: [
-                                    "x",
-                                ],
-                                expression: ConstructorApplication(
-                                    ConstructorApplication {
-                                        constructor: Constructor {
-                                            type_: Algebraic {
-                                                constructors: {
-                                                    0: Constructor {
-                                                        elements: [],
-                                                        boxed: false,
-                                                    },
-                                                },
-                                            },
-                                            unfolded_type: Algebraic {
-                                                constructors: {
-                                                    0: Constructor {
-                                                        elements: [],
-                                                        boxed: false,
-                                                    },
-                                                },
-                                            },
-                                            tag: 0,
-                                        },
-                                        arguments: [],
+                                        elements: [],
                                     },
                                 ),
                             },
                         ],
                         default_alternative: Some(
-                            ConstructorApplication(
-                                ConstructorApplication {
-                                    constructor: Constructor {
-                                        type_: Algebraic {
-                                            constructors: {
-                                                0: Constructor {
-                                                    elements: [],
-                                                    boxed: false,
-                                                },
-                                            },
-                                        },
-                                        unfolded_type: Algebraic {
-                                            constructors: {
-                                                0: Constructor {
-                                                    elements: [],
-                                                    boxed: false,
-                                                },
-                                            },
-                                        },
-                                        tag: 0,
+                            Record(
+                                Record {
+                                    type_: Reference {
+                                        name: "ein_None",
                                     },
-                                    arguments: [],
+                                    elements: [],
                                 },
                             ),
                         ),
