@@ -159,7 +159,7 @@ impl ExpressionCompiler {
             Expression::RecordConstruction(record) => eir::ir::Record::new(
                 self.type_compiler
                     .compile(record.type_())?
-                    .into_reference()
+                    .into_record()
                     .unwrap(),
                 // TODO Fix element order.
                 record
@@ -173,7 +173,7 @@ impl ExpressionCompiler {
                 let reference_type = self
                     .type_compiler
                     .compile(operation.type_())?
-                    .into_reference()
+                    .into_record()
                     .unwrap();
                 let record_type = self
                     .reference_type_resolver
@@ -1009,7 +1009,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(eir::ir::Record::new(eir::types::Reference::new("Foo"), vec![42.0.into()]).into())
+            Ok(eir::ir::Record::new(eir::types::Record::new("Foo"), vec![42.0.into()]).into())
         );
     }
 
@@ -1072,7 +1072,7 @@ mod tests {
                     .into(),
                 ),
                 Ok(eir::ir::Variant::new(
-                    eir::types::Reference::new("Foo"),
+                    eir::types::Record::new("Foo"),
                     eir::ir::Variable::new("x")
                 )
                 .into())

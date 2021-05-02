@@ -40,7 +40,7 @@ impl TypeCompiler {
             Type::List(_) => self.compile_any_list().into(),
             Type::None(_) => self.compile_none().into(),
             Type::Number(_) => eir::types::Primitive::Number.into(),
-            Type::Record(record) => eir::types::Reference::new(record.name()).into(),
+            Type::Record(record) => eir::types::Record::new(record.name()).into(),
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::String(_) => self.compile_string(),
             Type::Union(_) => self.compile_union(),
@@ -62,22 +62,22 @@ impl TypeCompiler {
         Ok(self.compile(type_)?.into_function().unwrap())
     }
 
-    pub fn compile_list(&self, list: &types::List) -> Result<eir::types::Reference, CompileError> {
-        Ok(eir::types::Reference::new(format!(
+    pub fn compile_list(&self, list: &types::List) -> Result<eir::types::Record, CompileError> {
+        Ok(eir::types::Record::new(format!(
             "ein_List_{:x}",
             self.type_id_calculator.calculate(list.element())?
         )))
     }
 
-    pub fn compile_any_list(&self) -> eir::types::Reference {
-        eir::types::Reference::new(&self.list_type_configuration.list_type_name)
+    pub fn compile_any_list(&self) -> eir::types::Record {
+        eir::types::Record::new(&self.list_type_configuration.list_type_name)
     }
 
     pub fn compile_record(
         &self,
         record: &types::Record,
-    ) -> Result<eir::types::Record, CompileError> {
-        Ok(eir::types::Record::new(
+    ) -> Result<eir::types::RecordBody, CompileError> {
+        Ok(eir::types::RecordBody::new(
             record
                 .elements()
                 .iter()
@@ -102,12 +102,12 @@ impl TypeCompiler {
         eir::types::Type::String
     }
 
-    pub fn compile_none(&self) -> eir::types::Reference {
-        eir::types::Reference::new(NONE_TYPE_NAME)
+    pub fn compile_none(&self) -> eir::types::Record {
+        eir::types::Record::new(NONE_TYPE_NAME)
     }
 
-    pub fn compile_thunk_argument(&self) -> eir::types::Reference {
-        eir::types::Reference::new(THUNK_ARGUMENT_TYPE_NAME)
+    pub fn compile_thunk_argument(&self) -> eir::types::Record {
+        eir::types::Record::new(THUNK_ARGUMENT_TYPE_NAME)
     }
 }
 
@@ -177,7 +177,7 @@ mod tests {
                 LIST_TYPE_CONFIGURATION.clone()
             )
             .compile(&reference_type.into()),
-            Ok(eir::types::Reference::new("Bar").into())
+            Ok(eir::types::Record::new("Bar").into())
         );
     }
 
@@ -235,7 +235,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(eir::types::Reference::new(&LIST_TYPE_CONFIGURATION.list_type_name).into())
+            Ok(eir::types::Record::new(&LIST_TYPE_CONFIGURATION.list_type_name).into())
         );
     }
 }

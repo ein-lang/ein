@@ -25,8 +25,8 @@ impl TypeDefinitionCompiler {
 
     pub fn compile(&self, module: &Module) -> Result<Vec<eir::ir::TypeDefinition>, CompileError> {
         Ok(vec![
-            eir::ir::TypeDefinition::new(THUNK_ARGUMENT_TYPE_NAME, eir::types::Record::new(vec![])),
-            eir::ir::TypeDefinition::new(NONE_TYPE_NAME, eir::types::Record::new(vec![])),
+            eir::ir::TypeDefinition::new(THUNK_ARGUMENT_TYPE_NAME, eir::types::RecordBody::new(vec![])),
+            eir::ir::TypeDefinition::new(NONE_TYPE_NAME, eir::types::RecordBody::new(vec![])),
         ]
         .into_iter()
         .chain(
@@ -63,7 +63,7 @@ impl TypeDefinitionCompiler {
         Ok(match &self.reference_type_resolver.resolve(type_)? {
             Type::List(list) => vec![eir::ir::TypeDefinition::new(
                 self.type_compiler.compile_list(list)?.name(),
-                eir::types::Record::new(vec![self.type_compiler.compile_any_list().into()]),
+                eir::types::RecordBody::new(vec![self.type_compiler.compile_any_list().into()]),
             )],
             Type::Record(record) => vec![eir::ir::TypeDefinition::new(
                 record.name(),
