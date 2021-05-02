@@ -1,6 +1,9 @@
-use super::file_path::FilePath;
-use super::file_path_configuration::{
-    FilePathConfiguration, EXTERNAL_PACKAGES_DIRECTORY, OBJECT_DIRECTORY, PRELUDE_PACKAGE_DIRECTORY,
+use super::{
+    file_path::FilePath,
+    file_path_configuration::{
+        FilePathConfiguration, EXTERNAL_PACKAGES_DIRECTORY, OBJECT_DIRECTORY,
+        PRELUDE_PACKAGE_DIRECTORY,
+    },
 };
 
 pub struct StaticFilePathManager {

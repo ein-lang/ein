@@ -1,5 +1,4 @@
-use crate::path::ModulePath;
-use crate::types::Type;
+use crate::{path::ModulePath, types::Type};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 

@@ -1,5 +1,7 @@
-use super::external_unresolved_module_path::ExternalUnresolvedModulePath;
-use super::internal_unresolved_module_path::InternalUnresolvedModulePath;
+use super::{
+    external_unresolved_module_path::ExternalUnresolvedModulePath,
+    internal_unresolved_module_path::InternalUnresolvedModulePath,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]

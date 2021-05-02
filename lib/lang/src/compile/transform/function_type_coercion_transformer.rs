@@ -1,10 +1,8 @@
-use super::super::error::CompileError;
-use super::super::name_generator::NameGenerator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_equality_checker::TypeEqualityChecker;
-use crate::ast::*;
-use crate::debug::SourceInformation;
-use crate::types::Type;
+use super::super::{
+    error::CompileError, name_generator::NameGenerator,
+    reference_type_resolver::ReferenceTypeResolver, type_equality_checker::TypeEqualityChecker,
+};
+use crate::{ast::*, debug::SourceInformation, types::Type};
 use std::sync::Arc;
 
 pub struct FunctionTypeCoercionTransformer {
@@ -146,8 +144,7 @@ impl FunctionTypeCoercionTransformer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::SourceInformation;
-    use crate::types;
+    use crate::{debug::SourceInformation, types};
     use pretty_assertions::assert_eq;
 
     fn create_function_type_coercion_transformer() -> Arc<FunctionTypeCoercionTransformer> {

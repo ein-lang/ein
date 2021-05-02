@@ -1,5 +1,4 @@
-use super::error::CompileError;
-use super::reference_type_resolver::ReferenceTypeResolver;
+use super::{error::CompileError, reference_type_resolver::ReferenceTypeResolver};
 use crate::types::Type;
 use std::sync::Arc;
 

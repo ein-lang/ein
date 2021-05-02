@@ -1,5 +1,4 @@
-use std::error::Error;
-use std::fmt::Display;
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq)]
 pub struct ParseError {

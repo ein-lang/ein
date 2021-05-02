@@ -1,8 +1,7 @@
 use super::Type;
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
-use std::sync::Arc;
+use std::{collections::BTreeSet, sync::Arc};
 
 // Do not construct union types during compilation.
 // They are allowed to be constructed only on parsing and at the end of type inference to keep them canonical.

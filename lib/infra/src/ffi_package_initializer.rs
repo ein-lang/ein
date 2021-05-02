@@ -1,5 +1,4 @@
-use super::command_runner::CommandRunner;
-use super::file_path_converter::FilePathConverter;
+use super::{command_runner::CommandRunner, file_path_converter::FilePathConverter};
 
 const FFI_INITIALIZATION_SCRIPT: &str = "ein-ffi.sh";
 

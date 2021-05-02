@@ -1,5 +1,4 @@
-use super::error::CompileError;
-use super::reference_type_resolver::ReferenceTypeResolver;
+use super::{error::CompileError, reference_type_resolver::ReferenceTypeResolver};
 use crate::types::Type;
 use std::sync::Arc;
 
@@ -33,9 +32,7 @@ impl LastResultTypeCalculator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::*;
-    use crate::debug::*;
-    use crate::types;
+    use crate::{ast::*, debug::*, types};
 
     fn create_last_result_type_calculator() -> Arc<LastResultTypeCalculator> {
         LastResultTypeCalculator::new(ReferenceTypeResolver::new(&Module::dummy()))

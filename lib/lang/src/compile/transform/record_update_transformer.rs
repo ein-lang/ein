@@ -1,6 +1,7 @@
-use super::super::error::CompileError;
-use super::super::name_generator::NameGenerator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
+use super::super::{
+    error::CompileError, name_generator::NameGenerator,
+    reference_type_resolver::ReferenceTypeResolver,
+};
 use crate::ast::*;
 
 pub struct RecordUpdateTransformer {
@@ -68,8 +69,7 @@ impl RecordUpdateTransformer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::*;
-    use crate::types;
+    use crate::{debug::*, types};
     use pretty_assertions::assert_eq;
 
     #[test]

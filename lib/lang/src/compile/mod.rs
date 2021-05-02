@@ -189,11 +189,8 @@ pub fn compile(
 
 #[cfg(test)]
 mod tests {
-    use super::compile_configuration::COMPILE_CONFIGURATION;
-    use super::*;
-    use crate::debug::*;
-    use crate::path::ModulePath;
-    use crate::types;
+    use super::{compile_configuration::COMPILE_CONFIGURATION, *};
+    use crate::{debug::*, path::ModulePath, types};
 
     #[test]
     fn compile_constant_initialized_with_operation() {

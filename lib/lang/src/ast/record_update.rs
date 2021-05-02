@@ -1,8 +1,6 @@
 use super::expression::Expression;
-use crate::debug::SourceInformation;
-use crate::types::Type;
-use std::collections::BTreeMap;
-use std::sync::Arc;
+use crate::{debug::SourceInformation, types::Type};
+use std::{collections::BTreeMap, sync::Arc};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct RecordUpdate {

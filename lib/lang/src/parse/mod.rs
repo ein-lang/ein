@@ -19,10 +19,7 @@ pub fn parse(source_content: &str, source_name: &str) -> Result<ast::UnresolvedM
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::*;
-    use crate::debug::SourceInformation;
-    use crate::path::*;
-    use crate::types;
+    use crate::{ast::*, debug::SourceInformation, path::*, types};
     use indoc::indoc;
 
     #[test]

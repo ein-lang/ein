@@ -1,7 +1,5 @@
-use crate::ast::*;
-use crate::types::Type;
-use std::collections::HashMap;
-use std::sync::Arc;
+use crate::{ast::*, types::Type};
+use std::{collections::HashMap, sync::Arc};
 
 pub struct ModuleEnvironmentCreator {}
 

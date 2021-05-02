@@ -1,6 +1,8 @@
 use super::package_configuration_reader::PackageConfigurationReader;
-use crate::common::{ExternalPackage, FilePathResolver, PackageConfiguration};
-use crate::infra::{ExternalPackageDownloader, FileSystem, Logger};
+use crate::{
+    common::{ExternalPackage, FilePathResolver, PackageConfiguration},
+    infra::{ExternalPackageDownloader, FileSystem, Logger},
+};
 
 pub struct CachedExternalPackageDownloader<'a> {
     package_configuration_reader: &'a PackageConfigurationReader<'a>,

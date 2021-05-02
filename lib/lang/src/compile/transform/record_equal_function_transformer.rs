@@ -1,8 +1,11 @@
-use super::super::error::CompileError;
-use super::super::type_comparability_checker::TypeComparabilityChecker;
-use super::utilities;
-use crate::ast::*;
-use crate::types::{self, Type};
+use super::{
+    super::{error::CompileError, type_comparability_checker::TypeComparabilityChecker},
+    utilities,
+};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 pub struct RecordEqualFunctionTransformer {

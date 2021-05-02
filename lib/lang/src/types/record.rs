@@ -2,8 +2,7 @@ use super::Type;
 use crate::debug::SourceInformation;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc};
 
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -62,8 +61,7 @@ impl Record {
 
 #[cfg(test)]
 mod tests {
-    use super::super::*;
-    use super::*;
+    use super::{super::*, *};
 
     #[test]
     fn equal() {

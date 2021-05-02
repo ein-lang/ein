@@ -1,11 +1,11 @@
-use super::super::error::CompileError;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::constraint_converter::ConstraintConverter;
-use super::subsumption_set::SubsumptionSet;
-use super::variable_constraint_set::VariableConstraintSet;
+use super::{
+    super::{error::CompileError, reference_type_resolver::ReferenceTypeResolver},
+    constraint_converter::ConstraintConverter,
+    subsumption_set::SubsumptionSet,
+    variable_constraint_set::VariableConstraintSet,
+};
 use crate::types::Type;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 pub struct ConstraintSolver {
     constraint_converter: Arc<ConstraintConverter>,

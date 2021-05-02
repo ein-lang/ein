@@ -1,6 +1,4 @@
-use std::fmt::Display;
-use std::ops::Deref;
-use std::str::FromStr;
+use std::{fmt::Display, ops::Deref, str::FromStr};
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct FilePath {

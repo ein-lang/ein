@@ -1,5 +1,7 @@
-use crate::ast::*;
-use crate::types::{self, Type};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
 
 pub struct RecordElementFunctionTransformer {}
 
@@ -70,8 +72,7 @@ impl RecordElementFunctionTransformer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::*;
-    use crate::types;
+    use crate::{debug::*, types};
     use pretty_assertions::assert_eq;
 
     #[test]

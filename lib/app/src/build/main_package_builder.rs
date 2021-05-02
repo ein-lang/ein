@@ -1,14 +1,15 @@
-use super::error::BuildError;
-use super::external_packages_builder::ExternalPackagesBuilder;
-use super::external_packages_downloader::ExternalPackagesDownloader;
-use super::package_builder::PackageBuilder;
-use super::package_configuration_reader::PackageConfigurationReader;
-use super::prelude_package_builder::PreludePackageBuilder;
-use super::system_package_builder::SystemPackageBuilder;
-use super::system_package_configuration::SystemPackageConfiguration;
-use super::utilities::convert_module_interface_vec_to_map;
-use crate::common::{ApplicationTarget, FilePath, PackageConfiguration, Target};
-use crate::infra::{ApplicationLinker, Logger};
+use super::{
+    error::BuildError, external_packages_builder::ExternalPackagesBuilder,
+    external_packages_downloader::ExternalPackagesDownloader, package_builder::PackageBuilder,
+    package_configuration_reader::PackageConfigurationReader,
+    prelude_package_builder::PreludePackageBuilder, system_package_builder::SystemPackageBuilder,
+    system_package_configuration::SystemPackageConfiguration,
+    utilities::convert_module_interface_vec_to_map,
+};
+use crate::{
+    common::{ApplicationTarget, FilePath, PackageConfiguration, Target},
+    infra::{ApplicationLinker, Logger},
+};
 use std::collections::HashMap;
 
 pub struct MainPackageBuilder<'a> {

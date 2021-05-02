@@ -1,7 +1,8 @@
-use crate::ast::*;
-use crate::types::{self, Type};
-use std::collections::HashMap;
-use std::sync::Arc;
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
+use std::{collections::HashMap, sync::Arc};
 
 pub struct GlobalNameRenamer {
     names: Arc<HashMap<String, String>>,
@@ -347,10 +348,7 @@ impl GlobalNameRenamer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::debug::*;
-    use crate::package::Package;
-    use crate::path::*;
-    use crate::types;
+    use crate::{debug::*, package::Package, path::*, types};
     use pretty_assertions::assert_eq;
 
     #[test]

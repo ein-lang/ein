@@ -1,9 +1,10 @@
-use super::error::CompileError;
-use super::reference_type_resolver::ReferenceTypeResolver;
+use super::{error::CompileError, reference_type_resolver::ReferenceTypeResolver};
 use crate::types::Type;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
-use std::sync::Arc;
+use std::{
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
+    sync::Arc,
+};
 
 pub struct TypeIdCalculator {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -57,9 +58,7 @@ impl TypeIdCalculator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::*;
-    use crate::debug::SourceInformation;
-    use crate::types;
+    use crate::{ast::*, debug::SourceInformation, types};
 
     #[test]
     fn calculate_none_list_type_id() {

@@ -1,23 +1,11 @@
-use super::application::Application;
-use super::boolean::Boolean;
-use super::case::Case;
-use super::if_::If;
-use super::let_::Let;
-use super::let_error::LetError;
-use super::let_recursive::LetRecursive;
-use super::list::List;
-use super::list_case::ListCase;
-use super::none::None;
-use super::number::Number;
-use super::operation::Operation;
-use super::record_construction::RecordConstruction;
-use super::record_element_operation::RecordElementOperation;
-use super::record_update::RecordUpdate;
-use super::string::EinString;
-use super::type_coercion::TypeCoercion;
-use super::variable::Variable;
-use crate::debug::SourceInformation;
-use crate::types::Type;
+use super::{
+    application::Application, boolean::Boolean, case::Case, if_::If, let_::Let,
+    let_error::LetError, let_recursive::LetRecursive, list::List, list_case::ListCase, none::None,
+    number::Number, operation::Operation, record_construction::RecordConstruction,
+    record_element_operation::RecordElementOperation, record_update::RecordUpdate,
+    string::EinString, type_coercion::TypeCoercion, variable::Variable,
+};
+use crate::{debug::SourceInformation, types::Type};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]

@@ -1,8 +1,6 @@
-use super::super::error::CompileError;
-use super::super::type_canonicalizer::TypeCanonicalizer;
+use super::super::{error::CompileError, type_canonicalizer::TypeCanonicalizer};
 use crate::types::Type;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 pub struct VariableSubstitutor {
     type_canonicalizer: Arc<TypeCanonicalizer>,
@@ -39,12 +37,14 @@ impl VariableSubstitutor {
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::reference_type_resolver::ReferenceTypeResolver;
-    use super::super::super::type_equality_checker::TypeEqualityChecker;
-    use super::*;
-    use crate::ast::Module;
-    use crate::debug::SourceInformation;
-    use crate::types;
+    use super::{
+        super::super::{
+            reference_type_resolver::ReferenceTypeResolver,
+            type_equality_checker::TypeEqualityChecker,
+        },
+        *,
+    };
+    use crate::{ast::Module, debug::SourceInformation, types};
 
     #[test]
     fn substitute_variable() {

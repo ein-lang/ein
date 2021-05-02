@@ -1,16 +1,17 @@
-use super::error::CompileError;
-use super::last_result_type_calculator::LastResultTypeCalculator;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::string_type_configuration::StringTypeConfiguration;
-use super::transform::{
-    BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
-    LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer, ListTypeCoercionTransformer,
-    NotEqualOperationTransformer,
+use super::{
+    error::CompileError,
+    last_result_type_calculator::LastResultTypeCalculator,
+    reference_type_resolver::ReferenceTypeResolver,
+    string_type_configuration::StringTypeConfiguration,
+    transform::{
+        BooleanOperationTransformer, EqualOperationTransformer, FunctionTypeCoercionTransformer,
+        LetErrorTransformer, ListCaseTransformer, ListLiteralTransformer,
+        ListTypeCoercionTransformer, NotEqualOperationTransformer,
+    },
+    type_compiler::TypeCompiler,
+    variable_compiler::VariableCompiler,
 };
-use super::type_compiler::TypeCompiler;
-use super::variable_compiler::VariableCompiler;
-use crate::ast::*;
-use crate::types::Type;
+use crate::{ast::*, types::Type};
 use std::sync::Arc;
 
 pub struct ExpressionCompilerSet {
@@ -490,16 +491,18 @@ impl ExpressionCompiler {
 
 #[cfg(test)]
 mod tests {
-    use super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
-    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
-    use super::super::string_type_configuration::STRING_TYPE_CONFIGURATION;
-    use super::super::type_canonicalizer::TypeCanonicalizer;
-    use super::super::type_comparability_checker::TypeComparabilityChecker;
-    use super::super::type_equality_checker::TypeEqualityChecker;
-    use super::super::type_id_calculator::TypeIdCalculator;
-    use super::*;
-    use crate::debug::SourceInformation;
-    use crate::types;
+    use super::{
+        super::{
+            error_type_configuration::ERROR_TYPE_CONFIGURATION,
+            list_type_configuration::LIST_TYPE_CONFIGURATION,
+            string_type_configuration::STRING_TYPE_CONFIGURATION,
+            type_canonicalizer::TypeCanonicalizer,
+            type_comparability_checker::TypeComparabilityChecker,
+            type_equality_checker::TypeEqualityChecker, type_id_calculator::TypeIdCalculator,
+        },
+        *,
+    };
+    use crate::{debug::SourceInformation, types};
     use pretty_assertions::assert_eq;
 
     fn create_expression_compiler(module: &Module) -> (Arc<ExpressionCompiler>, Arc<TypeCompiler>) {

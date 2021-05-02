@@ -1,6 +1,7 @@
-use super::error::CompileError;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_equality_checker::TypeEqualityChecker;
+use super::{
+    error::CompileError, reference_type_resolver::ReferenceTypeResolver,
+    type_equality_checker::TypeEqualityChecker,
+};
 use crate::types::{self, Type};
 use std::sync::Arc;
 
@@ -88,9 +89,7 @@ impl TypeCanonicalizer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::*;
-    use crate::debug::SourceInformation;
-    use crate::types;
+    use crate::{ast::*, debug::SourceInformation, types};
     use pretty_assertions::assert_eq;
 
     #[test]

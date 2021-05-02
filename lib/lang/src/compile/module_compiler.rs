@@ -1,10 +1,9 @@
-use super::error::CompileError;
-use super::expression_compiler::ExpressionCompiler;
-use super::type_compiler::TypeCompiler;
-use super::type_definition_compiler::TypeDefinitionCompiler;
+use super::{
+    error::CompileError, expression_compiler::ExpressionCompiler, type_compiler::TypeCompiler,
+    type_definition_compiler::TypeDefinitionCompiler,
+};
 use crate::ast::*;
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 pub struct ModuleCompiler {
     expression_compiler: Arc<ExpressionCompiler>,

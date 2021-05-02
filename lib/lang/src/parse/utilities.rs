@@ -1,5 +1,4 @@
-use crate::ast::*;
-use crate::debug::SourceInformation;
+use crate::{ast::*, debug::SourceInformation};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ParsedOperator {

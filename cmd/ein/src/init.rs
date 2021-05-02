@@ -1,6 +1,8 @@
-use super::file_path_configuration::FILE_PATH_CONFIGURATION;
-use super::package_initialization_configuration::{
-    DEFAULT_SYSTEM_PACKAGE_CONFIGURATION, PACKAGE_INITIALIZATION_CONFIGURATION,
+use super::{
+    file_path_configuration::FILE_PATH_CONFIGURATION,
+    package_initialization_configuration::{
+        DEFAULT_SYSTEM_PACKAGE_CONFIGURATION, PACKAGE_INITIALIZATION_CONFIGURATION,
+    },
 };
 use std::fs::create_dir_all;
 

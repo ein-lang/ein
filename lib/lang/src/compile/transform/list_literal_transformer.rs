@@ -1,9 +1,8 @@
-use super::super::error::CompileError;
-use super::super::list_type_configuration::ListTypeConfiguration;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use crate::ast::*;
-use crate::debug::*;
-use crate::types;
+use super::super::{
+    error::CompileError, list_type_configuration::ListTypeConfiguration,
+    reference_type_resolver::ReferenceTypeResolver,
+};
+use crate::{ast::*, debug::*, types};
 use std::sync::Arc;
 
 pub struct ListLiteralTransformer {

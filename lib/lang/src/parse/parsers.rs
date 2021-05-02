@@ -1,21 +1,30 @@
-use super::attempt::{many, many1, optional, sep_end_by, sep_end_by1};
-use super::utilities::*;
-use crate::ast::*;
-use crate::debug::*;
-use crate::path::*;
-use crate::types::{self, Type};
-use combine::parser::char::{alpha_num, char as character, letter, string};
-use combine::parser::combinator::{lazy, look_ahead, no_partial, not_followed_by};
-use combine::parser::regex::find;
-use combine::parser::sequence::between;
-use combine::stream::position::{self, SourcePosition};
-use combine::stream::state;
+use super::{
+    attempt::{many, many1, optional, sep_end_by, sep_end_by1},
+    utilities::*,
+};
+use crate::{
+    ast::*,
+    debug::*,
+    path::*,
+    types::{self, Type},
+};
 use combine::{
-    easy, from_str, none_of, one_of, sep_by1, unexpected_any, value, Parser, Positioned,
+    easy, from_str, none_of, one_of,
+    parser::{
+        char::{alpha_num, char as character, letter, string},
+        combinator::{lazy, look_ahead, no_partial, not_followed_by},
+        regex::find,
+        sequence::between,
+    },
+    sep_by1,
+    stream::{
+        position::{self, SourcePosition},
+        state,
+    },
+    unexpected_any, value, Parser, Positioned,
 };
 use once_cell::sync::Lazy;
-use std::collections::HashSet;
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 const KEYWORDS: &[&str] = &[
     "case", "else", "export", "foreign", "if", "import", "in", "let", "then", "type",

@@ -1,5 +1,4 @@
-use super::error::InfrastructureError;
-use super::file_path_converter::FilePathConverter;
+use super::{error::InfrastructureError, file_path_converter::FilePathConverter};
 
 pub struct FileSystem<'a> {
     file_path_converter: &'a FilePathConverter,

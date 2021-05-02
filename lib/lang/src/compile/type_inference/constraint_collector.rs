@@ -1,12 +1,19 @@
-use super::super::error::CompileError;
-use super::super::error_type_configuration::ErrorTypeConfiguration;
-use super::super::module_environment_creator::ModuleEnvironmentCreator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::subsumption_set::SubsumptionSet;
-use crate::ast::*;
-use crate::types::{self, Type};
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use super::{
+    super::{
+        error::CompileError, error_type_configuration::ErrorTypeConfiguration,
+        module_environment_creator::ModuleEnvironmentCreator,
+        reference_type_resolver::ReferenceTypeResolver,
+    },
+    subsumption_set::SubsumptionSet,
+};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 
 pub struct ConstraintCollector {
     reference_type_resolver: Arc<ReferenceTypeResolver>,

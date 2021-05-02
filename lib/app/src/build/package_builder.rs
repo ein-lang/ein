@@ -1,6 +1,8 @@
 use super::modules_builder::ModulesBuilder;
-use crate::common::{ExternalPackage, FilePath, PackageConfiguration};
-use crate::infra::{FfiPackageInitializer, FileSystem, Logger};
+use crate::{
+    common::{ExternalPackage, FilePath, PackageConfiguration},
+    infra::{FfiPackageInitializer, FileSystem, Logger},
+};
 use std::collections::HashMap;
 
 pub struct PackageBuilder<'a> {

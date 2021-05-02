@@ -1,10 +1,5 @@
-use crate::ast;
-use crate::debug::*;
-use crate::path::ModulePath;
-use crate::types;
-use std::error::Error;
-use std::fmt::Display;
-use std::sync::Arc;
+use crate::{ast, debug::*, path::ModulePath, types};
+use std::{error::Error, fmt::Display, sync::Arc};
 
 #[derive(Debug, PartialEq)]
 pub enum CompileError {

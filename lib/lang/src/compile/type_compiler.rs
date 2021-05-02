@@ -1,7 +1,7 @@
-use super::error::CompileError;
-use super::list_type_configuration::ListTypeConfiguration;
-use super::reference_type_resolver::ReferenceTypeResolver;
-use super::type_id_calculator::TypeIdCalculator;
+use super::{
+    error::CompileError, list_type_configuration::ListTypeConfiguration,
+    reference_type_resolver::ReferenceTypeResolver, type_id_calculator::TypeIdCalculator,
+};
 use crate::types::{self, Type};
 use std::sync::Arc;
 
@@ -113,10 +113,8 @@ impl TypeCompiler {
 
 #[cfg(test)]
 mod tests {
-    use super::super::list_type_configuration::LIST_TYPE_CONFIGURATION;
-    use super::*;
-    use crate::ast::*;
-    use crate::debug::SourceInformation;
+    use super::{super::list_type_configuration::LIST_TYPE_CONFIGURATION, *};
+    use crate::{ast::*, debug::SourceInformation};
     use pretty_assertions::assert_eq;
 
     fn create_type_compiler() -> Arc<TypeCompiler> {

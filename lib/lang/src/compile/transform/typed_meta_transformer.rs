@@ -1,10 +1,9 @@
-use super::super::error::CompileError;
-use super::super::module_environment_creator::ModuleEnvironmentCreator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use crate::ast::*;
-use crate::types::Type;
-use std::collections::HashMap;
-use std::sync::Arc;
+use super::super::{
+    error::CompileError, module_environment_creator::ModuleEnvironmentCreator,
+    reference_type_resolver::ReferenceTypeResolver,
+};
+use crate::{ast::*, types::Type};
+use std::{collections::HashMap, sync::Arc};
 
 pub trait TypedTransformer {
     fn transform_function_definition(

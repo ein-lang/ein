@@ -1,8 +1,9 @@
 use super::package_initialization_configuration::PackageInitializationConfiguration;
-use crate::common::{
-    BuildConfiguration, FilePath, FilePathConfiguration, StaticFilePathManager, Target,
+use crate::{
+    adaptors::serialize_build_configuration,
+    common::{BuildConfiguration, FilePath, FilePathConfiguration, StaticFilePathManager, Target},
+    infra::FileSystem,
 };
-use crate::{adaptors::serialize_build_configuration, infra::FileSystem};
 
 pub struct PackageInitializer<'a> {
     file_system: &'a dyn FileSystem,

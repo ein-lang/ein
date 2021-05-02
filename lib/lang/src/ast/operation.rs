@@ -1,11 +1,9 @@
-use super::arithmetic_operation::ArithmeticOperation;
-use super::boolean_operation::BooleanOperation;
-use super::equality_operation::EqualityOperation;
-use super::expression::Expression;
-use super::order_operation::OrderOperation;
-use super::pipe_operation::PipeOperation;
-use crate::debug::SourceInformation;
-use crate::types::Type;
+use super::{
+    arithmetic_operation::ArithmeticOperation, boolean_operation::BooleanOperation,
+    equality_operation::EqualityOperation, expression::Expression, order_operation::OrderOperation,
+    pipe_operation::PipeOperation,
+};
+use crate::{debug::SourceInformation, types::Type};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]

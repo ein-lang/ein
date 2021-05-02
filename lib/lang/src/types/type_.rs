@@ -1,19 +1,11 @@
-use super::any::Any;
-use super::boolean::Boolean;
-use super::function::Function;
-use super::list::List;
-use super::none::None;
-use super::number::Number;
-use super::record::Record;
-use super::reference::Reference;
-use super::string::EinString;
-use super::union::Union;
-use super::unknown::Unknown;
-use super::variable::Variable;
+use super::{
+    any::Any, boolean::Boolean, function::Function, list::List, none::None, number::Number,
+    record::Record, reference::Reference, string::EinString, union::Union, unknown::Unknown,
+    variable::Variable,
+};
 use crate::debug::SourceInformation;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub enum Type {

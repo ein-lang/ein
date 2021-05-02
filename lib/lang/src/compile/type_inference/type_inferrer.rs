@@ -1,13 +1,17 @@
-use super::super::error::CompileError;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_canonicalizer::TypeCanonicalizer;
-use super::super::type_equality_checker::TypeEqualityChecker;
-use super::constraint_checker::ConstraintChecker;
-use super::constraint_collector::ConstraintCollector;
-use super::constraint_solver::ConstraintSolver;
-use super::variable_substitutor::VariableSubstitutor;
-use crate::ast::*;
-use crate::types::{self, Type};
+use super::{
+    super::{
+        error::CompileError, reference_type_resolver::ReferenceTypeResolver,
+        type_canonicalizer::TypeCanonicalizer, type_equality_checker::TypeEqualityChecker,
+    },
+    constraint_checker::ConstraintChecker,
+    constraint_collector::ConstraintCollector,
+    constraint_solver::ConstraintSolver,
+    variable_substitutor::VariableSubstitutor,
+};
+use crate::{
+    ast::*,
+    types::{self, Type},
+};
 use std::sync::Arc;
 
 pub struct TypeInferrer {
@@ -68,15 +72,23 @@ impl TypeInferrer {
 
 #[cfg(test)]
 mod tests {
-    use super::super::super::error_type_configuration::ERROR_TYPE_CONFIGURATION;
-    use super::super::super::module_environment_creator::ModuleEnvironmentCreator;
-    use super::super::constraint_collector::ConstraintCollector;
-    use super::super::constraint_converter::ConstraintConverter;
-    use super::*;
-    use crate::debug::*;
-    use crate::package::Package;
-    use crate::path::*;
-    use crate::types::{self, Type};
+    use super::{
+        super::{
+            super::{
+                error_type_configuration::ERROR_TYPE_CONFIGURATION,
+                module_environment_creator::ModuleEnvironmentCreator,
+            },
+            constraint_collector::ConstraintCollector,
+            constraint_converter::ConstraintConverter,
+        },
+        *,
+    };
+    use crate::{
+        debug::*,
+        package::Package,
+        path::*,
+        types::{self, Type},
+    };
     use insta::assert_debug_snapshot;
     use pretty_assertions::assert_eq;
 

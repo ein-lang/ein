@@ -1,6 +1,7 @@
-use super::super::error::CompileError;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::variable_constraint::VariableConstraint;
+use super::{
+    super::{error::CompileError, reference_type_resolver::ReferenceTypeResolver},
+    variable_constraint::VariableConstraint,
+};
 use crate::types::{self, Type};
 use std::sync::Arc;
 

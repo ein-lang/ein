@@ -1,5 +1,4 @@
-use crate::common::FilePath;
-use crate::infra::FilePathDisplayer;
+use crate::{common::FilePath, infra::FilePathDisplayer};
 
 pub struct ModuleParser<'a> {
     file_path_displayer: &'a dyn FilePathDisplayer,

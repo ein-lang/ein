@@ -1,8 +1,5 @@
-use super::expression::Expression;
-use super::function_definition::*;
-use super::variable_definition::*;
-use crate::debug::SourceInformation;
-use crate::types::Type;
+use super::{expression::Expression, function_definition::*, variable_definition::*};
+use crate::{debug::SourceInformation, types::Type};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq)]

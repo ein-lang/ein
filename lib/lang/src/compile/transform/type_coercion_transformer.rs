@@ -1,15 +1,18 @@
-use super::super::error::CompileError;
-use super::super::expression_type_extractor::ExpressionTypeExtractor;
-use super::super::last_result_type_calculator::LastResultTypeCalculator;
-use super::super::reference_type_resolver::ReferenceTypeResolver;
-use super::super::type_canonicalizer::TypeCanonicalizer;
-use super::super::type_equality_checker::TypeEqualityChecker;
-use super::typed_meta_transformer::TypedTransformer;
-use crate::ast::*;
-use crate::debug::SourceInformation;
-use crate::types::{self, Type};
-use std::collections::HashMap;
-use std::sync::Arc;
+use super::{
+    super::{
+        error::CompileError, expression_type_extractor::ExpressionTypeExtractor,
+        last_result_type_calculator::LastResultTypeCalculator,
+        reference_type_resolver::ReferenceTypeResolver, type_canonicalizer::TypeCanonicalizer,
+        type_equality_checker::TypeEqualityChecker,
+    },
+    typed_meta_transformer::TypedTransformer,
+};
+use crate::{
+    ast::*,
+    debug::SourceInformation,
+    types::{self, Type},
+};
+use std::{collections::HashMap, sync::Arc};
 
 /// TypeCoercionTransformer transforms value-to-union, function-to-union,
 /// value-to-any, function-to-any and function-to-function type coercions.

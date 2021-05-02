@@ -1,8 +1,7 @@
-use crate::common::PackageConfiguration;
-use crate::infra::{FilePathDisplayer, FileSystem};
 use crate::{
     adaptors::deserialize_build_configuration,
-    common::{FilePath, StaticFilePathManager},
+    common::{FilePath, PackageConfiguration, StaticFilePathManager},
+    infra::{FilePathDisplayer, FileSystem},
 };
 
 pub struct PackageConfigurationReader<'a> {
