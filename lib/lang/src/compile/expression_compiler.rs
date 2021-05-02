@@ -188,7 +188,7 @@ impl ExpressionCompiler {
 
                 eir::ir::Let::new(
                     operation.variable(),
-                    self.type_compiler.compile(element_type)?.clone(),
+                    self.type_compiler.compile(element_type)?,
                     eir::ir::RecordElement::new(
                         reference_type,
                         element_index,
@@ -431,7 +431,7 @@ impl ExpressionCompiler {
                             variable_name,
                             self.type_compiler.compile_any_list(),
                             eir::ir::RecordElement::new(
-                                list_type.clone(),
+                                list_type,
                                 0,
                                 eir::ir::Variable::new(variable_name),
                             ),
@@ -453,7 +453,7 @@ impl ExpressionCompiler {
                                     variable_name,
                                     self.type_compiler.compile_union(),
                                     eir::ir::Variant::new(
-                                        type_.clone(),
+                                        type_,
                                         eir::ir::Variable::new(variable_name),
                                     ),
                                     self.compile(alternative.expression())?,
@@ -509,7 +509,7 @@ mod tests {
         let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
         let type_compiler = TypeCompiler::new(
             reference_type_resolver.clone(),
-            type_id_calculator.clone(),
+            type_id_calculator,
             LIST_TYPE_CONFIGURATION.clone(),
         );
         let variable_compiler = VariableCompiler::new(
@@ -1034,7 +1034,7 @@ mod tests {
                     &TypeCoercion::new(
                         Boolean::new(true, SourceInformation::dummy()),
                         types::Boolean::new(SourceInformation::dummy()),
-                        union_type.clone(),
+                        union_type,
                         SourceInformation::dummy(),
                     )
                     .into(),
@@ -1065,8 +1065,8 @@ mod tests {
                 expression_compiler.compile(
                     &TypeCoercion::new(
                         Variable::new("x", SourceInformation::dummy()),
-                        record_type.clone(),
-                        union_type.clone(),
+                        record_type,
+                        union_type,
                         SourceInformation::dummy(),
                     )
                     .into(),
@@ -1104,7 +1104,7 @@ mod tests {
                     &TypeCoercion::new(
                         Variable::new("x", SourceInformation::dummy()),
                         lower_union_type,
-                        upper_union_type.clone(),
+                        upper_union_type,
                         SourceInformation::dummy(),
                     )
                     .into(),

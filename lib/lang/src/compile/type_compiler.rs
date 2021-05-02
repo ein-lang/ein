@@ -30,7 +30,7 @@ impl TypeCompiler {
 
     pub fn compile(&self, type_: &Type) -> Result<eir::types::Type, CompileError> {
         Ok(match type_ {
-            Type::Any(_) => self.compile_any().into(),
+            Type::Any(_) => self.compile_any(),
             Type::Boolean(_) => self.compile_boolean().into(),
             Type::Function(function) => eir::types::Function::new(
                 self.compile(function.argument())?,
@@ -42,8 +42,8 @@ impl TypeCompiler {
             Type::Number(_) => eir::types::Primitive::Number.into(),
             Type::Record(record) => eir::types::Reference::new(record.name()).into(),
             Type::Reference(reference) => self.compile_reference(reference)?,
-            Type::String(_) => self.compile_string().into(),
-            Type::Union(_) => self.compile_union().into(),
+            Type::String(_) => self.compile_string(),
+            Type::Union(_) => self.compile_union(),
             Type::Unknown(_) | Type::Variable(_) => unreachable!(),
         })
     }
@@ -52,7 +52,7 @@ impl TypeCompiler {
         &self,
         reference: &types::Reference,
     ) -> Result<eir::types::Type, CompileError> {
-        Ok(self.compile(&self.reference_type_resolver.resolve_reference(reference)?)?)
+        self.compile(&self.reference_type_resolver.resolve_reference(reference)?)
     }
 
     pub fn compile_function(
