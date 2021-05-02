@@ -2044,5 +2044,65 @@ mod tests {
                 .into()
             ])));
         }
+
+        #[test]
+        #[should_panic]
+        fn do_not_allow_covariance_with_list() {
+            infer_types(&Module::from_definitions(vec![
+                VariableDefinition::new(
+                    "x",
+                    List::new(vec![], SourceInformation::dummy()),
+                    types::List::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "y",
+                    Variable::new("x", SourceInformation::dummy()),
+                    types::List::new(
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]))
+            .unwrap();
+        }
+
+        #[test]
+        fn allow_covariance_with_list() {
+            infer_types(&Module::from_definitions(vec![
+                VariableDefinition::new(
+                    "x",
+                    List::new(vec![], SourceInformation::dummy()),
+                    types::List::new(
+                        types::Number::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "y",
+                    List::new(
+                        vec![ListElement::Multiple(
+                            Variable::new("x", SourceInformation::dummy()).into(),
+                        )],
+                        SourceInformation::dummy(),
+                    ),
+                    types::List::new(
+                        types::Any::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]))
+            .unwrap();
+        }
     }
 }
