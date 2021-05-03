@@ -2072,7 +2072,7 @@ mod tests {
         }
 
         #[test]
-        fn allow_covariance_with_list() {
+        fn allow_covariance_with_list_including_mutiple_element() {
             infer_types(&Module::from_definitions(vec![
                 VariableDefinition::new(
                     "x",
