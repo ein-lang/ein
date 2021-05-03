@@ -251,8 +251,19 @@ impl ConstraintCollector {
                 for element in list.elements() {
                     match element {
                         ListElement::Multiple(expression) => {
+                            let multiple_element_type =
+                                types::Variable::new(list.source_information().clone());
                             let type_ = self.infer_expression(expression, variables)?;
-                            self.solved_subsumption_set.add(type_, list_type.clone())
+
+                            self.solved_subsumption_set.add(
+                                type_.clone(),
+                                types::List::new(
+                                    multiple_element_type.clone(),
+                                    expression.source_information().clone(),
+                                ),
+                            );
+                            self.solved_subsumption_set
+                                .add(multiple_element_type, element_type.clone());
                         }
                         ListElement::Single(expression) => {
                             let type_ = self.infer_expression(expression, variables)?;
