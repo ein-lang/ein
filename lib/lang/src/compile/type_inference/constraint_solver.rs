@@ -67,6 +67,7 @@ impl ConstraintSolver {
                 }
                 (Type::List(one), Type::List(other)) => {
                     solved_subsumption_set.add(one.element().clone(), other.element().clone());
+                    checked_subsumption_set.add(other.element().clone(), one.element().clone());
                 }
                 subsumption => checked_subsumption_set.add(subsumption.0, subsumption.1),
             }
