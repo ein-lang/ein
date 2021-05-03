@@ -1,6 +1,7 @@
 ---
-source: lib/lang/src/compile/type_inference/type_inferrer.rs
-expression: "infer_types(&Module::from_definitions(vec![VariableDefinition ::\n                                           new(\"x\", List ::\n                                               new(vec ! [], SourceInformation\n                                                   :: dummy()), list_type,\n                                               SourceInformation :: dummy(),)\n                                           . into()]))"
+source: lib/lang/src/compile/type_inference/mod.rs
+expression: "infer_types(&Module::from_definitions(vec![VariableDefinition ::\n                                           new(\"x\", List ::\n                                               new(vec !\n                                                   [ListElement ::\n                                                    Single(Number ::\n                                                           new(42.0,\n                                                               SourceInformation\n                                                               :: dummy()) .\n                                                           into())],\n                                                   SourceInformation ::\n                                                   dummy(),), list_type,\n                                               SourceInformation :: dummy(),)\n                                           . into()]))"
+
 ---
 Ok(
     Module {
@@ -42,7 +43,23 @@ Ok(
                                     },
                                 },
                             ),
-                            elements: [],
+                            elements: [
+                                Single(
+                                    Number(
+                                        Number {
+                                            value: 42.0,
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                ),
+                            ],
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {

@@ -1,6 +1,7 @@
 ---
-source: lib/lang/src/compile/type_inference/type_inferrer.rs
+source: lib/lang/src/compile/type_inference/mod.rs
 expression: "infer_types(&Module::from_definitions(vec![VariableDefinition ::\n                                           new(\"x\", Boolean ::\n                                               new(true, SourceInformation ::\n                                                   dummy()), types :: Union ::\n                                               new(vec !\n                                                   [types :: Boolean ::\n                                                    new(SourceInformation ::\n                                                        dummy()) . into(),\n                                                    types :: None ::\n                                                    new(SourceInformation ::\n                                                        dummy()) . into(),],\n                                                   SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into(), VariableDefinition ::\n                                           new(\"y\", Variable ::\n                                               new(\"x\", SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into()]))"
+
 ---
 Ok(
     Module {

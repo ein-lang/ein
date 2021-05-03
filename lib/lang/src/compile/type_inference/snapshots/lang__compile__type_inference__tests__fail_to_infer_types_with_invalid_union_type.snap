@@ -1,6 +1,7 @@
 ---
-source: lib/lang/src/compile/type_inference/type_inferrer.rs
+source: lib/lang/src/compile/type_inference/mod.rs
 expression: infer_types(&module)
+
 ---
 Err(
     TypesNotMatched(
