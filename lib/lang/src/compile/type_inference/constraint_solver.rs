@@ -63,7 +63,9 @@ impl ConstraintSolver {
                 ),
                 (Type::Function(one), Type::Function(other)) => {
                     solved_subsumption_set.add(other.argument().clone(), one.argument().clone());
+                    checked_subsumption_set.add(one.argument().clone(), other.argument().clone());
                     solved_subsumption_set.add(one.result().clone(), other.result().clone());
+                    checked_subsumption_set.add(other.result().clone(), one.result().clone());
                 }
                 (Type::List(one), Type::List(other)) => {
                     solved_subsumption_set.add(one.element().clone(), other.element().clone());

@@ -1783,7 +1783,10 @@ mod tests {
                 .into(),
             ]);
 
-            assert_eq!(infer_types(&module), Ok(module));
+            assert!(matches!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(_, _))
+            ));
         }
 
         #[test]
@@ -1820,7 +1823,10 @@ mod tests {
                 .into(),
             ]);
 
-            assert_eq!(infer_types(&module), Ok(module));
+            assert!(matches!(
+                infer_types(&module),
+                Err(CompileError::TypesNotMatched(_, _))
+            ));
         }
 
         #[test]
