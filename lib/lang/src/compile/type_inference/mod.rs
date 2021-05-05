@@ -1812,13 +1812,7 @@ mod tests {
                     Variable::new("f", SourceInformation::dummy()),
                     types::Function::new(
                         types::Boolean::new(SourceInformation::dummy()),
-                        types::Union::new(
-                            vec![
-                                types::Boolean::new(SourceInformation::dummy()).into(),
-                                types::None::new(SourceInformation::dummy()).into(),
-                            ],
-                            SourceInformation::dummy(),
-                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
                     SourceInformation::dummy(),
