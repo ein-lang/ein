@@ -857,7 +857,7 @@ mod tests {
     }
 
     #[test]
-    fn fail_to_infer_types_with_invalid_union_type() {
+    fn infer_list_subsuming_union_of_lists() {
         let module = Module::from_definitions(vec![
             VariableDefinition::new(
                 "x",
