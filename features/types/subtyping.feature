@@ -41,6 +41,21 @@ Feature: Subtyping
     When I run `ein build`
     Then the exit status should be 0
 
+  Scenario: Let a list subsume a union type
+    Given a file named "Main.ein" with:
+    """
+    x : List Number
+    x = []
+
+    y : List Number | List None
+    y = x
+
+    z : List (Number | None)
+    z = y
+    """
+    When I run `ein build`
+    Then the exit status should be 0
+
   Scenario: Handle covariance and contravariance of functions in lists
     Given a file named "Main.ein" with:
     """
