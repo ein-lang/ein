@@ -54,17 +54,7 @@ pub fn infer_types(
 #[cfg(test)]
 mod tests {
     use super::super::compile_configuration::COMPILE_CONFIGURATION;
-    use super::{
-        super::{
-            error_type_configuration::ERROR_TYPE_CONFIGURATION,
-            module_environment_creator::ModuleEnvironmentCreator, ReferenceTypeResolver,
-            TypeCanonicalizer, TypeEqualityChecker,
-        },
-        constraint_collector::ConstraintCollector,
-        constraint_converter::ConstraintConverter,
-        constraint_solver::ConstraintSolver,
-        CompileError,
-    };
+    use super::{super::error_type_configuration::ERROR_TYPE_CONFIGURATION, CompileError};
     use crate::{
         ast::*,
         debug::*,
@@ -1760,6 +1750,43 @@ mod tests {
         }
 
         #[test]
+        fn infer_covariance_of_function_types() {
+            let module = Module::from_definitions(vec![
+                FunctionDefinition::new(
+                    "f",
+                    vec!["x".into()],
+                    Boolean::new(true, SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        types::Boolean::new(SourceInformation::dummy()),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+                VariableDefinition::new(
+                    "g",
+                    Variable::new("f", SourceInformation::dummy()),
+                    types::Function::new(
+                        types::Boolean::new(SourceInformation::dummy()),
+                        types::Union::new(
+                            vec![
+                                types::Boolean::new(SourceInformation::dummy()).into(),
+                                types::None::new(SourceInformation::dummy()).into(),
+                            ],
+                            SourceInformation::dummy(),
+                        ),
+                        SourceInformation::dummy(),
+                    ),
+                    SourceInformation::dummy(),
+                )
+                .into(),
+            ]);
+
+            assert_eq!(infer_types(&module), Ok(module));
+        }
+
+        #[test]
         fn infer_contravariance_of_function_types() {
             let module = Module::from_definitions(vec![
                 FunctionDefinition::new(
@@ -1785,13 +1812,7 @@ mod tests {
                     Variable::new("f", SourceInformation::dummy()),
                     types::Function::new(
                         types::Boolean::new(SourceInformation::dummy()),
-                        types::Union::new(
-                            vec![
-                                types::Boolean::new(SourceInformation::dummy()).into(),
-                                types::None::new(SourceInformation::dummy()).into(),
-                            ],
-                            SourceInformation::dummy(),
-                        ),
+                        types::Boolean::new(SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
                     SourceInformation::dummy(),

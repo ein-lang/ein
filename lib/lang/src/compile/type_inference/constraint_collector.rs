@@ -113,8 +113,7 @@ impl ConstraintCollector {
             Expression::Application(application) => {
                 let function = self.infer_expression(application.function(), variables)?;
                 let argument = self.infer_expression(application.argument(), variables)?;
-                let result: Type =
-                    types::Variable::new(application.source_information().clone()).into();
+                let result = types::Variable::new(application.source_information().clone());
 
                 self.solved_subsumption_set.add(
                     function,
@@ -125,7 +124,7 @@ impl ConstraintCollector {
                     ),
                 );
 
-                Ok(result)
+                Ok(result.into())
             }
             Expression::Boolean(boolean) => {
                 Ok(types::Boolean::new(boolean.source_information().clone()).into())

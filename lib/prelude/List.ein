@@ -81,10 +81,7 @@ concatenateNodes one other =
           prependToNode (Node.first one) (concatenateNodes (Node.rest one) other)
         None => one
       )
-    None =>
-      case other = other
-        Node => other
-        None => None
+    None => other
 
 _equalLists : (Any -> Any -> Boolean) -> _AnyList -> _AnyList -> Boolean
 _equalLists equalElements one other =
