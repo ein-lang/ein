@@ -50,7 +50,7 @@ impl ConstraintChecker {
                 (Type::List(one), Type::List(other)) => {
                     subsumption_set.add(one.element().clone(), other.element().clone());
                 }
-                (Type::Union(one), Type::Union(other)) => {
+                (Type::Union(one), other) => {
                     for type_ in one.types() {
                         subsumption_set.add(type_.clone(), other.clone());
                     }
