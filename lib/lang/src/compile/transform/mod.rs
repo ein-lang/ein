@@ -403,7 +403,11 @@ mod tests {
                 &Module::from_definitions_and_type_definitions(
                     vec![TypeDefinition::new(
                         "Foo",
-                        types::Record::new("Foo", vec![types::RecordElement::new("foo", union_type)], SourceInformation::dummy())
+                        types::Record::new(
+                            "Foo",
+                            vec![types::RecordElement::new("foo", union_type)],
+                            SourceInformation::dummy()
+                        )
                     )],
                     vec![VariableDefinition::new(
                         "x",

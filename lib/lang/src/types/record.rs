@@ -1,5 +1,4 @@
-use super::record_element::RecordElement;
-use super::Type;
+use super::{record_element::RecordElement, Type};
 use crate::debug::SourceInformation;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
