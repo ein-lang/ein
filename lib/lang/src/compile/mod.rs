@@ -262,7 +262,7 @@ mod tests {
     }
 
     #[test]
-    fn compile_record_construction_with_fields_not_in_alphbetical_order() {
+    fn compile_record_construction_with_fields_not_in_alphabetical_order() {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
         compile(
