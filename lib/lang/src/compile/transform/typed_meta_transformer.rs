@@ -162,14 +162,23 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 let mut variables = variables.clone();
                 let mut definitions = vec![];
 
-                for variable_definition in let_.definitions() {
-                    definitions
-                        .push(self.transform_variable_definition(variable_definition, &variables)?);
-
-                    variables.insert(
-                        variable_definition.name().into(),
-                        variable_definition.type_().clone(),
-                    );
+                for definition in let_.definitions() {
+                    match definition {
+                        Definition::FunctionDefinition(definition) => {
+                            variables.insert(definition.name().into(), definition.type_().clone());
+                            definitions.push(
+                                self.transform_function_definition(definition, &variables)?
+                                    .into(),
+                            );
+                        }
+                        Definition::VariableDefinition(definition) => {
+                            definitions.push(
+                                self.transform_variable_definition(definition, &variables)?
+                                    .into(),
+                            );
+                            variables.insert(definition.name().into(), definition.type_().clone());
+                        }
+                    }
                 }
 
                 Let::new(
@@ -200,30 +209,6 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
 
                 LetError::with_type(
                     let_.type_().clone(),
-                    definitions,
-                    self.transform_expression(let_.expression(), &variables)?,
-                    let_.source_information().clone(),
-                )
-                .into()
-            }
-            Expression::LetRecursive(let_) => {
-                let mut variables = variables.clone();
-
-                for function_definition in let_.definitions() {
-                    variables.insert(
-                        function_definition.name().into(),
-                        function_definition.type_().clone(),
-                    );
-                }
-
-                let mut definitions = vec![];
-
-                for function_definition in let_.definitions() {
-                    definitions
-                        .push(self.transform_function_definition(function_definition, &variables)?)
-                }
-
-                LetRecursive::new(
                     definitions,
                     self.transform_expression(let_.expression(), &variables)?,
                     let_.source_information().clone(),

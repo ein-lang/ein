@@ -60,7 +60,8 @@ mod tests {
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy(),
-                        )],
+                        )
+                        .into()],
                         Variable::new("x", SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
@@ -95,7 +96,7 @@ mod tests {
                 FunctionDefinition::new(
                     "main",
                     vec!["x".into()],
-                    LetRecursive::new(
+                    Let::new(
                         vec![
                             FunctionDefinition::new(
                                 "f",
@@ -103,7 +104,8 @@ mod tests {
                                 Variable::new("x", SourceInformation::dummy()),
                                 types::Unknown::new(SourceInformation::dummy()),
                                 SourceInformation::dummy(),
-                            ),
+                            )
+                            .into(),
                             FunctionDefinition::new(
                                 "g",
                                 vec!["x".into()],
@@ -114,7 +116,8 @@ mod tests {
                                 ),
                                 types::Unknown::new(SourceInformation::dummy()),
                                 SourceInformation::dummy(),
-                            ),
+                            )
+                            .into(),
                         ],
                         Application::new(
                             Variable::new("g", SourceInformation::dummy()),

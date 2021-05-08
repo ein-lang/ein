@@ -1,6 +1,6 @@
 ---
 source: lib/lang/src/compile/type_inference/mod.rs
-expression: "infer_types(&Module::from_definitions(vec![VariableDefinition ::\n                                           new(\"x\", Number ::\n                                               new(42.0, SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into(), VariableDefinition ::\n                                           new(\"y\", Let ::\n                                               new(vec !\n                                                   [VariableDefinition ::\n                                                    new(\"z\", Variable ::\n                                                        new(\"x\",\n                                                            SourceInformation\n                                                            :: dummy()), types\n                                                        :: Unknown ::\n                                                        new(SourceInformation\n                                                            :: dummy()),\n                                                        SourceInformation ::\n                                                        dummy(),)], Number ::\n                                                   new(42.0, SourceInformation\n                                                       :: dummy()),\n                                                   SourceInformation ::\n                                                   dummy(),), types :: Number\n                                               ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
+expression: "infer_types(&Module::from_definitions(vec![VariableDefinition ::\n                                           new(\"x\", Number ::\n                                               new(42.0, SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation :: dummy(),)\n                                           . into(), VariableDefinition ::\n                                           new(\"y\", Let ::\n                                               new(vec !\n                                                   [VariableDefinition ::\n                                                    new(\"z\", Variable ::\n                                                        new(\"x\",\n                                                            SourceInformation\n                                                            :: dummy()), types\n                                                        :: Unknown ::\n                                                        new(SourceInformation\n                                                            :: dummy()),\n                                                        SourceInformation ::\n                                                        dummy(),) . into()],\n                                                   Number ::\n                                                   new(42.0, SourceInformation\n                                                       :: dummy()),\n                                                   SourceInformation ::\n                                                   dummy(),), types :: Number\n                                               ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
 
 ---
 Ok(
@@ -58,42 +58,44 @@ Ok(
                     body: Let(
                         Let {
                             definitions: [
-                                VariableDefinition {
-                                    name: "z",
-                                    body: Variable(
-                                        Variable {
-                                            name: "x",
-                                            source_information: SourceInformation {
-                                                source_name: "",
-                                                location: Location {
-                                                    line_number: 0,
-                                                    column_number: 0,
+                                VariableDefinition(
+                                    VariableDefinition {
+                                        name: "z",
+                                        body: Variable(
+                                            Variable {
+                                                name: "x",
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
                                                 },
-                                                line: "",
                                             },
-                                        },
-                                    ),
-                                    type_: Any(
-                                        Any {
-                                            source_information: SourceInformation {
-                                                source_name: "",
-                                                location: Location {
-                                                    line_number: 0,
-                                                    column_number: 0,
+                                        ),
+                                        type_: Any(
+                                            Any {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
                                                 },
-                                                line: "",
                                             },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
                                         },
-                                    ),
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
-                                        },
-                                        line: "",
                                     },
-                                },
+                                ),
                             ],
                             expression: Number(
                                 Number {

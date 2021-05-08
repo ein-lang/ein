@@ -32,7 +32,8 @@ impl RecordUpdateTransformer {
                         record_update.argument().clone(),
                         record_update.type_().clone(),
                         source_information.clone(),
-                    )],
+                    )
+                    .into()],
                     RecordConstruction::new(
                         record_update.type_().clone(),
                         record_type
@@ -120,7 +121,8 @@ mod tests {
                             Variable::new("foo", SourceInformation::dummy()),
                             reference_type.clone(),
                             SourceInformation::dummy(),
-                        )],
+                        )
+                        .into()],
                         RecordConstruction::new(
                             reference_type.clone(),
                             vec![

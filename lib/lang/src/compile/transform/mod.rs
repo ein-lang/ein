@@ -282,7 +282,8 @@ mod tests {
                             expression,
                             union_type.clone(),
                             SourceInformation::dummy(),
-                        )],
+                        )
+                        .into()],
                         Number::new(42.0, SourceInformation::dummy()),
                         SourceInformation::dummy(),
                     ),
@@ -334,7 +335,7 @@ mod tests {
                     .into(),
                     VariableDefinition::new(
                         "x",
-                        LetRecursive::new(
+                        Let::new(
                             vec![FunctionDefinition::new(
                                 "g",
                                 vec!["x".into()],
@@ -345,7 +346,8 @@ mod tests {
                                     SourceInformation::dummy(),
                                 ),
                                 SourceInformation::dummy(),
-                            )],
+                            )
+                            .into()],
                             Number::new(42.0, SourceInformation::dummy()),
                             SourceInformation::dummy(),
                         ),

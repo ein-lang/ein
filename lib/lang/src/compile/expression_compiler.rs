@@ -75,7 +75,6 @@ impl ExpressionCompiler {
             .into(),
             Expression::Let(let_) => self.compile_let(let_)?,
             Expression::LetError(let_) => self.compile_let_error(let_)?,
-            Expression::LetRecursive(let_) => self.compile_let_recursive(let_)?.into(),
             Expression::None(_) => {
                 eir::ir::Record::new(self.type_compiler.compile_none(), vec![]).into()
             }
@@ -279,66 +278,51 @@ impl ExpressionCompiler {
         })
     }
 
-    // TODO Remove this function.
-    fn compile_let_recursive(
-        &self,
-        let_: &LetRecursive,
-    ) -> Result<eir::ir::LetRecursive, CompileError> {
-        let definitions = let_
-            .definitions()
-            .iter()
-            .map(|function_definition| {
-                let type_ = self
-                    .reference_type_resolver
-                    .resolve_to_function(function_definition.type_())?
-                    .unwrap();
-
-                Ok(eir::ir::Definition::new(
-                    function_definition.name(),
-                    function_definition
-                        .arguments()
-                        .iter()
-                        .zip(type_.arguments())
-                        .map(|(name, type_)| {
-                            Ok(eir::ir::Argument::new(
-                                name.clone(),
-                                self.type_compiler.compile(type_)?,
-                            ))
-                        })
-                        .collect::<Result<_, CompileError>>()?,
-                    self.compile(function_definition.body())?,
-                    self.type_compiler
-                        .compile(&self.last_result_type_calculator.calculate(
-                            function_definition.type_(),
-                            function_definition.arguments().len(),
-                        )?)?,
-                ))
-            })
-            .collect::<Result<Vec<_>, CompileError>>()?;
-
-        if definitions.len() != 1 {
-            unimplemented!(
-                "let-recursive expression is deprecated and supports only a function inside"
-            )
-        }
-
-        Ok(eir::ir::LetRecursive::new(
-            definitions[0].clone(),
-            self.compile(let_.expression())?,
-        ))
-    }
-
     fn compile_let(&self, let_: &Let) -> Result<eir::ir::Expression, CompileError> {
         let_.definitions().iter().rev().fold(
             self.compile(let_.expression()),
-            |expression, variable_definition| {
-                Ok(eir::ir::Let::new(
-                    variable_definition.name(),
-                    self.type_compiler.compile(variable_definition.type_())?,
-                    self.compile(variable_definition.body())?,
-                    expression?,
-                )
-                .into())
+            |expression, definition| {
+                Ok(match definition {
+                    Definition::FunctionDefinition(definition) => {
+                        let type_ = self
+                            .reference_type_resolver
+                            .resolve_to_function(definition.type_())?
+                            .unwrap();
+
+                        eir::ir::LetRecursive::new(
+                            eir::ir::Definition::new(
+                                definition.name(),
+                                definition
+                                    .arguments()
+                                    .iter()
+                                    .zip(type_.arguments())
+                                    .map(|(name, type_)| {
+                                        Ok(eir::ir::Argument::new(
+                                            name.clone(),
+                                            self.type_compiler.compile(type_)?,
+                                        ))
+                                    })
+                                    .collect::<Result<_, CompileError>>()?,
+                                self.compile(definition.body())?,
+                                self.type_compiler.compile(
+                                    &self.last_result_type_calculator.calculate(
+                                        definition.type_(),
+                                        definition.arguments().len(),
+                                    )?,
+                                )?,
+                            ),
+                            expression?,
+                        )
+                        .into()
+                    }
+                    Definition::VariableDefinition(definition) => eir::ir::Let::new(
+                        definition.name(),
+                        self.type_compiler.compile(definition.type_())?,
+                        self.compile(definition.body())?,
+                        expression?,
+                    )
+                    .into(),
+                })
             },
         )
     }
@@ -653,7 +637,8 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -682,13 +667,15 @@ mod tests {
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        ),
+                        )
+                        .into(),
                         VariableDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
+                        .into()
                     ],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
@@ -711,12 +698,12 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_recursive() {
+    fn compile_let_with_function_definition() {
         let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
-                &LetRecursive::new(
+                &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -727,7 +714,8 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -747,12 +735,12 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_recursive_with_recursive_functions() {
+    fn compile_let_with_recursive_functions() {
         let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
-                &LetRecursive::new(
+                &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -767,7 +755,8 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -790,16 +779,16 @@ mod tests {
     }
 
     #[test]
-    fn compile_nested_let_recursive() {
+    fn compile_nested_let() {
         let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
-                &LetRecursive::new(
+                &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
-                        LetRecursive::new(
+                        Let::new(
                             vec![FunctionDefinition::new(
                                 "g",
                                 vec!["y".into()],
@@ -810,7 +799,8 @@ mod tests {
                                     SourceInformation::dummy()
                                 ),
                                 SourceInformation::dummy()
-                            )],
+                            )
+                            .into()],
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
@@ -820,7 +810,8 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -859,8 +850,9 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
-                    LetRecursive::new(
+                    )
+                    .into()],
+                    Let::new(
                         vec![FunctionDefinition::new(
                             "f",
                             vec!["x".into()],
@@ -871,7 +863,8 @@ mod tests {
                                 SourceInformation::dummy()
                             ),
                             SourceInformation::dummy()
-                        )],
+                        )
+                        .into()],
                         Variable::new("y", SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),

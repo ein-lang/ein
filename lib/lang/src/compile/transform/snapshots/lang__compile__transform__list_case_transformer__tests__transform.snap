@@ -1,6 +1,7 @@
 ---
 source: lib/lang/src/compile/transform/list_case_transformer.rs
 expression: "create_list_case_transformer().transform(&ListCase::new(Variable::new(\"xs\",\n                                                                      SourceInformation::dummy()),\n                                                        types::List::new(types::Number::new(SourceInformation::dummy()),\n                                                                         SourceInformation::dummy()),\n                                                        \"y\", \"ys\",\n                                                        None::new(SourceInformation::dummy()),\n                                                        None::new(SourceInformation::dummy()),\n                                                        SourceInformation::dummy()))"
+
 ---
 Ok(
     Case(
@@ -127,194 +128,198 @@ Ok(
                     expression: Let(
                         Let {
                             definitions: [
-                                VariableDefinition {
-                                    name: "y",
-                                    body: Case(
-                                        Case {
-                                            type_: Any(
-                                                Any {
-                                                    source_information: SourceInformation {
-                                                        source_name: "",
-                                                        location: Location {
-                                                            line_number: 0,
-                                                            column_number: 0,
+                                VariableDefinition(
+                                    VariableDefinition {
+                                        name: "y",
+                                        body: Case(
+                                            Case {
+                                                type_: Any(
+                                                    Any {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
                                                         },
-                                                        line: "",
                                                     },
-                                                },
-                                            ),
-                                            name: "$lc$firstRest0",
-                                            argument: Application(
-                                                Application {
-                                                    function: Variable(
-                                                        Variable {
-                                                            name: "first",
-                                                            source_information: SourceInformation {
-                                                                source_name: "",
-                                                                location: Location {
-                                                                    line_number: 0,
-                                                                    column_number: 0,
+                                                ),
+                                                name: "$lc$firstRest0",
+                                                argument: Application(
+                                                    Application {
+                                                        function: Variable(
+                                                            Variable {
+                                                                name: "first",
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
                                                                 },
-                                                                line: "",
                                                             },
-                                                        },
-                                                    ),
-                                                    argument: Variable(
-                                                        Variable {
-                                                            name: "$lc$firstRest0",
-                                                            source_information: SourceInformation {
-                                                                source_name: "",
-                                                                location: Location {
-                                                                    line_number: 0,
-                                                                    column_number: 0,
+                                                        ),
+                                                        argument: Variable(
+                                                            Variable {
+                                                                name: "$lc$firstRest0",
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
                                                                 },
-                                                                line: "",
                                                             },
+                                                        ),
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
                                                         },
-                                                    ),
-                                                    source_information: SourceInformation {
-                                                        source_name: "",
-                                                        location: Location {
-                                                            line_number: 0,
-                                                            column_number: 0,
-                                                        },
-                                                        line: "",
                                                     },
-                                                },
-                                            ),
-                                            alternatives: [
-                                                Alternative {
-                                                    type_: Number(
-                                                        Number {
-                                                            source_information: SourceInformation {
-                                                                source_name: "",
-                                                                location: Location {
-                                                                    line_number: 0,
-                                                                    column_number: 0,
+                                                ),
+                                                alternatives: [
+                                                    Alternative {
+                                                        type_: Number(
+                                                            Number {
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
                                                                 },
-                                                                line: "",
                                                             },
-                                                        },
-                                                    ),
-                                                    expression: Variable(
-                                                        Variable {
-                                                            name: "$lc$firstRest0",
-                                                            source_information: SourceInformation {
-                                                                source_name: "",
-                                                                location: Location {
-                                                                    line_number: 0,
-                                                                    column_number: 0,
+                                                        ),
+                                                        expression: Variable(
+                                                            Variable {
+                                                                name: "$lc$firstRest0",
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
                                                                 },
-                                                                line: "",
                                                             },
-                                                        },
-                                                    ),
+                                                        ),
+                                                    },
+                                                ],
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
                                                 },
-                                            ],
-                                            source_information: SourceInformation {
-                                                source_name: "",
-                                                location: Location {
-                                                    line_number: 0,
-                                                    column_number: 0,
-                                                },
-                                                line: "",
                                             },
-                                        },
-                                    ),
-                                    type_: Number(
-                                        Number {
-                                            source_information: SourceInformation {
-                                                source_name: "",
-                                                location: Location {
-                                                    line_number: 0,
-                                                    column_number: 0,
+                                        ),
+                                        type_: Number(
+                                            Number {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
                                                 },
-                                                line: "",
                                             },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
                                         },
-                                    ),
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
-                                        },
-                                        line: "",
                                     },
-                                },
-                                VariableDefinition {
-                                    name: "ys",
-                                    body: Application(
-                                        Application {
-                                            function: Variable(
-                                                Variable {
-                                                    name: "rest",
-                                                    source_information: SourceInformation {
-                                                        source_name: "",
-                                                        location: Location {
-                                                            line_number: 0,
-                                                            column_number: 0,
+                                ),
+                                VariableDefinition(
+                                    VariableDefinition {
+                                        name: "ys",
+                                        body: Application(
+                                            Application {
+                                                function: Variable(
+                                                    Variable {
+                                                        name: "rest",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
                                                         },
-                                                        line: "",
                                                     },
-                                                },
-                                            ),
-                                            argument: Variable(
-                                                Variable {
-                                                    name: "$lc$firstRest0",
-                                                    source_information: SourceInformation {
-                                                        source_name: "",
-                                                        location: Location {
-                                                            line_number: 0,
-                                                            column_number: 0,
+                                                ),
+                                                argument: Variable(
+                                                    Variable {
+                                                        name: "$lc$firstRest0",
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
                                                         },
-                                                        line: "",
                                                     },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
                                                 },
-                                            ),
-                                            source_information: SourceInformation {
-                                                source_name: "",
-                                                location: Location {
-                                                    line_number: 0,
-                                                    column_number: 0,
-                                                },
-                                                line: "",
                                             },
-                                        },
-                                    ),
-                                    type_: List(
-                                        List {
-                                            element: Number(
-                                                Number {
-                                                    source_information: SourceInformation {
-                                                        source_name: "",
-                                                        location: Location {
-                                                            line_number: 0,
-                                                            column_number: 0,
+                                        ),
+                                        type_: List(
+                                            List {
+                                                element: Number(
+                                                    Number {
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
                                                         },
-                                                        line: "",
                                                     },
+                                                ),
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
                                                 },
-                                            ),
-                                            source_information: SourceInformation {
-                                                source_name: "",
-                                                location: Location {
-                                                    line_number: 0,
-                                                    column_number: 0,
-                                                },
-                                                line: "",
                                             },
+                                        ),
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
                                         },
-                                    ),
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
-                                        },
-                                        line: "",
                                     },
-                                },
+                                ),
                             ],
                             expression: None(
                                 None {
