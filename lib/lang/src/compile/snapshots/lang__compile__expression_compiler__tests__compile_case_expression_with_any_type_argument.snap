@@ -14,33 +14,21 @@ Ok(
                 },
             ),
             expression: Case(
-                Variant(
-                    VariantCase {
-                        argument: Variable(
-                            Variable {
-                                name: "x",
-                            },
-                        ),
-                        alternatives: [
-                            VariantAlternative {
-                                type_: Record(
-                                    Record {
-                                        name: "ein_None",
-                                    },
-                                ),
-                                name: "x",
-                                expression: Record(
-                                    Record {
-                                        type_: Record {
-                                            name: "ein_None",
-                                        },
-                                        elements: [],
-                                    },
-                                ),
-                            },
-                        ],
-                        default_alternative: Some(
-                            Record(
+                Case {
+                    argument: Variable(
+                        Variable {
+                            name: "x",
+                        },
+                    ),
+                    alternatives: [
+                        Alternative {
+                            type_: Record(
+                                Record {
+                                    name: "ein_None",
+                                },
+                            ),
+                            name: "x",
+                            expression: Record(
                                 Record {
                                     type_: Record {
                                         name: "ein_None",
@@ -48,9 +36,19 @@ Ok(
                                     elements: [],
                                 },
                             ),
+                        },
+                    ],
+                    default_alternative: Some(
+                        Record(
+                            Record {
+                                type_: Record {
+                                    name: "ein_None",
+                                },
+                                elements: [],
+                            },
                         ),
-                    },
-                ),
+                    ),
+                },
             ),
         },
     ),

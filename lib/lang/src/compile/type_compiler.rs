@@ -39,7 +39,7 @@ impl TypeCompiler {
             .into(),
             Type::List(_) => self.compile_any_list().into(),
             Type::None(_) => self.compile_none().into(),
-            Type::Number(_) => eir::types::Primitive::Number.into(),
+            Type::Number(_) => eir::types::Type::Number.into(),
             Type::Record(record) => eir::types::Record::new(record.name()).into(),
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::String(_) => self.compile_string(),
@@ -94,12 +94,12 @@ impl TypeCompiler {
         eir::types::Type::Variant
     }
 
-    pub fn compile_boolean(&self) -> eir::types::Primitive {
-        eir::types::Primitive::Boolean
+    pub fn compile_boolean(&self) -> eir::types::Type {
+        eir::types::Type::Boolean
     }
 
     pub fn compile_string(&self) -> eir::types::Type {
-        eir::types::Type::String
+        eir::types::Type::ByteString
     }
 
     pub fn compile_none(&self) -> eir::types::Record {
@@ -132,7 +132,7 @@ mod tests {
     fn compile_number_type() {
         assert_eq!(
             create_type_compiler().compile(&types::Number::new(SourceInformation::dummy()).into()),
-            Ok(eir::types::Primitive::Number.into())
+            Ok(eir::types::Type::Number.into())
         );
     }
 
@@ -147,11 +147,10 @@ mod tests {
                 )
                 .into()
             ),
-            Ok(eir::types::Function::new(
-                eir::types::Primitive::Number,
-                eir::types::Primitive::Number
+            Ok(
+                eir::types::Function::new(eir::types::Type::Number, eir::types::Type::Number)
+                    .into()
             )
-            .into())
         );
     }
 
