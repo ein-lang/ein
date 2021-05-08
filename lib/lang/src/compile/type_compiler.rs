@@ -31,7 +31,7 @@ impl TypeCompiler {
     pub fn compile(&self, type_: &Type) -> Result<eir::types::Type, CompileError> {
         Ok(match type_ {
             Type::Any(_) => self.compile_any(),
-            Type::Boolean(_) => self.compile_boolean().into(),
+            Type::Boolean(_) => self.compile_boolean(),
             Type::Function(function) => eir::types::Function::new(
                 self.compile(function.argument())?,
                 self.compile(function.result())?,
@@ -39,7 +39,7 @@ impl TypeCompiler {
             .into(),
             Type::List(_) => self.compile_any_list().into(),
             Type::None(_) => self.compile_none().into(),
-            Type::Number(_) => eir::types::Type::Number.into(),
+            Type::Number(_) => eir::types::Type::Number,
             Type::Record(record) => eir::types::Record::new(record.name()).into(),
             Type::Reference(reference) => self.compile_reference(reference)?,
             Type::String(_) => self.compile_string(),
@@ -132,7 +132,7 @@ mod tests {
     fn compile_number_type() {
         assert_eq!(
             create_type_compiler().compile(&types::Number::new(SourceInformation::dummy()).into()),
-            Ok(eir::types::Type::Number.into())
+            Ok(eir::types::Type::Number)
         );
     }
 

@@ -53,8 +53,13 @@ pub fn infer_types(
 
 #[cfg(test)]
 mod tests {
-    use super::super::compile_configuration::COMPILE_CONFIGURATION;
-    use super::{super::error_type_configuration::ERROR_TYPE_CONFIGURATION, CompileError};
+    use super::{
+        super::{
+            compile_configuration::COMPILE_CONFIGURATION,
+            error_type_configuration::ERROR_TYPE_CONFIGURATION,
+        },
+        CompileError,
+    };
     use crate::{
         ast::*,
         debug::*,
