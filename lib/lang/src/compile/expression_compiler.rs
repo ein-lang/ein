@@ -158,11 +158,12 @@ impl ExpressionCompiler {
                     .compile(record.type_())?
                     .into_record()
                     .unwrap(),
-                // TODO Fix element order.
-                record
+                self.reference_type_resolver
+                    .resolve_to_record(record.type_())?
+                    .unwrap()
                     .elements()
                     .iter()
-                    .map(|(_, expression)| self.compile(expression))
+                    .map(|element| self.compile(&record.elements()[element.name()]))
                     .collect::<Result<_, _>>()?,
             )
             .into(),

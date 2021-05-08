@@ -262,6 +262,57 @@ mod tests {
     }
 
     #[test]
+    fn compile_record_construction_with_fields_not_in_alphbetical_order() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![
+                            types::RecordElement::new(
+                                "b",
+                                types::Boolean::new(SourceInformation::dummy()),
+                            ),
+                            types::RecordElement::new(
+                                "a",
+                                types::Number::new(SourceInformation::dummy()),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![VariableDefinition::new(
+                    "x",
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        vec![
+                            (
+                                "b".into(),
+                                Boolean::new(true, SourceInformation::dummy()).into(),
+                            ),
+                            (
+                                "a".into(),
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            ),
+            COMPILE_CONFIGURATION.clone(),
+        )
+        .unwrap();
+    }
+
+    #[test]
     fn compile_record_element_access() {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
