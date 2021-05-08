@@ -210,7 +210,7 @@ version = "0.4.0"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#813e407bba58686924342fd3a1c2d84af6e52949"
+source = "git+https://github.com/ein-lang/eir?branch=main#ab241e216ddfdc84addb316e084b96cc41802855"
 dependencies = [
  "pretty_assertions",
 ]
@@ -218,7 +218,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#813e407bba58686924342fd3a1c2d84af6e52949"
+source = "git+https://github.com/ein-lang/eir?branch=main#ab241e216ddfdc84addb316e084b96cc41802855"
 dependencies = [
  "eir",
  "fmm",
