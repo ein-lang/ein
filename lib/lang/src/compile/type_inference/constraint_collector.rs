@@ -372,7 +372,7 @@ impl ConstraintCollector {
                 self.solved_subsumption_set
                     .add(argument, operation.type_().clone());
 
-                Ok(utilities::get_record_element(&record_type, operation.key())?.clone())
+                Ok(utilities::get_record_element(&record_type, operation.element_name())?.clone())
             }
             Expression::String(string) => {
                 Ok(types::EinString::new(string.source_information().clone()).into())

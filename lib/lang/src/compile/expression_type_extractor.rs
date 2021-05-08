@@ -150,7 +150,7 @@ impl ExpressionTypeExtractor {
                     .reference_type_resolver
                     .resolve_to_record(operation.type_())?
                     .unwrap(),
-                operation.key(),
+                operation.element_name(),
             )?
             .clone(),
             Expression::String(string) => {

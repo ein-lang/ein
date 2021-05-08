@@ -176,7 +176,7 @@ impl ExpressionCompiler {
                     .unwrap()
                     .elements()
                     .iter()
-                    .position(|element| element.name() == operation.key())
+                    .position(|element| element.name() == operation.element_name())
                     .unwrap(),
                 self.compile(operation.argument())?,
             )

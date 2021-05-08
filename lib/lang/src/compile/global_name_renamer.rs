@@ -292,7 +292,7 @@ impl GlobalNameRenamer {
             .into(),
             Expression::RecordElementOperation(operation) => RecordElementOperation::new(
                 operation.type_().clone(),
-                operation.key(),
+                operation.element_name(),
                 self.rename_expression(operation.argument(), names),
                 operation.source_information().clone(),
             )

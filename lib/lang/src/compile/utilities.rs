@@ -3,15 +3,15 @@ use crate::types::{self, Type};
 
 pub fn get_record_element<'a>(
     record_type: &'a types::Record,
-    name: &str,
+    element_name: &str,
 ) -> Result<&'a Type, CompileError> {
     record_type
         .elements()
         .iter()
-        .find(|element| element.name() == name)
+        .find(|element| element.name() == element_name)
         .ok_or_else(|| CompileError::RecordElementNotFound {
             record_type: record_type.clone(),
-            name: name.into(),
+            name: element_name.into(),
         })
         .map(|element| element.type_())
 }
