@@ -3,7 +3,7 @@ use super::{
         error::CompileError, expression_type_extractor::ExpressionTypeExtractor,
         last_result_type_calculator::LastResultTypeCalculator,
         reference_type_resolver::ReferenceTypeResolver, type_canonicalizer::TypeCanonicalizer,
-        type_equality_checker::TypeEqualityChecker,
+        type_equality_checker::TypeEqualityChecker, utilities,
     },
     typed_meta_transformer::TypedTransformer,
 };
@@ -366,7 +366,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                                 key.clone(),
                                 self.coerce_type(
                                     expression,
-                                    &record_type.elements()[key],
+                                    utilities::get_record_element(&record_type, key)?,
                                     record_construction.source_information().clone(),
                                     variables,
                                 )?,

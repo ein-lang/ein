@@ -185,19 +185,16 @@ mod tests {
                         .canonicalize(
                             &types::Record::new(
                                 "Foo",
-                                vec![(
-                                    "foo".into(),
+                                vec![types::RecordElement::new(
+                                    "foo",
                                     types::Union::new(
                                         vec![
                                             types::None::new(SourceInformation::dummy()).into(),
                                             types::None::new(SourceInformation::dummy()).into()
                                         ],
                                         SourceInformation::dummy()
-                                    )
-                                    .into(),
-                                )]
-                                .into_iter()
-                                .collect(),
+                                    ),
+                                )],
                                 SourceInformation::dummy()
                             )
                             .into()
@@ -207,12 +204,10 @@ mod tests {
                 .unwrap()
                 .unwrap()
                 .elements(),
-            &vec![(
-                "foo".into(),
-                types::None::new(SourceInformation::dummy()).into(),
-            )]
-            .into_iter()
-            .collect(),
+            &[types::RecordElement::new(
+                "foo",
+                types::None::new(SourceInformation::dummy()),
+            )],
         );
     }
 
@@ -245,8 +240,8 @@ mod tests {
             TypeCanonicalizer::new(reference_type_resolver, type_equality_checker).canonicalize(
                 &types::Record::new(
                     "Foo",
-                    vec![(
-                        "foo".into(),
+                    vec![types::RecordElement::new(
+                        "foo",
                         types::Union::new(
                             vec![
                                 types::Any::new(SourceInformation::dummy()).into(),
@@ -254,22 +249,17 @@ mod tests {
                             ],
                             SourceInformation::dummy()
                         )
-                        .into()
-                    )]
-                    .into_iter()
-                    .collect(),
+                    )],
                     SourceInformation::dummy()
                 )
                 .into()
             ),
             Ok(types::Record::new(
                 "Foo",
-                vec![(
-                    "foo".into(),
-                    types::Any::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
+                vec![types::RecordElement::new(
+                    "foo",
+                    types::Any::new(SourceInformation::dummy()),
+                )],
                 SourceInformation::dummy()
             )
             .into())

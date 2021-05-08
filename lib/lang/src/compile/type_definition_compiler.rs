@@ -70,7 +70,7 @@ impl TypeDefinitionCompiler {
             )],
             Type::Record(record) => vec![eir::ir::TypeDefinition::new(
                 record.name(),
-                self.type_compiler.compile_record(record)?,
+                self.type_compiler.compile_record_body(record)?,
             )],
             Type::Union(union) => union
                 .types()

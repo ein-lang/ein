@@ -40,8 +40,8 @@ impl TypeComparabilityChecker {
 
                     record
                         .elements()
-                        .values()
-                        .map(|type_| self.check_with_cache(type_, &record_names))
+                        .iter()
+                        .map(|element| self.check_with_cache(element.type_(), &record_names))
                         .collect::<Result<Vec<_>, _>>()?
                         .into_iter()
                         .all(|flag| flag)
@@ -88,17 +88,14 @@ mod tests {
                 .check(
                     &types::Record::new(
                         "foo",
-                        vec![(
-                            "foo".into(),
+                        vec![types::RecordElement::new(
+                            "foo",
                             types::Function::new(
                                 types::Number::new(SourceInformation::dummy()),
                                 types::Number::new(SourceInformation::dummy()),
                                 SourceInformation::dummy(),
                             )
-                            .into()
-                        )]
-                        .into_iter()
-                        .collect(),
+                        )],
                         SourceInformation::dummy()
                     )
                     .into()
@@ -114,12 +111,10 @@ mod tests {
                 .check(
                     &types::Record::new(
                         "foo",
-                        vec![(
-                            "foo".into(),
-                            types::Any::new(SourceInformation::dummy()).into()
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Any::new(SourceInformation::dummy())
+                        )],
                         SourceInformation::dummy()
                     )
                     .into()

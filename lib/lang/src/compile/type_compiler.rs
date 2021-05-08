@@ -73,7 +73,7 @@ impl TypeCompiler {
         eir::types::Record::new(&self.list_type_configuration.list_type_name)
     }
 
-    pub fn compile_record(
+    pub fn compile_record_body(
         &self,
         record: &types::Record,
     ) -> Result<eir::types::RecordBody, CompileError> {
@@ -81,7 +81,7 @@ impl TypeCompiler {
             record
                 .elements()
                 .iter()
-                .map(|(_, type_)| self.compile(type_))
+                .map(|element| self.compile(element.type_()))
                 .collect::<Result<Vec<_>, _>>()?,
         ))
     }

@@ -1376,16 +1376,8 @@ mod tests {
 
         #[test]
         fn infer_types_of_records_with_single_keys() {
-            let record_type = types::Record::new(
-                "Foo",
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy(),
-            );
+            let record_type = types::Record::new("Foo", vec![types::RecordElement::new(
+                    "foo", types::Number::new(SourceInformation::dummy()))], SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
@@ -1445,16 +1437,8 @@ mod tests {
 
         #[test]
         fn fail_to_infer_types_of_records_due_to_wrong_member_types() {
-            let record_type = types::Record::new(
-                "Foo",
-                vec![(
-                    "foo".into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy(),
-            );
+            let record_type = types::Record::new("Foo", vec![types::RecordElement::new(
+                    "foo", types::None::new(SourceInformation::dummy()))], SourceInformation::dummy());
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
             let module = Module::from_definitions_and_type_definitions(
@@ -1526,16 +1510,8 @@ mod tests {
 
         #[test]
         fn infer_types_of_record_element_operation() {
-            let record_type = types::Record::new(
-                "Foo",
-                vec![(
-                    "foo".into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
-                SourceInformation::dummy(),
-            );
+            let record_type = types::Record::new("Foo", vec![types::RecordElement::new(
+                    "foo", types::None::new(SourceInformation::dummy()))], SourceInformation::dummy());
 
             assert_debug_snapshot!(infer_types(&Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new("Foo", record_type)],
@@ -1861,23 +1837,15 @@ mod tests {
             let module = Module::from_definitions_and_type_definitions(
                 vec![TypeDefinition::new(
                     "x",
-                    types::Record::new(
-                        "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Union::new(
+                    types::Record::new("Foo", vec![types::RecordElement::new(
+                            "foo", types::Union::new(
                                 vec![
                                     types::Any::new(SourceInformation::dummy()).into(),
                                     types::None::new(SourceInformation::dummy()).into(),
                                 ],
                                 SourceInformation::dummy(),
                             )
-                            .into(),
-                        )]
-                        .into_iter()
-                        .collect(),
-                        SourceInformation::dummy(),
-                    ),
+                            )], SourceInformation::dummy()),
                 )],
                 vec![],
             );

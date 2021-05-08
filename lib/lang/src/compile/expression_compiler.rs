@@ -175,8 +175,8 @@ impl ExpressionCompiler {
                     .resolve_to_record(operation.type_())?
                     .unwrap()
                     .elements()
-                    .keys()
-                    .position(|key| key.as_str() == operation.key())
+                    .iter()
+                    .position(|element| element.name() == operation.key())
                     .unwrap(),
                 self.compile(operation.argument())?,
             )
@@ -961,12 +961,10 @@ mod tests {
     fn compile_records() {
         let type_ = types::Record::new(
             "Foo",
-            vec![(
-                "foo".into(),
-                types::Number::new(SourceInformation::dummy()).into(),
-            )]
-            .into_iter()
-            .collect(),
+            vec![types::RecordElement::new(
+                "foo",
+                types::Number::new(SourceInformation::dummy()),
+            )],
             SourceInformation::dummy(),
         );
         let (expression_compiler, _) =

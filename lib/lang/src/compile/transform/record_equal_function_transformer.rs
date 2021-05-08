@@ -53,21 +53,21 @@ impl RecordEqualFunctionTransformer {
         let source_information = record_type.source_information();
         let mut expression: Expression = Boolean::new(true, source_information.clone()).into();
 
-        for (key, element_type) in record_type.elements() {
+        for element in record_type.elements() {
             expression = If::new(
                 expression,
                 EqualityOperation::with_type(
-                    element_type.clone(),
+                    element.type_().clone(),
                     EqualityOperator::Equal,
                     RecordElementOperation::new(
                         record_type.clone(),
-                        key,
+                        element.name(),
                         Variable::new("lhs", source_information.clone()),
                         source_information.clone(),
                     ),
                     RecordElementOperation::new(
                         record_type.clone(),
-                        key,
+                        element.name(),
                         Variable::new("rhs", source_information.clone()),
                         source_information.clone(),
                     ),

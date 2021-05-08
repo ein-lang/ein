@@ -6,10 +6,16 @@ pub enum CompileError {
     AnyEqualOperation(Arc<SourceInformation>),
     CaseArgumentTypeInvalid(Arc<SourceInformation>),
     DuplicateNames(Arc<SourceInformation>, Arc<SourceInformation>),
-    ExportedNameNotFound { name: String },
+    ExportedNameNotFound {
+        name: String,
+    },
     FunctionEqualOperation(Arc<SourceInformation>),
     FunctionExpected(Arc<SourceInformation>),
     MainFunctionNotFound(ModulePath),
+    RecordElementNotFound {
+        record_type: types::Record,
+        name: String,
+    },
     RecordEqualOperation(Arc<SourceInformation>),
     EirFmmCompile(eir_fmm::CompileError),
     TypeNotFound(types::Reference),
@@ -28,7 +34,8 @@ impl Display for CompileError {
             ),
             Self::CaseArgumentTypeInvalid(source_information) => write!(
                 formatter,
-                "invalid argument type of case expression\n{}",
+                "invalid argument type
+        of case expression\n{}",
                 source_information
             ),
             Self::ExportedNameNotFound { name } => {
@@ -39,7 +46,8 @@ impl Display for CompileError {
             }
             Self::FunctionEqualOperation(source_information) => write!(
                 formatter,
-                "cannot compare functions\n{}",
+                "cannot compare
+    functions\n{}",
                 source_information
             ),
             Self::FunctionExpected(source_information) => {
@@ -49,6 +57,12 @@ impl Display for CompileError {
                 formatter,
                 "main function not found in main module {}",
                 &path
+            ),
+            Self::RecordElementNotFound { record_type, name } => write!(
+                formatter,
+                "element \"{}\" not found in record type\n{}",
+                &name,
+                record_type.source_information()
             ),
             Self::RecordEqualOperation(source_information) => write!(
                 formatter,

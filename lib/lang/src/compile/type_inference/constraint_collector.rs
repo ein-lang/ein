@@ -2,7 +2,7 @@ use super::{
     super::{
         error::CompileError, error_type_configuration::ErrorTypeConfiguration,
         module_environment_creator::ModuleEnvironmentCreator,
-        reference_type_resolver::ReferenceTypeResolver,
+        reference_type_resolver::ReferenceTypeResolver, utilities,
     },
     subsumption_set::SubsumptionSet,
 };
@@ -10,10 +10,7 @@ use crate::{
     ast::*,
     types::{self, Type},
 };
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Arc,
-};
+use std::{collections::HashMap, sync::Arc};
 
 pub struct ConstraintCollector {
     reference_type_resolver: Arc<ReferenceTypeResolver>,
@@ -342,9 +339,7 @@ impl ConstraintCollector {
                         )
                     })?;
 
-                if construction.elements().keys().collect::<HashSet<_>>()
-                    != record_type.elements().keys().collect()
-                {
+                if construction.elements().len() != record_type.elements().len() {
                     return Err(CompileError::TypesNotMatched(
                         construction.source_information().clone(),
                         record_type.source_information().clone(),
@@ -354,8 +349,10 @@ impl ConstraintCollector {
                 for (key, expression) in construction.elements() {
                     let type_ = self.infer_expression(expression, variables)?;
 
-                    self.solved_subsumption_set
-                        .add(type_, record_type.elements()[key].clone());
+                    self.solved_subsumption_set.add(
+                        type_,
+                        utilities::get_record_element(&record_type, key)?.clone(),
+                    );
                 }
 
                 Ok(construction.type_().clone())
@@ -375,7 +372,7 @@ impl ConstraintCollector {
                 self.solved_subsumption_set
                     .add(argument, operation.type_().clone());
 
-                Ok(record_type.elements()[operation.key()].clone())
+                Ok(utilities::get_record_element(&record_type, operation.key())?.clone())
             }
             Expression::String(string) => {
                 Ok(types::EinString::new(string.source_information().clone()).into())

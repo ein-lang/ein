@@ -24,6 +24,7 @@ mod type_definition_compiler;
 mod type_equality_checker;
 mod type_id_calculator;
 mod type_inference;
+mod utilities;
 mod variable_compiler;
 
 use crate::ast::*;
@@ -231,12 +232,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Number::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Number::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 )],
@@ -272,12 +271,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Number::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Number::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 )],
@@ -338,12 +335,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Any::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Any::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 )],
@@ -582,24 +577,21 @@ mod tests {
                     types::Record::new(
                         "Foo",
                         vec![
-                            (
-                                "foo".into(),
+                            types::RecordElement::new(
+                                "foo",
                                 types::Union::new(
                                     vec![
                                         types::Any::new(SourceInformation::dummy()).into(),
                                         types::None::new(SourceInformation::dummy()).into(),
                                     ],
                                     SourceInformation::dummy(),
-                                )
-                                .into(),
+                                ),
                             ),
-                            (
-                                "bar".into(),
-                                types::Reference::new("Foo", SourceInformation::dummy()).into(),
+                            types::RecordElement::new(
+                                "bar",
+                                types::Reference::new("Foo", SourceInformation::dummy()),
                             ),
-                        ]
-                        .into_iter()
-                        .collect(),
+                        ],
                         SourceInformation::dummy(),
                     ),
                 )],
