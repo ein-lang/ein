@@ -34,8 +34,7 @@ impl Display for CompileError {
             ),
             Self::CaseArgumentTypeInvalid(source_information) => write!(
                 formatter,
-                "invalid argument type
-        of case expression\n{}",
+                "invalid argument type of case expression\n{}",
                 source_information
             ),
             Self::ExportedNameNotFound { name } => {
@@ -46,8 +45,7 @@ impl Display for CompileError {
             }
             Self::FunctionEqualOperation(source_information) => write!(
                 formatter,
-                "cannot compare
-    functions\n{}",
+                "cannot compare functions\n{}",
                 source_information
             ),
             Self::FunctionExpected(source_information) => {
