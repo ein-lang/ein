@@ -1,8 +1,8 @@
-use super::Type;
+use super::{record_element::RecordElement, Type};
 use crate::debug::SourceInformation;
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, sync::Arc};
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
 #[derivative(Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -14,14 +14,14 @@ pub struct Record {
         PartialEq = "ignore",
         PartialOrd = "ignore"
     )]
-    elements: BTreeMap<String, Type>,
+    elements: Vec<RecordElement>,
     source_information: Arc<SourceInformation>,
 }
 
 impl Record {
     pub fn new(
         name: impl Into<String>,
-        elements: BTreeMap<String, Type>,
+        elements: Vec<RecordElement>,
         source_information: impl Into<Arc<SourceInformation>>,
     ) -> Self {
         Self {
@@ -35,7 +35,7 @@ impl Record {
         &self.name
     }
 
-    pub fn elements(&self) -> &BTreeMap<String, Type> {
+    pub fn elements(&self) -> &[RecordElement] {
         &self.elements
     }
 
@@ -52,7 +52,12 @@ impl Record {
             elements: self
                 .elements
                 .iter()
-                .map(|(name, type_)| Ok((name.into(), type_.transform_types(transform)?)))
+                .map(|element| {
+                    Ok(RecordElement::new(
+                        element.name(),
+                        element.type_().transform_types(transform)?,
+                    ))
+                })
                 .collect::<Result<_, _>>()?,
             source_information: self.source_information.clone(),
         })
@@ -68,32 +73,25 @@ mod tests {
         assert_eq!(
             Record::new(
                 "Foo",
-                vec![(
-                    "foo".into(),
-                    Reference::new("Foo", SourceInformation::dummy()).into()
-                )]
-                .into_iter()
-                .collect(),
+                vec![RecordElement::new(
+                    "foo",
+                    Reference::new("Foo", SourceInformation::dummy())
+                )],
                 SourceInformation::dummy()
             ),
             Record::new(
                 "Foo",
-                vec![(
-                    "foo".into(),
+                vec![RecordElement::new(
+                    "foo",
                     Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            Reference::new("Foo", SourceInformation::dummy()).into()
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![RecordElement::new(
+                            "foo",
+                            Reference::new("Foo", SourceInformation::dummy())
+                        )],
                         SourceInformation::dummy()
-                    )
-                    .into(),
-                )]
-                .into_iter()
-                .collect(),
+                    ),
+                )],
                 SourceInformation::dummy()
             ),
         );

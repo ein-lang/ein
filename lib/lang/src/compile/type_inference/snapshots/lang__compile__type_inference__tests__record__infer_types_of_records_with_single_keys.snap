@@ -18,20 +18,23 @@ Ok(
                 type_: Record(
                     Record {
                         name: "Foo",
-                        elements: {
-                            "foo": Number(
-                                Number {
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
+                        elements: [
+                            RecordElement {
+                                name: "foo",
+                                type_: Number(
+                                    Number {
+                                        source_information: SourceInformation {
+                                            source_name: "",
+                                            location: Location {
+                                                line_number: 0,
+                                                column_number: 0,
+                                            },
+                                            line: "",
                                         },
-                                        line: "",
                                     },
-                                },
-                            ),
-                        },
+                                ),
+                            },
+                        ],
                         source_information: SourceInformation {
                             source_name: "",
                             location: Location {

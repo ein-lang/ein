@@ -1,6 +1,7 @@
 use super::{
     error::CompileError, error_type_configuration::ErrorTypeConfiguration,
     reference_type_resolver::ReferenceTypeResolver, type_canonicalizer::TypeCanonicalizer,
+    utilities,
 };
 use crate::{
     ast::*,
@@ -144,11 +145,13 @@ impl ExpressionTypeExtractor {
                     .clone(),
             },
             Expression::RecordConstruction(record) => record.type_().clone(),
-            Expression::RecordElementOperation(operation) => self
-                .reference_type_resolver
-                .resolve_to_record(operation.type_())?
-                .unwrap()
-                .elements()[operation.key()]
+            Expression::RecordElementOperation(operation) => utilities::get_record_element(
+                &self
+                    .reference_type_resolver
+                    .resolve_to_record(operation.type_())?
+                    .unwrap(),
+                operation.element_name(),
+            )?
             .clone(),
             Expression::String(string) => {
                 types::EinString::new(string.source_information().clone()).into()
@@ -222,12 +225,10 @@ mod tests {
     fn extract_type_of_record_element_operation() {
         let record_type = types::Record::new(
             "Foo",
-            vec![(
-                "foo".into(),
-                types::Number::new(SourceInformation::dummy()).into(),
-            )]
-            .into_iter()
-            .collect(),
+            vec![types::RecordElement::new(
+                "foo",
+                types::Number::new(SourceInformation::dummy()),
+            )],
             SourceInformation::dummy(),
         );
 

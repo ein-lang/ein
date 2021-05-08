@@ -31,21 +31,25 @@ impl RecordElementFunctionTransformer {
                                 record_type
                                     .elements()
                                     .iter()
-                                    .map(|(key, element_type)| {
+                                    .map(|element| {
                                         let source_information = record_type.source_information();
 
                                         FunctionDefinition::new(
-                                            format!("{}.{}", type_definition.name(), key),
+                                            format!(
+                                                "{}.{}",
+                                                type_definition.name(),
+                                                element.name()
+                                            ),
                                             vec!["record".into()],
                                             RecordElementOperation::new(
                                                 type_definition.type_().clone(),
-                                                key,
+                                                element.name(),
                                                 Variable::new("record", source_information.clone()),
                                                 source_information.clone(),
                                             ),
                                             types::Function::new(
                                                 type_definition.type_().clone(),
-                                                element_type.clone(),
+                                                element.type_().clone(),
                                                 source_information.clone(),
                                             ),
                                             source_information.clone(),
@@ -74,12 +78,10 @@ mod tests {
     fn transform_record_element_functions() {
         let record_type = types::Record::new(
             "Foo",
-            vec![(
-                "foo".into(),
-                types::None::new(SourceInformation::dummy()).into(),
-            )]
-            .into_iter()
-            .collect(),
+            vec![types::RecordElement::new(
+                "foo",
+                types::None::new(SourceInformation::dummy()),
+            )],
             SourceInformation::dummy(),
         );
 

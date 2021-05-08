@@ -24,6 +24,7 @@ mod type_definition_compiler;
 mod type_equality_checker;
 mod type_id_calculator;
 mod type_inference;
+mod utilities;
 mod variable_compiler;
 
 use crate::ast::*;
@@ -231,12 +232,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Number::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Number::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 )],
@@ -263,6 +262,57 @@ mod tests {
     }
 
     #[test]
+    fn compile_record_construction_with_fields_not_in_alphabetical_order() {
+        let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
+
+        compile(
+            &Module::from_definitions_and_type_definitions(
+                vec![TypeDefinition::new(
+                    "Foo",
+                    types::Record::new(
+                        "Foo",
+                        vec![
+                            types::RecordElement::new(
+                                "b",
+                                types::Boolean::new(SourceInformation::dummy()),
+                            ),
+                            types::RecordElement::new(
+                                "a",
+                                types::Number::new(SourceInformation::dummy()),
+                            ),
+                        ],
+                        SourceInformation::dummy(),
+                    ),
+                )],
+                vec![VariableDefinition::new(
+                    "x",
+                    RecordConstruction::new(
+                        reference_type.clone(),
+                        vec![
+                            (
+                                "b".into(),
+                                Boolean::new(true, SourceInformation::dummy()).into(),
+                            ),
+                            (
+                                "a".into(),
+                                Number::new(42.0, SourceInformation::dummy()).into(),
+                            ),
+                        ]
+                        .into_iter()
+                        .collect(),
+                        SourceInformation::dummy(),
+                    ),
+                    reference_type,
+                    SourceInformation::dummy(),
+                )
+                .into()],
+            ),
+            COMPILE_CONFIGURATION.clone(),
+        )
+        .unwrap();
+    }
+
+    #[test]
     fn compile_record_element_access() {
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
 
@@ -272,12 +322,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Number::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Number::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 )],
@@ -338,12 +386,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Any::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Any::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 )],
@@ -582,24 +628,21 @@ mod tests {
                     types::Record::new(
                         "Foo",
                         vec![
-                            (
-                                "foo".into(),
+                            types::RecordElement::new(
+                                "foo",
                                 types::Union::new(
                                     vec![
                                         types::Any::new(SourceInformation::dummy()).into(),
                                         types::None::new(SourceInformation::dummy()).into(),
                                     ],
                                     SourceInformation::dummy(),
-                                )
-                                .into(),
+                                ),
                             ),
-                            (
-                                "bar".into(),
-                                types::Reference::new("Foo", SourceInformation::dummy()).into(),
+                            types::RecordElement::new(
+                                "bar",
+                                types::Reference::new("Foo", SourceInformation::dummy()),
                             ),
-                        ]
-                        .into_iter()
-                        .collect(),
+                        ],
                         SourceInformation::dummy(),
                     ),
                 )],

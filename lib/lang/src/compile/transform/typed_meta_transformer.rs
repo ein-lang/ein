@@ -309,7 +309,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             .into(),
             Expression::RecordElementOperation(operation) => RecordElementOperation::new(
                 operation.type_().clone(),
-                operation.key(),
+                operation.element_name(),
                 self.transform_expression(operation.argument(), variables)?,
                 operation.source_information().clone(),
             )

@@ -158,11 +158,12 @@ impl ExpressionCompiler {
                     .compile(record.type_())?
                     .into_record()
                     .unwrap(),
-                // TODO Fix element order.
-                record
+                self.reference_type_resolver
+                    .resolve_to_record(record.type_())?
+                    .unwrap()
                     .elements()
                     .iter()
-                    .map(|(_, expression)| self.compile(expression))
+                    .map(|element| self.compile(&record.elements()[element.name()]))
                     .collect::<Result<_, _>>()?,
             )
             .into(),
@@ -175,8 +176,8 @@ impl ExpressionCompiler {
                     .resolve_to_record(operation.type_())?
                     .unwrap()
                     .elements()
-                    .keys()
-                    .position(|key| key.as_str() == operation.key())
+                    .iter()
+                    .position(|element| element.name() == operation.element_name())
                     .unwrap(),
                 self.compile(operation.argument())?,
             )
@@ -961,12 +962,10 @@ mod tests {
     fn compile_records() {
         let type_ = types::Record::new(
             "Foo",
-            vec![(
-                "foo".into(),
-                types::Number::new(SourceInformation::dummy()).into(),
-            )]
-            .into_iter()
-            .collect(),
+            vec![types::RecordElement::new(
+                "foo",
+                types::Number::new(SourceInformation::dummy()),
+            )],
             SourceInformation::dummy(),
         );
         let (expression_compiler, _) =

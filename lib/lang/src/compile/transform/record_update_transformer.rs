@@ -39,12 +39,12 @@ impl RecordUpdateTransformer {
                         record_type
                             .elements()
                             .iter()
-                            .map(|(key, _)| {
+                            .map(|element| {
                                 (
-                                    key.clone(),
+                                    element.name().into(),
                                     RecordElementOperation::new(
                                         record_update.type_().clone(),
-                                        key,
+                                        element.name(),
                                         Variable::new(&name, source_information.clone()),
                                         source_information.clone(),
                                     )
@@ -76,17 +76,9 @@ mod tests {
         let record_type = types::Record::new(
             "Foo",
             vec![
-                (
-                    "foo".into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ),
-                (
-                    "bar".into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                ),
-            ]
-            .into_iter()
-            .collect(),
+                types::RecordElement::new("foo", types::None::new(SourceInformation::dummy())),
+                types::RecordElement::new("bar", types::None::new(SourceInformation::dummy())),
+            ],
             SourceInformation::dummy(),
         );
         let reference_type = types::Reference::new("Foo", SourceInformation::dummy());

@@ -76,7 +76,7 @@ impl GlobalNameRenamer {
             Ok(match type_ {
                 Type::Record(record) => types::Record::new(
                     self.rename_name(record.name(), &self.names),
-                    record.elements().clone(),
+                    record.elements().to_vec(),
                     record.source_information().clone(),
                 )
                 .into(),
@@ -292,7 +292,7 @@ impl GlobalNameRenamer {
             .into(),
             Expression::RecordElementOperation(operation) => RecordElementOperation::new(
                 operation.type_().clone(),
-                operation.key(),
+                operation.element_name(),
                 self.rename_expression(operation.argument(), names),
                 operation.source_information().clone(),
             )

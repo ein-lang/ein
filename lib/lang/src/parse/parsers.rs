@@ -320,17 +320,22 @@ fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefiniti
             sep_end_by1((identifier().skip(sign(":")), type_()), sign(",")),
         )),
     )
-        .map(|(_, source_information, name, elements)| {
-            let elements: Option<Vec<_>> = elements;
-            TypeDefinition::new(
-                &name,
-                types::Record::new(
+        .map(
+            |(_, source_information, name, elements): (_, _, _, Option<Vec<_>>)| {
+                TypeDefinition::new(
                     &name,
-                    elements.unwrap_or_default().into_iter().collect(),
-                    source_information,
-                ),
-            )
-        })
+                    types::Record::new(
+                        &name,
+                        elements
+                            .unwrap_or_default()
+                            .into_iter()
+                            .map(|(name, type_)| types::RecordElement::new(name, type_))
+                            .collect(),
+                        source_information,
+                    ),
+                )
+            },
+        )
         .expected("record type definition")
 }
 
@@ -1333,12 +1338,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Number::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Number::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 ),
@@ -1349,12 +1352,10 @@ mod tests {
                     "Foo",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
-                            types::Number::new(SourceInformation::dummy()).into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                        vec![types::RecordElement::new(
+                            "foo",
+                            types::Number::new(SourceInformation::dummy()),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 ),
@@ -1366,17 +1367,15 @@ mod tests {
                     types::Record::new(
                         "Foo",
                         vec![
-                            (
-                                "foo".into(),
-                                types::Number::new(SourceInformation::dummy()).into(),
+                            types::RecordElement::new(
+                                "foo",
+                                types::Number::new(SourceInformation::dummy()),
                             ),
-                            (
-                                "bar".into(),
-                                types::Number::new(SourceInformation::dummy()).into(),
+                            types::RecordElement::new(
+                                "bar",
+                                types::Number::new(SourceInformation::dummy()),
                             ),
-                        ]
-                        .into_iter()
-                        .collect(),
+                        ],
                         SourceInformation::dummy(),
                     ),
                 ),
@@ -1388,17 +1387,15 @@ mod tests {
                     types::Record::new(
                         "Foo",
                         vec![
-                            (
-                                "foo".into(),
-                                types::Number::new(SourceInformation::dummy()).into(),
+                            types::RecordElement::new(
+                                "foo",
+                                types::Number::new(SourceInformation::dummy()),
                             ),
-                            (
-                                "bar".into(),
-                                types::Number::new(SourceInformation::dummy()).into(),
+                            types::RecordElement::new(
+                                "bar",
+                                types::Number::new(SourceInformation::dummy()),
                             ),
-                        ]
-                        .into_iter()
-                        .collect(),
+                        ],
                         SourceInformation::dummy(),
                     ),
                 ),

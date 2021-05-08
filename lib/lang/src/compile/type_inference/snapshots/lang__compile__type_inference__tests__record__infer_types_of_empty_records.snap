@@ -18,7 +18,7 @@ Ok(
                 type_: Record(
                     Record {
                         name: "Foo",
-                        elements: {},
+                        elements: [],
                         source_information: SourceInformation {
                             source_name: "",
                             location: Location {

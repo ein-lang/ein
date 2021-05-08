@@ -1378,12 +1378,10 @@ mod tests {
         fn infer_types_of_records_with_single_keys() {
             let record_type = types::Record::new(
                 "Foo",
-                vec![(
-                    "foo".into(),
-                    types::Number::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
+                vec![types::RecordElement::new(
+                    "foo",
+                    types::Number::new(SourceInformation::dummy()),
+                )],
                 SourceInformation::dummy(),
             );
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
@@ -1447,12 +1445,10 @@ mod tests {
         fn fail_to_infer_types_of_records_due_to_wrong_member_types() {
             let record_type = types::Record::new(
                 "Foo",
-                vec![(
-                    "foo".into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
+                vec![types::RecordElement::new(
+                    "foo",
+                    types::None::new(SourceInformation::dummy()),
+                )],
                 SourceInformation::dummy(),
             );
             let reference_type = types::Reference::new("Foo", SourceInformation::dummy());
@@ -1528,12 +1524,10 @@ mod tests {
         fn infer_types_of_record_element_operation() {
             let record_type = types::Record::new(
                 "Foo",
-                vec![(
-                    "foo".into(),
-                    types::None::new(SourceInformation::dummy()).into(),
-                )]
-                .into_iter()
-                .collect(),
+                vec![types::RecordElement::new(
+                    "foo",
+                    types::None::new(SourceInformation::dummy()),
+                )],
                 SourceInformation::dummy(),
             );
 
@@ -1863,19 +1857,16 @@ mod tests {
                     "x",
                     types::Record::new(
                         "Foo",
-                        vec![(
-                            "foo".into(),
+                        vec![types::RecordElement::new(
+                            "foo",
                             types::Union::new(
                                 vec![
                                     types::Any::new(SourceInformation::dummy()).into(),
                                     types::None::new(SourceInformation::dummy()).into(),
                                 ],
                                 SourceInformation::dummy(),
-                            )
-                            .into(),
-                        )]
-                        .into_iter()
-                        .collect(),
+                            ),
+                        )],
                         SourceInformation::dummy(),
                     ),
                 )],

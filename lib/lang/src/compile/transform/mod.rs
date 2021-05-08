@@ -405,10 +405,8 @@ mod tests {
                         "Foo",
                         types::Record::new(
                             "Foo",
-                            vec![("foo".into(), union_type.into())]
-                                .into_iter()
-                                .collect(),
-                            SourceInformation::dummy(),
+                            vec![types::RecordElement::new("foo", union_type)],
+                            SourceInformation::dummy()
                         )
                     )],
                     vec![VariableDefinition::new(
