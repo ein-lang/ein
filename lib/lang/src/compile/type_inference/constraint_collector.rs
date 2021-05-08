@@ -172,13 +172,17 @@ impl ConstraintCollector {
             Expression::Let(let_) => {
                 let mut variables = variables.clone();
 
-                for variable_definition in let_.definitions() {
-                    self.infer_variable_definition(variable_definition, &variables)?;
-
-                    variables.insert(
-                        variable_definition.name().into(),
-                        variable_definition.type_().clone(),
-                    );
+                for definition in let_.definitions() {
+                    match definition {
+                        Definition::FunctionDefinition(definition) => {
+                            variables.insert(definition.name().into(), definition.type_().clone());
+                            self.infer_function_definition(definition, &variables)?;
+                        }
+                        Definition::VariableDefinition(definition) => {
+                            self.infer_variable_definition(definition, &variables)?;
+                            variables.insert(definition.name().into(), definition.type_().clone());
+                        }
+                    }
                 }
 
                 self.infer_expression(let_.expression(), &variables)
@@ -222,22 +226,6 @@ impl ConstraintCollector {
                 );
 
                 Ok(result_type.into())
-            }
-            Expression::LetRecursive(let_) => {
-                let mut variables = variables.clone();
-
-                for function_definition in let_.definitions() {
-                    variables.insert(
-                        function_definition.name().into(),
-                        function_definition.type_().clone(),
-                    );
-                }
-
-                for function_definition in let_.definitions() {
-                    self.infer_function_definition(function_definition, &variables)?;
-                }
-
-                self.infer_expression(let_.expression(), &variables)
             }
             Expression::List(list) => {
                 let element_type = types::Variable::new(list.source_information().clone());

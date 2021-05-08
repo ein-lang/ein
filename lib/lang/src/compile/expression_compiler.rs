@@ -65,20 +65,16 @@ impl ExpressionCompiler {
                 self.compile(application.argument())?,
             )
             .into(),
-            Expression::Boolean(boolean) => eir::ir::Primitive::Boolean(boolean.value()).into(),
+            Expression::Boolean(boolean) => boolean.value().into(),
             Expression::Case(case) => self.compile_case(case)?,
-            Expression::If(if_) => eir::ir::PrimitiveCase::new(
+            Expression::If(if_) => eir::ir::If::new(
                 self.compile(if_.condition())?,
-                vec![
-                    eir::ir::PrimitiveAlternative::new(true, self.compile(if_.then())?),
-                    eir::ir::PrimitiveAlternative::new(false, self.compile(if_.else_())?),
-                ],
-                None,
+                self.compile(if_.then())?,
+                self.compile(if_.else_())?,
             )
             .into(),
             Expression::Let(let_) => self.compile_let(let_)?,
             Expression::LetError(let_) => self.compile_let_error(let_)?,
-            Expression::LetRecursive(let_) => self.compile_let_recursive(let_)?.into(),
             Expression::None(_) => {
                 eir::ir::Record::new(self.type_compiler.compile_none(), vec![]).into()
             }
@@ -94,7 +90,7 @@ impl ExpressionCompiler {
                     .list_case_transformer
                     .transform(case)?,
             )?,
-            Expression::Number(number) => eir::ir::Primitive::Number(number.value()).into(),
+            Expression::Number(number) => number.value().into(),
             Expression::Operation(operation) => match operation {
                 Operation::Arithmetic(operation) => eir::ir::ArithmeticOperation::new(
                     Self::compile_arithmetic_operator(operation.operator()),
@@ -185,7 +181,7 @@ impl ExpressionCompiler {
                 self.compile(operation.argument())?,
             )
             .into(),
-            Expression::String(string) => eir::ir::EirString::new(string.value()).into(),
+            Expression::String(string) => eir::ir::ByteString::new(string.value()).into(),
             Expression::TypeCoercion(coercion) => {
                 if self.reference_type_resolver.is_list(coercion.from())?
                     && self.reference_type_resolver.is_list(coercion.to())?
@@ -282,57 +278,51 @@ impl ExpressionCompiler {
         })
     }
 
-    fn compile_let_recursive(
-        &self,
-        let_: &LetRecursive,
-    ) -> Result<eir::ir::LetRecursive, CompileError> {
-        Ok(eir::ir::LetRecursive::new(
-            let_.definitions()
-                .iter()
-                .map(|function_definition| {
-                    let type_ = self
-                        .reference_type_resolver
-                        .resolve_to_function(function_definition.type_())?
-                        .unwrap();
-
-                    Ok(eir::ir::Definition::new(
-                        function_definition.name(),
-                        function_definition
-                            .arguments()
-                            .iter()
-                            .zip(type_.arguments())
-                            .map(|(name, type_)| {
-                                Ok(eir::ir::Argument::new(
-                                    name.clone(),
-                                    self.type_compiler.compile(type_)?,
-                                ))
-                            })
-                            .collect::<Result<_, CompileError>>()?,
-                        self.compile(function_definition.body())?,
-                        self.type_compiler.compile(
-                            &self.last_result_type_calculator.calculate(
-                                function_definition.type_(),
-                                function_definition.arguments().len(),
-                            )?,
-                        )?,
-                    ))
-                })
-                .collect::<Result<Vec<_>, CompileError>>()?,
-            self.compile(let_.expression())?,
-        ))
-    }
-
     fn compile_let(&self, let_: &Let) -> Result<eir::ir::Expression, CompileError> {
         let_.definitions().iter().rev().fold(
             self.compile(let_.expression()),
-            |expression, variable_definition| {
-                Ok(eir::ir::Let::new(
-                    variable_definition.name(),
-                    self.type_compiler.compile(variable_definition.type_())?,
-                    self.compile(variable_definition.body())?,
-                    expression?,
-                )
-                .into())
+            |expression, definition| {
+                Ok(match definition {
+                    Definition::FunctionDefinition(definition) => {
+                        let type_ = self
+                            .reference_type_resolver
+                            .resolve_to_function(definition.type_())?
+                            .unwrap();
+
+                        eir::ir::LetRecursive::new(
+                            eir::ir::Definition::new(
+                                definition.name(),
+                                definition
+                                    .arguments()
+                                    .iter()
+                                    .zip(type_.arguments())
+                                    .map(|(name, type_)| {
+                                        Ok(eir::ir::Argument::new(
+                                            name.clone(),
+                                            self.type_compiler.compile(type_)?,
+                                        ))
+                                    })
+                                    .collect::<Result<_, CompileError>>()?,
+                                self.compile(definition.body())?,
+                                self.type_compiler.compile(
+                                    &self.last_result_type_calculator.calculate(
+                                        definition.type_(),
+                                        definition.arguments().len(),
+                                    )?,
+                                )?,
+                            ),
+                            expression?,
+                        )
+                        .into()
+                    }
+                    Definition::VariableDefinition(definition) => eir::ir::Let::new(
+                        definition.name(),
+                        self.type_compiler.compile(definition.type_())?,
+                        self.compile(definition.body())?,
+                        expression?,
+                    )
+                    .into(),
+                })
             },
         )
     }
@@ -359,7 +349,7 @@ impl ExpressionCompiler {
             case.name(),
             self.type_compiler.compile(case.type_())?,
             self.compile(case.argument())?,
-            eir::ir::VariantCase::new(
+            eir::ir::Case::new(
                 eir::ir::Variable::new(case.name()),
                 case.alternatives()
                     .iter()
@@ -394,7 +384,7 @@ impl ExpressionCompiler {
         &self,
         alternative: &Alternative,
         variable_name: &str,
-    ) -> Result<Option<Vec<eir::ir::VariantAlternative>>, CompileError> {
+    ) -> Result<Option<Vec<eir::ir::Alternative>>, CompileError> {
         Ok(
             match &self.reference_type_resolver.resolve(alternative.type_())? {
                 Type::Any(_) => None,
@@ -403,7 +393,7 @@ impl ExpressionCompiler {
                 | Type::None(_)
                 | Type::Number(_)
                 | Type::Record(_)
-                | Type::String(_) => Some(vec![eir::ir::VariantAlternative::new(
+                | Type::String(_) => Some(vec![eir::ir::Alternative::new(
                     self.type_compiler.compile(alternative.type_())?,
                     variable_name,
                     self.compile(alternative.expression())?,
@@ -411,7 +401,7 @@ impl ExpressionCompiler {
                 Type::List(list_type) => {
                     let list_type = self.type_compiler.compile_list(list_type)?;
 
-                    Some(vec![eir::ir::VariantAlternative::new(
+                    Some(vec![eir::ir::Alternative::new(
                         list_type.clone(),
                         variable_name,
                         eir::ir::Let::new(
@@ -433,7 +423,7 @@ impl ExpressionCompiler {
                         .map(|type_| -> Result<_, CompileError> {
                             let type_ = self.type_compiler.compile(type_)?;
 
-                            Ok(eir::ir::VariantAlternative::new(
+                            Ok(eir::ir::Alternative::new(
                                 type_.clone(),
                                 variable_name,
                                 eir::ir::Let::new(
@@ -647,7 +637,8 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -655,7 +646,7 @@ mod tests {
             ),
             Ok(eir::ir::Let::new(
                 "x",
-                eir::types::Primitive::Number,
+                eir::types::Type::Number,
                 42.0,
                 eir::ir::Variable::new("x")
             )
@@ -676,13 +667,15 @@ mod tests {
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        ),
+                        )
+                        .into(),
                         VariableDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Number::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
+                        .into()
                     ],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
@@ -691,11 +684,11 @@ mod tests {
             ),
             Ok(eir::ir::Let::new(
                 "x",
-                eir::types::Primitive::Number,
+                eir::types::Type::Number,
                 42.0,
                 eir::ir::Let::new(
                     "y",
-                    eir::types::Primitive::Number,
+                    eir::types::Type::Number,
                     42.0,
                     eir::ir::Variable::new("x")
                 )
@@ -705,12 +698,12 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_recursive() {
+    fn compile_let_with_function_definition() {
         let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
-                &LetRecursive::new(
+                &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -721,19 +714,20 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into(),
             ),
             Ok(eir::ir::LetRecursive::new(
-                vec![eir::ir::Definition::new(
+                eir::ir::Definition::new(
                     "f",
-                    vec![eir::ir::Argument::new("x", eir::types::Primitive::Number)],
+                    vec![eir::ir::Argument::new("x", eir::types::Type::Number)],
                     42.0,
-                    eir::types::Primitive::Number,
-                )],
+                    eir::types::Type::Number,
+                ),
                 eir::ir::Variable::new("x")
             )
             .into())
@@ -741,12 +735,12 @@ mod tests {
     }
 
     #[test]
-    fn compile_let_recursive_with_recursive_functions() {
+    fn compile_let_with_recursive_functions() {
         let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
-                &LetRecursive::new(
+                &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -761,22 +755,23 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into(),
             ),
             Ok(eir::ir::LetRecursive::new(
-                vec![eir::ir::Definition::new(
+                eir::ir::Definition::new(
                     "f",
-                    vec![eir::ir::Argument::new("x", eir::types::Primitive::Number)],
+                    vec![eir::ir::Argument::new("x", eir::types::Type::Number)],
                     eir::ir::FunctionApplication::new(
                         eir::ir::Variable::new("f"),
                         eir::ir::Variable::new("x"),
                     ),
-                    eir::types::Primitive::Number,
-                )],
+                    eir::types::Type::Number,
+                ),
                 eir::ir::Variable::new("x")
             )
             .into())
@@ -784,16 +779,16 @@ mod tests {
     }
 
     #[test]
-    fn compile_nested_let_recursive() {
+    fn compile_nested_let() {
         let (expression_compiler, _) = create_expression_compiler(&Module::dummy());
 
         assert_eq!(
             expression_compiler.compile(
-                &LetRecursive::new(
+                &Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
-                        LetRecursive::new(
+                        Let::new(
                             vec![FunctionDefinition::new(
                                 "g",
                                 vec!["y".into()],
@@ -804,7 +799,8 @@ mod tests {
                                     SourceInformation::dummy()
                                 ),
                                 SourceInformation::dummy()
-                            )],
+                            )
+                            .into()],
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
                         ),
@@ -814,27 +810,28 @@ mod tests {
                             SourceInformation::dummy()
                         ),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
                 .into(),
             ),
             Ok(eir::ir::LetRecursive::new(
-                vec![eir::ir::Definition::new(
+                eir::ir::Definition::new(
                     "f",
-                    vec![eir::ir::Argument::new("x", eir::types::Primitive::Number)],
+                    vec![eir::ir::Argument::new("x", eir::types::Type::Number)],
                     eir::ir::LetRecursive::new(
-                        vec![eir::ir::Definition::new(
+                        eir::ir::Definition::new(
                             "g",
-                            vec![eir::ir::Argument::new("y", eir::types::Primitive::Number)],
+                            vec![eir::ir::Argument::new("y", eir::types::Type::Number)],
                             eir::ir::Variable::new("x"),
-                            eir::types::Primitive::Number,
-                        )],
+                            eir::types::Type::Number,
+                        ),
                         eir::ir::Variable::new("x")
                     ),
-                    eir::types::Primitive::Number,
-                )],
+                    eir::types::Type::Number,
+                ),
                 eir::ir::Variable::new("x")
             )
             .into())
@@ -853,8 +850,9 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
-                    LetRecursive::new(
+                    )
+                    .into()],
+                    Let::new(
                         vec![FunctionDefinition::new(
                             "f",
                             vec!["x".into()],
@@ -865,7 +863,8 @@ mod tests {
                                 SourceInformation::dummy()
                             ),
                             SourceInformation::dummy()
-                        )],
+                        )
+                        .into()],
                         Variable::new("y", SourceInformation::dummy()),
                         SourceInformation::dummy()
                     ),
@@ -875,15 +874,15 @@ mod tests {
             ),
             Ok(eir::ir::Let::new(
                 "y",
-                eir::types::Primitive::Number,
+                eir::types::Type::Number,
                 42.0,
                 eir::ir::LetRecursive::new(
-                    vec![eir::ir::Definition::new(
+                    eir::ir::Definition::new(
                         "f",
-                        vec![eir::ir::Argument::new("x", eir::types::Primitive::Number)],
+                        vec![eir::ir::Argument::new("x", eir::types::Type::Number)],
                         eir::ir::Variable::new("y"),
-                        eir::types::Primitive::Number,
-                    )],
+                        eir::types::Type::Number,
+                    ),
                     eir::ir::Variable::new("y")
                 )
             )
@@ -905,15 +904,7 @@ mod tests {
                 )
                 .into(),
             ),
-            Ok(eir::ir::PrimitiveCase::new(
-                eir::ir::Primitive::Boolean(true),
-                vec![
-                    eir::ir::PrimitiveAlternative::new(eir::ir::Primitive::Boolean(true), 1.0),
-                    eir::ir::PrimitiveAlternative::new(eir::ir::Primitive::Boolean(false), 2.0),
-                ],
-                None
-            )
-            .into())
+            Ok(eir::ir::If::new(true, 1.0, 2.0).into())
         );
     }
 
@@ -1028,11 +1019,7 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::Variant::new(
-                    eir::types::Primitive::Boolean,
-                    eir::ir::Primitive::Boolean(true)
-                )
-                .into())
+                Ok(eir::ir::Variant::new(eir::types::Type::Boolean, true).into())
             );
         }
 
@@ -1134,11 +1121,10 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::Variant::new(
-                    eir::types::Primitive::Boolean,
-                    eir::ir::Variable::new("x")
+                Ok(
+                    eir::ir::Variant::new(eir::types::Type::Boolean, eir::ir::Variable::new("x"))
+                        .into()
                 )
-                .into())
             );
         }
 

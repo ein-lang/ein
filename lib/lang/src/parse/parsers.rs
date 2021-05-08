@@ -551,8 +551,10 @@ fn let_<'a>() -> impl Parser<Stream<'a>, Output = Let> {
         source_information(),
         keyword("let").expected("let keyword"),
         many1(choice!(
-            variable_definition(),
-            untyped_variable_definition()
+            variable_definition().map(From::from),
+            untyped_variable_definition().map(From::from),
+            function_definition().map(From::from),
+            untyped_function_definition().map(From::from),
         )),
         keyword("in").expected("in keyword"),
         expression(),
@@ -575,23 +577,6 @@ fn let_error<'a>() -> impl Parser<Stream<'a>, Output = LetError> {
             LetError::new(definitions, expression, source_information)
         })
         .expected("let-error expression")
-}
-
-fn let_recursive<'a>() -> impl Parser<Stream<'a>, Output = LetRecursive> {
-    (
-        source_information(),
-        keyword("let").expected("let keyword"),
-        many1(choice!(
-            function_definition(),
-            untyped_function_definition()
-        )),
-        keyword("in").expected("in keyword"),
-        expression(),
-    )
-        .map(|(source_information, _, definitions, _, expression)| {
-            LetRecursive::new(definitions, expression, source_information)
-        })
-        .expected("let-recursive expression")
 }
 
 fn application_or_atomic_expression<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
@@ -712,7 +697,7 @@ fn term<'a>() -> impl Parser<Stream<'a>, Output = Expression> {
         list_case().map(Expression::from),
         let_().map(Expression::from),
         let_error().map(Expression::from),
-        let_recursive().map(Expression::from),
+        let_().map(Expression::from),
     )
 }
 
@@ -1999,7 +1984,8 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Number::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -2012,7 +1998,8 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -2025,7 +2012,8 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -2038,7 +2026,8 @@ mod tests {
                         Number::new(42.0, SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
@@ -2055,13 +2044,15 @@ mod tests {
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        ),
+                        )
+                        .into(),
                         VariableDefinition::new(
                             "y",
                             Number::new(42.0, SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
+                        .into(),
                     ],
                     Variable::new("x", SourceInformation::dummy()),
                     SourceInformation::dummy()
@@ -2160,27 +2151,25 @@ mod tests {
         }
 
         #[test]
-        fn parse_let_recursive() {
-            assert!(let_recursive().parse(stream("let in 0", "")).is_err());
+        fn parse_let_with_function_definitions() {
+            assert!(let_().parse(stream("let in 0", "")).is_err());
             assert_eq!(
-                let_recursive()
-                    .parse(stream("let f x = x in f", ""))
-                    .unwrap()
-                    .0,
-                LetRecursive::new(
+                let_().parse(stream("let f x = x in f", "")).unwrap().0,
+                Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
                         Variable::new("x", SourceInformation::dummy()),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    )],
+                    )
+                    .into()],
                     Variable::new("f", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
             );
             assert_eq!(
-                let_recursive()
+                let_()
                     .parse(stream(
                         indoc!(
                             "
@@ -2197,7 +2186,7 @@ mod tests {
                     ))
                     .unwrap()
                     .0,
-                LetRecursive::new(
+                Let::new(
                     vec![
                         FunctionDefinition::new(
                             "f",
@@ -2205,7 +2194,8 @@ mod tests {
                             Variable::new("x", SourceInformation::dummy()),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        ),
+                        )
+                        .into(),
                         FunctionDefinition::new(
                             "g",
                             vec!["x".into()],
@@ -2217,13 +2207,14 @@ mod tests {
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
+                        .into(),
                     ],
                     Variable::new("g", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
             );
             assert_eq!(
-                let_recursive()
+                let_()
                     .parse(stream(
                         indoc!(
                             "
@@ -2237,7 +2228,7 @@ mod tests {
                     ))
                     .unwrap()
                     .0,
-                LetRecursive::new(
+                Let::new(
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
@@ -2248,13 +2239,14 @@ mod tests {
                         ),
                         types::Unknown::new(SourceInformation::dummy()),
                         SourceInformation::dummy()
-                    ),],
+                    )
+                    .into()],
                     Variable::new("f", SourceInformation::dummy()),
                     SourceInformation::dummy()
                 )
             );
             assert_eq!(
-                let_recursive()
+                let_()
                     .parse(stream(
                         indoc!(
                             "
@@ -2269,7 +2261,7 @@ mod tests {
                     ))
                     .unwrap()
                     .0,
-                LetRecursive::new(
+                Let::new(
                     vec![
                         FunctionDefinition::new(
                             "f",
@@ -2281,7 +2273,8 @@ mod tests {
                             ),
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
-                        ),
+                        )
+                        .into(),
                         FunctionDefinition::new(
                             "h",
                             vec!["x".into()],
@@ -2293,6 +2286,7 @@ mod tests {
                             types::Unknown::new(SourceInformation::dummy()),
                             SourceInformation::dummy()
                         )
+                        .into(),
                     ],
                     Variable::new("f", SourceInformation::dummy()),
                     SourceInformation::dummy()

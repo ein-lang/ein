@@ -1,7 +1,7 @@
 use super::{
     application::Application, boolean::Boolean, case::Case, if_::If, let_::Let,
-    let_error::LetError, let_recursive::LetRecursive, list::List, list_case::ListCase, none::None,
-    number::Number, operation::Operation, record_construction::RecordConstruction,
+    let_error::LetError, list::List, list_case::ListCase, none::None, number::Number,
+    operation::Operation, record_construction::RecordConstruction,
     record_element_operation::RecordElementOperation, record_update::RecordUpdate,
     string::EinString, type_coercion::TypeCoercion, variable::Variable,
 };
@@ -16,7 +16,6 @@ pub enum Expression {
     If(If),
     Let(Let),
     LetError(LetError),
-    LetRecursive(LetRecursive),
     List(List),
     ListCase(ListCase),
     None(None),
@@ -44,7 +43,6 @@ impl Expression {
             Self::If(if_) => if_.source_information(),
             Self::Let(let_) => let_.source_information(),
             Self::LetError(let_) => let_.source_information(),
-            Self::LetRecursive(let_) => let_.source_information(),
             Self::List(list) => list.source_information(),
             Self::ListCase(case) => case.source_information(),
             Self::Operation(operation) => operation.source_information(),
@@ -75,7 +73,6 @@ impl Expression {
             Self::If(if_) => if_.transform_expressions(transform)?.into(),
             Self::Let(let_) => let_.transform_expressions(transform)?.into(),
             Self::LetError(let_) => let_.transform_expressions(transform)?.into(),
-            Self::LetRecursive(let_) => let_.transform_expressions(transform)?.into(),
             Self::List(list) => list.transform_expressions(transform)?.into(),
             Self::ListCase(case) => case.transform_expressions(transform)?.into(),
             Self::Operation(operation) => operation.transform_expressions(transform)?.into(),
@@ -105,7 +102,6 @@ impl Expression {
             Self::If(if_) => if_.transform_types(transform)?.into(),
             Self::Let(let_) => let_.transform_types(transform)?.into(),
             Self::LetError(let_) => let_.transform_types(transform)?.into(),
-            Self::LetRecursive(let_) => let_.transform_types(transform)?.into(),
             Self::List(list) => list.transform_types(transform)?.into(),
             Self::ListCase(case) => case.transform_types(transform)?.into(),
             Self::Operation(operation) => operation.transform_types(transform)?.into(),
@@ -176,12 +172,6 @@ impl From<Let> for Expression {
 impl From<LetError> for Expression {
     fn from(let_: LetError) -> Self {
         Self::LetError(let_)
-    }
-}
-
-impl From<LetRecursive> for Expression {
-    fn from(let_: LetRecursive) -> Self {
-        Self::LetRecursive(let_)
     }
 }
 

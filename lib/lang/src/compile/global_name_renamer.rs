@@ -169,10 +169,19 @@ impl GlobalNameRenamer {
                 let mut names = names.clone();
                 let mut definitions = vec![];
 
-                for variable_definition in let_.definitions() {
-                    definitions.push(self.rename_variable_definition(variable_definition, &names));
-
-                    names.remove(variable_definition.name());
+                for definition in let_.definitions() {
+                    match definition {
+                        Definition::FunctionDefinition(definition) => {
+                            names.remove(definition.name());
+                            definitions
+                                .push(self.rename_function_definition(definition, &names).into());
+                        }
+                        Definition::VariableDefinition(definition) => {
+                            definitions
+                                .push(self.rename_variable_definition(definition, &names).into());
+                            names.remove(definition.name());
+                        }
+                    }
                 }
 
                 Let::new(
@@ -194,26 +203,6 @@ impl GlobalNameRenamer {
 
                 LetError::with_type(
                     let_.type_().clone(),
-                    definitions,
-                    self.rename_expression(let_.expression(), &names),
-                    let_.source_information().clone(),
-                )
-                .into()
-            }
-            Expression::LetRecursive(let_) => {
-                let mut names = names.clone();
-
-                for function_definition in let_.definitions() {
-                    names.remove(function_definition.name());
-                }
-
-                let mut definitions = vec![];
-
-                for function_definition in let_.definitions() {
-                    definitions.push(self.rename_function_definition(function_definition, &names))
-                }
-
-                LetRecursive::new(
                     definitions,
                     self.rename_expression(let_.expression(), &names),
                     let_.source_information().clone(),

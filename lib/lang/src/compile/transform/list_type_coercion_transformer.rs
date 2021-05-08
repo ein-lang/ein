@@ -57,7 +57,7 @@ impl ListTypeCoercionTransformer {
         let source_information = coercion.source_information().clone();
 
         // Re-tag elements if needed.
-        Ok(LetRecursive::new(
+        Ok(Let::new(
             vec![FunctionDefinition::new(
                 coerce_function_name.clone(),
                 vec![argument_name.clone()],
@@ -87,7 +87,8 @@ impl ListTypeCoercionTransformer {
                     source_information.clone(),
                 ),
                 source_information.clone(),
-            )],
+            )
+            .into()],
             Application::new(
                 Application::new(
                     Variable::new(
