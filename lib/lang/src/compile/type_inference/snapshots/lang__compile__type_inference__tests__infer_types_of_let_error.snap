@@ -256,7 +256,7 @@ Ok(
                         "Error": Record(
                             Record {
                                 name: "Error",
-                                elements: {},
+                                elements: [],
                                 source_information: SourceInformation {
                                     source_name: "",
                                     location: Location {
