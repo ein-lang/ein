@@ -1,8 +1,9 @@
 use std::{
     alloc::{alloc, dealloc, Layout},
+    intrinsics::copy_nonoverlapping,
     ops::Deref,
     ptr::null,
-    sync::atomic::{fence, Ordering},
+    sync::atomic::{fence, AtomicUsize, Ordering},
 };
 
 const INITIAL_COUNT: usize = 0;
@@ -13,19 +14,19 @@ pub struct Rc<T> {
 }
 
 struct RcBlock<T> {
-    count: std::sync::atomic::AtomicUsize,
+    count: AtomicUsize,
     payload: T,
 }
 
 impl<T> Rc<T> {
     pub fn new(payload: T) -> Self {
-        if Self::is_zero_sized() {
+        if Layout::new::<T>().size() == 0 {
             Self { pointer: null() }
         } else {
             let pointer = unsafe { &mut *(alloc(Self::block_layout()) as *mut RcBlock<T>) };
 
             *pointer = RcBlock::<T> {
-                count: std::sync::atomic::AtomicUsize::new(INITIAL_COUNT),
+                count: AtomicUsize::new(INITIAL_COUNT),
                 payload,
             };
 
@@ -39,12 +40,54 @@ impl<T> Rc<T> {
         unsafe { &*((self.pointer as *const usize).offset(-1) as *const RcBlock<T>) }
     }
 
+    fn block_pointer_mut(&self) -> &mut RcBlock<T> {
+        unsafe { &mut *((self.pointer as *const usize).offset(-1) as *mut RcBlock<T>) }
+    }
+
+    fn is_pointer_null(&self) -> bool {
+        self.pointer == null()
+    }
+
     fn block_layout() -> Layout {
         Layout::new::<RcBlock<T>>()
     }
+}
 
-    fn is_zero_sized() -> bool {
-        Layout::new::<T>().size() == 0
+impl Rc<u8> {
+    fn buffer(length: usize) -> Self {
+        if length == 0 {
+            Self { pointer: null() }
+        } else {
+            let pointer = unsafe {
+                &mut *(alloc(Layout::from_size_align(length, 1).unwrap()) as *mut RcBlock<u8>)
+            };
+
+            pointer.count = AtomicUsize::new(INITIAL_COUNT);
+
+            Self {
+                pointer: &pointer.payload,
+            }
+        }
+    }
+
+    fn pointer_mut(&self) -> *mut u8 {
+        &mut self.block_pointer_mut().payload as *mut u8
+    }
+}
+
+impl From<Vec<u8>> for Rc<u8> {
+    fn from(vec: Vec<u8>) -> Self {
+        let rc = Self::buffer(vec.len());
+
+        unsafe { copy_nonoverlapping(vec.as_ptr(), rc.pointer_mut(), vec.len()) }
+
+        rc
+    }
+}
+
+impl From<String> for Rc<u8> {
+    fn from(string: String) -> Self {
+        Vec::<u8>::from(string).into()
     }
 }
 
@@ -58,7 +101,7 @@ impl<T> Deref for Rc<T> {
 
 impl<T> Clone for Rc<T> {
     fn clone(&self) -> Self {
-        if !Self::is_zero_sized() {
+        if !self.is_pointer_null() {
             // TODO Is this correct ordering?
             self.block_pointer().count.fetch_add(1, Ordering::Relaxed);
         }
@@ -71,7 +114,7 @@ impl<T> Clone for Rc<T> {
 
 impl<T> Drop for Rc<T> {
     fn drop(&mut self) {
-        if Self::is_zero_sized() {
+        if self.is_pointer_null() {
             return;
         }
 
@@ -131,6 +174,37 @@ mod tests {
         #[allow(clippy::unit_cmp)]
         fn load_payload() {
             assert_eq!(*Rc::new(()), ());
+        }
+    }
+
+    mod buffer {
+        use super::*;
+
+        #[test]
+        fn create_buffer() {
+            Rc::buffer(42);
+        }
+
+        #[test]
+        fn create_zero_sized_buffer() {
+            Rc::buffer(0);
+        }
+
+        #[test]
+        fn clone() {
+            let rc = Rc::buffer(42);
+            drop(rc.clone());
+            drop(rc);
+        }
+
+        #[test]
+        fn convert_from_vec() {
+            Rc::<u8>::from(vec![0u8; 42]);
+        }
+
+        #[test]
+        fn convert_from_string() {
+            Rc::<u8>::from("hello".to_string());
         }
     }
 }
