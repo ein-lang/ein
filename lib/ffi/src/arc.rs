@@ -2,7 +2,7 @@ use std::{
     alloc::{alloc, dealloc, Layout},
     intrinsics::copy_nonoverlapping,
     ops::Deref,
-    ptr::null,
+    ptr::{drop_in_place, null},
     sync::atomic::{fence, AtomicUsize, Ordering},
 };
 
@@ -139,6 +139,8 @@ impl<T> Drop for Arc<T> {
             fence(Ordering::Acquire);
 
             unsafe {
+                drop_in_place(self.as_ptr_mut());
+
                 // TODO This is invalid for Arc<u8> buffer.
                 dealloc(
                     self.inner() as *const ArcInner<T> as *mut u8,
