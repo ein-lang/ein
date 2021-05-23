@@ -205,7 +205,7 @@ checksum = "7bfdb6f20f22d572895b5361a4ed6f1c580844186c06df32bc01a5ab0beb5bab"
 
 [[package]]
 name = "ein-ffi"
-version = "0.5.0"
+version = "0.5.1"
 
 [[package]]
 name = "eir"
