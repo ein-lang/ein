@@ -1,7 +1,7 @@
 use std::{
     alloc::{alloc, dealloc, Layout},
     ops::Deref,
-    ptr::null_mut,
+    ptr::null,
     sync::atomic::{fence, Ordering},
 };
 
@@ -20,9 +20,7 @@ struct RcBlock<T> {
 impl<T> Rc<T> {
     pub fn new(payload: T) -> Self {
         if Self::is_zero_sized() {
-            Self {
-                pointer: null_mut(),
-            }
+            Self { pointer: null() }
         } else {
             let pointer = unsafe { &mut *(alloc(Self::block_layout()) as *mut RcBlock<T>) };
 
@@ -32,7 +30,7 @@ impl<T> Rc<T> {
             };
 
             Self {
-                pointer: &mut pointer.payload,
+                pointer: &pointer.payload,
             }
         }
     }
