@@ -9,10 +9,12 @@ use std::{
 const INITIAL_COUNT: usize = 0;
 
 #[derive(Debug)]
+#[repr(C)]
 pub struct Arc<T> {
     pointer: *const T,
 }
 
+#[repr(C)]
 struct ArcInner<T> {
     count: AtomicUsize,
     payload: T,
