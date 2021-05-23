@@ -36,6 +36,14 @@ impl<T> Arc<T> {
         }
     }
 
+    pub fn as_ptr(&mut self) -> *const T {
+        &self.inner_mut().payload
+    }
+
+    pub fn as_ptr_mut(&mut self) -> *mut T {
+        &mut self.inner_mut().payload as *mut T
+    }
+
     fn inner(&self) -> &ArcInner<T> {
         unsafe { &*((self.pointer as *const usize).offset(-1) as *const ArcInner<T>) }
     }
@@ -50,7 +58,7 @@ impl<T> Arc<T> {
 }
 
 impl Arc<u8> {
-    fn buffer(length: usize) -> Self {
+    pub fn buffer(length: usize) -> Self {
         if length == 0 {
             Self { pointer: null() }
         } else {
@@ -66,18 +74,30 @@ impl Arc<u8> {
         }
     }
 
-    fn pointer_mut(&mut self) -> *mut u8 {
-        &mut self.inner_mut().payload as *mut u8
+    pub fn empty() -> Self {
+        Self::buffer(0)
+    }
+}
+
+impl From<&[u8]> for Arc<u8> {
+    fn from(slice: &[u8]) -> Self {
+        let mut arc = Self::buffer(slice.len());
+
+        unsafe { copy_nonoverlapping(slice.as_ptr(), arc.as_ptr_mut(), slice.len()) }
+
+        arc
     }
 }
 
 impl From<Vec<u8>> for Arc<u8> {
     fn from(vec: Vec<u8>) -> Self {
-        let mut arc = Self::buffer(vec.len());
+        vec.as_slice().into()
+    }
+}
 
-        unsafe { copy_nonoverlapping(vec.as_ptr(), arc.pointer_mut(), vec.len()) }
-
-        arc
+impl From<&str> for Arc<u8> {
+    fn from(vec: &str) -> Self {
+        vec.as_bytes().into()
     }
 }
 

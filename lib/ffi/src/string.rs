@@ -1,18 +1,19 @@
+use super::arc::Arc;
 use super::number::Number;
 use std::{
     alloc::Layout, cmp::max, intrinsics::copy_nonoverlapping, ptr::null, str::from_utf8_unchecked,
 };
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct EinString {
-    bytes: *const u8, // variadic length array
+    bytes: Arc<u8>, // variadic length array
     length: usize,
 }
 
 impl EinString {
     pub const fn new(
-        bytes: *const u8, // variadic length array
+        bytes: Arc<u8>, // variadic length array
         length: usize,
     ) -> Self {
         Self { bytes, length }
@@ -20,31 +21,28 @@ impl EinString {
 
     pub const fn empty() -> Self {
         Self {
-            bytes: null(),
+            bytes: Arc::empty(),
             length: 0,
         }
     }
 
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { std::slice::from_raw_parts(self.bytes, self.length) }
+        unsafe { std::slice::from_raw_parts(self.bytes.as_ptr(), self.length) }
     }
 
     pub fn join(&self, other: &Self) -> EinString {
         unsafe {
             let length = self.length + other.length;
-            let pointer = std::alloc::alloc(Layout::from_size_align_unchecked(length, 8));
+            let bytes = Arc::buffer(length);
 
-            copy_nonoverlapping(self.bytes, pointer, self.length);
+            copy_nonoverlapping(self.bytes.as_ptr(), bytes.as_ptr_mut(), self.length);
             copy_nonoverlapping(
-                other.bytes,
-                (pointer as usize + self.length) as *mut u8,
+                other.bytes.as_ptr(),
+                (bytes.as_ptr_mut() as usize + self.length) as *mut u8,
                 other.length,
             );
 
-            Self {
-                bytes: pointer,
-                length,
-            }
+            Self { bytes, length }
         }
     }
 
@@ -70,7 +68,7 @@ impl EinString {
         let end_index = Self::get_string_index(string, end);
 
         Self {
-            bytes: (self.bytes as usize + start_index) as *const u8,
+            bytes: (self.bytes.as_ptr() as usize + start_index) as *const u8,
             length: string[start_index..end_index].as_bytes().len(),
         }
     }
@@ -89,7 +87,7 @@ unsafe impl Sync for EinString {}
 impl Default for EinString {
     fn default() -> Self {
         Self {
-            bytes: null(),
+            bytes: Arc::empty(),
             length: 0,
         }
     }
@@ -103,11 +101,9 @@ impl PartialEq for EinString {
 
 impl From<&'static str> for EinString {
     fn from(string: &'static str) -> Self {
-        let bytes = string.as_bytes();
-
         Self {
-            bytes: bytes.as_ptr(),
-            length: bytes.len(),
+            bytes: string.into(),
+            length: string.as_bytes().len(),
         }
     }
 }
@@ -120,10 +116,8 @@ impl From<String> for EinString {
 
 impl From<Vec<u8>> for EinString {
     fn from(bytes: Vec<u8>) -> Self {
-        let bytes = bytes.leak::<'static>();
-
         Self {
-            bytes: bytes.as_ptr(),
+            bytes: bytes.into(),
             length: bytes.len(),
         }
     }
