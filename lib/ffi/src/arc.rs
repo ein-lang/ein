@@ -9,23 +9,23 @@ use std::{
 const INITIAL_COUNT: usize = 0;
 
 #[derive(Debug)]
-pub struct Rc<T> {
+pub struct Arc<T> {
     pointer: *const T,
 }
 
-struct RcInner<T> {
+struct ArcInner<T> {
     count: AtomicUsize,
     payload: T,
 }
 
-impl<T> Rc<T> {
+impl<T> Arc<T> {
     pub fn new(payload: T) -> Self {
         if Layout::new::<T>().size() == 0 {
             Self { pointer: null() }
         } else {
-            let pointer = unsafe { &mut *(alloc(Self::inner_layout()) as *mut RcInner<T>) };
+            let pointer = unsafe { &mut *(alloc(Self::inner_layout()) as *mut ArcInner<T>) };
 
-            *pointer = RcInner::<T> {
+            *pointer = ArcInner::<T> {
                 count: AtomicUsize::new(INITIAL_COUNT),
                 payload,
             };
@@ -36,30 +36,26 @@ impl<T> Rc<T> {
         }
     }
 
-    fn inner(&self) -> &RcInner<T> {
-        unsafe { &*((self.pointer as *const usize).offset(-1) as *const RcInner<T>) }
+    fn inner(&self) -> &ArcInner<T> {
+        unsafe { &*((self.pointer as *const usize).offset(-1) as *const ArcInner<T>) }
     }
 
-    fn inner_mut(&self) -> &mut RcInner<T> {
-        unsafe { &mut *((self.pointer as *const usize).offset(-1) as *mut RcInner<T>) }
-    }
-
-    fn is_pointer_null(&self) -> bool {
-        self.pointer == null()
+    fn inner_mut(&mut self) -> &mut ArcInner<T> {
+        unsafe { &mut *((self.pointer as *const usize).offset(-1) as *mut ArcInner<T>) }
     }
 
     fn inner_layout() -> Layout {
-        Layout::new::<RcInner<T>>()
+        Layout::new::<ArcInner<T>>()
     }
 }
 
-impl Rc<u8> {
+impl Arc<u8> {
     fn buffer(length: usize) -> Self {
         if length == 0 {
             Self { pointer: null() }
         } else {
             let pointer = unsafe {
-                &mut *(alloc(Layout::from_size_align(length, 1).unwrap()) as *mut RcInner<u8>)
+                &mut *(alloc(Layout::from_size_align(length, 1).unwrap()) as *mut ArcInner<u8>)
             };
 
             pointer.count = AtomicUsize::new(INITIAL_COUNT);
@@ -70,28 +66,28 @@ impl Rc<u8> {
         }
     }
 
-    fn pointer_mut(&self) -> *mut u8 {
+    fn pointer_mut(&mut self) -> *mut u8 {
         &mut self.inner_mut().payload as *mut u8
     }
 }
 
-impl From<Vec<u8>> for Rc<u8> {
+impl From<Vec<u8>> for Arc<u8> {
     fn from(vec: Vec<u8>) -> Self {
-        let rc = Self::buffer(vec.len());
+        let mut arc = Self::buffer(vec.len());
 
-        unsafe { copy_nonoverlapping(vec.as_ptr(), rc.pointer_mut(), vec.len()) }
+        unsafe { copy_nonoverlapping(vec.as_ptr(), arc.pointer_mut(), vec.len()) }
 
-        rc
+        arc
     }
 }
 
-impl From<String> for Rc<u8> {
+impl From<String> for Arc<u8> {
     fn from(string: String) -> Self {
         Vec::<u8>::from(string).into()
     }
 }
 
-impl<T> Deref for Rc<T> {
+impl<T> Deref for Arc<T> {
     type Target = T;
 
     fn deref(&self) -> &T {
@@ -99,9 +95,9 @@ impl<T> Deref for Rc<T> {
     }
 }
 
-impl<T> Clone for Rc<T> {
+impl<T> Clone for Arc<T> {
     fn clone(&self) -> Self {
-        if !self.is_pointer_null() {
+        if !self.pointer.is_null() {
             // TODO Is this correct ordering?
             self.inner().count.fetch_add(1, Ordering::Relaxed);
         }
@@ -112,9 +108,9 @@ impl<T> Clone for Rc<T> {
     }
 }
 
-impl<T> Drop for Rc<T> {
+impl<T> Drop for Arc<T> {
     fn drop(&mut self) {
-        if self.is_pointer_null() {
+        if self.pointer.is_null() {
             return;
         }
 
@@ -123,9 +119,9 @@ impl<T> Drop for Rc<T> {
             fence(Ordering::Acquire);
 
             unsafe {
-                // TODO This is invalid for Rc<u8> buffer.
+                // TODO This is invalid for Arc<u8> buffer.
                 dealloc(
-                    self.inner() as *const RcInner<T> as *mut u8,
+                    self.inner() as *const ArcInner<T> as *mut u8,
                     Self::inner_layout(),
                 )
             }
@@ -141,19 +137,19 @@ mod tests {
 
     #[test]
     fn create() {
-        Rc::new(0);
+        Arc::new(0);
     }
 
     #[test]
     fn clone() {
-        let rc = Rc::new(0);
-        drop(rc.clone());
-        drop(rc);
+        let arc = Arc::new(0);
+        drop(arc.clone());
+        drop(arc);
     }
 
     #[test]
     fn load_payload() {
-        assert_eq!(*Rc::new(42), 42);
+        assert_eq!(*Arc::new(42), 42);
     }
 
     mod zero_sized {
@@ -161,20 +157,20 @@ mod tests {
 
         #[test]
         fn create() {
-            Rc::new(());
+            Arc::new(());
         }
 
         #[test]
         fn clone() {
-            let rc = Rc::new(());
-            drop(rc.clone());
-            drop(rc);
+            let arc = Arc::new(());
+            drop(arc.clone());
+            drop(arc);
         }
 
         #[test]
         #[allow(clippy::unit_cmp)]
         fn load_payload() {
-            assert_eq!(*Rc::new(()), ());
+            assert_eq!(*Arc::new(()), ());
         }
     }
 
@@ -183,29 +179,29 @@ mod tests {
 
         #[test]
         fn create_buffer() {
-            Rc::buffer(42);
+            Arc::buffer(42);
         }
 
         #[test]
         fn create_zero_sized_buffer() {
-            Rc::buffer(0);
+            Arc::buffer(0);
         }
 
         #[test]
         fn clone() {
-            let rc = Rc::buffer(42);
-            drop(rc.clone());
-            drop(rc);
+            let arc = Arc::buffer(42);
+            drop(arc.clone());
+            drop(arc);
         }
 
         #[test]
         fn convert_from_vec() {
-            Rc::<u8>::from(vec![0u8; 42]);
+            Arc::<u8>::from(vec![0u8; 42]);
         }
 
         #[test]
         fn convert_from_string() {
-            Rc::<u8>::from("hello".to_string());
+            Arc::<u8>::from("hello".to_string());
         }
     }
 }
