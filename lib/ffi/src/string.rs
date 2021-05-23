@@ -1,5 +1,4 @@
-use super::arc::Arc;
-use super::number::Number;
+use super::{arc::Arc, number::Number};
 use std::{cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
 
 #[repr(C)]
