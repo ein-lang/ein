@@ -59,7 +59,7 @@ impl EinString {
 
         let string = unsafe { from_utf8_unchecked(self.as_slice()) };
 
-        if string.is_empty() || start >= string.len() || end <= start {
+        if string.is_empty() || start >= string.chars().count() || end <= start {
             Self::empty()
         } else {
             string[Self::get_string_index(string, start)..Self::get_string_index(string, end)]
