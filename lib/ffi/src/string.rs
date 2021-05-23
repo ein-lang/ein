@@ -1,8 +1,6 @@
 use super::arc::Arc;
 use super::number::Number;
-use std::{
-    alloc::Layout, cmp::max, intrinsics::copy_nonoverlapping, ptr::null, str::from_utf8_unchecked,
-};
+use std::{alloc::Layout, cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
 
 #[repr(C)]
 #[derive(Clone, Debug)]
@@ -19,7 +17,7 @@ impl EinString {
         Self { bytes, length }
     }
 
-    pub const fn empty() -> Self {
+    pub fn empty() -> Self {
         Self {
             bytes: Arc::empty(),
             length: 0,
@@ -33,7 +31,7 @@ impl EinString {
     pub fn join(&self, other: &Self) -> EinString {
         unsafe {
             let length = self.length + other.length;
-            let bytes = Arc::buffer(length);
+            let mut bytes = Arc::buffer(length);
 
             copy_nonoverlapping(self.bytes.as_ptr(), bytes.as_ptr_mut(), self.length);
             copy_nonoverlapping(
@@ -51,6 +49,7 @@ impl EinString {
         let start = f64::from(start);
         let end = f64::from(end);
 
+        // TODO Allow infinite ranges
         if !start.is_finite() || !end.is_finite() {
             return Self::empty();
         }
@@ -61,15 +60,10 @@ impl EinString {
         let string = unsafe { from_utf8_unchecked(self.as_slice()) };
 
         if string.is_empty() || start >= string.len() || end <= start {
-            return Self::empty();
-        }
-
-        let start_index = Self::get_string_index(string, start);
-        let end_index = Self::get_string_index(string, end);
-
-        Self {
-            bytes: (self.bytes.as_ptr() as usize + start_index) as *const u8,
-            length: string[start_index..end_index].as_bytes().len(),
+            Self::empty()
+        } else {
+            string[Self::get_string_index(string, start)..Self::get_string_index(string, end)]
+                .into()
         }
     }
 
@@ -99,27 +93,30 @@ impl PartialEq for EinString {
     }
 }
 
-impl From<&'static str> for EinString {
-    fn from(string: &'static str) -> Self {
+impl From<&[u8]> for EinString {
+    fn from(bytes: &[u8]) -> Self {
         Self {
-            bytes: string.into(),
-            length: string.as_bytes().len(),
+            bytes: bytes.into(),
+            length: bytes.len(),
         }
+    }
+}
+
+impl From<&str> for EinString {
+    fn from(string: &str) -> Self {
+        string.as_bytes().into()
     }
 }
 
 impl From<String> for EinString {
     fn from(string: String) -> Self {
-        string.into_bytes().into()
+        string.as_str().into()
     }
 }
 
 impl From<Vec<u8>> for EinString {
-    fn from(bytes: Vec<u8>) -> Self {
-        Self {
-            bytes: bytes.into(),
-            length: bytes.len(),
-        }
+    fn from(vec: Vec<u8>) -> Self {
+        vec.as_slice().into()
     }
 }
 

@@ -36,8 +36,8 @@ impl<T> Arc<T> {
         }
     }
 
-    pub fn as_ptr(&mut self) -> *const T {
-        &self.inner_mut().payload
+    pub fn as_ptr(&self) -> *const T {
+        &self.inner().payload
     }
 
     pub fn as_ptr_mut(&mut self) -> *mut T {
