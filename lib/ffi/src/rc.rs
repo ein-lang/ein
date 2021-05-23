@@ -13,7 +13,7 @@ pub struct Rc<T> {
     pointer: *const T,
 }
 
-struct RcBlock<T> {
+struct RcInner<T> {
     count: AtomicUsize,
     payload: T,
 }
@@ -23,9 +23,9 @@ impl<T> Rc<T> {
         if Layout::new::<T>().size() == 0 {
             Self { pointer: null() }
         } else {
-            let pointer = unsafe { &mut *(alloc(Self::block_layout()) as *mut RcBlock<T>) };
+            let pointer = unsafe { &mut *(alloc(Self::inner_layout()) as *mut RcInner<T>) };
 
-            *pointer = RcBlock::<T> {
+            *pointer = RcInner::<T> {
                 count: AtomicUsize::new(INITIAL_COUNT),
                 payload,
             };
@@ -36,20 +36,20 @@ impl<T> Rc<T> {
         }
     }
 
-    fn block_pointer(&self) -> &RcBlock<T> {
-        unsafe { &*((self.pointer as *const usize).offset(-1) as *const RcBlock<T>) }
+    fn inner(&self) -> &RcInner<T> {
+        unsafe { &*((self.pointer as *const usize).offset(-1) as *const RcInner<T>) }
     }
 
-    fn block_pointer_mut(&self) -> &mut RcBlock<T> {
-        unsafe { &mut *((self.pointer as *const usize).offset(-1) as *mut RcBlock<T>) }
+    fn inner_mut(&self) -> &mut RcInner<T> {
+        unsafe { &mut *((self.pointer as *const usize).offset(-1) as *mut RcInner<T>) }
     }
 
     fn is_pointer_null(&self) -> bool {
         self.pointer == null()
     }
 
-    fn block_layout() -> Layout {
-        Layout::new::<RcBlock<T>>()
+    fn inner_layout() -> Layout {
+        Layout::new::<RcInner<T>>()
     }
 }
 
@@ -59,7 +59,7 @@ impl Rc<u8> {
             Self { pointer: null() }
         } else {
             let pointer = unsafe {
-                &mut *(alloc(Layout::from_size_align(length, 1).unwrap()) as *mut RcBlock<u8>)
+                &mut *(alloc(Layout::from_size_align(length, 1).unwrap()) as *mut RcInner<u8>)
             };
 
             pointer.count = AtomicUsize::new(INITIAL_COUNT);
@@ -71,7 +71,7 @@ impl Rc<u8> {
     }
 
     fn pointer_mut(&self) -> *mut u8 {
-        &mut self.block_pointer_mut().payload as *mut u8
+        &mut self.inner_mut().payload as *mut u8
     }
 }
 
@@ -95,7 +95,7 @@ impl<T> Deref for Rc<T> {
     type Target = T;
 
     fn deref(&self) -> &T {
-        &self.block_pointer().payload
+        &self.inner().payload
     }
 }
 
@@ -103,7 +103,7 @@ impl<T> Clone for Rc<T> {
     fn clone(&self) -> Self {
         if !self.is_pointer_null() {
             // TODO Is this correct ordering?
-            self.block_pointer().count.fetch_add(1, Ordering::Relaxed);
+            self.inner().count.fetch_add(1, Ordering::Relaxed);
         }
 
         Self {
@@ -119,13 +119,14 @@ impl<T> Drop for Rc<T> {
         }
 
         // TODO Is this correct ordering?
-        if self.block_pointer().count.fetch_sub(1, Ordering::Release) == INITIAL_COUNT {
+        if self.inner().count.fetch_sub(1, Ordering::Release) == INITIAL_COUNT {
             fence(Ordering::Acquire);
 
             unsafe {
+                // TODO This is invalid for Rc<u8> buffer.
                 dealloc(
-                    self.block_pointer() as *const RcBlock<T> as *mut u8,
-                    Self::block_layout(),
+                    self.inner() as *const RcInner<T> as *mut u8,
+                    Self::inner_layout(),
                 )
             }
         }
