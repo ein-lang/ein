@@ -1,6 +1,5 @@
 use std::{
     alloc::{alloc, dealloc, Layout},
-    mem::transmute,
     ops::Deref,
     ptr::null_mut,
     sync::atomic::{fence, Ordering},
@@ -10,7 +9,7 @@ const INITIAL_COUNT: usize = 0;
 
 #[derive(Debug)]
 pub struct Rc<T> {
-    pointer: *mut T,
+    pointer: *const T,
 }
 
 struct RcBlock<T> {
@@ -25,7 +24,7 @@ impl<T> Rc<T> {
                 pointer: null_mut(),
             }
         } else {
-            let pointer = unsafe { transmute::<_, &mut RcBlock<T>>(alloc(Self::block_layout())) };
+            let pointer = unsafe { &mut *(alloc(Self::block_layout()) as *mut RcBlock<T>) };
 
             *pointer = RcBlock::<T> {
                 count: std::sync::atomic::AtomicUsize::new(INITIAL_COUNT),
@@ -39,9 +38,7 @@ impl<T> Rc<T> {
     }
 
     fn block_pointer(&self) -> &RcBlock<T> {
-        unsafe {
-            transmute::<_, &mut RcBlock<T>>(transmute::<_, *mut usize>(self.pointer).offset(-1))
-        }
+        unsafe { &*((self.pointer as *const usize).offset(-1) as *const RcBlock<T>) }
     }
 
     fn block_layout() -> Layout {
@@ -105,7 +102,7 @@ mod tests {
 
     #[test]
     fn clone() {
-        let _ = Rc::new(0).clone();
+        let _ = Rc::new(0);
     }
 
     #[test]
@@ -123,10 +120,11 @@ mod tests {
 
         #[test]
         fn clone() {
-            let _ = Rc::new(()).clone();
+            let _ = Rc::new(());
         }
 
         #[test]
+        #[allow(clippy::unit_cmp)]
         fn load_payload() {
             assert_eq!(*Rc::new(()), ());
         }
