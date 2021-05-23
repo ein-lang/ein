@@ -1,5 +1,5 @@
 use std::{
-    alloc::{dealloc, Layout},
+    alloc::{alloc, dealloc, Layout},
     mem::transmute,
     ops::Deref,
     ptr::null_mut,
@@ -25,8 +25,7 @@ impl<T> Rc<T> {
                 pointer: null_mut(),
             }
         } else {
-            let pointer =
-                unsafe { transmute::<_, &mut RcBlock<T>>(std::alloc::alloc(Self::block_layout())) };
+            let pointer = unsafe { transmute::<_, &mut RcBlock<T>>(alloc(Self::block_layout())) };
 
             *pointer = RcBlock::<T> {
                 count: std::sync::atomic::AtomicUsize::new(INITIAL_COUNT),
