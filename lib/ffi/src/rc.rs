@@ -95,6 +95,8 @@ impl<T> Drop for Rc<T> {
 mod tests {
     use super::*;
 
+    fn drop<T>(_: T) {}
+
     #[test]
     fn create() {
         Rc::new(0);
@@ -102,7 +104,9 @@ mod tests {
 
     #[test]
     fn clone() {
-        let _ = Rc::new(0);
+        let rc = Rc::new(0);
+        drop(rc.clone());
+        drop(rc);
     }
 
     #[test]
@@ -120,7 +124,9 @@ mod tests {
 
         #[test]
         fn clone() {
-            let _ = Rc::new(());
+            let rc = Rc::new(());
+            drop(rc.clone());
+            drop(rc);
         }
 
         #[test]
