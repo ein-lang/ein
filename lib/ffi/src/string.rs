@@ -1,6 +1,6 @@
 use super::arc::Arc;
 use super::number::Number;
-use std::{alloc::Layout, cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
+use std::{cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
 
 #[repr(C)]
 #[derive(Clone, Debug)]
