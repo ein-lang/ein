@@ -171,4 +171,12 @@ mod tests {
             EinString::from("😉")
         );
     }
+
+    #[test]
+    fn slice_last_with_emojis() {
+        assert_eq!(
+            EinString::from("😀😉😂").slice(3.0.into(), 3.0.into()),
+            EinString::from("😂")
+        );
+    }
 }
