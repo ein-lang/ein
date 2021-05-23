@@ -79,6 +79,12 @@ impl Arc<u8> {
     }
 }
 
+impl<T> From<T> for Arc<T> {
+    fn from(payload: T) -> Self {
+        Self::new(payload)
+    }
+}
+
 impl From<&[u8]> for Arc<u8> {
     fn from(slice: &[u8]) -> Self {
         let mut arc = Self::buffer(slice.len());
