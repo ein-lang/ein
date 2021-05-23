@@ -1,50 +1,45 @@
-use super::number::Number;
-use std::{
-    alloc::Layout, cmp::max, intrinsics::copy_nonoverlapping, ptr::null, str::from_utf8_unchecked,
-};
+use super::{arc::Arc, number::Number};
+use std::{cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct EinString {
-    bytes: *const u8, // variadic length array
+    bytes: Arc<u8>, // variadic length array
     length: usize,
 }
 
 impl EinString {
     pub const fn new(
-        bytes: *const u8, // variadic length array
+        bytes: Arc<u8>, // variadic length array
         length: usize,
     ) -> Self {
         Self { bytes, length }
     }
 
-    pub const fn empty() -> Self {
+    pub fn empty() -> Self {
         Self {
-            bytes: null(),
+            bytes: Arc::empty(),
             length: 0,
         }
     }
 
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { std::slice::from_raw_parts(self.bytes, self.length) }
+        unsafe { std::slice::from_raw_parts(self.bytes.as_ptr(), self.length) }
     }
 
     pub fn join(&self, other: &Self) -> EinString {
         unsafe {
             let length = self.length + other.length;
-            let pointer = std::alloc::alloc(Layout::from_size_align_unchecked(length, 8));
+            let mut bytes = Arc::buffer(length);
 
-            copy_nonoverlapping(self.bytes, pointer, self.length);
+            copy_nonoverlapping(self.bytes.as_ptr(), bytes.as_ptr_mut(), self.length);
             copy_nonoverlapping(
-                other.bytes,
-                (pointer as usize + self.length) as *mut u8,
+                other.bytes.as_ptr(),
+                (bytes.as_ptr_mut() as usize + self.length) as *mut u8,
                 other.length,
             );
 
-            Self {
-                bytes: pointer,
-                length,
-            }
+            Self { bytes, length }
         }
     }
 
@@ -53,6 +48,7 @@ impl EinString {
         let start = f64::from(start);
         let end = f64::from(end);
 
+        // TODO Allow infinite ranges
         if !start.is_finite() || !end.is_finite() {
             return Self::empty();
         }
@@ -62,16 +58,11 @@ impl EinString {
 
         let string = unsafe { from_utf8_unchecked(self.as_slice()) };
 
-        if string.is_empty() || start >= string.len() || end <= start {
-            return Self::empty();
-        }
-
-        let start_index = Self::get_string_index(string, start);
-        let end_index = Self::get_string_index(string, end);
-
-        Self {
-            bytes: (self.bytes as usize + start_index) as *const u8,
-            length: string[start_index..end_index].as_bytes().len(),
+        if string.is_empty() || start >= string.chars().count() || end <= start {
+            Self::empty()
+        } else {
+            string[Self::get_string_index(string, start)..Self::get_string_index(string, end)]
+                .into()
         }
     }
 
@@ -89,7 +80,7 @@ unsafe impl Sync for EinString {}
 impl Default for EinString {
     fn default() -> Self {
         Self {
-            bytes: null(),
+            bytes: Arc::empty(),
             length: 0,
         }
     }
@@ -101,31 +92,30 @@ impl PartialEq for EinString {
     }
 }
 
-impl From<&'static str> for EinString {
-    fn from(string: &'static str) -> Self {
-        let bytes = string.as_bytes();
-
+impl From<&[u8]> for EinString {
+    fn from(bytes: &[u8]) -> Self {
         Self {
-            bytes: bytes.as_ptr(),
+            bytes: bytes.into(),
             length: bytes.len(),
         }
+    }
+}
+
+impl From<&str> for EinString {
+    fn from(string: &str) -> Self {
+        string.as_bytes().into()
     }
 }
 
 impl From<String> for EinString {
     fn from(string: String) -> Self {
-        string.into_bytes().into()
+        string.as_str().into()
     }
 }
 
 impl From<Vec<u8>> for EinString {
-    fn from(bytes: Vec<u8>) -> Self {
-        let bytes = bytes.leak::<'static>();
-
-        Self {
-            bytes: bytes.as_ptr(),
-            length: bytes.len(),
-        }
+    fn from(vec: Vec<u8>) -> Self {
+        vec.as_slice().into()
     }
 }
 
@@ -178,6 +168,14 @@ mod tests {
         assert_eq!(
             EinString::from("😀😉😂").slice(2.0.into(), 2.0.into()),
             EinString::from("😉")
+        );
+    }
+
+    #[test]
+    fn slice_last_with_emojis() {
+        assert_eq!(
+            EinString::from("😀😉😂").slice(3.0.into(), 3.0.into()),
+            EinString::from("😂")
         );
     }
 }
