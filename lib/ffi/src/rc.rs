@@ -3,7 +3,7 @@ use std::{
     mem::transmute,
     ops::Deref,
     ptr::null_mut,
-    sync::atomic::Ordering,
+    sync::atomic::{fence, Ordering},
 };
 
 const INITIAL_COUNT: usize = 0;
@@ -20,7 +20,7 @@ struct RcBlock<T> {
 
 impl<T> Rc<T> {
     pub fn new(payload: T) -> Self {
-        if Self::block_layout().size() == 0 {
+        if Self::is_zero_sized() {
             Self {
                 pointer: null_mut(),
             }
@@ -47,6 +47,10 @@ impl<T> Rc<T> {
     fn block_layout() -> Layout {
         Layout::new::<RcBlock<T>>()
     }
+
+    fn is_zero_sized() -> bool {
+        Layout::new::<T>().size() == 0
+    }
 }
 
 impl<T> Deref for Rc<T> {
@@ -59,8 +63,10 @@ impl<T> Deref for Rc<T> {
 
 impl<T> Clone for Rc<T> {
     fn clone(&self) -> Self {
-        // TODO Optimize the ordering.
-        self.block_pointer().count.fetch_add(1, Ordering::SeqCst);
+        if !Self::is_zero_sized() {
+            // TODO Is this correct ordering?
+            self.block_pointer().count.fetch_add(1, Ordering::Relaxed);
+        }
 
         Self {
             pointer: self.pointer,
@@ -70,9 +76,14 @@ impl<T> Clone for Rc<T> {
 
 impl<T> Drop for Rc<T> {
     fn drop(&mut self) {
-        let count = self.block_pointer().count.fetch_sub(1, Ordering::SeqCst);
+        if Self::is_zero_sized() {
+            return;
+        }
 
-        if count == INITIAL_COUNT {
+        // TODO Is this correct ordering?
+        if self.block_pointer().count.fetch_sub(1, Ordering::Release) == INITIAL_COUNT {
+            fence(Ordering::Acquire);
+
             unsafe {
                 dealloc(
                     self.block_pointer() as *const RcBlock<T> as *mut u8,
