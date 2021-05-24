@@ -130,7 +130,8 @@ impl GlobalNameRenamer {
         names: &HashMap<String, String>,
     ) -> Expression {
         match expression {
-            Expression::Application(application) => Application::new(
+            Expression::Application(application) => Application::with_type(
+                application.type_().clone(),
                 self.rename_expression(application.function(), names),
                 self.rename_expression(application.argument(), names),
                 application.source_information().clone(),

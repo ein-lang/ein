@@ -83,6 +83,10 @@ impl EqualOperationTransformer {
             }
             Type::List(list_type) => {
                 let element_type = list_type.element();
+                let any_list_type = types::Reference::new(
+                    &self.list_type_configuration.list_type_name,
+                    source_information.clone(),
+                );
 
                 Let::new(
                     vec![FunctionDefinition::new(
@@ -144,9 +148,44 @@ impl EqualOperationTransformer {
                         source_information.clone(),
                     )
                     .into()],
-                    Application::new(
-                        Application::new(
-                            Application::new(
+                    Application::with_type(
+                        types::Function::new(
+                            any_list_type.clone(),
+                            types::Boolean::new(source_information.clone()),
+                            source_information.clone(),
+                        ),
+                        Application::with_type(
+                            types::Function::new(
+                                any_list_type.clone(),
+                                types::Function::new(
+                                    any_list_type.clone(),
+                                    types::Boolean::new(source_information.clone()),
+                                    source_information.clone(),
+                                ),
+                                source_information.clone(),
+                            ),
+                            Application::with_type(
+                                types::Function::new(
+                                    types::Function::new(
+                                        types::Any::new(source_information.clone()),
+                                        types::Function::new(
+                                            types::Any::new(source_information.clone()),
+                                            types::Boolean::new(source_information.clone()),
+                                            source_information.clone(),
+                                        ),
+                                        source_information.clone(),
+                                    ),
+                                    types::Function::new(
+                                        any_list_type.clone(),
+                                        types::Function::new(
+                                            any_list_type.clone(),
+                                            types::Boolean::new(source_information.clone()),
+                                            source_information.clone(),
+                                        ),
+                                        source_information.clone(),
+                                    ),
+                                    source_information.clone(),
+                                ),
                                 Variable::new(
                                     &self.list_type_configuration.equal_function_name,
                                     source_information.clone(),
@@ -175,8 +214,22 @@ impl EqualOperationTransformer {
             .into(),
             Type::Record(record) => {
                 if self.type_comparability_checker.check(type_)? {
-                    Application::new(
-                        Application::new(
+                    Application::with_type(
+                        types::Function::new(
+                            record.clone(),
+                            types::Boolean::new(source_information.clone()),
+                            source_information.clone(),
+                        ),
+                        Application::with_type(
+                            types::Function::new(
+                                record.clone(),
+                                types::Function::new(
+                                    record.clone(),
+                                    types::Boolean::new(source_information.clone()),
+                                    source_information.clone(),
+                                ),
+                                source_information.clone(),
+                            ),
                             Variable::new(
                                 utilities::get_record_equal_function_name(&record),
                                 source_information.clone(),

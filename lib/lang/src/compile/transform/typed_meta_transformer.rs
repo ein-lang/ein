@@ -125,7 +125,8 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
         variables: &HashMap<String, Type>,
     ) -> Result<Expression, CompileError> {
         let expression = match expression {
-            Expression::Application(application) => Application::new(
+            Expression::Application(application) => Application::with_type(
+                application.type_().clone(),
                 self.transform_expression(application.function(), variables)?,
                 self.transform_expression(application.argument(), variables)?,
                 application.source_information().clone(),

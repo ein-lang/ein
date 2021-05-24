@@ -160,7 +160,8 @@ impl ExpressionCompiler {
                 )
                 .into(),
                 Operation::Pipe(operation) => self.compile(
-                    &Application::new(
+                    &Application::with_type(
+                        operation.type_().clone(),
                         operation.rhs().clone(),
                         operation.lhs().clone(),
                         operation.source_information().clone(),
@@ -629,7 +630,12 @@ mod tests {
 
             assert_eq!(
                 expression_compiler.compile(
-                    &PipeOperation::new(
+                    &PipeOperation::with_type(
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
                         Number::new(1.0, SourceInformation::dummy()),
                         Variable::new("f", SourceInformation::dummy()),
                         SourceInformation::dummy()
@@ -765,7 +771,12 @@ mod tests {
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
-                        Application::new(
+                        Application::with_type(
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             Variable::new("f", SourceInformation::dummy()),
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
