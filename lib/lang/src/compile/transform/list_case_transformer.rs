@@ -110,8 +110,8 @@ impl ListCaseTransformer {
                                 case.rest_name(),
                                 Application::with_type(
                                     types::Function::new(
-                                        first_rest_type.clone(),
-                                        list_type.clone(),
+                                        first_rest_type,
+                                        list_type,
                                         source_information.clone(),
                                     ),
                                     Variable::new(

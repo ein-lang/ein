@@ -178,7 +178,7 @@ impl EqualOperationTransformer {
                                     types::Function::new(
                                         any_list_type.clone(),
                                         types::Function::new(
-                                            any_list_type.clone(),
+                                            any_list_type,
                                             types::Boolean::new(source_information.clone()),
                                             source_information.clone(),
                                         ),

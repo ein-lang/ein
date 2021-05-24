@@ -62,7 +62,7 @@ impl ListLiteralTransformer {
                         list_type.clone(),
                         types::Function::new(
                             list_type.clone(),
-                            list_type.clone(),
+                            list_type,
                             source_information.clone(),
                         ),
                         source_information.clone(),
@@ -89,7 +89,7 @@ impl ListLiteralTransformer {
                         types::Any::new(source_information.clone()),
                         types::Function::new(
                             list_type.clone(),
-                            list_type.clone(),
+                            list_type,
                             source_information.clone(),
                         ),
                         source_information.clone(),

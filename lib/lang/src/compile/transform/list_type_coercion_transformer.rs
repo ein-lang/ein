@@ -108,7 +108,7 @@ impl ListTypeCoercionTransformer {
                         ),
                         types::Function::new(
                             any_list_type.clone(),
-                            any_list_type.clone(),
+                            any_list_type,
                             source_information.clone(),
                         ),
                         source_information.clone(),
