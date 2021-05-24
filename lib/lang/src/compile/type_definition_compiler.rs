@@ -24,7 +24,7 @@ impl TypeDefinitionCompiler {
     }
 
     pub fn compile(&self, module: &Module) -> Result<Vec<eir::ir::TypeDefinition>, CompileError> {
-        Ok(vec![
+        let mut definitions = vec![
             eir::ir::TypeDefinition::new(
                 THUNK_ARGUMENT_TYPE_NAME,
                 eir::types::RecordBody::new(vec![]),
@@ -40,7 +40,11 @@ impl TypeDefinitionCompiler {
                 .into_iter()
                 .flatten(),
         )
-        .collect())
+        .collect::<Vec<_>>();
+
+        definitions.dedup_by_key(|definition| definition.name().to_string());
+
+        Ok(definitions)
     }
 
     fn collect_types(&self, module: &Module) -> Result<HashSet<Type>, CompileError> {
