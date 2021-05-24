@@ -42,6 +42,7 @@ impl TypeDefinitionCompiler {
         )
         .collect::<Vec<_>>();
 
+        definitions.sort_by_key(|definition| definition.name().to_string());
         definitions.dedup_by_key(|definition| definition.name().to_string());
 
         Ok(definitions)
