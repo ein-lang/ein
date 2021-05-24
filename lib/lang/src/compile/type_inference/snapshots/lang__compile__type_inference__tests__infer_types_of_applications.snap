@@ -12,54 +12,13 @@ Ok(
             },
             components: [],
         },
-        type_definitions: [
-            TypeDefinition {
-                name: "Foo",
-                type_: Function(
-                    Function {
-                        argument: Reference(
-                            Reference {
-                                name: "Foo",
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
-                                },
-                            },
-                        ),
-                        result: Number(
-                            Number {
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
-                                },
-                            },
-                        ),
-                        source_information: SourceInformation {
-                            source_name: "",
-                            location: Location {
-                                line_number: 0,
-                                column_number: 0,
-                            },
-                            line: "",
-                        },
-                    },
-                ),
-            },
-        ],
+        type_definitions: [],
         definitions: [
             FunctionDefinition(
                 FunctionDefinition {
                     name: "f",
                     arguments: [
-                        "g",
+                        "x",
                     ],
                     body: Number(
                         Number {
@@ -74,9 +33,32 @@ Ok(
                             },
                         },
                     ),
-                    type_: Reference(
-                        Reference {
-                            name: "Foo",
+                    type_: Function(
+                        Function {
+                            argument: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            result: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {
@@ -102,9 +84,32 @@ Ok(
                     name: "x",
                     body: Application(
                         Application {
-                            type_: Reference(
-                                Reference {
-                                    name: "Foo",
+                            type_: Function(
+                                Function {
+                                    argument: Number(
+                                        Number {
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
+                                    result: Number(
+                                        Number {
+                                            source_information: SourceInformation {
+                                                source_name: "",
+                                                location: Location {
+                                                    line_number: 0,
+                                                    column_number: 0,
+                                                },
+                                                line: "",
+                                            },
+                                        },
+                                    ),
                                     source_information: SourceInformation {
                                         source_name: "",
                                         location: Location {
@@ -128,9 +133,9 @@ Ok(
                                     },
                                 },
                             ),
-                            argument: Variable(
-                                Variable {
-                                    name: "f",
+                            argument: Number(
+                                Number {
+                                    value: 42.0,
                                     source_information: SourceInformation {
                                         source_name: "",
                                         location: Location {

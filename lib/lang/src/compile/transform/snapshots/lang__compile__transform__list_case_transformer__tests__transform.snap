@@ -48,6 +48,70 @@ Ok(
             name: "$lc$firstRest0",
             argument: Application(
                 Application {
+                    type_: Function(
+                        Function {
+                            argument: Reference(
+                                Reference {
+                                    name: "GenericList",
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            result: Union(
+                                Union {
+                                    types: {
+                                        None(
+                                            None {
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                        Reference(
+                                            Reference {
+                                                name: "FirstRest",
+                                                source_information: SourceInformation {
+                                                    source_name: "",
+                                                    location: Location {
+                                                        line_number: 0,
+                                                        column_number: 0,
+                                                    },
+                                                    line: "",
+                                                },
+                                            },
+                                        ),
+                                    },
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
                     function: Variable(
                         Variable {
                             name: "deconstruct",
@@ -148,6 +212,43 @@ Ok(
                                                 name: "$lc$firstRest0",
                                                 argument: Application(
                                                     Application {
+                                                        type_: Function(
+                                                            Function {
+                                                                argument: Reference(
+                                                                    Reference {
+                                                                        name: "FirstRest",
+                                                                        source_information: SourceInformation {
+                                                                            source_name: "",
+                                                                            location: Location {
+                                                                                line_number: 0,
+                                                                                column_number: 0,
+                                                                            },
+                                                                            line: "",
+                                                                        },
+                                                                    },
+                                                                ),
+                                                                result: Any(
+                                                                    Any {
+                                                                        source_information: SourceInformation {
+                                                                            source_name: "",
+                                                                            location: Location {
+                                                                                line_number: 0,
+                                                                                column_number: 0,
+                                                                            },
+                                                                            line: "",
+                                                                        },
+                                                                    },
+                                                                ),
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
+                                                                },
+                                                            },
+                                                        ),
                                                         function: Variable(
                                                             Variable {
                                                                 name: "first",
@@ -250,6 +351,44 @@ Ok(
                                         name: "ys",
                                         body: Application(
                                             Application {
+                                                type_: Function(
+                                                    Function {
+                                                        argument: Reference(
+                                                            Reference {
+                                                                name: "FirstRest",
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
+                                                                },
+                                                            },
+                                                        ),
+                                                        result: Reference(
+                                                            Reference {
+                                                                name: "GenericList",
+                                                                source_information: SourceInformation {
+                                                                    source_name: "",
+                                                                    location: Location {
+                                                                        line_number: 0,
+                                                                        column_number: 0,
+                                                                    },
+                                                                    line: "",
+                                                                },
+                                                            },
+                                                        ),
+                                                        source_information: SourceInformation {
+                                                            source_name: "",
+                                                            location: Location {
+                                                                line_number: 0,
+                                                                column_number: 0,
+                                                            },
+                                                            line: "",
+                                                        },
+                                                    },
+                                                ),
                                                 function: Variable(
                                                     Variable {
                                                         name: "rest",

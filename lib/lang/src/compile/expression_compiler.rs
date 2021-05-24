@@ -61,6 +61,10 @@ impl ExpressionCompiler {
     pub fn compile(&self, expression: &Expression) -> Result<eir::ir::Expression, CompileError> {
         Ok(match expression {
             Expression::Application(application) => eir::ir::FunctionApplication::new(
+                self.type_compiler
+                    .compile(application.type_())?
+                    .into_function()
+                    .unwrap(),
                 self.compile(application.function())?,
                 self.compile(application.argument())?,
             )
@@ -114,7 +118,18 @@ impl ExpressionCompiler {
                             )
                             .into(),
                             Type::String(_) => eir::ir::FunctionApplication::new(
+                                eir::types::Function::new(
+                                    eir::types::Type::ByteString,
+                                    eir::types::Type::Boolean,
+                                ),
                                 eir::ir::FunctionApplication::new(
+                                    eir::types::Function::new(
+                                        eir::types::Type::ByteString,
+                                        eir::types::Function::new(
+                                            eir::types::Type::ByteString,
+                                            eir::types::Type::Boolean,
+                                        ),
+                                    ),
                                     eir::ir::Variable::new(
                                         &self.string_type_configuration.equal_function_name,
                                     ),
@@ -274,7 +289,7 @@ impl ExpressionCompiler {
             Expression::Variable(variable) => self
                 .expression_compiler_set
                 .variable_compiler
-                .compile(&variable),
+                .compile(&variable)?,
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
@@ -621,7 +636,12 @@ mod tests {
                     )
                     .into(),
                 ),
-                Ok(eir::ir::FunctionApplication::new(eir::ir::Variable::new("f"), 1.0).into())
+                Ok(eir::ir::FunctionApplication::new(
+                    eir::types::Function::new(eir::types::Type::Number, eir::types::Type::Number),
+                    eir::ir::Variable::new("f"),
+                    1.0
+                )
+                .into())
             );
         }
     }
@@ -768,6 +788,10 @@ mod tests {
                     "f",
                     vec![eir::ir::Argument::new("x", eir::types::Type::Number)],
                     eir::ir::FunctionApplication::new(
+                        eir::types::Function::new(
+                            eir::types::Type::Number,
+                            eir::types::Type::Number
+                        ),
                         eir::ir::Variable::new("f"),
                         eir::ir::Variable::new("x"),
                     ),
