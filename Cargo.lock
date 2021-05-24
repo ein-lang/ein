@@ -210,18 +210,20 @@ version = "0.4.0"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#4f4f4d8fda2c14a5c7f72a6c3cdc3a82b9022ff6"
+source = "git+https://github.com/ein-lang/eir?branch=main#a69d3173f04ff7f1c243c9db058ef1d8d57d5ac7"
 dependencies = [
+ "once_cell",
  "pretty_assertions",
 ]
 
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#4f4f4d8fda2c14a5c7f72a6c3cdc3a82b9022ff6"
+source = "git+https://github.com/ein-lang/eir?branch=main#a69d3173f04ff7f1c243c9db058ef1d8d57d5ac7"
 dependencies = [
  "eir",
  "fmm",
+ "once_cell",
 ]
 
 [[package]]
