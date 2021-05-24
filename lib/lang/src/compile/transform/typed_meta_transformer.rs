@@ -286,7 +286,8 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                     operation.source_information().clone(),
                 )
                 .into(),
-                Operation::Pipe(operation) => PipeOperation::new(
+                Operation::Pipe(operation) => PipeOperation::with_type(
+                    operation.type_().clone(),
                     self.transform_expression(operation.lhs(), &variables)?,
                     self.transform_expression(operation.rhs(), &variables)?,
                     operation.source_information().clone(),

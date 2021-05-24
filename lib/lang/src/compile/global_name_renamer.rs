@@ -272,7 +272,8 @@ impl GlobalNameRenamer {
                     operation.source_information().clone(),
                 )
                 .into(),
-                Operation::Pipe(operation) => PipeOperation::new(
+                Operation::Pipe(operation) => PipeOperation::with_type(
+                    operation.type_().clone(),
                     self.rename_expression(operation.lhs(), &names),
                     self.rename_expression(operation.rhs(), &names),
                     operation.source_information().clone(),
