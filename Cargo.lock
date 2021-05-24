@@ -100,9 +100,9 @@ checksum = "b700ce4376041dcd0a327fd0097c41095743c4c8af8887265942faf1100bd040"
 
 [[package]]
 name = "cc"
-version = "1.0.67"
+version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3c69b077ad434294d3ce9f1f6143a2a4b89a8a2d54ef813d85003a4fd1137fd"
+checksum = "4a72c244c1ff497a746a7e1fb3d14bd08420ecda70c8f25c7112f2781652d787"
 dependencies = [
  "jobserver",
 ]
@@ -210,7 +210,7 @@ version = "0.5.2"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#3b8756a72a8419fa7750c265a01dade39f082075"
+source = "git+https://github.com/ein-lang/eir?branch=main#e65dc9efddd6b4a1f34fe4f6e21b412fffc9a8ef"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -219,7 +219,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#3b8756a72a8419fa7750c265a01dade39f082075"
+source = "git+https://github.com/ein-lang/eir?branch=main#e65dc9efddd6b4a1f34fe4f6e21b412fffc9a8ef"
 dependencies = [
  "eir",
  "fmm",
@@ -247,7 +247,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#e55da6d1320194a63af709b9011fc0c79d5dab06"
+source = "git+https://github.com/raviqqe/fmm?branch=main#378a89fa840e77cdf6600694adf3cd5726eb9ee3"
 dependencies = [
  "once_cell",
  "petgraph",
@@ -256,7 +256,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#e55da6d1320194a63af709b9011fc0c79d5dab06"
+source = "git+https://github.com/raviqqe/fmm?branch=main#378a89fa840e77cdf6600694adf3cd5726eb9ee3"
 dependencies = [
  "fmm",
  "inkwell",
