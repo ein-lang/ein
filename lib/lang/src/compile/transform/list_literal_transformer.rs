@@ -40,7 +40,7 @@ impl ListLiteralTransformer {
         source_information: &Arc<SourceInformation>,
     ) -> Expression {
         let rest_expression = || self.transform_list(type_, &elements[1..], source_information);
-        let list_type = types::Reference::new(
+        let any_list_type = types::Reference::new(
             self.configuration.list_type_name.clone(),
             source_information.clone(),
         );
@@ -53,16 +53,16 @@ impl ListLiteralTransformer {
             .into(),
             [ListElement::Multiple(expression), ..] => Application::with_type(
                 types::Function::new(
-                    list_type.clone(),
-                    list_type.clone(),
+                    any_list_type.clone(),
+                    any_list_type.clone(),
                     source_information.clone(),
                 ),
                 Application::with_type(
                     types::Function::new(
-                        list_type.clone(),
+                        any_list_type.clone(),
                         types::Function::new(
-                            list_type.clone(),
-                            list_type,
+                            any_list_type.clone(),
+                            any_list_type,
                             source_information.clone(),
                         ),
                         source_information.clone(),
@@ -80,16 +80,16 @@ impl ListLiteralTransformer {
             .into(),
             [ListElement::Single(expression), ..] => Application::with_type(
                 types::Function::new(
-                    list_type.clone(),
-                    list_type.clone(),
+                    any_list_type.clone(),
+                    any_list_type.clone(),
                     source_information.clone(),
                 ),
                 Application::with_type(
                     types::Function::new(
                         types::Any::new(source_information.clone()),
                         types::Function::new(
-                            list_type.clone(),
-                            list_type,
+                            any_list_type.clone(),
+                            any_list_type,
                             source_information.clone(),
                         ),
                         source_information.clone(),
