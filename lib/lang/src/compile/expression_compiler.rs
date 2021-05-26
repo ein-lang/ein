@@ -382,7 +382,10 @@ impl ExpressionCompiler {
                     .map(|alternative| -> Result<_, CompileError> {
                         Ok(
                             if self.reference_type_resolver.is_any(alternative.type_())? {
-                                Some(self.compile(alternative.expression())?)
+                                Some(eir::ir::DefaultAlternative::new(
+                                    case.name(),
+                                    self.compile(alternative.expression())?,
+                                ))
                             } else {
                                 None
                             },

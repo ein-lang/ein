@@ -39,14 +39,17 @@ Ok(
                         },
                     ],
                     default_alternative: Some(
-                        Record(
-                            Record {
-                                type_: Record {
-                                    name: "ein_None",
+                        DefaultAlternative {
+                            name: "x",
+                            expression: Record(
+                                Record {
+                                    type_: Record {
+                                        name: "ein_None",
+                                    },
+                                    elements: [],
                                 },
-                                elements: [],
-                            },
-                        ),
+                            ),
+                        },
                     ),
                 },
             ),
