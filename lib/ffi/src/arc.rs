@@ -50,6 +50,10 @@ impl<T> Arc<T> {
         (unsafe { (self.pointer as *const usize).offset(-1) } as usize & !1) as *const ArcInner<T>
     }
 
+    fn is_static(&self) -> bool {
+        self.pointer as usize & 1 == 1
+    }
+
     fn inner(&self) -> &ArcInner<T> {
         unsafe { &*self.block_pointer() }
     }
@@ -129,7 +133,7 @@ impl<T> Deref for Arc<T> {
 
 impl<T> Clone for Arc<T> {
     fn clone(&self) -> Self {
-        if !self.pointer.is_null() {
+        if !self.pointer.is_null() && !self.is_static() {
             // TODO Is this correct ordering?
             self.inner().count.fetch_add(1, Ordering::Relaxed);
         }
@@ -142,7 +146,7 @@ impl<T> Clone for Arc<T> {
 
 impl<T> Drop for Arc<T> {
     fn drop(&mut self) {
-        if self.pointer.is_null() {
+        if self.pointer.is_null() || self.is_static() {
             return;
         }
 
