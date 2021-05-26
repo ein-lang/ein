@@ -6,26 +6,25 @@ extern "C" fn _ein_equal_strings(one: ffi::EinString, other: ffi::EinString) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::ptr::null;
 
     #[test]
     fn equal_empty_strings() {
-        let string = ffi::EinString::new(null(), 0);
+        let string = ffi::EinString::empty();
 
-        assert_eq!(_ein_equal_strings(string, string), true.into());
+        assert_eq!(_ein_equal_strings(string.clone(), string), true.into());
     }
 
     #[test]
     fn equal_one_byte_strings() {
-        let string = ffi::EinString::new([0u8].as_ptr(), 1);
+        let string = ffi::EinString::from(vec![0u8]);
 
-        assert_eq!(_ein_equal_strings(string, string), true.into());
+        assert_eq!(_ein_equal_strings(string.clone(), string), true.into());
     }
 
     #[test]
     fn not_equal_one_byte_strings() {
-        let one = ffi::EinString::new(null(), 0);
-        let other = ffi::EinString::new([0u8].as_ptr(), 1);
+        let one = ffi::EinString::empty();
+        let other = vec![0u8].into();
 
         assert_eq!(_ein_equal_strings(one, other), false.into());
     }
@@ -34,9 +33,9 @@ mod tests {
     fn equal_text_strings() {
         const TEXT: &[u8] = "hello".as_bytes();
 
-        let string = ffi::EinString::new(TEXT.as_ptr(), TEXT.len());
+        let string = ffi::EinString::from(TEXT);
 
-        assert_eq!(_ein_equal_strings(string, string), true.into());
+        assert_eq!(_ein_equal_strings(string.clone(), string), true.into());
     }
 
     #[test]
@@ -45,10 +44,7 @@ mod tests {
         const OTHER_TEXT: &[u8] = "hell0".as_bytes();
 
         assert_eq!(
-            _ein_equal_strings(
-                ffi::EinString::new(TEXT.as_ptr(), TEXT.len()),
-                ffi::EinString::new(OTHER_TEXT.as_ptr(), OTHER_TEXT.len()),
-            ),
+            _ein_equal_strings(TEXT.into(), OTHER_TEXT.into(),),
             false.into()
         );
     }
