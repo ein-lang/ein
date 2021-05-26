@@ -210,7 +210,7 @@ version = "0.5.2"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#e65dc9efddd6b4a1f34fe4f6e21b412fffc9a8ef"
+source = "git+https://github.com/ein-lang/eir?branch=main#ba1dc9ffaab9683084265bdf80ee9a6f681e638b"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -219,7 +219,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#e65dc9efddd6b4a1f34fe4f6e21b412fffc9a8ef"
+source = "git+https://github.com/ein-lang/eir?branch=main#ba1dc9ffaab9683084265bdf80ee9a6f681e638b"
 dependencies = [
  "eir",
  "fmm",
@@ -443,9 +443,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.94"
+version = "0.2.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18794a8ad5b29321f790b55d93dfba91e125cb1a9edbd4f8e3150acc771c1a5e"
+checksum = "789da6d93f1b866ffe175afc5322a4d76c038605a1c3319bb57b06967ca98a36"
 
 [[package]]
 name = "libgit2-sys"
