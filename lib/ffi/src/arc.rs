@@ -46,12 +46,16 @@ impl<T> Arc<T> {
         &mut self.inner_mut().payload as *mut T
     }
 
+    fn block_pointer(&self) -> *const ArcInner<T> {
+        (unsafe { (self.pointer as *const usize).offset(-1) } as usize & !1) as *const ArcInner<T>
+    }
+
     fn inner(&self) -> &ArcInner<T> {
-        unsafe { &*((self.pointer as *const usize).offset(-1) as *const ArcInner<T>) }
+        unsafe { &*self.block_pointer() }
     }
 
     fn inner_mut(&mut self) -> &mut ArcInner<T> {
-        unsafe { &mut *((self.pointer as *const usize).offset(-1) as *mut ArcInner<T>) }
+        unsafe { &mut *(self.block_pointer() as *mut ArcInner<T>) }
     }
 
     fn inner_layout() -> Layout {
