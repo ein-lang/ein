@@ -17,7 +17,7 @@ jobs:
     steps:
       - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 11
       - uses: actions/checkout@v2
-      - run: sudo apt install clang ruby-bundler
+      - run: sudo apt install clang ruby-bundler valgrind
       - run: bundler install
       - uses: actions-rs/cargo@v1
         with:
