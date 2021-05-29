@@ -59,3 +59,25 @@ Feature: Memory leak
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
+
+  Scenario: Use a global variable
+    Given a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/os/Os"
+
+    type Foo {
+      x : None
+    }
+
+    foo : Foo
+    foo = Foo{ x = None }
+
+    main : Os.Os -> Number
+    main os =
+      let
+        _ = foo
+      in
+        main os
+    """
+    When I successfully run `ein build`
+    Then I successfully run `check_memory_leak.sh ./foo`
