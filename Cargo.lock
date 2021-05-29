@@ -210,7 +210,7 @@ checksum = "c8ff891111eba7a72ee438d8e2f942fd84a952a5e1525089e58aa492f8e052da"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#bfd7f6c7e5a22bb53e3ed377b9ceb542a509ea70"
+source = "git+https://github.com/ein-lang/eir?branch=main#38f23f9b1f8ff9290f3ed7c3cf9abf67cd5d37fe"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -219,7 +219,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#bfd7f6c7e5a22bb53e3ed377b9ceb542a509ea70"
+source = "git+https://github.com/ein-lang/eir?branch=main#38f23f9b1f8ff9290f3ed7c3cf9abf67cd5d37fe"
 dependencies = [
  "eir",
  "fmm",
@@ -873,9 +873,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-normalization"
-version = "0.1.17"
+version = "0.1.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07fbfce1c8a97d547e8b5334978438d9d6ec8c20e38f56d4a4374d181493eaef"
+checksum = "33717dca7ac877f497014e10d73f3acf948c342bee31b5ca7892faf94ccc6b49"
 dependencies = [
  "tinyvec",
 ]
