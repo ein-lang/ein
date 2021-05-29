@@ -132,6 +132,14 @@ mod tests {
     }
 
     #[test]
+    fn join_empty() {
+        assert_eq!(
+            EinString::from("").join(&EinString::from("")),
+            EinString::from("")
+        );
+    }
+
+    #[test]
     fn slice_with_ascii() {
         assert_eq!(
             EinString::from("abc").slice(2.0.into(), 2.0.into()),
