@@ -23,7 +23,7 @@ jobs:
         with:
           command: build
           args: --release
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PATH cucumber --publish-quiet
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PWD/tools:$PATH cucumber --publish-quiet
   format:
     runs-on: ubuntu-latest
     steps:
