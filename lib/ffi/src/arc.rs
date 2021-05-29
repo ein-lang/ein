@@ -157,7 +157,7 @@ impl<T> Drop for Arc<T> {
             unsafe {
                 drop_in_place(self.as_ptr_mut());
 
-                // TODO This is invalid for Arc<u8> buffer.
+                // TODO The layout is invalid for Arc<u8> buffer.
                 dealloc(
                     self.inner() as *const ArcInner<T> as *mut u8,
                     Self::inner_layout(),
