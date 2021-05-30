@@ -123,3 +123,28 @@ Feature: Memory leak
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
+
+
+  Scenario: Shadow a variable
+    Given a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/os/Os"
+
+    type Foo {
+      foo : None,
+    }
+
+    main : Os.Os -> Number
+    main os =
+      let
+        _ =
+          let
+            x = Foo{ foo = None }
+            _ = let x = Foo.foo x in x
+          in
+            x
+      in
+        main os
+    """
+    When I successfully run `ein build`
+    Then I successfully run `check_memory_leak.sh ./foo`
