@@ -81,3 +81,25 @@ Feature: Memory leak
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
+
+  Scenario: Deconstruct a record
+    Given a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/os/Os"
+
+    type Foo {
+      x : Number | None,
+    }
+
+    foo : Foo
+    foo = Foo{ x = None }
+
+    main : Os.Os -> Number
+    main os =
+      let
+        _ = Foo.x foo
+      in
+        main os
+    """
+    When I successfully run `ein build`
+    Then I successfully run `check_memory_leak.sh ./foo`
