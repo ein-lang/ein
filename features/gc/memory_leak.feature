@@ -103,3 +103,23 @@ Feature: Memory leak
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
+
+  Scenario: Put a string into a value of any type
+    Given a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/os/Os"
+
+    main : Os.Os -> Number
+    main os =
+      let
+        x : Any
+        x = ""
+
+        _ = case x = x
+          String => None
+          Any => None
+      in
+        main os
+    """
+    When I successfully run `ein build`
+    Then I successfully run `check_memory_leak.sh ./foo`
