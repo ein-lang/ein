@@ -41,7 +41,7 @@ Feature: Memory leak
         }
       },
       "dependencies": {
-    "github.com/ein-lang/core": { "version": "HEAD" }
+        "github.com/ein-lang/core": { "version": "HEAD" }
       }
     }
     """
@@ -160,7 +160,7 @@ Feature: Memory leak
         }
       },
       "dependencies": {
-    "github.com/ein-lang/core": { "version": "HEAD" }
+        "github.com/ein-lang/core": { "version": "HEAD" }
       }
     }
     """
