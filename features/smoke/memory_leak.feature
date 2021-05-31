@@ -124,13 +124,13 @@ Feature: Memory leak
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
 
-  Scenario: Shadow a variable
+  Scenario: Shadow a variable in a let expression
     Given a file named "Main.ein" with:
     """
     import "github.com/ein-lang/os/Os"
 
     type Foo {
-      foo : None,
+      foo : Number,
     }
 
     main : Os.Os -> Number
@@ -138,7 +138,7 @@ Feature: Memory leak
       let
         _ =
           let
-            x = Foo{ foo = None }
+            x = Foo{ foo = 42 }
             _ = let x = Foo.foo x in x
           in
             x
