@@ -199,13 +199,13 @@ dependencies = [
 
 [[package]]
 name = "ein-ffi"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8ff891111eba7a72ee438d8e2f942fd84a952a5e1525089e58aa492f8e052da"
+version = "0.5.5"
 
 [[package]]
 name = "ein-ffi"
 version = "0.5.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5dce35550c29e3bee9a24d053a2ecb85f261acd1207358893fe1fb2b6f9bb3e"
 
 [[package]]
 name = "eir"
@@ -355,7 +355,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#20614c6499be0d911f68855917e1e6e11a3392d7"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#7df64d4e17a87b5c8433390e8c6e40fd8f9a7a9c"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -369,7 +369,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.3.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#20614c6499be0d911f68855917e1e6e11a3392d7"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#7df64d4e17a87b5c8433390e8c6e40fd8f9a7a9c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -646,7 +646,7 @@ checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 name = "prelude"
 version = "0.1.0"
 dependencies = [
- "ein-ffi 0.5.4",
+ "ein-ffi 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
