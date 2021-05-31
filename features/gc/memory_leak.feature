@@ -124,7 +124,6 @@ Feature: Memory leak
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
 
-
   Scenario: Shadow a variable
     Given a file named "Main.ein" with:
     """
@@ -143,6 +142,37 @@ Feature: Memory leak
             _ = let x = Foo.foo x in x
           in
             x
+      in
+        main os
+    """
+    When I successfully run `ein build`
+    Then I successfully run `check_memory_leak.sh ./foo`
+
+  Scenario: Join strings
+    Given a file named "ein.json" with:
+    """
+    {
+      "application": {
+        "name": "foo",
+        "system": {
+          "name": "github.com/ein-lang/os",
+          "version": "main"
+        }
+      },
+      "dependencies": {
+    "github.com/ein-lang/core": { "version": "HEAD" }
+      }
+    }
+    """
+    And a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/core/String"
+    import "github.com/ein-lang/os/Os"
+
+    main : Os.Os -> Number
+    main os =
+      let
+        _ = Os.fdWrite os Os.stdout (String.join ["Hello, ", "world!", "\n"])
       in
         main os
     """

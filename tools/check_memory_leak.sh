@@ -2,7 +2,7 @@
 
 set -ex
 
-valgrind "$@" 2>valgrind.log &
+valgrind --log-file=valgrind.log "$@" >/dev/null &
 pid=$!
 
 sleep 5
