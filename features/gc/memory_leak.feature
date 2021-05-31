@@ -66,11 +66,11 @@ Feature: Memory leak
     import "github.com/ein-lang/os/Os"
 
     type Foo {
-      x : None
+      x : Number
     }
 
     foo : Foo
-    foo = Foo{ x = None }
+    foo = Foo{ x = 42 }
 
     main : Os.Os -> Number
     main os =
