@@ -72,9 +72,8 @@ impl Arc<u8> {
         if length == 0 {
             Self { pointer: null() }
         } else {
-            let pointer = unsafe {
-                &mut *(alloc(Layout::from_size_align(length, 1).unwrap()) as *mut ArcInner<u8>)
-            };
+            let pointer =
+                unsafe { &mut *(alloc(Self::buffer_layout(length)) as *mut ArcInner<u8>) };
 
             pointer.count = AtomicUsize::new(INITIAL_COUNT);
 
@@ -86,6 +85,14 @@ impl Arc<u8> {
 
     pub fn empty() -> Self {
         Self::buffer(0)
+    }
+
+    fn buffer_layout(length: usize) -> Layout {
+        Layout::new::<ArcInner<()>>()
+            .extend(Layout::array::<u8>(length).unwrap())
+            .unwrap()
+            .0
+            .pad_to_align()
     }
 }
 
