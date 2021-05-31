@@ -148,6 +148,30 @@ Feature: Memory leak
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
 
+  Scenario: Define a function in a let expression with a free variable
+    Given a file named "Main.ein" with:
+    """
+    import "github.com/ein-lang/os/Os"
+
+    type Foo {
+      foo : Number,
+    }
+
+    main : Os.Os -> Number
+    main os =
+      let
+        _ =
+          let
+            x = Foo{ foo = 42 }
+            f _ = Foo.foo x
+          in
+            f x
+      in
+        main os
+    """
+    When I successfully run `ein build`
+    Then I successfully run `check_memory_leak.sh ./foo`
+
   Scenario: Join strings
     Given a file named "ein.json" with:
     """
