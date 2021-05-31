@@ -200,12 +200,12 @@ dependencies = [
 [[package]]
 name = "ein-ffi"
 version = "0.5.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c8ff891111eba7a72ee438d8e2f942fd84a952a5e1525089e58aa492f8e052da"
 
 [[package]]
 name = "ein-ffi"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8ff891111eba7a72ee438d8e2f942fd84a952a5e1525089e58aa492f8e052da"
+version = "0.5.5"
 
 [[package]]
 name = "eir"
@@ -646,7 +646,7 @@ checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 name = "prelude"
 version = "0.1.0"
 dependencies = [
- "ein-ffi 0.5.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ein-ffi 0.5.4",
 ]
 
 [[package]]
