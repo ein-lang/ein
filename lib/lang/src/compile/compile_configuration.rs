@@ -13,6 +13,7 @@ pub static COMPILE_CONFIGURATION: Lazy<Arc<CompileConfiguration>> = Lazy::new(||
     CompileConfiguration {
         malloc_function_name: "foo_malloc".into(),
         realloc_function_name: "foo_realloc".into(),
+        free_function_name: "foo_free".into(),
         list_type_configuration: super::list_type_configuration::LIST_TYPE_CONFIGURATION.clone(),
         string_type_configuration: super::string_type_configuration::STRING_TYPE_CONFIGURATION
             .clone(),
@@ -26,6 +27,7 @@ pub static COMPILE_CONFIGURATION: Lazy<Arc<CompileConfiguration>> = Lazy::new(||
 pub struct CompileConfiguration {
     pub malloc_function_name: String,
     pub realloc_function_name: String,
+    pub free_function_name: String,
     pub error_type_configuration: Arc<ErrorTypeConfiguration>,
     pub list_type_configuration: Arc<ListTypeConfiguration>,
     pub string_type_configuration: Arc<StringTypeConfiguration>,

@@ -9,4 +9,4 @@ name = "prelude"
 crate-type = ["staticlib"]
 
 [dependencies]
-ffi = { package = "ein-ffi", "version" = "0.3" }
+ffi = { package = "ein-ffi", "version" = "0.5" }

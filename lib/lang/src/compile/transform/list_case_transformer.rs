@@ -28,6 +28,10 @@ impl ListCaseTransformer {
 
     pub fn transform(&self, case: &ListCase) -> Result<Expression, CompileError> {
         let source_information = case.source_information();
+        let any_list_type = types::Reference::new(
+            &self.configuration.list_type_name,
+            source_information.clone(),
+        );
         let first_rest_type = types::Reference::new(
             &self.configuration.first_rest_type_name,
             source_information.clone(),
@@ -49,7 +53,18 @@ impl ListCaseTransformer {
                 source_information.clone(),
             ),
             &first_rest_name,
-            Application::new(
+            Application::with_type(
+                types::Function::new(
+                    any_list_type.clone(),
+                    types::Union::new(
+                        vec![
+                            first_rest_type.clone().into(),
+                            types::None::new(source_information.clone()).into(),
+                        ],
+                        source_information.clone(),
+                    ),
+                    source_information.clone(),
+                ),
                 Variable::new(
                     &self.configuration.deconstruct_function_name,
                     source_information.clone(),
@@ -60,7 +75,7 @@ impl ListCaseTransformer {
             vec![
                 Alternative::new(none_type, case.empty_alternative().clone()),
                 Alternative::new(
-                    first_rest_type,
+                    first_rest_type.clone(),
                     Let::new(
                         vec![
                             VariableDefinition::new(
@@ -68,7 +83,12 @@ impl ListCaseTransformer {
                                 Case::with_type(
                                     types::Any::new(source_information.clone()),
                                     &element_name,
-                                    Application::new(
+                                    Application::with_type(
+                                        types::Function::new(
+                                            first_rest_type.clone(),
+                                            types::Any::new(source_information.clone()),
+                                            source_information.clone(),
+                                        ),
                                         Variable::new(
                                             &self.configuration.first_function_name,
                                             source_information.clone(),
@@ -88,7 +108,12 @@ impl ListCaseTransformer {
                             .into(),
                             VariableDefinition::new(
                                 case.rest_name(),
-                                Application::new(
+                                Application::with_type(
+                                    types::Function::new(
+                                        first_rest_type,
+                                        any_list_type,
+                                        source_information.clone(),
+                                    ),
                                     Variable::new(
                                         &self.configuration.rest_function_name,
                                         source_information.clone(),

@@ -112,6 +112,8 @@ impl ConstraintCollector {
                 let argument = self.infer_expression(application.argument(), variables)?;
                 let result = types::Variable::new(application.source_information().clone());
 
+                self.solved_subsumption_set
+                    .add(function.clone(), application.type_().clone());
                 self.solved_subsumption_set.add(
                     function,
                     types::Function::new(
@@ -319,7 +321,8 @@ impl ConstraintCollector {
                     types::Boolean::new(operation.source_information().clone()).into()
                 }
                 Operation::Pipe(operation) => self.infer_expression(
-                    &Application::new(
+                    &Application::with_type(
+                        operation.type_().clone(),
                         operation.rhs().clone(),
                         operation.lhs().clone(),
                         operation.source_information().clone(),

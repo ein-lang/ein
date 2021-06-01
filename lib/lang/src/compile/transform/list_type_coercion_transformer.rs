@@ -55,6 +55,10 @@ impl ListTypeCoercionTransformer {
             .resolve_to_list(coercion.to())?
             .unwrap();
         let source_information = coercion.source_information().clone();
+        let any_list_type = types::Reference::new(
+            &self.list_type_configuration.list_type_name,
+            source_information.clone(),
+        );
 
         // Re-tag elements if needed.
         Ok(Let::new(
@@ -89,8 +93,26 @@ impl ListTypeCoercionTransformer {
                 source_information.clone(),
             )
             .into()],
-            Application::new(
-                Application::new(
+            Application::with_type(
+                types::Function::new(
+                    any_list_type.clone(),
+                    any_list_type.clone(),
+                    source_information.clone(),
+                ),
+                Application::with_type(
+                    types::Function::new(
+                        types::Function::new(
+                            types::Any::new(source_information.clone()),
+                            types::Any::new(source_information.clone()),
+                            source_information.clone(),
+                        ),
+                        types::Function::new(
+                            any_list_type.clone(),
+                            any_list_type,
+                            source_information.clone(),
+                        ),
+                        source_information.clone(),
+                    ),
                     Variable::new(
                         &self.list_type_configuration.map_function_name,
                         source_information.clone(),

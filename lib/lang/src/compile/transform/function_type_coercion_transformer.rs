@@ -82,7 +82,8 @@ impl FunctionTypeCoercionTransformer {
                             Let::new(
                                 vec![VariableDefinition::new(
                                     from_function_name.clone(),
-                                    Application::new(
+                                    Application::with_type(
+                                        from_function_type.clone(),
                                         argument,
                                         self.coerce_type(
                                             Variable::new(
@@ -192,7 +193,8 @@ mod tests {
                         Let::new(
                             vec![VariableDefinition::new(
                                 "$tc_func_1",
-                                Application::new(
+                                Application::with_type(
+                                    from_type.clone(),
                                     Variable::new("$tc_func_0", SourceInformation::dummy()),
                                     TypeCoercion::new(
                                         Variable::new("$tc_arg_0", SourceInformation::dummy()),

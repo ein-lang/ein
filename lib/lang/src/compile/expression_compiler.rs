@@ -61,6 +61,10 @@ impl ExpressionCompiler {
     pub fn compile(&self, expression: &Expression) -> Result<eir::ir::Expression, CompileError> {
         Ok(match expression {
             Expression::Application(application) => eir::ir::FunctionApplication::new(
+                self.type_compiler
+                    .compile(application.type_())?
+                    .into_function()
+                    .unwrap(),
                 self.compile(application.function())?,
                 self.compile(application.argument())?,
             )
@@ -114,7 +118,18 @@ impl ExpressionCompiler {
                             )
                             .into(),
                             Type::String(_) => eir::ir::FunctionApplication::new(
+                                eir::types::Function::new(
+                                    eir::types::Type::ByteString,
+                                    eir::types::Type::Boolean,
+                                ),
                                 eir::ir::FunctionApplication::new(
+                                    eir::types::Function::new(
+                                        eir::types::Type::ByteString,
+                                        eir::types::Function::new(
+                                            eir::types::Type::ByteString,
+                                            eir::types::Type::Boolean,
+                                        ),
+                                    ),
                                     eir::ir::Variable::new(
                                         &self.string_type_configuration.equal_function_name,
                                     ),
@@ -145,7 +160,8 @@ impl ExpressionCompiler {
                 )
                 .into(),
                 Operation::Pipe(operation) => self.compile(
-                    &Application::new(
+                    &Application::with_type(
+                        operation.type_().clone(),
                         operation.rhs().clone(),
                         operation.lhs().clone(),
                         operation.source_information().clone(),
@@ -274,7 +290,7 @@ impl ExpressionCompiler {
             Expression::Variable(variable) => self
                 .expression_compiler_set
                 .variable_compiler
-                .compile(&variable),
+                .compile(&variable)?,
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
@@ -366,7 +382,10 @@ impl ExpressionCompiler {
                     .map(|alternative| -> Result<_, CompileError> {
                         Ok(
                             if self.reference_type_resolver.is_any(alternative.type_())? {
-                                Some(self.compile(alternative.expression())?)
+                                Some(eir::ir::DefaultAlternative::new(
+                                    case.name(),
+                                    self.compile(alternative.expression())?,
+                                ))
                             } else {
                                 None
                             },
@@ -614,14 +633,24 @@ mod tests {
 
             assert_eq!(
                 expression_compiler.compile(
-                    &PipeOperation::new(
+                    &PipeOperation::with_type(
+                        types::Function::new(
+                            types::Number::new(SourceInformation::dummy()),
+                            types::Number::new(SourceInformation::dummy()),
+                            SourceInformation::dummy()
+                        ),
                         Number::new(1.0, SourceInformation::dummy()),
                         Variable::new("f", SourceInformation::dummy()),
                         SourceInformation::dummy()
                     )
                     .into(),
                 ),
-                Ok(eir::ir::FunctionApplication::new(eir::ir::Variable::new("f"), 1.0).into())
+                Ok(eir::ir::FunctionApplication::new(
+                    eir::types::Function::new(eir::types::Type::Number, eir::types::Type::Number),
+                    eir::ir::Variable::new("f"),
+                    1.0
+                )
+                .into())
             );
         }
     }
@@ -745,7 +774,12 @@ mod tests {
                     vec![FunctionDefinition::new(
                         "f",
                         vec!["x".into()],
-                        Application::new(
+                        Application::with_type(
+                            types::Function::new(
+                                types::Number::new(SourceInformation::dummy()),
+                                types::Number::new(SourceInformation::dummy()),
+                                SourceInformation::dummy(),
+                            ),
                             Variable::new("f", SourceInformation::dummy()),
                             Variable::new("x", SourceInformation::dummy()),
                             SourceInformation::dummy()
@@ -768,6 +802,10 @@ mod tests {
                     "f",
                     vec![eir::ir::Argument::new("x", eir::types::Type::Number)],
                     eir::ir::FunctionApplication::new(
+                        eir::types::Function::new(
+                            eir::types::Type::Number,
+                            eir::types::Type::Number
+                        ),
                         eir::ir::Variable::new("f"),
                         eir::ir::Variable::new("x"),
                     ),

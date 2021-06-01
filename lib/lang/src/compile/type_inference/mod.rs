@@ -203,7 +203,7 @@ mod tests {
             .into(),
         ]);
 
-        assert_eq!(infer_types(&module), Ok(module));
+        assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
@@ -332,7 +332,7 @@ mod tests {
         )
         .into()]);
 
-        assert_eq!(infer_types(&module), Ok(module));
+        insta::assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
@@ -570,7 +570,8 @@ mod tests {
             )
             .into()],
         );
-        assert_eq!(infer_types(&module), Ok(module));
+
+        insta::assert_debug_snapshot!(infer_types(&module));
     }
 
     #[test]
@@ -1673,7 +1674,7 @@ mod tests {
                 .into(),
             ]);
 
-            assert_eq!(infer_types(&module), Ok(module.clone()));
+            insta::assert_debug_snapshot!(infer_types(&module));
         }
     }
 

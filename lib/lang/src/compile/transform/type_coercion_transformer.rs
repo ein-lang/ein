@@ -127,7 +127,8 @@ impl TypedTransformer for TypeCoercionTransformer {
             Expression::Application(application) => {
                 let source_information = application.source_information();
 
-                Application::new(
+                Application::with_type(
+                    application.type_().clone(),
                     application.function().clone(),
                     self.coerce_type(
                         application.argument(),

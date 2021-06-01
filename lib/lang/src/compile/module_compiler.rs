@@ -182,7 +182,12 @@ impl ModuleCompiler {
                     function_type.argument().clone(),
                 )],
                 eir::ir::FunctionApplication::new(
+                    function_type.clone(),
                     eir::ir::FunctionApplication::new(
+                        eir::types::Function::new(
+                            self.type_compiler.compile_thunk_argument(),
+                            function_type.clone(),
+                        ),
                         eir::ir::Variable::new(&thunk_name),
                         eir::ir::Record::new(self.type_compiler.compile_thunk_argument(), vec![]),
                     ),

@@ -19,6 +19,8 @@
     "cond",
     "contravariance",
     "coro",
+    "dealloc",
+    "dedup",
     "deque",
     "desugarer",
     "desugars",

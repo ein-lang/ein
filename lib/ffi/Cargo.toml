@@ -1,7 +1,7 @@
 [package]
 name = "ein-ffi"
 description = "FFI library for Ein programming language"
-version = "0.4.0"
+version = "0.5.5"
 publish = true
 edition = "2018"
 license = "MIT"
