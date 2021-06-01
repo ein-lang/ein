@@ -16,10 +16,10 @@ Feature: Partial application
       let
         _ = f 42
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
 
   Scenario: Apply a function of 2 arguments with 1 and 1 arguments
     Given a file named "Main.ein" with:
@@ -35,10 +35,10 @@ Feature: Partial application
         g = f 42
         _ = g True
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
 
   Scenario: Apply a function of 2 arguments with 2 arguments
     Given a file named "Main.ein" with:
@@ -53,10 +53,10 @@ Feature: Partial application
       let
         _ = f 42 True
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 1, 1 and 1 arguments
     Given a file named "Main.ein" with:
@@ -73,10 +73,10 @@ Feature: Partial application
         h = g True
         _ = h "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 1 and 2 arguments
     Given a file named "Main.ein" with:
@@ -92,10 +92,10 @@ Feature: Partial application
         g = f 42
         h = g True "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 2 and 1 arguments
     Given a file named "Main.ein" with:
@@ -111,10 +111,10 @@ Feature: Partial application
         g = f 42 True
         _ = g "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 3 arguments
     Given a file named "Main.ein" with:
@@ -129,7 +129,7 @@ Feature: Partial application
       let
         _ = f 42 True "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
