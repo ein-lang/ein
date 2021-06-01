@@ -2052,5 +2052,28 @@ mod tests {
                 .into()
             ])));
         }
+
+        #[test]
+        fn fail_to_infer_type_of_empty_list_literal() {
+            assert_debug_snapshot!(infer_types(&Module::from_definitions(vec![
+                VariableDefinition::new(
+                    "x",
+                    Let::new(
+                        vec![VariableDefinition::new(
+                            "x",
+                            List::new(vec![], SourceInformation::dummy()),
+                            types::Unknown::new(SourceInformation::dummy()),
+                            SourceInformation::dummy(),
+                        )
+                        .into()],
+                        Number::new(42.0, SourceInformation::dummy()),
+                        SourceInformation::dummy()
+                    ),
+                    types::Number::new(SourceInformation::dummy()),
+                    SourceInformation::dummy(),
+                )
+                .into()
+            ])));
+        }
     }
 }

@@ -1,0 +1,17 @@
+---
+source: lib/lang/src/compile/type_inference/mod.rs
+expression: "infer_types(&Module::from_definitions(vec![VariableDefinition ::\n                                           new(\"x\", Let ::\n                                               new(vec !\n                                                   [VariableDefinition ::\n                                                    new(\"x\", List ::\n                                                        new(vec ! [],\n                                                            SourceInformation\n                                                            :: dummy()), types\n                                                        :: Unknown ::\n                                                        new(SourceInformation\n                                                            :: dummy()),\n                                                        SourceInformation ::\n                                                        dummy(),) . into()],\n                                                   Number ::\n                                                   new(42.0, SourceInformation\n                                                       :: dummy()),\n                                                   SourceInformation ::\n                                                   dummy()), types :: Number\n                                               ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),) . into()]))"
+
+---
+Err(
+    TypeNotInferred(
+        SourceInformation {
+            source_name: "",
+            location: Location {
+                line_number: 0,
+                column_number: 0,
+            },
+            line: "",
+        },
+    ),
+)
