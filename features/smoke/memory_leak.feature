@@ -12,7 +12,7 @@ Feature: Memory leak
     main os = main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Run hello world
     Given a file named "Main.ein" with:
@@ -27,7 +27,7 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Stringify a number
     Given a file named "ein.json" with:
@@ -58,7 +58,7 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Use a global variable
     Given a file named "Main.ein" with:
@@ -80,7 +80,7 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Deconstruct a record
     Given a file named "Main.ein" with:
@@ -102,7 +102,7 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Put a string into a value of any type
     Given a file named "Main.ein" with:
@@ -122,7 +122,7 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Shadow a variable in a let expression
     Given a file named "Main.ein" with:
@@ -146,7 +146,7 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Define a function in a let expression with a free variable
     Given a file named "Main.ein" with:
@@ -170,7 +170,7 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Join strings
     Given a file named "ein.json" with:
@@ -201,4 +201,4 @@ Feature: Memory leak
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`

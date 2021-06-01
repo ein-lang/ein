@@ -19,7 +19,7 @@ Feature: Partial application
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Apply a function of 2 arguments with 1 and 1 arguments
     Given a file named "Main.ein" with:
@@ -38,7 +38,7 @@ Feature: Partial application
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Apply a function of 2 arguments with 2 arguments
     Given a file named "Main.ein" with:
@@ -56,7 +56,7 @@ Feature: Partial application
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 1, 1 and 1 arguments
     Given a file named "Main.ein" with:
@@ -76,7 +76,7 @@ Feature: Partial application
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 1 and 2 arguments
     Given a file named "Main.ein" with:
@@ -95,7 +95,7 @@ Feature: Partial application
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 2 and 1 arguments
     Given a file named "Main.ein" with:
@@ -114,7 +114,7 @@ Feature: Partial application
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
 
   Scenario: Apply a function of 3 arguments with 3 arguments
     Given a file named "Main.ein" with:
@@ -132,4 +132,4 @@ Feature: Partial application
         main os
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak.sh ./foo`
+    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
