@@ -38,7 +38,9 @@ impl ConstraintConverter {
                 // TODO Calculate intersection types from upper types?
                 constraint.upper_types().iter().next().unwrap().clone()
             } else {
-                types::Unknown::new(constraint.source_information().clone()).into()
+                return Err(CompileError::TypeNotInferred(
+                    constraint.source_information().clone(),
+                ));
             },
         )
     }

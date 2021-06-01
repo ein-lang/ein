@@ -94,6 +94,33 @@ impl ConstraintSolver {
             substitutions.insert(*id, constraint_type);
         }
 
+        self.validate_substitutions(&&substitutions)?;
+
         Ok(substitutions)
+    }
+
+    fn validate_substitutions(
+        &self,
+        substitutions: &HashMap<usize, Type>,
+    ) -> Result<(), CompileError> {
+        for type_ in substitutions.values() {
+            type_.transform_types(&mut |type_| match type_ {
+                Type::Any(_)
+                | Type::Boolean(_)
+                | Type::Function(_)
+                | Type::List(_)
+                | Type::None(_)
+                | Type::Number(_)
+                | Type::Record(_)
+                | Type::Reference(_)
+                | Type::String(_)
+                | Type::Union(_) => Ok(type_.clone()),
+                Type::Unknown(_) | Type::Variable(_) => Err(CompileError::TypeNotInferred(
+                    type_.source_information().clone(),
+                )),
+            })?;
+        }
+
+        Ok(())
     }
 }
