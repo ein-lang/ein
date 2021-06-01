@@ -16,7 +16,7 @@ Feature: Partial application
       let
         _ = f 42
       in
-        main os
+        0
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
@@ -35,7 +35,7 @@ Feature: Partial application
         g = f 42
         _ = g True
       in
-        main os
+        0
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
@@ -53,7 +53,7 @@ Feature: Partial application
       let
         _ = f 42 True
       in
-        main os
+        0
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
@@ -73,7 +73,7 @@ Feature: Partial application
         h = g True
         _ = h "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
@@ -92,7 +92,7 @@ Feature: Partial application
         g = f 42
         h = g True "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
@@ -111,7 +111,7 @@ Feature: Partial application
         g = f 42 True
         _ = g "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
@@ -129,7 +129,7 @@ Feature: Partial application
       let
         _ = f 42 True "foo"
       in
-        main os
+        0
     """
     When I successfully run `ein build`
     Then I successfully run `check_memory_leak.sh ./foo`
