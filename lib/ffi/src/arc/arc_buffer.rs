@@ -1,8 +1,5 @@
 use super::arc_block::ArcBlock;
-use std::{
-    alloc::Layout,
-    ptr::{null, null_mut},
-};
+use std::alloc::Layout;
 
 #[derive(Debug)]
 #[repr(C)]
@@ -40,7 +37,7 @@ impl ArcBuffer {
     pub fn as_slice(&self) -> &[u8] {
         unsafe {
             if self.block.is_null() {
-                std::slice::from_raw_parts(null(), 0)
+                std::slice::from_raw_parts(core::ptr::NonNull::dangling().as_ptr(), 0)
             } else {
                 let inner = &*(self.block.ptr() as *const ArcBufferInner);
 
@@ -52,7 +49,7 @@ impl ArcBuffer {
     pub fn as_slice_mut(&mut self) -> &mut [u8] {
         unsafe {
             if self.block.is_null() {
-                std::slice::from_raw_parts_mut(null_mut(), 0)
+                std::slice::from_raw_parts_mut(core::ptr::NonNull::dangling().as_ptr(), 0)
             } else {
                 let inner = &mut *(self.block.ptr() as *mut ArcBufferInner);
 
