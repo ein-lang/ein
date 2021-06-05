@@ -90,7 +90,7 @@ impl ArcBlock {
             unsafe {
                 drop_in_place(self.inner_pointer() as *mut T);
 
-                // This layout is expected not to be used..
+                // This layout is expected not to be used.
                 dealloc(
                     self.inner_pointer() as *mut u8,
                     Layout::from_size_align(1, 1).unwrap(),
