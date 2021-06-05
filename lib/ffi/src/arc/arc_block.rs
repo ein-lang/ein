@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn drop() {
-        ArcBlock::new(Layout::from_size_align(1, 1).unwrap()).drop::<()>();
+        ArcBlock::new(Layout::from_size_align(1, 1).unwrap()).drop::<u8>();
     }
 
     #[test]
