@@ -26,6 +26,10 @@ impl EinString {
         self.buffer.as_slice().len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn join(&self, other: &Self) -> Self {
         let mut buffer = ArcBuffer::new(self.len() + other.len());
 

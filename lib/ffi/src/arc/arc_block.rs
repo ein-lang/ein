@@ -46,7 +46,7 @@ impl ArcBlock {
     }
 
     pub fn is_null(&self) -> bool {
-        self.pointer == null()
+        self.pointer.is_null()
     }
 
     fn is_static(&self) -> bool {
