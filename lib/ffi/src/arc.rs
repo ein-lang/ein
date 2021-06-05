@@ -157,14 +157,13 @@ impl<T> Drop for Arc<T> {
             return;
         }
 
-        // TODO Is this correct ordering?
         if self.inner().count.fetch_sub(1, Ordering::Release) == INITIAL_COUNT {
             fence(Ordering::Acquire);
 
             unsafe {
                 drop_in_place(self.as_ptr_mut());
 
-                // TODO The layout is invalid for Arc<u8> buffer.
+                // This layout is invalid for unsized types.
                 dealloc(
                     self.inner() as *const ArcInner<T> as *mut u8,
                     Self::inner_layout(),
