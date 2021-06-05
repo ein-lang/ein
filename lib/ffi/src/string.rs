@@ -1,46 +1,42 @@
-use super::{arc::Arc, number::Number};
-use std::{cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
+use super::{arc::ArcBuffer, number::Number};
+use std::{cmp::max, str::from_utf8_unchecked};
 
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct EinString {
-    bytes: Arc<u8>, // variadic length array
-    length: usize,
+    buffer: ArcBuffer,
 }
 
 impl EinString {
-    pub const fn new(
-        bytes: Arc<u8>, // variadic length array
-        length: usize,
-    ) -> Self {
-        Self { bytes, length }
+    pub fn new(buffer: ArcBuffer) -> Self {
+        Self { buffer }
     }
 
     pub fn empty() -> Self {
         Self {
-            bytes: Arc::empty(),
-            length: 0,
+            buffer: ArcBuffer::new(0),
         }
     }
 
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { std::slice::from_raw_parts(self.bytes.as_ptr(), self.length) }
+        self.buffer.as_slice()
     }
 
-    pub fn join(&self, other: &Self) -> EinString {
-        unsafe {
-            let length = self.length + other.length;
-            let mut bytes = Arc::buffer(length);
+    pub fn len(&self) -> usize {
+        self.buffer.as_slice().len()
+    }
 
-            copy_nonoverlapping(self.bytes.as_ptr(), bytes.as_ptr_mut(), self.length);
-            copy_nonoverlapping(
-                other.bytes.as_ptr(),
-                (bytes.as_ptr_mut() as usize + self.length) as *mut u8,
-                other.length,
-            );
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
-            Self { bytes, length }
-        }
+    pub fn join(&self, other: &Self) -> Self {
+        let mut buffer = ArcBuffer::new(self.len() + other.len());
+
+        buffer.as_slice_mut()[..self.len()].copy_from_slice(self.as_slice());
+        buffer.as_slice_mut()[self.len()..].copy_from_slice(other.as_slice());
+
+        Self { buffer }
     }
 
     // Indices are inclusive and start from 1.
@@ -61,12 +57,11 @@ impl EinString {
         if string.is_empty() || start >= string.chars().count() || end <= start {
             Self::empty()
         } else {
-            string[Self::get_string_index(string, start)..Self::get_string_index(string, end)]
-                .into()
+            string[Self::get_byte_index(string, start)..Self::get_byte_index(string, end)].into()
         }
     }
 
-    fn get_string_index(string: &str, index: usize) -> usize {
+    fn get_byte_index(string: &str, index: usize) -> usize {
         string
             .char_indices()
             .nth(index)
@@ -80,8 +75,7 @@ unsafe impl Sync for EinString {}
 impl Default for EinString {
     fn default() -> Self {
         Self {
-            bytes: Arc::empty(),
-            length: 0,
+            buffer: ArcBuffer::new(0),
         }
     }
 }
@@ -95,8 +89,7 @@ impl PartialEq for EinString {
 impl From<&[u8]> for EinString {
     fn from(bytes: &[u8]) -> Self {
         Self {
-            bytes: bytes.into(),
-            length: bytes.len(),
+            buffer: bytes.into(),
         }
     }
 }

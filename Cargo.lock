@@ -2,9 +2,9 @@
 # It is not intended for manual editing.
 [[package]]
 name = "addr2line"
-version = "0.15.1"
+version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "03345e98af8f3d786b6d9f656ccfa6ac316d954e92bc4841f0bba20789d5fb5a"
+checksum = "e7a2e47a1fbe209ee101dd6d61285226744c6c8d3c21c8dc878ba6cb9f467f3a"
 dependencies = [
  "gimli",
 ]
@@ -200,17 +200,17 @@ dependencies = [
 [[package]]
 name = "ein-ffi"
 version = "0.5.5"
-
-[[package]]
-name = "ein-ffi"
-version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c5dce35550c29e3bee9a24d053a2ecb85f261acd1207358893fe1fb2b6f9bb3e"
 
 [[package]]
+name = "ein-ffi"
+version = "0.6.0"
+
+[[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#9fc866f8878e3c756222b9facfcdeaea958a104f"
+source = "git+https://github.com/ein-lang/eir?branch=main#f02ea66a3f64cb22c6b07d984a8d9e85d8ed2e9f"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -219,7 +219,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#9fc866f8878e3c756222b9facfcdeaea958a104f"
+source = "git+https://github.com/ein-lang/eir?branch=main#f02ea66a3f64cb22c6b07d984a8d9e85d8ed2e9f"
 dependencies = [
  "eir",
  "fmm",
@@ -548,9 +548,9 @@ dependencies = [
 
 [[package]]
 name = "object"
-version = "0.25.1"
+version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9023c1c0973b327f073c7f2fceb9bcc049862f93a7d14c6feb46c8a56460a0d5"
+checksum = "f8bc1d42047cf336f0f939c99e97183cf31551bf0f2865a2ec9c8d91fd4ffb5e"
 dependencies = [
  "memchr",
 ]
@@ -649,7 +649,7 @@ checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 name = "prelude"
 version = "0.1.0"
 dependencies = [
- "ein-ffi 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ein-ffi 0.5.5",
 ]
 
 [[package]]
