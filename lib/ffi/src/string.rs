@@ -1,45 +1,48 @@
-use super::{arc::Arc, number::Number};
+use super::{arc::ArcBuffer, number::Number};
 use std::{cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
 
 #[repr(C)]
 #[derive(Clone, Debug)]
 pub struct EinString {
-    bytes: Arc<u8>, // variadic length array
-    length: usize,
+    buffer: ArcBuffer,
 }
 
 impl EinString {
-    pub const fn new(
-        bytes: Arc<u8>, // variadic length array
-        length: usize,
-    ) -> Self {
-        Self { bytes, length }
+    pub fn new(buffer: ArcBuffer) -> Self {
+        Self { buffer }
     }
 
     pub fn empty() -> Self {
         Self {
-            bytes: Arc::empty(),
-            length: 0,
+            buffer: ArcBuffer::new(0),
         }
     }
 
     pub fn as_slice(&self) -> &[u8] {
-        unsafe { std::slice::from_raw_parts(self.bytes.as_ptr(), self.length) }
+        self.buffer.as_slice()
     }
 
-    pub fn join(&self, other: &Self) -> EinString {
-        unsafe {
-            let length = self.length + other.length;
-            let mut bytes = Arc::buffer(length);
+    pub fn len(&self) -> usize {
+        self.buffer.as_slice().len()
+    }
 
-            copy_nonoverlapping(self.bytes.as_ptr(), bytes.as_ptr_mut(), self.length);
+    pub fn join(&self, other: &Self) -> Self {
+        unsafe {
+            let length = self.len() + other.len();
+            let mut buffer = ArcBuffer::new(length);
+
             copy_nonoverlapping(
-                other.bytes.as_ptr(),
-                (bytes.as_ptr_mut() as usize + self.length) as *mut u8,
-                other.length,
+                self.as_slice().as_ptr(),
+                buffer.as_slice_mut().as_mut_ptr(),
+                self.len(),
+            );
+            copy_nonoverlapping(
+                other.as_slice().as_ptr(),
+                (buffer.as_slice().as_ptr() as usize + self.len()) as *mut u8,
+                other.len(),
             );
 
-            Self { bytes, length }
+            Self { buffer }
         }
     }
 
@@ -80,8 +83,7 @@ unsafe impl Sync for EinString {}
 impl Default for EinString {
     fn default() -> Self {
         Self {
-            bytes: Arc::empty(),
-            length: 0,
+            buffer: ArcBuffer::new(0),
         }
     }
 }
@@ -95,8 +97,7 @@ impl PartialEq for EinString {
 impl From<&[u8]> for EinString {
     fn from(bytes: &[u8]) -> Self {
         Self {
-            bytes: bytes.into(),
-            length: bytes.len(),
+            buffer: bytes.into(),
         }
     }
 }
