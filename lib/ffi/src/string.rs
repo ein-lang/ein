@@ -53,12 +53,11 @@ impl EinString {
         if string.is_empty() || start >= string.chars().count() || end <= start {
             Self::empty()
         } else {
-            string[Self::get_string_index(string, start)..Self::get_string_index(string, end)]
-                .into()
+            string[Self::get_byte_index(string, start)..Self::get_byte_index(string, end)].into()
         }
     }
 
-    fn get_string_index(string: &str, index: usize) -> usize {
+    fn get_byte_index(string: &str, index: usize) -> usize {
         string
             .char_indices()
             .nth(index)
