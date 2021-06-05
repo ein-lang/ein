@@ -25,14 +25,6 @@ impl<T> Arc<T> {
             phantom: PhantomData::default(),
         }
     }
-
-    pub fn as_ptr(&self) -> *const T {
-        self.block.ptr() as *const T
-    }
-
-    pub fn as_ptr_mut(&mut self) -> *mut T {
-        self.block.ptr_mut() as *mut T
-    }
 }
 
 impl<T> From<T> for Arc<T> {
@@ -45,7 +37,7 @@ impl<T> Deref for Arc<T> {
     type Target = T;
 
     fn deref(&self) -> &T {
-        unsafe { &*self.as_ptr() }
+        unsafe { &*(self.block.ptr() as *const T) }
     }
 }
 

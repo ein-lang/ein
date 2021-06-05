@@ -1,7 +1,6 @@
 use super::arc_block::ArcBlock;
 use std::{
     alloc::Layout,
-    intrinsics::copy_nonoverlapping,
     ptr::{null, null_mut},
 };
 
@@ -81,33 +80,9 @@ impl From<&[u8]> for ArcBuffer {
     fn from(slice: &[u8]) -> Self {
         let mut buffer = Self::new(slice.len());
 
-        unsafe {
-            copy_nonoverlapping(
-                slice.as_ptr(),
-                buffer.as_slice_mut().as_mut_ptr(),
-                slice.len(),
-            )
-        }
+        buffer.as_slice_mut().copy_from_slice(slice);
 
         buffer
-    }
-}
-
-impl From<Vec<u8>> for ArcBuffer {
-    fn from(vec: Vec<u8>) -> Self {
-        vec.as_slice().into()
-    }
-}
-
-impl From<&str> for ArcBuffer {
-    fn from(vec: &str) -> Self {
-        vec.as_bytes().into()
-    }
-}
-
-impl From<String> for ArcBuffer {
-    fn from(string: String) -> Self {
-        Vec::<u8>::from(string).into()
     }
 }
 
@@ -136,11 +111,11 @@ mod tests {
 
     #[test]
     fn convert_from_vec() {
-        ArcBuffer::from(vec![0u8; 42]);
+        ArcBuffer::from(vec![0u8; 42].as_slice());
     }
 
     #[test]
     fn convert_from_string() {
-        ArcBuffer::from("hello".to_string());
+        ArcBuffer::from("hello".as_bytes());
     }
 }

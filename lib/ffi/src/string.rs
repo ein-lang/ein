@@ -1,5 +1,5 @@
 use super::{arc::ArcBuffer, number::Number};
-use std::{cmp::max, intrinsics::copy_nonoverlapping, str::from_utf8_unchecked};
+use std::{cmp::max, str::from_utf8_unchecked};
 
 #[repr(C)]
 #[derive(Clone, Debug)]
@@ -27,23 +27,12 @@ impl EinString {
     }
 
     pub fn join(&self, other: &Self) -> Self {
-        unsafe {
-            let length = self.len() + other.len();
-            let mut buffer = ArcBuffer::new(length);
+        let mut buffer = ArcBuffer::new(self.len() + other.len());
 
-            copy_nonoverlapping(
-                self.as_slice().as_ptr(),
-                buffer.as_slice_mut().as_mut_ptr(),
-                self.len(),
-            );
-            copy_nonoverlapping(
-                other.as_slice().as_ptr(),
-                (buffer.as_slice().as_ptr() as usize + self.len()) as *mut u8,
-                other.len(),
-            );
+        buffer.as_slice_mut()[..self.len()].copy_from_slice(self.as_slice());
+        buffer.as_slice_mut()[self.len()..].copy_from_slice(other.as_slice());
 
-            Self { buffer }
-        }
+        Self { buffer }
     }
 
     // Indices are inclusive and start from 1.
