@@ -19,6 +19,7 @@ use crate::ast::*;
 use constraint_collector::ConstraintCollector;
 use constraint_converter::ConstraintConverter;
 use constraint_solver::ConstraintSolver;
+use intersection_type_calculator::IntersectionTypeCalculator;
 use std::sync::Arc;
 use type_inferrer::TypeInferrer;
 
@@ -32,7 +33,15 @@ pub fn infer_types(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
     );
-    let constraint_converter = ConstraintConverter::new(reference_type_resolver.clone());
+    let intersection_type_calculator = IntersectionTypeCalculator::new(
+        type_canonicalizer.clone(),
+        type_equality_checker.clone(),
+        reference_type_resolver.clone(),
+    );
+    let constraint_converter = ConstraintConverter::new(
+        intersection_type_calculator,
+        reference_type_resolver.clone(),
+    );
     let module_environment_creator = ModuleEnvironmentCreator::new();
     let constraint_collector = ConstraintCollector::new(
         reference_type_resolver.clone(),
