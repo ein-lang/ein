@@ -2,6 +2,7 @@ mod constraint_checker;
 mod constraint_collector;
 mod constraint_converter;
 mod constraint_solver;
+mod intersection_type_calculator;
 mod subsumption_set;
 mod type_inferrer;
 mod variable_constraint;
