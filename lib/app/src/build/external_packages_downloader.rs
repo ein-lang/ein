@@ -24,7 +24,7 @@ impl<'a> ExternalPackagesDownloader<'a> {
         for &external_package in external_packages {
             let package_configuration = self
                 .cached_external_package_downloader
-                .download(&external_package)?;
+                .download(external_package)?;
 
             package_configurations.extend(
                 self.download(

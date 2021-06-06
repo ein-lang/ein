@@ -58,7 +58,7 @@ impl<'a> ModulesBuilder<'a> {
             package_configuration,
         )? {
             let (object_file_path, interface_file_path) = self.module_compiler.compile(
-                &source_file_path,
+                source_file_path,
                 &module_interfaces,
                 prelude_module_interfaces,
                 package_configuration,

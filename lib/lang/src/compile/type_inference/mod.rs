@@ -2,6 +2,7 @@ mod constraint_checker;
 mod constraint_collector;
 mod constraint_converter;
 mod constraint_solver;
+mod intersection_type_calculator;
 mod subsumption_set;
 mod type_inferrer;
 mod variable_constraint;
@@ -18,6 +19,7 @@ use crate::ast::*;
 use constraint_collector::ConstraintCollector;
 use constraint_converter::ConstraintConverter;
 use constraint_solver::ConstraintSolver;
+use intersection_type_calculator::IntersectionTypeCalculator;
 use std::sync::Arc;
 use type_inferrer::TypeInferrer;
 
@@ -25,13 +27,21 @@ pub fn infer_types(
     module: &Module,
     compile_configuration: Arc<CompileConfiguration>,
 ) -> Result<Module, CompileError> {
-    let reference_type_resolver = ReferenceTypeResolver::new(&module);
+    let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let type_canonicalizer = TypeCanonicalizer::new(
         reference_type_resolver.clone(),
         type_equality_checker.clone(),
     );
-    let constraint_converter = ConstraintConverter::new(reference_type_resolver.clone());
+    let intersection_type_calculator = IntersectionTypeCalculator::new(
+        type_canonicalizer.clone(),
+        type_equality_checker.clone(),
+        reference_type_resolver.clone(),
+    );
+    let constraint_converter = ConstraintConverter::new(
+        intersection_type_calculator,
+        reference_type_resolver.clone(),
+    );
     let module_environment_creator = ModuleEnvironmentCreator::new();
     let constraint_collector = ConstraintCollector::new(
         reference_type_resolver.clone(),

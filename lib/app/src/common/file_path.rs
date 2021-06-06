@@ -34,10 +34,7 @@ impl FilePath {
             self.components().take(self.components.len() - 1).chain(
                 vec![regex::Regex::new(r"(\..*)?$")
                     .unwrap()
-                    .replace(
-                        &self.components.iter().last().unwrap(),
-                        replacement.as_str(),
-                    )
+                    .replace(self.components.iter().last().unwrap(), replacement.as_str())
                     .deref()]
                 .into_iter(),
             ),
@@ -73,7 +70,7 @@ impl Display for FilePath {
         write!(
             formatter,
             "{}",
-            self.components().collect::<Vec<_>>().join(&"/")
+            self.components().collect::<Vec<_>>().join("/")
         )
     }
 }

@@ -30,7 +30,7 @@ impl<'a> FilePathResolver<'a> {
     ) -> FilePath {
         directory_path.join(
             &FilePath::new(internal_module_path.components())
-                .with_extension(&self.file_path_configuration.source_file_extension),
+                .with_extension(self.file_path_configuration.source_file_extension),
         )
     }
 

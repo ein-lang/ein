@@ -22,7 +22,7 @@ impl TypeIdCalculator {
         // TODO Use safer Hasher.
         let mut hasher = DefaultHasher::new();
 
-        self.calculate_type_id(&type_)?.hash(&mut hasher);
+        self.calculate_type_id(type_)?.hash(&mut hasher);
 
         Ok(hasher.finish())
     }

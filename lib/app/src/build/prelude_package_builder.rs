@@ -35,9 +35,9 @@ impl<'a> PreludePackageBuilder<'a> {
             .static_file_path_manager
             .prelude_package_directory_path();
 
-        self.prelude_package_downloader.download(&directory_path)?;
+        self.prelude_package_downloader.download(directory_path)?;
 
-        let package_configuration = self.package_configuration_reader.read(&directory_path)?;
+        let package_configuration = self.package_configuration_reader.read(directory_path)?;
 
         let (package_object_file_paths, module_interfaces) =
             self.package_builder

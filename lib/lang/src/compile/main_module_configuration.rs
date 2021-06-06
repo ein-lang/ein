@@ -11,7 +11,7 @@ impl MainModuleConfiguration {
         Self {
             source_main_function_name: self.source_main_function_name.clone(),
             object_main_function_name: self.object_main_function_name.clone(),
-            main_function_type_name: self.qualify_name(&self.main_function_type_name, &names),
+            main_function_type_name: self.qualify_name(&self.main_function_type_name, names),
         }
     }
 

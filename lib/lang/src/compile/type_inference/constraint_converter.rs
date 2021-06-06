@@ -1,17 +1,23 @@
 use super::{
     super::{error::CompileError, reference_type_resolver::ReferenceTypeResolver},
+    intersection_type_calculator::IntersectionTypeCalculator,
     variable_constraint::VariableConstraint,
 };
 use crate::types::{self, Type};
 use std::sync::Arc;
 
 pub struct ConstraintConverter {
+    intersection_type_calculator: Arc<IntersectionTypeCalculator>,
     reference_type_resolver: Arc<ReferenceTypeResolver>,
 }
 
 impl ConstraintConverter {
-    pub fn new(reference_type_resolver: Arc<ReferenceTypeResolver>) -> Arc<Self> {
+    pub fn new(
+        intersection_type_calculator: Arc<IntersectionTypeCalculator>,
+        reference_type_resolver: Arc<ReferenceTypeResolver>,
+    ) -> Arc<Self> {
         Self {
+            intersection_type_calculator,
             reference_type_resolver,
         }
         .into()
@@ -35,8 +41,8 @@ impl ConstraintConverter {
                 )
                 .into()
             } else if !constraint.upper_types().is_empty() {
-                // TODO Calculate intersection types from upper types?
-                constraint.upper_types().iter().next().unwrap().clone()
+                self.intersection_type_calculator
+                    .calculate(&constraint.upper_types().iter().cloned().collect::<Vec<_>>())?
             } else {
                 return Err(CompileError::TypeNotInferred(
                     constraint.source_information().clone(),

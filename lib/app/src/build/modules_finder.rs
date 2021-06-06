@@ -27,7 +27,7 @@ impl<'a> ModulesFinder<'a> {
 
         for path in self.file_system.read_directory(directory_path)? {
             if path
-                .relative_to(&directory_path)
+                .relative_to(directory_path)
                 .components()
                 .next()
                 .unwrap()
@@ -35,7 +35,7 @@ impl<'a> ModulesFinder<'a> {
             {
             } else if self.file_system.is_directory(&path) {
                 source_file_paths.extend(self.find(&path)?);
-            } else if path.has_extension(&self.file_path_configuration.source_file_extension) {
+            } else if path.has_extension(self.file_path_configuration.source_file_extension) {
                 source_file_paths.push(path);
             }
         }

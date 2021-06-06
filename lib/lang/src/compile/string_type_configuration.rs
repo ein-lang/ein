@@ -19,7 +19,7 @@ pub struct StringTypeConfiguration {
 impl StringTypeConfiguration {
     pub fn qualify(&self, names: &HashMap<String, String>) -> Self {
         Self {
-            equal_function_name: self.qualify_name(&self.equal_function_name, &names),
+            equal_function_name: self.qualify_name(&self.equal_function_name, names),
         }
     }
 

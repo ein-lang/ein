@@ -51,7 +51,7 @@ impl<'a> PackageInitializer<'a> {
                     &FilePath::new(&[self
                         .package_initialization_configuration
                         .library_main_basename])
-                    .with_extension(&self.file_path_configuration.source_file_extension),
+                    .with_extension(self.file_path_configuration.source_file_extension),
                     self.package_initialization_configuration
                         .library_main_file_content
                         .as_bytes(),

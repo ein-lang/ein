@@ -107,7 +107,7 @@ impl ExpressionTypeExtractor {
             Expression::List(list) => list.type_().clone(),
             Expression::ListCase(case) => self.type_canonicalizer.canonicalize(
                 &types::Union::new(
-                    vec![self.extract(case.empty_alternative(), &variables)?, {
+                    vec![self.extract(case.empty_alternative(), variables)?, {
                         let mut variables = variables.clone();
 
                         variables.insert(
@@ -139,7 +139,7 @@ impl ExpressionTypeExtractor {
                 }
                 Operation::Pipe(operation) => self
                     .reference_type_resolver
-                    .resolve_to_function(&self.extract(operation.rhs(), &variables)?)?
+                    .resolve_to_function(&self.extract(operation.rhs(), variables)?)?
                     .unwrap()
                     .result()
                     .clone(),

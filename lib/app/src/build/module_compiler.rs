@@ -45,7 +45,7 @@ impl<'a> ModuleCompiler<'a> {
         package_configuration: &PackageConfiguration,
     ) -> Result<(FilePath, FilePath), Box<dyn std::error::Error>> {
         let source = self.file_system.read_to_string(source_file_path)?;
-        let module = self.module_parser.parse(&source, &source_file_path)?;
+        let module = self.module_parser.parse(&source, source_file_path)?;
 
         let imported_module_interfaces = module
             .imports()
@@ -111,7 +111,7 @@ impl<'a> ModuleCompiler<'a> {
             .write(&object_file_path, &module_object_data)?;
         self.file_system.write(
             &interface_file_path,
-            &serde_json::to_string(&module_interface)?.as_bytes(),
+            serde_json::to_string(&module_interface)?.as_bytes(),
         )?;
 
         Ok((object_file_path, interface_file_path))

@@ -19,7 +19,7 @@ pub struct ErrorTypeConfiguration {
 impl ErrorTypeConfiguration {
     pub fn qualify(&self, names: &HashMap<String, String>) -> Self {
         Self {
-            error_type_name: self.qualify_name(&self.error_type_name, &names),
+            error_type_name: self.qualify_name(&self.error_type_name, names),
         }
     }
 

@@ -44,7 +44,7 @@ pub fn transform_before_name_qualification(module: &Module) -> Result<Module, Co
     let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_comparability_checker = TypeComparabilityChecker::new(reference_type_resolver);
 
-    let module = ElementlessRecordTransformer::new().transform(&module);
+    let module = ElementlessRecordTransformer::new().transform(module);
     let module = RecordElementFunctionTransformer::new().transform(&module);
     let module =
         RecordEqualFunctionTransformer::new(type_comparability_checker).transform(&module)?;
@@ -87,7 +87,7 @@ pub fn transform_with_types(
         reference_type_resolver,
     );
 
-    type_coercion_transformer.transform(&module)
+    type_coercion_transformer.transform(module)
 }
 
 #[cfg(test)]

@@ -28,7 +28,7 @@ impl TypeCanonicalizer {
 
     fn canonicalize_shallowly(&self, type_: &Type) -> Result<Type, CompileError> {
         Ok(if let Type::Union(union) = type_ {
-            self.canonicalize_union_shallowly(&union)?
+            self.canonicalize_union_shallowly(union)?
         } else {
             type_.clone()
         })
