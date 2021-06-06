@@ -63,9 +63,9 @@ pub fn compile(
     module: &Module,
     configuration: Arc<CompileConfiguration>,
 ) -> Result<(Vec<u8>, ModuleInterface), CompileError> {
-    GlobalNameValidator::new().validate(&module)?;
+    GlobalNameValidator::new().validate(module)?;
 
-    let module = transform_before_name_qualification(&module)?;
+    let module = transform_before_name_qualification(module)?;
 
     let module = if let Some(main_module_configuration) = &configuration.main_module_configuration {
         MainFunctionDefinitionTransformer::new(main_module_configuration.clone())

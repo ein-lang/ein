@@ -91,9 +91,9 @@ impl LetErrorTransformer {
         source_information: Arc<SourceInformation>,
     ) -> Result<Expression, CompileError> {
         Ok(
-            if self.type_equality_checker.equal(&from_type, &to_type)?
-                || self.reference_type_resolver.is_list(&from_type)?
-                    && self.reference_type_resolver.is_list(&to_type)?
+            if self.type_equality_checker.equal(from_type, to_type)?
+                || self.reference_type_resolver.is_list(from_type)?
+                    && self.reference_type_resolver.is_list(to_type)?
             {
                 expression.clone()
             } else {

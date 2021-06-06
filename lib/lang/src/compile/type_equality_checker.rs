@@ -15,8 +15,8 @@ impl TypeEqualityChecker {
     }
 
     pub fn equal(&self, one: &Type, other: &Type) -> Result<bool, CompileError> {
-        let one = self.reference_type_resolver.resolve(&one)?;
-        let other = self.reference_type_resolver.resolve(&other)?;
+        let one = self.reference_type_resolver.resolve(one)?;
+        let other = self.reference_type_resolver.resolve(other)?;
 
         let value = match (&one, &other) {
             (Type::Record(one), Type::Record(other)) => one.name() == other.name(),

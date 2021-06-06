@@ -94,7 +94,7 @@ impl ConstraintSolver {
             substitutions.insert(*id, constraint_type);
         }
 
-        self.validate_substitutions(&&substitutions)?;
+        self.validate_substitutions(&substitutions)?;
 
         Ok(substitutions)
     }

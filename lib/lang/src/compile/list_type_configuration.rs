@@ -37,16 +37,16 @@ pub struct ListTypeConfiguration {
 impl ListTypeConfiguration {
     pub fn qualify(&self, names: &HashMap<String, String>) -> Self {
         Self {
-            empty_list_variable_name: self.qualify_name(&self.empty_list_variable_name, &names),
-            concatenate_function_name: self.qualify_name(&self.concatenate_function_name, &names),
-            equal_function_name: self.qualify_name(&self.equal_function_name, &names),
-            prepend_function_name: self.qualify_name(&self.prepend_function_name, &names),
-            deconstruct_function_name: self.qualify_name(&self.deconstruct_function_name, &names),
-            first_function_name: self.qualify_name(&self.first_function_name, &names),
-            rest_function_name: self.qualify_name(&self.rest_function_name, &names),
-            list_type_name: self.qualify_name(&self.list_type_name, &names),
-            first_rest_type_name: self.qualify_name(&self.first_rest_type_name, &names),
-            map_function_name: self.qualify_name(&self.map_function_name, &names),
+            empty_list_variable_name: self.qualify_name(&self.empty_list_variable_name, names),
+            concatenate_function_name: self.qualify_name(&self.concatenate_function_name, names),
+            equal_function_name: self.qualify_name(&self.equal_function_name, names),
+            prepend_function_name: self.qualify_name(&self.prepend_function_name, names),
+            deconstruct_function_name: self.qualify_name(&self.deconstruct_function_name, names),
+            first_function_name: self.qualify_name(&self.first_function_name, names),
+            rest_function_name: self.qualify_name(&self.rest_function_name, names),
+            list_type_name: self.qualify_name(&self.list_type_name, names),
+            first_rest_type_name: self.qualify_name(&self.first_rest_type_name, names),
+            map_function_name: self.qualify_name(&self.map_function_name, names),
         }
     }
 

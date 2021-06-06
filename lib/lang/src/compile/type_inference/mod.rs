@@ -27,7 +27,7 @@ pub fn infer_types(
     module: &Module,
     compile_configuration: Arc<CompileConfiguration>,
 ) -> Result<Module, CompileError> {
-    let reference_type_resolver = ReferenceTypeResolver::new(&module);
+    let reference_type_resolver = ReferenceTypeResolver::new(module);
     let type_equality_checker = TypeEqualityChecker::new(reference_type_resolver.clone());
     let type_canonicalizer = TypeCanonicalizer::new(
         reference_type_resolver.clone(),

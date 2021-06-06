@@ -27,7 +27,7 @@ impl<'a> SystemPackageBuilder<'a> {
     ) -> Result<(Vec<FilePath>, Vec<lang::ModuleInterface>), Box<dyn std::error::Error>> {
         let package_configuration = self
             .cached_external_package_downloader
-            .download(&external_package)?;
+            .download(external_package)?;
 
         self.package_builder.build(
             &package_configuration,

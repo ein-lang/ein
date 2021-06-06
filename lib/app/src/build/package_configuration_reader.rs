@@ -50,7 +50,7 @@ impl<'a> PackageConfigurationReader<'a> {
             deserialize_build_configuration(
                 &self.file_system.read_to_string(
                     &directory_path.join(
-                        &self
+                        self
                             .static_file_path_manager
                             .build_configuration_file_path(),
                     ),

@@ -26,7 +26,7 @@ impl StaticFilePathManager {
             external_packages_directory_path,
             object_directory_path: output_directory_path.join(&FilePath::new(&[OBJECT_DIRECTORY])),
             main_source_file_path: FilePath::new(&[configuration.main_file_basename])
-                .with_extension(&configuration.source_file_extension),
+                .with_extension(configuration.source_file_extension),
             build_configuration_file_path: FilePath::new(&[
                 configuration.build_configuration_filename
             ]),

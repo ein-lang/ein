@@ -109,7 +109,7 @@ impl<'a> MainPackageBuilder<'a> {
             .build(&external_package_configurations, &prelude_module_interfaces)?;
 
         let (module_object_paths, _) = self.package_builder.build(
-            &package_configuration,
+            package_configuration,
             &external_module_interfaces
                 .drain()
                 .chain(vec![(
@@ -157,7 +157,7 @@ impl<'a> MainPackageBuilder<'a> {
             .build(&external_package_configurations, &prelude_module_interfaces)?;
 
         self.package_builder.build(
-            &package_configuration,
+            package_configuration,
             &external_module_interfaces,
             &prelude_module_interfaces,
         )?;

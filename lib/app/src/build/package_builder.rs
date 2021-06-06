@@ -70,7 +70,7 @@ impl<'a> PackageBuilder<'a> {
                     .map(|application| application.system_package()),
             )
             .map(|external_package| {
-                external_module_interfaces[&external_package].iter().map(
+                external_module_interfaces[external_package].iter().map(
                     |(module_path, module_interface)| {
                         (module_path.clone(), module_interface.clone())
                     },
@@ -80,7 +80,7 @@ impl<'a> PackageBuilder<'a> {
             .collect();
 
         let (object_file_paths, interface_file_paths) = self.modules_builder.build(
-            &package_configuration,
+            package_configuration,
             &external_module_interfaces,
             prelude_module_interfaces,
         )?;
@@ -94,7 +94,7 @@ impl<'a> PackageBuilder<'a> {
                 .iter()
                 .map(|file_path| {
                     Ok(serde_json::from_slice(
-                        &self.file_system.read_to_vec(&file_path)?,
+                        &self.file_system.read_to_vec(file_path)?,
                     )?)
                 })
                 .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()?,

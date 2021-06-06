@@ -222,10 +222,10 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                     .iter()
                     .map(|element| match element {
                         ListElement::Multiple(expression) => Ok(ListElement::Multiple(
-                            self.transform_expression(expression, &variables)?,
+                            self.transform_expression(expression, variables)?,
                         )),
                         ListElement::Single(expression) => Ok(ListElement::Single(
-                            self.transform_expression(expression, &variables)?,
+                            self.transform_expression(expression, variables)?,
                         )),
                     })
                     .collect::<Result<Vec<_>, CompileError>>()?,
@@ -237,7 +237,7 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
                 case.type_().clone(),
                 case.first_name(),
                 case.rest_name(),
-                self.transform_expression(case.empty_alternative(), &variables)?,
+                self.transform_expression(case.empty_alternative(), variables)?,
                 {
                     let mut variables = variables.clone();
 
@@ -259,37 +259,37 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
             Expression::Operation(operation) => match operation {
                 Operation::Arithmetic(operation) => ArithmeticOperation::new(
                     operation.operator(),
-                    self.transform_expression(operation.lhs(), &variables)?,
-                    self.transform_expression(operation.rhs(), &variables)?,
+                    self.transform_expression(operation.lhs(), variables)?,
+                    self.transform_expression(operation.rhs(), variables)?,
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Boolean(operation) => BooleanOperation::new(
                     operation.operator(),
-                    self.transform_expression(operation.lhs(), &variables)?,
-                    self.transform_expression(operation.rhs(), &variables)?,
+                    self.transform_expression(operation.lhs(), variables)?,
+                    self.transform_expression(operation.rhs(), variables)?,
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Equality(operation) => EqualityOperation::with_type(
                     operation.type_().clone(),
                     operation.operator(),
-                    self.transform_expression(operation.lhs(), &variables)?,
-                    self.transform_expression(operation.rhs(), &variables)?,
+                    self.transform_expression(operation.lhs(), variables)?,
+                    self.transform_expression(operation.rhs(), variables)?,
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Order(operation) => OrderOperation::new(
                     operation.operator(),
-                    self.transform_expression(operation.lhs(), &variables)?,
-                    self.transform_expression(operation.rhs(), &variables)?,
+                    self.transform_expression(operation.lhs(), variables)?,
+                    self.transform_expression(operation.rhs(), variables)?,
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Pipe(operation) => PipeOperation::with_type(
                     operation.type_().clone(),
-                    self.transform_expression(operation.lhs(), &variables)?,
-                    self.transform_expression(operation.rhs(), &variables)?,
+                    self.transform_expression(operation.lhs(), variables)?,
+                    self.transform_expression(operation.rhs(), variables)?,
                     operation.source_information().clone(),
                 )
                 .into(),
@@ -325,6 +325,6 @@ impl<D: TypedTransformer> TypedMetaTransformer<D> {
         };
 
         self.component_transformer
-            .transform_expression(&expression, &variables)
+            .transform_expression(&expression, variables)
     }
 }

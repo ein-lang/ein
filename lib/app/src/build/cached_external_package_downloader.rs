@@ -35,7 +35,7 @@ impl<'a> CachedExternalPackageDownloader<'a> {
     ) -> Result<PackageConfiguration, Box<dyn std::error::Error>> {
         let directory_path = self
             .file_path_resolver
-            .resolve_external_package_directory_path(&external_package);
+            .resolve_external_package_directory_path(external_package);
 
         if !self.file_system.exists(&directory_path) {
             self.logger.log(&format!(
@@ -45,7 +45,7 @@ impl<'a> CachedExternalPackageDownloader<'a> {
             ))?;
 
             self.external_package_downloader
-                .download(&external_package, &directory_path)?;
+                .download(external_package, &directory_path)?;
         }
 
         self.package_configuration_reader.read(&directory_path)

@@ -35,7 +35,7 @@ impl FilePath {
                 vec![regex::Regex::new(r"(\..*)?$")
                     .unwrap()
                     .replace(
-                        &self.components.iter().last().unwrap(),
+                        self.components.iter().last().unwrap(),
                         replacement.as_str(),
                     )
                     .deref()]
@@ -73,7 +73,7 @@ impl Display for FilePath {
         write!(
             formatter,
             "{}",
-            self.components().collect::<Vec<_>>().join(&"/")
+            self.components().collect::<Vec<_>>().join("/")
         )
     }
 }

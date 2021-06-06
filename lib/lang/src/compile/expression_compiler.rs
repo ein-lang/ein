@@ -290,7 +290,7 @@ impl ExpressionCompiler {
             Expression::Variable(variable) => self
                 .expression_compiler_set
                 .variable_compiler
-                .compile(&variable)?,
+                .compile(variable)?,
             Expression::RecordUpdate(_) => unreachable!(),
         })
     }
@@ -502,7 +502,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     fn create_expression_compiler(module: &Module) -> (Arc<ExpressionCompiler>, Arc<TypeCompiler>) {
-        let reference_type_resolver = ReferenceTypeResolver::new(&module);
+        let reference_type_resolver = ReferenceTypeResolver::new(module);
         let last_result_type_calculator =
             LastResultTypeCalculator::new(reference_type_resolver.clone());
         let type_id_calculator = TypeIdCalculator::new(reference_type_resolver.clone());
@@ -514,7 +514,7 @@ mod tests {
         let variable_compiler = VariableCompiler::new(
             type_compiler.clone(),
             reference_type_resolver.clone(),
-            &module,
+            module,
         )
         .unwrap();
         let type_comparability_checker =

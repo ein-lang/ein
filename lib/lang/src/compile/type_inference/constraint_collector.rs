@@ -93,7 +93,7 @@ impl ConstraintCollector {
         variable_definition: &VariableDefinition,
         variables: &HashMap<String, Type>,
     ) -> Result<(), CompileError> {
-        let type_ = self.infer_expression(variable_definition.body(), &variables)?;
+        let type_ = self.infer_expression(variable_definition.body(), variables)?;
 
         self.solved_subsumption_set
             .add(type_, variable_definition.type_().clone());
@@ -260,7 +260,7 @@ impl ConstraintCollector {
                 let argument = self.infer_expression(case.argument(), variables)?;
                 self.solved_subsumption_set.add(argument, list.clone());
 
-                let type_ = self.infer_expression(case.empty_alternative(), &variables)?;
+                let type_ = self.infer_expression(case.empty_alternative(), variables)?;
                 self.solved_subsumption_set.add(type_, result.clone());
 
                 let mut variables = variables.clone();
@@ -328,7 +328,7 @@ impl ConstraintCollector {
                         operation.source_information().clone(),
                     )
                     .into(),
-                    &variables,
+                    variables,
                 )?,
             }),
             Expression::RecordConstruction(construction) => {

@@ -32,7 +32,7 @@ impl<'a> ExternalPackagesBuilder<'a> {
             let (object_file_paths, module_interfaces) = self.package_builder.build(
                 package_configuration,
                 &external_module_interfaces,
-                &prelude_module_interfaces,
+                prelude_module_interfaces,
             )?;
 
             package_object_file_paths.extend(object_file_paths);
@@ -65,8 +65,8 @@ impl<'a> ExternalPackagesBuilder<'a> {
                 package_configuration.build_configuration().dependencies()
             {
                 graph.add_edge(
-                    indices[&dependency_external_package],
-                    indices[&external_package],
+                    indices[dependency_external_package],
+                    indices[external_package],
                     (),
                 );
             }

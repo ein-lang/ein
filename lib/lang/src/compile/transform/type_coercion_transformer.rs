@@ -50,9 +50,9 @@ impl TypeCoercionTransformer {
     ) -> Result<Expression, CompileError> {
         let from_type = self
             .expression_type_extractor
-            .extract(&expression, variables)?;
+            .extract(expression, variables)?;
 
-        Ok(if self.type_equality_checker.equal(&from_type, &to_type)? {
+        Ok(if self.type_equality_checker.equal(&from_type, to_type)? {
             expression.clone()
         } else {
             TypeCoercion::new(
@@ -111,7 +111,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                 variable_definition.body(),
                 variable_definition.type_(),
                 variable_definition.source_information().clone(),
-                &variables,
+                variables,
             )?,
             variable_definition.type_().clone(),
             variable_definition.source_information().clone(),
@@ -159,7 +159,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                         case.argument(),
                         case.type_(),
                         case.source_information().clone(),
-                        &variables,
+                        variables,
                     )?,
                     case.alternatives()
                         .iter()
@@ -247,7 +247,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                                 ListElement::Multiple(expression) => {
                                     ListElement::Multiple(self.coerce_type(
                                         expression,
-                                        &list.type_(),
+                                        list.type_(),
                                         expression.source_information().clone(),
                                         variables,
                                     )?)
@@ -255,7 +255,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                                 ListElement::Single(expression) => {
                                     ListElement::Single(self.coerce_type(
                                         expression,
-                                        &element_type,
+                                        element_type,
                                         expression.source_information().clone(),
                                         variables,
                                     )?)
@@ -277,7 +277,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                         case.argument(),
                         case.type_(),
                         case.source_information().clone(),
-                        &variables,
+                        variables,
                     )?,
                     case.type_().clone(),
                     case.first_name(),
@@ -286,7 +286,7 @@ impl TypedTransformer for TypeCoercionTransformer {
                         case.empty_alternative(),
                         &result_type,
                         case.source_information().clone(),
-                        &variables,
+                        variables,
                     )?,
                     {
                         let mut variables = variables.clone();

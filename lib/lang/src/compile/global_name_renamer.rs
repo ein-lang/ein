@@ -118,7 +118,7 @@ impl GlobalNameRenamer {
     ) -> VariableDefinition {
         VariableDefinition::new(
             variable_definition.name(),
-            self.rename_expression(variable_definition.body(), &names),
+            self.rename_expression(variable_definition.body(), names),
             variable_definition.type_().clone(),
             variable_definition.source_information().clone(),
         )
@@ -215,10 +215,10 @@ impl GlobalNameRenamer {
                     .iter()
                     .map(|element| match element {
                         ListElement::Multiple(expression) => {
-                            ListElement::Multiple(self.rename_expression(expression, &names))
+                            ListElement::Multiple(self.rename_expression(expression, names))
                         }
                         ListElement::Single(expression) => {
-                            ListElement::Single(self.rename_expression(expression, &names))
+                            ListElement::Single(self.rename_expression(expression, names))
                         }
                     })
                     .collect(),
@@ -245,37 +245,37 @@ impl GlobalNameRenamer {
             Expression::Operation(operation) => match operation {
                 Operation::Arithmetic(operation) => ArithmeticOperation::new(
                     operation.operator(),
-                    self.rename_expression(operation.lhs(), &names),
-                    self.rename_expression(operation.rhs(), &names),
+                    self.rename_expression(operation.lhs(), names),
+                    self.rename_expression(operation.rhs(), names),
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Boolean(operation) => BooleanOperation::new(
                     operation.operator(),
-                    self.rename_expression(operation.lhs(), &names),
-                    self.rename_expression(operation.rhs(), &names),
+                    self.rename_expression(operation.lhs(), names),
+                    self.rename_expression(operation.rhs(), names),
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Equality(operation) => EqualityOperation::with_type(
                     operation.type_().clone(),
                     operation.operator(),
-                    self.rename_expression(operation.lhs(), &names),
-                    self.rename_expression(operation.rhs(), &names),
+                    self.rename_expression(operation.lhs(), names),
+                    self.rename_expression(operation.rhs(), names),
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Order(operation) => OrderOperation::new(
                     operation.operator(),
-                    self.rename_expression(operation.lhs(), &names),
-                    self.rename_expression(operation.rhs(), &names),
+                    self.rename_expression(operation.lhs(), names),
+                    self.rename_expression(operation.rhs(), names),
                     operation.source_information().clone(),
                 )
                 .into(),
                 Operation::Pipe(operation) => PipeOperation::with_type(
                     operation.type_().clone(),
-                    self.rename_expression(operation.lhs(), &names),
-                    self.rename_expression(operation.rhs(), &names),
+                    self.rename_expression(operation.lhs(), names),
+                    self.rename_expression(operation.rhs(), names),
                     operation.source_information().clone(),
                 )
                 .into(),

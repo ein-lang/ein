@@ -37,7 +37,7 @@ impl<'a, S: crate::infra::FileSystem> ExternalPackageDownloader
         directory_path: &FilePath,
     ) -> Result<(), Box<dyn std::error::Error>> {
         for (path, data) in &self.packages[external_package.name()] {
-            self.file_system.write(&directory_path.join(&path), data)?;
+            self.file_system.write(&directory_path.join(path), data)?;
         }
 
         Ok(())
