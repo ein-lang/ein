@@ -84,8 +84,7 @@ impl IntersectionTypeCalculator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ast::*;
-    use crate::debug::*;
+    use crate::{ast::*, debug::*};
 
     fn intersect_types(one: &Type, other: &Type) -> Result<Type, CompileError> {
         let reference_type_resolver = ReferenceTypeResolver::new(&Module::dummy());
