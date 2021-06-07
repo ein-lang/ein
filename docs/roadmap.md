@@ -7,10 +7,10 @@ Items are ordered by priority.
 - [x] Capability-based side effects
 - [ ] OS interface
 - [ ] Asynchronous operations
-- [ ] Performant GC
-  - [ ] Automatic reference counting
+- [x] Performant GC
+  - [x] Automatic reference counting
 - [ ] Code formatter
-- [ ] Foreign function interface
+- [x] Foreign function interface
 - [ ] WASM backend
 - [ ] Efficient persistent data structures
   - [ ] Array type
@@ -22,6 +22,7 @@ Items are ordered by priority.
 - [ ] Binary support
 - [ ] Web browser interface
 - [ ] IDE/editor support
-  - Language server
+  - [ ] Language server
 - [ ] Self-hosting
 - [ ] Internal DSL
+  - [ ] Mutable state
