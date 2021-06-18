@@ -210,7 +210,7 @@ checksum = "6a3b3bd6a8c3cddb8adc279b239744c6b6fb0840baf06513eef980a31f777da5"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#ae189ace266d8167b0c8a4a16e562590b1d8309f"
+source = "git+https://github.com/ein-lang/eir?branch=main#9b1f6d3fd522627cfac3378b806b62ac7d893f4f"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -219,7 +219,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#ae189ace266d8167b0c8a4a16e562590b1d8309f"
+source = "git+https://github.com/ein-lang/eir?branch=main#9b1f6d3fd522627cfac3378b806b62ac7d893f4f"
 dependencies = [
  "eir",
  "fmm",
@@ -247,7 +247,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#a8899bea9e00039622996441bb42a8ddc0b2f24e"
+source = "git+https://github.com/raviqqe/fmm?branch=main#cf5166e7caffdb41ec58186af10b60e99fc7c1b3"
 dependencies = [
  "once_cell",
  "petgraph",
