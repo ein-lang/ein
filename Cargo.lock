@@ -49,7 +49,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "lang",
- "petgraph 0.6.0",
+ "petgraph",
  "regex",
  "serde",
  "serde_json",
@@ -242,12 +242,6 @@ checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
 name = "fixedbitset"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
-
-[[package]]
-name = "fixedbitset"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "398ea4fabe40b9b0d885340a2a991a44c8a645624075ad966d21f88688e2b69e"
@@ -255,16 +249,16 @@ checksum = "398ea4fabe40b9b0d885340a2a991a44c8a645624075ad966d21f88688e2b69e"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#cf5166e7caffdb41ec58186af10b60e99fc7c1b3"
+source = "git+https://github.com/raviqqe/fmm?branch=main#aa4ac31452d624ac1ce30a7bf9df732d208860f9"
 dependencies = [
  "once_cell",
- "petgraph 0.5.1",
+ "petgraph",
 ]
 
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#a8899bea9e00039622996441bb42a8ddc0b2f24e"
+source = "git+https://github.com/raviqqe/fmm?branch=main#aa4ac31452d624ac1ce30a7bf9df732d208860f9"
 dependencies = [
  "fmm",
  "inkwell",
@@ -363,7 +357,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#db59ef3b444c2ae64939193cb95429af945cd0c8"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#aa4de1d78471a3d2f0fda1f56801177ddf80f3bf"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -377,7 +371,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.3.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#db59ef3b444c2ae64939193cb95429af945cd0c8"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#aa4de1d78471a3d2f0fda1f56801177ddf80f3bf"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -639,21 +633,11 @@ dependencies = [
 
 [[package]]
 name = "petgraph"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "467d164a6de56270bd7c4d070df81d07beace25012d5103ced4e9ff08d6afdb7"
-dependencies = [
- "fixedbitset 0.2.0",
- "indexmap",
-]
-
-[[package]]
-name = "petgraph"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a13a2fa9d0b63e5f22328828741e523766fff0ee9e779316902290dff3f824f"
 dependencies = [
- "fixedbitset 0.4.0",
+ "fixedbitset",
  "indexmap",
 ]
 
