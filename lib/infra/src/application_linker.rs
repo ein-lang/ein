@@ -40,6 +40,7 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
                 std::process::Command::new(&llc)
                     .arg("-O3")
                     .arg("-tailcallopt")
+                    .arg("--relocation-model=pic")
                     .arg("-filetype=obj")
                     .arg(path),
             )?;
