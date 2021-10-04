@@ -212,16 +212,16 @@ checksum = "6a3b3bd6a8c3cddb8adc279b239744c6b6fb0840baf06513eef980a31f777da5"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#95f844aad6ef46c5aa8e7365b1479bae903485ba"
+source = "git+https://github.com/ein-lang/eir?branch=main#70d59589efeb1f6a7e881abb28ce7aebb862018f"
 dependencies = [
  "once_cell",
- "pretty_assertions",
+ "pretty_assertions 1.0.0",
 ]
 
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#95f844aad6ef46c5aa8e7365b1479bae903485ba"
+source = "git+https://github.com/ein-lang/eir?branch=main#70d59589efeb1f6a7e881abb28ce7aebb862018f"
 dependencies = [
  "eir",
  "fmm",
@@ -249,7 +249,7 @@ checksum = "398ea4fabe40b9b0d885340a2a991a44c8a645624075ad966d21f88688e2b69e"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#8075bb3148abbc94070bdf0df06f2227421ee793"
+source = "git+https://github.com/raviqqe/fmm?branch=main#f56250afc181fbd3923c071f99b5ec187cbdb099"
 dependencies = [
  "once_cell",
  "petgraph",
@@ -432,7 +432,7 @@ dependencies = [
  "indoc",
  "insta",
  "once_cell",
- "pretty_assertions",
+ "pretty_assertions 0.7.2",
  "regex",
  "serde",
  "serde_json",
@@ -660,6 +660,18 @@ name = "pretty_assertions"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1cab0e7c02cf376875e9335e0ba1da535775beb5450d21e1dffca068818ed98b"
+dependencies = [
+ "ansi_term 0.12.1",
+ "ctor",
+ "diff",
+ "output_vt100",
+]
+
+[[package]]
+name = "pretty_assertions"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec0cfe1b2403f172ba0f234e500906ee0a3e493fb81092dac23ebefe129301cc"
 dependencies = [
  "ansi_term 0.12.1",
  "ctor",
