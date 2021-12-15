@@ -249,8 +249,9 @@ checksum = "398ea4fabe40b9b0d885340a2a991a44c8a645624075ad966d21f88688e2b69e"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#8075bb3148abbc94070bdf0df06f2227421ee793"
+source = "git+https://github.com/raviqqe/fmm?branch=main#f1d293a1d4e243f517b3aa89b43ab574850157d4"
 dependencies = [
+ "hamt",
  "once_cell",
  "petgraph",
  "regex",
@@ -259,9 +260,10 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#8075bb3148abbc94070bdf0df06f2227421ee793"
+source = "git+https://github.com/raviqqe/fmm?branch=main#f1d293a1d4e243f517b3aa89b43ab574850157d4"
 dependencies = [
  "fmm",
+ "hamt",
  "inkwell",
  "llvm-sys",
  "once_cell",
@@ -297,6 +299,11 @@ dependencies = [
  "openssl-sys",
  "url",
 ]
+
+[[package]]
+name = "hamt"
+version = "0.3.1"
+source = "git+https://github.com/raviqqe/hamt-rs#b30dd6cca326abd015035cdb37c9eb04a6f3adbb"
 
 [[package]]
 name = "hashbrown"
@@ -358,7 +365,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#5c61cc7e0169308a4001c8cb8508f7fb641e5def"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#4ddaa3b4e3c3593c3382769b1d81267e3a5681f9"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -366,13 +373,12 @@ dependencies = [
  "llvm-sys",
  "once_cell",
  "parking_lot",
- "regex",
 ]
 
 [[package]]
 name = "inkwell_internals"
-version = "0.3.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#5c61cc7e0169308a4001c8cb8508f7fb641e5def"
+version = "0.5.0"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#4ddaa3b4e3c3593c3382769b1d81267e3a5681f9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -498,9 +504,9 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 
 [[package]]
 name = "llvm-sys"
-version = "120.2.0"
+version = "130.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7cd0739fb23e5d801f6ff11a9d587448bdd86dea2459ba2b57fbed90a9ae1b5a"
+checksum = "8a0de69eac0257a2f6c0da27b42e6a8dd21bae7b39c37caf87aee6021d79d61f"
 dependencies = [
  "cc",
  "lazy_static",
