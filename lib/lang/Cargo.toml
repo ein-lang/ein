@@ -5,7 +5,7 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-combine = { version = "4.6.1", features = ["regex"] }
+combine = { version = "4.6.3", features = ["regex"] }
 derivative = "2"
 fmm = { git = "https://github.com/raviqqe/fmm", branch = "main" }
 fmm-llvm = { git = "https://github.com/raviqqe/fmm", branch = "main" }
@@ -19,4 +19,4 @@ eir = { git = "https://github.com/ein-lang/eir", branch = "main" }
 eir-fmm = { git = "https://github.com/ein-lang/eir", branch = "main" }
 
 [dev-dependencies]
-pretty_assertions = "0.7"
+pretty_assertions = "1.0"
