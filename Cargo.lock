@@ -28,15 +28,6 @@ dependencies = [
 
 [[package]]
 name = "ansi_term"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee49baf6cb617b853aa8d93bf420db2383fab46d314482ca2803b40d5fde979b"
-dependencies = [
- "winapi",
-]
-
-[[package]]
-name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d52a9bb7ec0cf484c551830a7ce27bd20d67eac647e1befb56b0be4ee39a55d2"
@@ -117,17 +108,17 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "clap"
-version = "2.33.3"
+version = "3.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37e58ac78573c40708d45522f0d80fa2f01cc4f9b4e2bf749807255454312002"
+checksum = "7a30c3bf9ff12dfe5dae53f0a96e0febcd18420d1c0e7fad77796d9d5c4b5375"
 dependencies = [
- "ansi_term 0.11.0",
  "atty",
  "bitflags",
+ "indexmap",
+ "os_str_bytes",
  "strsim",
+ "termcolor",
  "textwrap",
- "unicode-width",
- "vec_map",
 ]
 
 [[package]]
@@ -285,9 +276,9 @@ checksum = "0e4075386626662786ddb0ec9081e7c7eeb1ba31951f447ca780ef9f5d568189"
 
 [[package]]
 name = "git2"
-version = "0.13.22"
+version = "0.13.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c1cbbfc9a1996c6af82c2b4caf828d2c653af4fcdbb0e5674cc966eee5a4197"
+checksum = "f29229cc1b24c0e6062f6e742aa3e256492a5323365e5ed3413599f8a5eff7d6"
 dependencies = [
  "bitflags",
  "libc",
@@ -452,9 +443,9 @@ checksum = "320cfe77175da3a483efed4bc0adc1968ca050b098ce4f2f1c13a56626128790"
 
 [[package]]
 name = "libgit2-sys"
-version = "0.12.23+1.2.0"
+version = "0.12.26+1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29730a445bae719db3107078b46808cc45a5b7a6bae3f31272923af969453356"
+checksum = "19e1c899248e606fbfe68dcb31d8b0176ebab833b103824af31bddf4b7457494"
 dependencies = [
  "cc",
  "libc",
@@ -584,6 +575,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "os_str_bytes"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e22443d1643a904602595ba1cd8f7d896afe56d26712531c5ff73a15b2fbf64"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "output_vt100"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -661,7 +661,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1cab0e7c02cf376875e9335e0ba1da535775beb5450d21e1dffca068818ed98b"
 dependencies = [
- "ansi_term 0.12.1",
+ "ansi_term",
  "ctor",
  "diff",
  "output_vt100",
@@ -673,7 +673,7 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0cfe1b2403f172ba0f234e500906ee0a3e493fb81092dac23ebefe129301cc"
 dependencies = [
- "ansi_term 0.12.1",
+ "ansi_term",
  "ctor",
  "diff",
  "output_vt100",
@@ -816,9 +816,9 @@ checksum = "fe0f37c9e8f3c5a4a66ad655a93c74daac4ad00c441533bf5c6e7990bb42604e"
 
 [[package]]
 name = "strsim"
-version = "0.8.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ea5119cdb4c55b55d432abb513a0429384878c15dde60cc77b1c99de1a95a6a"
+checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "syn"
@@ -852,12 +852,9 @@ dependencies = [
 
 [[package]]
 name = "textwrap"
-version = "0.11.0"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
-dependencies = [
- "unicode-width",
-]
+checksum = "0066c8d12af8b5acd21e00547c3797fde4e8677254a7ee429176ccebbe93dd80"
 
 [[package]]
 name = "tinyvec"
@@ -899,12 +896,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "unicode-width"
-version = "0.1.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9337591893a19b88d8d87f2cec1e73fad5cdfd10e5a6f349f498ad6ea2ffb1e3"
-
-[[package]]
 name = "unicode-xid"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -939,12 +930,6 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
-
-[[package]]
-name = "vec_map"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
 name = "which"
