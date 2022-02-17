@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 app = { path = "../../lib/app" }
-clap = "2"
+clap = "3"
 lang = { path = "../../lib/lang" }
 indoc = "1"
 infra = { path = "../../lib/infra" }
