@@ -3,9 +3,9 @@ on:
   - push
 jobs:
   unit-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
-      - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 12
+      - run: brew install llvm@13
       - uses: actions/checkout@v2
       - uses: actions-rs/cargo@v1
         with:
@@ -13,9 +13,9 @@ jobs:
         env:
           RUST_MIN_STACK: 8388608
   integration-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     steps:
-      - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 12
+      - run: brew install llvm@13
       - uses: actions/checkout@v2
       - run: sudo apt install clang ruby-bundler valgrind
       - run: bundler install
@@ -35,7 +35,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 12
+      - run: brew install llvm@13
       - uses: actions/checkout@v2
       - uses: actions-rs/cargo@v1
         with:
@@ -56,9 +56,9 @@ jobs:
         with:
           files: "**/*.{feature,md,rs}"
   code-coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
-      - run: curl -fsSL https://apt.llvm.org/llvm.sh | sudo bash -s 12
+      - run: brew install llvm@13
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
