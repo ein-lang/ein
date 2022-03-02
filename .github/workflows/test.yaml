@@ -7,9 +7,7 @@ jobs:
     steps:
       - run: brew install llvm@13
       - uses: actions/checkout@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - run: cargo test
         env:
           RUST_MIN_STACK: 8388608
   integration-test:
@@ -17,30 +15,22 @@ jobs:
     steps:
       - run: brew install llvm@13
       - uses: actions/checkout@v2
-      - run: sudo apt install clang ruby-bundler valgrind
+      - uses: ruby/setup-ruby@v1
+      - run: sudo apt install clang valgrind
       - run: bundler install
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
+      - run: cargo build --release
       - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PWD/tools:$PATH cucumber --publish-quiet
   format:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
+      - run: cargo fmt -- --check
   lint:
     runs-on: ubuntu-latest
     steps:
       - run: brew install llvm@13
       - uses: actions/checkout@v2
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+      - run: cargo clippy -- -D warnings
   audit:
     runs-on: ubuntu-latest
     steps:
@@ -64,10 +54,7 @@ jobs:
         with:
           toolchain: nightly
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features --no-fail-fast
+      - run: cargo test --all-features --no-fail-fast
         env:
           RUST_MIN_STACK: 8388608
           CARGO_INCREMENTAL: "0"
