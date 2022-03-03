@@ -28,7 +28,7 @@ impl JsonBuildConfiguration {
     }
 
     pub fn serialize(configuration: &BuildConfiguration) -> Self {
-        JsonBuildConfiguration::new(
+        Self::new(
             match configuration.target() {
                 Target::Application(application) => Some(JsonApplicationBuildConfiguration::new(
                     application.name(),

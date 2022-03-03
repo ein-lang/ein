@@ -1,5 +1,6 @@
 ---
-source: lib/lang/src/compile/type_inference/mod.rs
+source: lib/lang/src/compile/type_inference.rs
+assertion_line: 861
 expression: infer_types(&module)
 
 ---
@@ -12,23 +13,7 @@ Ok(
             },
             components: [],
         },
-        type_definitions: [
-            TypeDefinition {
-                name: "Foo",
-                type_: Number(
-                    Number {
-                        source_information: SourceInformation {
-                            source_name: "",
-                            location: Location {
-                                line_number: 0,
-                                column_number: 0,
-                            },
-                            line: "",
-                        },
-                    },
-                ),
-            },
-        ],
+        type_definitions: [],
         definitions: [
             VariableDefinition(
                 VariableDefinition {
@@ -76,7 +61,36 @@ Ok(
         export_foreign: ExportForeign {
             names: {},
         },
-        imports: [],
+        imports: [
+            Import {
+                module_interface: ModuleInterface {
+                    path: ModulePath {
+                        package: Package {
+                            name: "P",
+                            version: "",
+                        },
+                        components: [],
+                    },
+                    exported_names: {},
+                    types: {
+                        "Foo": Number(
+                            Number {
+                                source_information: SourceInformation {
+                                    source_name: "",
+                                    location: Location {
+                                        line_number: 0,
+                                        column_number: 0,
+                                    },
+                                    line: "",
+                                },
+                            },
+                        ),
+                    },
+                    variables: {},
+                },
+                qualified: true,
+            },
+        ],
         import_foreigns: [],
     },
 )

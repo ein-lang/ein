@@ -40,7 +40,7 @@ impl EinString {
     }
 
     // Indices are inclusive and start from 1.
-    pub fn slice(&self, start: Number, end: Number) -> EinString {
+    pub fn slice(&self, start: Number, end: Number) -> Self {
         let start = f64::from(start);
         let end = f64::from(end);
 
@@ -81,7 +81,7 @@ impl Default for EinString {
 }
 
 impl PartialEq for EinString {
-    fn eq(&self, other: &EinString) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         self.as_slice() == other.as_slice()
     }
 }

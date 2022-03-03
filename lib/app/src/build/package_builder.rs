@@ -69,14 +69,13 @@ impl<'a> PackageBuilder<'a> {
                     .as_application()
                     .map(|application| application.system_package()),
             )
-            .map(|external_package| {
+            .flat_map(|external_package| {
                 external_module_interfaces[external_package].iter().map(
                     |(module_path, module_interface)| {
                         (module_path.clone(), module_interface.clone())
                     },
                 )
             })
-            .flatten()
             .collect();
 
         let (object_file_paths, interface_file_paths) = self.modules_builder.build(

@@ -23,7 +23,7 @@ impl ElementlessRecordTransformer {
                     module
                         .type_definitions()
                         .iter()
-                        .map(|type_definition| {
+                        .flat_map(|type_definition| {
                             if let Type::Record(record_type) = type_definition.type_() {
                                 if record_type.elements().is_empty() {
                                     vec![VariableDefinition::new(
@@ -43,8 +43,7 @@ impl ElementlessRecordTransformer {
                             } else {
                                 vec![]
                             }
-                        })
-                        .flatten(),
+                        }),
                 )
                 .collect(),
         )

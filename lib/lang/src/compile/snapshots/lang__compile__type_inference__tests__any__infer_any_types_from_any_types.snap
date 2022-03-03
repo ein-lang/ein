@@ -1,6 +1,7 @@
 ---
-source: lib/lang/src/compile/type_inference/mod.rs
-expression: infer_types(&module)
+source: lib/lang/src/compile/type_inference.rs
+assertion_line: 1935
+expression: "infer_types(&Module::from_definitions(vec![VariableDefinition ::\n                                           new(\"x\", Number ::\n                                               new(42.0, SourceInformation ::\n                                                   dummy()), types :: Any ::\n                                               new(SourceInformation ::\n                                                   dummy(),),\n                                               SourceInformation ::\n                                               dummy(),).into(),\n                                           VariableDefinition ::\n                                           new(\"y\", Let ::\n                                               new(vec!\n                                                   [VariableDefinition ::\n                                                    new(\"z\", Variable ::\n                                                        new(\"x\",\n                                                            SourceInformation\n                                                            :: dummy()), types\n                                                        :: Unknown ::\n                                                        new(SourceInformation\n                                                            :: dummy()),\n                                                        SourceInformation ::\n                                                        dummy(),).into()],\n                                                   Number ::\n                                                   new(42.0, SourceInformation\n                                                       :: dummy()),\n                                                   SourceInformation ::\n                                                   dummy(),), types :: Number\n                                               ::\n                                               new(SourceInformation ::\n                                                   dummy()), SourceInformation\n                                               :: dummy(),).into()]))"
 
 ---
 Ok(
@@ -14,12 +15,9 @@ Ok(
         },
         type_definitions: [],
         definitions: [
-            FunctionDefinition(
-                FunctionDefinition {
-                    name: "f",
-                    arguments: [
-                        "x",
-                    ],
+            VariableDefinition(
+                VariableDefinition {
+                    name: "x",
                     body: Number(
                         Number {
                             value: 42.0,
@@ -33,32 +31,8 @@ Ok(
                             },
                         },
                     ),
-                    type_: Function(
-                        Function {
-                            argument: None(
-                                None {
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
-                                        },
-                                        line: "",
-                                    },
-                                },
-                            ),
-                            result: Number(
-                                Number {
-                                    source_information: SourceInformation {
-                                        source_name: "",
-                                        location: Location {
-                                            line_number: 0,
-                                            column_number: 0,
-                                        },
-                                        line: "",
-                                    },
-                                },
-                            ),
+                    type_: Any(
+                        Any {
                             source_information: SourceInformation {
                                 source_name: "",
                                 location: Location {
@@ -81,14 +55,16 @@ Ok(
             ),
             VariableDefinition(
                 VariableDefinition {
-                    name: "x",
-                    body: Operation(
-                        Pipe(
-                            PipeOperation {
-                                type_: Function(
-                                    Function {
-                                        argument: None(
-                                            None {
+                    name: "y",
+                    body: Let(
+                        Let {
+                            definitions: [
+                                VariableDefinition(
+                                    VariableDefinition {
+                                        name: "z",
+                                        body: Variable(
+                                            Variable {
+                                                name: "x",
                                                 source_information: SourceInformation {
                                                     source_name: "",
                                                     location: Location {
@@ -99,8 +75,8 @@ Ok(
                                                 },
                                             },
                                         ),
-                                        result: Number(
-                                            Number {
+                                        type_: Any(
+                                            Any {
                                                 source_information: SourceInformation {
                                                     source_name: "",
                                                     location: Location {
@@ -121,41 +97,29 @@ Ok(
                                         },
                                     },
                                 ),
-                                lhs: None(
-                                    None {
-                                        source_information: SourceInformation {
-                                            source_name: "",
-                                            location: Location {
-                                                line_number: 0,
-                                                column_number: 0,
-                                            },
-                                            line: "",
+                            ],
+                            expression: Number(
+                                Number {
+                                    value: 42.0,
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
                                         },
+                                        line: "",
                                     },
-                                ),
-                                rhs: Variable(
-                                    Variable {
-                                        name: "f",
-                                        source_information: SourceInformation {
-                                            source_name: "",
-                                            location: Location {
-                                                line_number: 0,
-                                                column_number: 0,
-                                            },
-                                            line: "",
-                                        },
-                                    },
-                                ),
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
                                 },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
                             },
-                        ),
+                        },
                     ),
                     type_: Number(
                         Number {

@@ -26,7 +26,7 @@ impl RecordElementFunctionTransformer {
                     module
                         .type_definitions()
                         .iter()
-                        .map(|type_definition| {
+                        .flat_map(|type_definition| {
                             if let Type::Record(record_type) = type_definition.type_() {
                                 record_type
                                     .elements()
@@ -60,8 +60,7 @@ impl RecordElementFunctionTransformer {
                             } else {
                                 vec![]
                             }
-                        })
-                        .flatten(),
+                        }),
                 )
                 .collect(),
         )

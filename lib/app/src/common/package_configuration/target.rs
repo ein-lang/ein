@@ -17,6 +17,6 @@ impl Target {
 
 impl From<ApplicationTarget> for Target {
     fn from(application_target: ApplicationTarget) -> Self {
-        Target::Application(application_target)
+        Self::Application(application_target)
     }
 }
