@@ -25,7 +25,8 @@ impl RecordElementFunctionTransformer {
                 .chain(
                     module
                         .type_definitions()
-                        .iter().flat_map(|type_definition| {
+                        .iter()
+                        .flat_map(|type_definition| {
                             if let Type::Record(record_type) = type_definition.type_() {
                                 record_type
                                     .elements()
