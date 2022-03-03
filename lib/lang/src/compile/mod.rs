@@ -176,10 +176,11 @@ pub fn compile(
     Ok((
         fmm_llvm::compile_to_bit_code(
             &fmm_module,
-            &fmm_llvm::HeapConfiguration {
+            &fmm_llvm::InstructionConfiguration {
                 allocate_function_name: configuration.malloc_function_name.clone(),
                 reallocate_function_name: configuration.realloc_function_name.clone(),
                 free_function_name: configuration.free_function_name.clone(),
+                unreachable_function_name: None,
             },
             None,
         )
