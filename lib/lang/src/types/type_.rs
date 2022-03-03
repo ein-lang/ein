@@ -45,7 +45,7 @@ impl Type {
         self.substitute_variables(&vec![(id, type_.clone())].into_iter().collect())
     }
 
-    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Type>) -> Self {
+    pub fn substitute_variables(&self, substitutions: &HashMap<usize, Self>) -> Self {
         self.transform_types(&mut |type_| -> Result<_, ()> {
             Ok(match type_ {
                 Self::Variable(variable) => match substitutions.get(&variable.id()) {
