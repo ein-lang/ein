@@ -1,5 +1,6 @@
 ---
-source: lib/lang/src/compile/type_inference/mod.rs
+source: lib/lang/src/compile/type_inference.rs
+assertion_line: 216
 expression: infer_types(&module)
 
 ---
@@ -14,6 +15,71 @@ Ok(
         },
         type_definitions: [],
         definitions: [
+            FunctionDefinition(
+                FunctionDefinition {
+                    name: "f",
+                    arguments: [
+                        "x",
+                    ],
+                    body: Number(
+                        Number {
+                            value: 42.0,
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    type_: Function(
+                        Function {
+                            argument: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            result: Number(
+                                Number {
+                                    source_information: SourceInformation {
+                                        source_name: "",
+                                        location: Location {
+                                            line_number: 0,
+                                            column_number: 0,
+                                        },
+                                        line: "",
+                                    },
+                                },
+                            ),
+                            source_information: SourceInformation {
+                                source_name: "",
+                                location: Location {
+                                    line_number: 0,
+                                    column_number: 0,
+                                },
+                                line: "",
+                            },
+                        },
+                    ),
+                    source_information: SourceInformation {
+                        source_name: "",
+                        location: Location {
+                            line_number: 0,
+                            column_number: 0,
+                        },
+                        line: "",
+                    },
+                },
+            ),
             VariableDefinition(
                 VariableDefinition {
                     name: "x",
@@ -121,56 +187,6 @@ Ok(
             names: {},
         },
         imports: [],
-        import_foreigns: [
-            ImportForeign {
-                name: "f",
-                foreign_name: "",
-                calling_convention: Native,
-                type_: Function(
-                    Function {
-                        argument: Number(
-                            Number {
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
-                                },
-                            },
-                        ),
-                        result: Number(
-                            Number {
-                                source_information: SourceInformation {
-                                    source_name: "",
-                                    location: Location {
-                                        line_number: 0,
-                                        column_number: 0,
-                                    },
-                                    line: "",
-                                },
-                            },
-                        ),
-                        source_information: SourceInformation {
-                            source_name: "",
-                            location: Location {
-                                line_number: 0,
-                                column_number: 0,
-                            },
-                            line: "",
-                        },
-                    },
-                ),
-                source_information: SourceInformation {
-                    source_name: "",
-                    location: Location {
-                        line_number: 0,
-                        column_number: 0,
-                    },
-                    line: "",
-                },
-            },
-        ],
+        import_foreigns: [],
     },
 )
