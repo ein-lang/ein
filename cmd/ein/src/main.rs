@@ -16,20 +16,20 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
-    match clap::App::new("ein")
+    match clap::Command::new("ein")
         .version("0.1.0")
-        .setting(clap::AppSettings::SubcommandRequired)
-        .subcommand(clap::SubCommand::with_name("build").about("Builds a package"))
+        .subcommand_required(true)
+        .subcommand(clap::Command::new("build").about("Builds a package"))
         .subcommand(
-            clap::SubCommand::with_name("init")
+            clap::Command::new("init")
                 .arg(
-                    clap::Arg::with_name("lib")
-                        .short("l")
+                    clap::Arg::new("lib")
+                        .short('l')
                         .long("lib")
                         .help("Creates a library package"),
                 )
                 .arg(
-                    clap::Arg::with_name("directory")
+                    clap::Arg::new("directory")
                         .required(true)
                         .help("Specifies a package directory"),
                 )
@@ -37,16 +37,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         )
         .get_matches()
         .subcommand()
+        .unwrap()
     {
         ("build", _) => build(),
-        ("init", matches) => {
-            let matches = matches.unwrap();
-
-            init(
-                matches.value_of("directory").unwrap(),
-                matches.is_present("lib"),
-            )
-        }
+        ("init", matches) => init(
+            matches.value_of("directory").unwrap(),
+            matches.is_present("lib"),
+        ),
         _ => unreachable!(),
     }
 }
