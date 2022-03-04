@@ -56,7 +56,7 @@ impl Expression {
 
     pub fn transform_expressions<E>(
         &self,
-        transform: &mut impl FnMut(&Expression) -> Result<Expression, E>,
+        transform: &mut impl FnMut(&Self) -> Result<Self, E>,
     ) -> Result<Self, E> {
         let expression = match self {
             Self::Application(application) => application.transform_expressions(transform)?.into(),

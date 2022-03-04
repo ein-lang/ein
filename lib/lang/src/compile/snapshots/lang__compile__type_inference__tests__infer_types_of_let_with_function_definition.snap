@@ -1,5 +1,6 @@
 ---
-source: lib/lang/src/compile/type_inference/mod.rs
+source: lib/lang/src/compile/type_inference.rs
+assertion_line: 345
 expression: infer_types(&module)
 
 ---

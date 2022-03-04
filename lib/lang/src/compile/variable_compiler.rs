@@ -18,7 +18,8 @@ impl VariableCompiler {
     ) -> Result<Arc<Self>, CompileError> {
         Ok(Self {
             type_compiler,
-            // Assuming those names do not conflict with any local variables due to alpha conversion.
+            // Assuming those names do not conflict with any local variables due to alpha
+            // conversion.
             variables: module
                 .imports()
                 .iter()

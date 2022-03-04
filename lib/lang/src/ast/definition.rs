@@ -65,12 +65,12 @@ impl Definition {
 
 impl From<FunctionDefinition> for Definition {
     fn from(function_definition: FunctionDefinition) -> Self {
-        Definition::FunctionDefinition(function_definition)
+        Self::FunctionDefinition(function_definition)
     }
 }
 
 impl From<VariableDefinition> for Definition {
     fn from(variable_definition: VariableDefinition) -> Self {
-        Definition::VariableDefinition(variable_definition)
+        Self::VariableDefinition(variable_definition)
     }
 }
