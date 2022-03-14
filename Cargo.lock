@@ -167,7 +167,7 @@ checksum = "6a3b3bd6a8c3cddb8adc279b239744c6b6fb0840baf06513eef980a31f777da5"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#0eb36a95831acfba4142a3044f7089613da88abd"
+source = "git+https://github.com/ein-lang/eir?branch=main#78396b363c0de8e4056d9d073cb1a091627f6462"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -176,7 +176,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#0eb36a95831acfba4142a3044f7089613da88abd"
+source = "git+https://github.com/ein-lang/eir?branch=main#78396b363c0de8e4056d9d073cb1a091627f6462"
 dependencies = [
  "eir",
  "fmm",
@@ -204,7 +204,7 @@ checksum = "279fb028e20b3c4c320317955b77c5e0c9701f05a1d309905d6fc702cdc5053e"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#cf766093eb32f940d6fc22ad4fb7119d14aa9ce3"
+source = "git+https://github.com/raviqqe/fmm?branch=main#587e8160786ff64328aa6341b738f000bff139b2"
 dependencies = [
  "fnv",
  "hamt",
@@ -596,9 +596,9 @@ dependencies = [
 
 [[package]]
 name = "pretty_assertions"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76d5b548b725018ab5496482b45cb8bef21e9fed1858a6d674e3a8a0f0bb5d50"
+checksum = "57c038cb5319b9c704bf9c227c261d275bfec0ad438118a2787ce47944fb228b"
 dependencies = [
  "ansi_term",
  "ctor",
