@@ -167,7 +167,7 @@ checksum = "6a3b3bd6a8c3cddb8adc279b239744c6b6fb0840baf06513eef980a31f777da5"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#f0143820dcb7ad16e9f7f10ee9e47238c9715987"
+source = "git+https://github.com/ein-lang/eir?branch=main#4f9a467e9bbe93603faa93da65e901d6fce819cb"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -176,7 +176,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#f0143820dcb7ad16e9f7f10ee9e47238c9715987"
+source = "git+https://github.com/ein-lang/eir?branch=main#4f9a467e9bbe93603faa93da65e901d6fce819cb"
 dependencies = [
  "eir",
  "fmm",
@@ -204,7 +204,7 @@ checksum = "279fb028e20b3c4c320317955b77c5e0c9701f05a1d309905d6fc702cdc5053e"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#6a40ca12b797415c71a06a7c617b0bdb5ad4270b"
+source = "git+https://github.com/raviqqe/fmm?branch=main#2dddd9022dafaf518c14b6f213bf0ed7b24e18a7"
 dependencies = [
  "fnv",
  "hamt",
@@ -216,7 +216,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#6a40ca12b797415c71a06a7c617b0bdb5ad4270b"
+source = "git+https://github.com/raviqqe/fmm?branch=main#2dddd9022dafaf518c14b6f213bf0ed7b24e18a7"
 dependencies = [
  "fmm",
  "hamt",
@@ -321,7 +321,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#83c81336b19b7180b55724a46656f84260203212"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#36c3b106e61b1b45295a35f94023d93d9328c76f"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -334,7 +334,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.5.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#83c81336b19b7180b55724a46656f84260203212"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#36c3b106e61b1b45295a35f94023d93d9328c76f"
 dependencies = [
  "proc-macro2",
  "quote",
