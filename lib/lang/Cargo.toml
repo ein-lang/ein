@@ -19,4 +19,4 @@ eir = { git = "https://github.com/ein-lang/eir", branch = "main" }
 eir-fmm = { git = "https://github.com/ein-lang/eir", branch = "main" }
 
 [dev-dependencies]
-pretty_assertions = "1.1"
+pretty_assertions = "1.2"
