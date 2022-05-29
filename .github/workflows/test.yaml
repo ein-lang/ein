@@ -20,7 +20,7 @@ jobs:
       - run: sudo apt install clang valgrind
       - run: bundler install
       - run: cargo build --release
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PWD/tools:$PATH cucumber --publish-quiet
+      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PWD/tools:$PATH cucumber --publish-quiet -e memory_leak
   format:
     runs-on: ubuntu-latest
     steps:
