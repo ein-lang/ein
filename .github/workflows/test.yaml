@@ -18,9 +18,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
       - run: sudo apt update --fix-missing
       - run: sudo apt install clang valgrind
-      - run: bundler install
-      - run: cargo build --release
-      - run: EIN_ROOT=$PWD PATH=$PWD/target/release:$PWD/tools:$PATH cucumber --publish-quiet -e memory_leak
+      - run: tools/integration_test.sh
   format:
     runs-on: ubuntu-latest
     steps:
