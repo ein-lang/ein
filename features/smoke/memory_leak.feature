@@ -198,7 +198,7 @@ Feature: Memory leak
       let
         _ = Os.fdWrite os Os.stdout (String.join ["Hello, ", "world!", "\n"])
       in
-        main os
+        0
     """
     When I successfully run `ein build`
-    Then I successfully run `check_memory_leak_in_loop.sh ./foo`
+    Then I successfully run `check_memory_leak.sh ./foo`
