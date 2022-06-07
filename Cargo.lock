@@ -176,7 +176,7 @@ checksum = "6a3b3bd6a8c3cddb8adc279b239744c6b6fb0840baf06513eef980a31f777da5"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#166325de182bc9501086357a8d660041a764ede5"
+source = "git+https://github.com/ein-lang/eir?branch=main#6b0af1d178c53447febc743bae56407f8d8300e0"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -185,7 +185,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#166325de182bc9501086357a8d660041a764ede5"
+source = "git+https://github.com/ein-lang/eir?branch=main#6b0af1d178c53447febc743bae56407f8d8300e0"
 dependencies = [
  "eir",
  "fmm",
