@@ -5,7 +5,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-18.04
     steps:
-      - run: brew install llvm@13
+      - run: brew install llvm@14
       - uses: actions/checkout@v2
       - run: cargo test
         env:
@@ -13,7 +13,7 @@ jobs:
   integration-test:
     runs-on: ubuntu-18.04
     steps:
-      - run: brew install llvm@13
+      - run: brew install llvm@14
       - uses: actions/checkout@v2
       - uses: ruby/setup-ruby@v1
       - run: sudo apt update --fix-missing
@@ -27,7 +27,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - run: brew install llvm@13
+      - run: brew install llvm@14
       - uses: actions/checkout@v2
       - run: cargo clippy -- -D warnings
   audit:
