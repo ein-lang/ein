@@ -213,7 +213,7 @@ checksum = "279fb028e20b3c4c320317955b77c5e0c9701f05a1d309905d6fc702cdc5053e"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#67617626cdc8d08872fe64d8036ae5e026187665"
+source = "git+https://github.com/raviqqe/fmm?branch=main#8b160600d27b55a3a0bfd2c9380e366aaa17ffda"
 dependencies = [
  "fnv",
  "hamt",
@@ -225,7 +225,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#67617626cdc8d08872fe64d8036ae5e026187665"
+source = "git+https://github.com/raviqqe/fmm?branch=main#8b160600d27b55a3a0bfd2c9380e366aaa17ffda"
 dependencies = [
  "fmm",
  "hamt",
@@ -268,7 +268,7 @@ dependencies = [
 [[package]]
 name = "hamt"
 version = "0.3.1"
-source = "git+https://github.com/raviqqe/hamt-rs?branch=main#52d227cf48b5d9e0970e38ae74d252150b681b34"
+source = "git+https://github.com/raviqqe/hamt-rs?branch=main#e700f4dfcbc84a7dc6bb57fc648b692bb264262d"
 
 [[package]]
 name = "hashbrown"
