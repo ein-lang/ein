@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 app = { path = "../app" }
 lang = { path = "../lang" }
-git2 = "0.14"
+git2 = "0.15"
 termcolor = "1"
 url = "2"
 which = "4"
