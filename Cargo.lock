@@ -225,7 +225,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#a981d4e8fbe0e789e43326c74c849ea7f7068988"
+source = "git+https://github.com/raviqqe/fmm?branch=main#beb0df3188e27228d16d44307726577c13a83ca5"
 dependencies = [
  "fmm",
  "hamt",
