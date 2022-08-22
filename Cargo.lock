@@ -213,7 +213,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#0236885dbc6b03248f1d9aa42153cff9efea7a97"
+source = "git+https://github.com/raviqqe/fmm?branch=main#e36a63014631de8b706c7189c456503335f72c58"
 dependencies = [
  "fnv",
  "hamt",
@@ -225,7 +225,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#0236885dbc6b03248f1d9aa42153cff9efea7a97"
+source = "git+https://github.com/raviqqe/fmm?branch=main#e36a63014631de8b706c7189c456503335f72c58"
 dependencies = [
  "fmm",
  "hamt",
@@ -268,7 +268,7 @@ dependencies = [
 [[package]]
 name = "hamt"
 version = "0.3.1"
-source = "git+https://github.com/raviqqe/hamt-rs?branch=main#e700f4dfcbc84a7dc6bb57fc648b692bb264262d"
+source = "git+https://github.com/raviqqe/hamt-rs?branch=main#6579752d5da4b25c3fb39690de544097bb0f81f7"
 
 [[package]]
 name = "hashbrown"
@@ -327,7 +327,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#25b9fc5870370211504e874e7c81dc53573bca79"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#40d7ba0d387819140ca85c9bbf14ccdbd199ceee"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -340,7 +340,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.5.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#25b9fc5870370211504e874e7c81dc53573bca79"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#40d7ba0d387819140ca85c9bbf14ccdbd199ceee"
 dependencies = [
  "proc-macro2",
  "quote",
