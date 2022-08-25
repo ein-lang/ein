@@ -2,7 +2,7 @@ use crate::{path::ModulePath, types::Type};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
-#[derive(Clone, Debug, Deserialize, Hash, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Hash, PartialEq, Eq, Serialize)]
 pub struct ModuleInterface {
     path: ModulePath,
     exported_names: BTreeSet<String>,  // Unqualified

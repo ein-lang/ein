@@ -1,7 +1,7 @@
 use crate::debug::SourceInformation;
 use std::sync::Arc;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Boolean {
     value: bool,
     source_information: Arc<SourceInformation>,

@@ -1,6 +1,6 @@
 use super::module_interface::ModuleInterface;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Import {
     module_interface: ModuleInterface,
     qualified: bool,

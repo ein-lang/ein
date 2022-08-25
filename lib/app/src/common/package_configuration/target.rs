@@ -1,6 +1,6 @@
 use super::application_target::ApplicationTarget;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Target {
     Application(ApplicationTarget),
     Library,

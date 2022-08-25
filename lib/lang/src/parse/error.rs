@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::Display};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct ParseError {
     source_name: String,
     details: String,

@@ -1,7 +1,7 @@
 use super::json_system_package_configuration::JsonSystemPackageConfiguration;
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct JsonApplicationBuildConfiguration {
     name: String,
     system: JsonSystemPackageConfiguration,

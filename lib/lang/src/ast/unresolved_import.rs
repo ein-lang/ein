@@ -1,6 +1,6 @@
 use crate::path::UnresolvedModulePath;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UnresolvedImport {
     module_path: UnresolvedModulePath,
 }
