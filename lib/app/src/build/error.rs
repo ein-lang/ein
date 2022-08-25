@@ -1,6 +1,6 @@
 use crate::common::{ExternalPackage, FilePath};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum BuildError {
     ExternalPackageConfigurationFileNotFound {
         package_name: String,

@@ -1,7 +1,7 @@
 use crate::debug::*;
 use std::sync::Arc;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct EinString {
     value: String,
     source_information: Arc<SourceInformation>,

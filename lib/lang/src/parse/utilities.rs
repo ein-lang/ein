@@ -1,6 +1,6 @@
 use crate::{ast::*, debug::SourceInformation};
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ParsedOperator {
     Add,
     Subtract,

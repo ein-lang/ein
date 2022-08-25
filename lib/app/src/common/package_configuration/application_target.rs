@@ -1,6 +1,6 @@
 use super::external_package::ExternalPackage;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ApplicationTarget {
     name: String,
     system_package: ExternalPackage,

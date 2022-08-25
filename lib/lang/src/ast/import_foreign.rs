@@ -2,7 +2,7 @@ use super::calling_convention::CallingConvention;
 use crate::{debug::SourceInformation, types::Type};
 use std::sync::Arc;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ImportForeign {
     name: String,
     foreign_name: String,
