@@ -157,7 +157,7 @@ pub fn compile(
         configuration.string_type_configuration.clone(),
     );
 
-    let fmm_module = fmm::analysis::transform_to_cps(
+    let fmm_module = fmm::analysis::cps::transform(
         &eir_fmm::compile(
             &ModuleCompiler::new(
                 expression_compiler,
@@ -171,7 +171,7 @@ pub fn compile(
     )
     .unwrap();
 
-    fmm::analysis::check_types(&fmm_module).unwrap();
+    fmm::analysis::type_check::check(&fmm_module).unwrap();
 
     Ok((
         fmm_llvm::compile_to_bit_code(
