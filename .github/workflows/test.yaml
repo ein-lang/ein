@@ -5,7 +5,7 @@ jobs:
   unit-test:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: raviqqe/enable-homebrew@main
       - run: tools/ci/setup.sh
       - run: cargo test
@@ -14,7 +14,7 @@ jobs:
   integration-test:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: raviqqe/enable-homebrew@main
       - run: tools/ci/setup.sh
       - uses: ruby/setup-ruby@v1
@@ -24,19 +24,19 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: cargo fmt -- --check
   lint:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: raviqqe/enable-homebrew@main
       - run: tools/ci/setup.sh
       - run: cargo clippy -- -D warnings
   spell-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: streetsidesoftware/cspell-action@main
         with:
           files: "**/*.{feature,md,rs}"
