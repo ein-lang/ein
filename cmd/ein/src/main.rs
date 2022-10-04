@@ -26,7 +26,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                     clap::Arg::new("lib")
                         .short('l')
                         .long("lib")
-                        .help("Creates a library package"),
+                        .help("Creates a library package")
+                        .action(clap::ArgAction::SetTrue),
                 )
                 .arg(
                     clap::Arg::new("directory")
@@ -41,8 +42,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     {
         ("build", _) => build(),
         ("init", matches) => init(
-            matches.value_of("directory").unwrap(),
-            matches.is_present("lib"),
+            matches.get_one::<String>("directory").unwrap(),
+            matches.get_one("lib").copied().unwrap_or_default(),
         ),
         _ => unreachable!(),
     }
