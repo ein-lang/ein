@@ -5,18 +5,18 @@ jobs:
   unit-test:
     runs-on: ubuntu-18.04
     steps:
-      - uses: raviqqe/enable-homebrew@main
-      - run: brew install llvm@14
       - uses: actions/checkout@v2
+      - uses: raviqqe/enable-homebrew@main
+      - run: tools/ci/setup.sh
       - run: cargo test
         env:
           RUST_MIN_STACK: 8388608
   integration-test:
     runs-on: ubuntu-18.04
     steps:
-      - uses: raviqqe/enable-homebrew@main
-      - run: brew install llvm@14
       - uses: actions/checkout@v2
+      - uses: raviqqe/enable-homebrew@main
+      - run: tools/ci/setup.sh
       - uses: ruby/setup-ruby@v1
       - run: sudo apt update --fix-missing
       - run: sudo apt install clang valgrind
@@ -29,9 +29,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: raviqqe/enable-homebrew@main
-      - run: brew install llvm@14
       - uses: actions/checkout@v2
+      - uses: raviqqe/enable-homebrew@main
+      - run: tools/ci/setup.sh
       - run: cargo clippy -- -D warnings
   spell-check:
     runs-on: ubuntu-latest
