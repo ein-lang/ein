@@ -202,7 +202,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#4fb64edffe17e266126bd30a2fbbcf46754fb0d2"
+source = "git+https://github.com/raviqqe/fmm?branch=main#3663271a0134da4e5767e2e5cccabf11a7391930"
 dependencies = [
  "fnv",
  "hamt",
@@ -214,11 +214,10 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#4fb64edffe17e266126bd30a2fbbcf46754fb0d2"
+source = "git+https://github.com/raviqqe/fmm?branch=main#3663271a0134da4e5767e2e5cccabf11a7391930"
 dependencies = [
  "fmm",
  "fnv",
- "hamt",
  "inkwell",
  "llvm-sys",
  "once_cell",
