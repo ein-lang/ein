@@ -202,10 +202,9 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#3663271a0134da4e5767e2e5cccabf11a7391930"
+source = "git+https://github.com/raviqqe/fmm?branch=main#c1e9867da7d3e0e7769b7f11a2fcfd0f991ac574"
 dependencies = [
  "fnv",
- "hamt",
  "once_cell",
  "petgraph",
  "regex",
@@ -214,7 +213,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#3663271a0134da4e5767e2e5cccabf11a7391930"
+source = "git+https://github.com/raviqqe/fmm?branch=main#c1e9867da7d3e0e7769b7f11a2fcfd0f991ac574"
 dependencies = [
  "fmm",
  "fnv",
@@ -252,11 +251,6 @@ dependencies = [
  "openssl-sys",
  "url",
 ]
-
-[[package]]
-name = "hamt"
-version = "0.3.1"
-source = "git+https://github.com/raviqqe/hamt-rs?branch=main#34249d59c2871cc4dc96d7583b2998d11ec0a101"
 
 [[package]]
 name = "hashbrown"
