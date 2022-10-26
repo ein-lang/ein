@@ -157,34 +157,33 @@ pub fn compile(
         configuration.string_type_configuration.clone(),
     );
 
-    let fmm_module = fmm::analysis::cps::transform(
-        &eir_fmm::compile(
-            &ModuleCompiler::new(
-                expression_compiler,
-                type_compiler,
-                type_definition_compiler,
-                global_names,
-            )
-            .compile(&module)?,
-        )?,
-        fmm::types::Record::new(vec![]),
-    )
-    .unwrap();
-
-    fmm::analysis::type_check::check(&fmm_module).unwrap();
-
     Ok((
-        fmm_llvm::compile_to_bit_code(
-            &fmm_module,
-            &fmm_llvm::InstructionConfiguration {
-                allocate_function_name: configuration.malloc_function_name.clone(),
-                reallocate_function_name: configuration.realloc_function_name.clone(),
-                free_function_name: configuration.free_function_name.clone(),
-                unreachable_function_name: None,
-            },
-            None,
-        )
-        .unwrap(),
+        {
+            let mut module = eir_fmm::compile(
+                &ModuleCompiler::new(
+                    expression_compiler,
+                    type_compiler,
+                    type_definition_compiler,
+                    global_names,
+                )
+                .compile(&module)?,
+            )?;
+
+            fmm::analysis::cps::transform(&mut module, fmm::types::Record::new(vec![])).unwrap();
+            fmm::analysis::type_check::check(&module).unwrap();
+
+            fmm_llvm::compile_to_bit_code(
+                &module,
+                &fmm_llvm::InstructionConfiguration {
+                    allocate_function_name: configuration.malloc_function_name.clone(),
+                    reallocate_function_name: configuration.realloc_function_name.clone(),
+                    free_function_name: configuration.free_function_name.clone(),
+                    unreachable_function_name: None,
+                },
+                None,
+            )
+            .unwrap()
+        },
         ModuleInterfaceCompiler::new().compile(&module)?,
     ))
 }
