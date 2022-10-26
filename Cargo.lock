@@ -165,7 +165,7 @@ checksum = "6a3b3bd6a8c3cddb8adc279b239744c6b6fb0840baf06513eef980a31f777da5"
 [[package]]
 name = "eir"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#1b0fb821f270719041e8f5576f9b5423b81cf13f"
+source = "git+https://github.com/ein-lang/eir?branch=main#304fe92eacc90d7ab2753892103c5a9e66abb866"
 dependencies = [
  "once_cell",
  "pretty_assertions",
@@ -174,7 +174,7 @@ dependencies = [
 [[package]]
 name = "eir-fmm"
 version = "0.1.0"
-source = "git+https://github.com/ein-lang/eir?branch=main#1b0fb821f270719041e8f5576f9b5423b81cf13f"
+source = "git+https://github.com/ein-lang/eir?branch=main#304fe92eacc90d7ab2753892103c5a9e66abb866"
 dependencies = [
  "eir",
  "fmm",
@@ -202,9 +202,10 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#e004307f3b4f9aeeb773ba1ed2c37dc1b560df5b"
+source = "git+https://github.com/raviqqe/fmm?branch=main#31e3a795571efa892c32ffc9f9677489f508ec01"
 dependencies = [
  "fnv",
+ "indexmap",
  "once_cell",
  "petgraph",
  "regex",
