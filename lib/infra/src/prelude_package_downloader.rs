@@ -27,7 +27,7 @@ impl<'a> app::PreludePackageDownloader for PreludePackageDownloader<'a> {
         if path.exists() {
             return Ok(());
         } else if let Some(path) = path.parent() {
-            std::fs::create_dir_all(&path)?;
+            std::fs::create_dir_all(path)?;
         }
 
         self.command_runner.run(
