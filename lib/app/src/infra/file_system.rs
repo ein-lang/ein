@@ -86,35 +86,35 @@ mod tests {
     #[test]
     fn exists() {
         assert!(
-            FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .exists(&FilePath::new(&["foo"]))
+            FakeFileSystem::new(vec![(FilePath::new(["foo"]), vec![])].drain(..).collect())
+                .exists(&FilePath::new(["foo"]))
         );
-        assert!(!FakeFileSystem::new(Default::default()).exists(&FilePath::new(&["foo"])));
+        assert!(!FakeFileSystem::new(Default::default()).exists(&FilePath::new(["foo"])));
     }
 
     #[test]
     fn read_to_string() {
         assert_eq!(
-            FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .read_to_string(&FilePath::new(&["foo"]))
+            FakeFileSystem::new(vec![(FilePath::new(["foo"]), vec![])].drain(..).collect())
+                .read_to_string(&FilePath::new(["foo"]))
                 .unwrap(),
             ""
         );
         assert!(FakeFileSystem::new(Default::default())
-            .read_to_string(&FilePath::new(&["foo"]))
+            .read_to_string(&FilePath::new(["foo"]))
             .is_err());
     }
 
     #[test]
     fn read_to_vec() {
         assert_eq!(
-            FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-                .read_to_vec(&FilePath::new(&["foo"]))
+            FakeFileSystem::new(vec![(FilePath::new(["foo"]), vec![])].drain(..).collect())
+                .read_to_vec(&FilePath::new(["foo"]))
                 .unwrap(),
             Vec::<u8>::new()
         );
         assert!(FakeFileSystem::new(Default::default())
-            .read_to_vec(&FilePath::new(&["foo"]))
+            .read_to_vec(&FilePath::new(["foo"]))
             .is_err());
     }
 
@@ -122,13 +122,11 @@ mod tests {
     fn write() {
         let file_system = FakeFileSystem::new(Default::default());
 
-        file_system.write(&FilePath::new(&["foo"]), &[]).unwrap();
-        file_system
-            .read_to_string(&FilePath::new(&["foo"]))
-            .unwrap();
+        file_system.write(&FilePath::new(["foo"]), &[]).unwrap();
+        file_system.read_to_string(&FilePath::new(["foo"])).unwrap();
 
-        FakeFileSystem::new(vec![(FilePath::new(&["foo"]), vec![])].drain(..).collect())
-            .write(&FilePath::new(&["foo"]), &[])
+        FakeFileSystem::new(vec![(FilePath::new(["foo"]), vec![])].drain(..).collect())
+            .write(&FilePath::new(["foo"]), &[])
             .unwrap();
     }
 }

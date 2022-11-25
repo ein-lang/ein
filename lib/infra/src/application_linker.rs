@@ -51,7 +51,7 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
                 .arg("-o")
                 .arg(
                     self.file_path_converter
-                        .convert_to_os_path(&app::FilePath::new(&[application_name])),
+                        .convert_to_os_path(&app::FilePath::new([application_name])),
                 )
                 .arg("-O3")
                 .args(bitcode_paths.iter().map(|path| {

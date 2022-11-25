@@ -29,7 +29,7 @@ impl<'a> PackageInitializer<'a> {
 
     pub fn initialize(&self, target: &Target) -> Result<(), Box<dyn std::error::Error>> {
         self.file_system.write(
-            &FilePath::new(&[self.file_path_configuration.build_configuration_filename]),
+            &FilePath::new([self.file_path_configuration.build_configuration_filename]),
             serialize_build_configuration(&BuildConfiguration::new(
                 target.clone(),
                 Default::default(),
@@ -48,7 +48,7 @@ impl<'a> PackageInitializer<'a> {
             }
             Target::Library => {
                 self.file_system.write(
-                    &FilePath::new(&[self
+                    &FilePath::new([self
                         .package_initialization_configuration
                         .library_main_basename])
                     .with_extension(self.file_path_configuration.source_file_extension),

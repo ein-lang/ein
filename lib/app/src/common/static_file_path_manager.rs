@@ -16,18 +16,18 @@ pub struct StaticFilePathManager {
 
 impl StaticFilePathManager {
     pub fn new(configuration: &FilePathConfiguration) -> Self {
-        let output_directory_path = FilePath::new(&[configuration.output_directory_name]);
+        let output_directory_path = FilePath::new([configuration.output_directory_name]);
         let external_packages_directory_path =
-            output_directory_path.join(&FilePath::new(&[EXTERNAL_PACKAGES_DIRECTORY]));
+            output_directory_path.join(&FilePath::new([EXTERNAL_PACKAGES_DIRECTORY]));
 
         Self {
             prelude_package_directory_path: external_packages_directory_path
-                .join(&FilePath::new(&[PRELUDE_PACKAGE_DIRECTORY])),
+                .join(&FilePath::new([PRELUDE_PACKAGE_DIRECTORY])),
             external_packages_directory_path,
-            object_directory_path: output_directory_path.join(&FilePath::new(&[OBJECT_DIRECTORY])),
-            main_source_file_path: FilePath::new(&[configuration.main_file_basename])
+            object_directory_path: output_directory_path.join(&FilePath::new([OBJECT_DIRECTORY])),
+            main_source_file_path: FilePath::new([configuration.main_file_basename])
                 .with_extension(configuration.source_file_extension),
-            build_configuration_file_path: FilePath::new(&[
+            build_configuration_file_path: FilePath::new([
                 configuration.build_configuration_filename
             ]),
         }

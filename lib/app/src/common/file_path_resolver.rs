@@ -37,7 +37,7 @@ impl<'a> FilePathResolver<'a> {
     pub fn resolve_object_file_path(&self, id: impl AsRef<str>) -> FilePath {
         self.static_file_path_manager
             .object_directory_path()
-            .join(&FilePath::new(&[&id]))
+            .join(&FilePath::new([&id]))
             .with_extension(OBJECT_FILE_EXTENSION)
     }
 
@@ -72,7 +72,7 @@ impl<'a> FilePathResolver<'a> {
                     .name()
                     .parse::<FilePath>()
                     .unwrap()
-                    .join(&FilePath::new(&[external_package.version()])),
+                    .join(&FilePath::new([external_package.version()])),
             )
     }
 }

@@ -12,7 +12,7 @@ impl FilePathConverter {
     pub fn convert_to_os_path(&self, path: &app::FilePath) -> std::path::PathBuf {
         self.base_directory.join(
             path.components()
-                .map(|component| component.replace('/', "_").replace('\\', "_"))
+                .map(|component| component.replace(['/', '\\'], "_"))
                 .collect::<std::path::PathBuf>(),
         )
     }
