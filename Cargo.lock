@@ -212,7 +212,7 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 [[package]]
 name = "fmm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#0fde465273dcbdd77b54cc9a4adc23eab207d757"
+source = "git+https://github.com/raviqqe/fmm?branch=main#90d6a8738f9218505ea01b049740b3a34210fa13"
 dependencies = [
  "fnv",
  "indexmap",
@@ -224,7 +224,7 @@ dependencies = [
 [[package]]
 name = "fmm-llvm"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/fmm?branch=main#0fde465273dcbdd77b54cc9a4adc23eab207d757"
+source = "git+https://github.com/raviqqe/fmm?branch=main#90d6a8738f9218505ea01b049740b3a34210fa13"
 dependencies = [
  "fmm",
  "fnv",
@@ -319,7 +319,7 @@ dependencies = [
 [[package]]
 name = "inkwell"
 version = "0.1.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#f6945b70ca735967aa2a01f8a4a02656296aaab5"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#9ee484b36765281443731cb1034d3c5e076794ec"
 dependencies = [
  "either",
  "inkwell_internals",
@@ -332,7 +332,7 @@ dependencies = [
 [[package]]
 name = "inkwell_internals"
 version = "0.6.0"
-source = "git+https://github.com/TheDan64/inkwell?branch=master#f6945b70ca735967aa2a01f8a4a02656296aaab5"
+source = "git+https://github.com/TheDan64/inkwell?branch=master#9ee484b36765281443731cb1034d3c5e076794ec"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -692,18 +692,18 @@ checksum = "e25dfac463d778e353db5be2449d1cce89bd6fd23c9f1ea21310ce6e5a1b29c4"
 
 [[package]]
 name = "serde"
-version = "1.0.149"
+version = "1.0.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "256b9932320c590e707b94576e3cc1f7c9024d0ee6612dfbcf1cb106cbe8e055"
+checksum = "e326c9ec8042f1b5da33252c8a37e9ffbd2c9bef0155215b6e6c80c790e05f91"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.149"
+version = "1.0.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4eae9b04cbffdfd550eb462ed33bc6a1b68c935127d008b27444d08380f94e4"
+checksum = "42a3df25b0713732468deadad63ab9da1f1fd75a48a15024b50363f128db627e"
 dependencies = [
  "proc-macro2",
  "quote",
