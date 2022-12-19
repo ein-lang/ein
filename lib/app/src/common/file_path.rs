@@ -89,52 +89,52 @@ mod tests {
 
     #[test]
     fn display() {
-        assert_eq!(format!("{}", FilePath::new(&["foo"])), "foo");
-        assert_eq!(format!("{}", FilePath::new(&["foo", "bar"])), "foo/bar");
+        assert_eq!(format!("{}", FilePath::new(["foo"])), "foo");
+        assert_eq!(format!("{}", FilePath::new(["foo", "bar"])), "foo/bar");
     }
 
     #[test]
     fn with_extension() {
         assert_eq!(
-            FilePath::new(&["foo"]).with_extension("c"),
-            FilePath::new(&["foo.c"])
+            FilePath::new(["foo"]).with_extension("c"),
+            FilePath::new(["foo.c"])
         );
         assert_eq!(
-            FilePath::new(&["foo", "bar"]).with_extension("c"),
-            FilePath::new(&["foo", "bar.c"])
+            FilePath::new(["foo", "bar"]).with_extension("c"),
+            FilePath::new(["foo", "bar.c"])
         );
         assert_eq!(
-            FilePath::new(&["foo.c"]).with_extension(""),
-            FilePath::new(&["foo"])
+            FilePath::new(["foo.c"]).with_extension(""),
+            FilePath::new(["foo"])
         );
         assert_eq!(
-            FilePath::new(&["foo.c"]).with_extension("h"),
-            FilePath::new(&["foo.h"])
+            FilePath::new(["foo.c"]).with_extension("h"),
+            FilePath::new(["foo.h"])
         );
     }
 
     #[test]
     fn join() {
         assert_eq!(
-            FilePath::new(&["foo"]).join(&FilePath::new(&["bar"])),
-            FilePath::new(&["foo", "bar"])
+            FilePath::new(["foo"]).join(&FilePath::new(["bar"])),
+            FilePath::new(["foo", "bar"])
         );
         assert_eq!(
-            FilePath::new(&["foo", "bar"]).join(&FilePath::new(&["baz"])),
-            FilePath::new(&["foo", "bar", "baz"])
+            FilePath::new(["foo", "bar"]).join(&FilePath::new(["baz"])),
+            FilePath::new(["foo", "bar", "baz"])
         );
     }
 
     #[test]
     fn has_extension() {
-        assert!(FilePath::new(&["foo"]).has_extension(""));
-        assert!(!FilePath::new(&["foo"]).has_extension("foo"));
-        assert!(FilePath::new(&["foo.bar"]).has_extension("bar"));
-        assert!(!FilePath::new(&["foo.bar"]).has_extension("baz"));
+        assert!(FilePath::new(["foo"]).has_extension(""));
+        assert!(!FilePath::new(["foo"]).has_extension("foo"));
+        assert!(FilePath::new(["foo.bar"]).has_extension("bar"));
+        assert!(!FilePath::new(["foo.bar"]).has_extension("baz"));
 
-        assert!(FilePath::new(&["foo", "bar"]).has_extension(""));
-        assert!(!FilePath::new(&["foo", "bar"]).has_extension("bar"));
-        assert!(FilePath::new(&["foo", "bar.baz"]).has_extension("baz"));
-        assert!(!FilePath::new(&["foo", "bar.baz"]).has_extension("blah"));
+        assert!(FilePath::new(["foo", "bar"]).has_extension(""));
+        assert!(!FilePath::new(["foo", "bar"]).has_extension("bar"));
+        assert!(FilePath::new(["foo", "bar.baz"]).has_extension("baz"));
+        assert!(!FilePath::new(["foo", "bar.baz"]).has_extension("blah"));
     }
 }
