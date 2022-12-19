@@ -9,6 +9,7 @@ impl Logger {
         Self {}
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     pub fn log_error(
         &self,
         error: &dyn std::error::Error,
