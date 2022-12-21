@@ -341,7 +341,7 @@ fn record_type_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefiniti
 
 fn type_alias_definition<'a>() -> impl Parser<Stream<'a>, Output = TypeDefinition> {
     (keyword("type"), identifier(), sign("="), type_())
-        .map(|(_, name, _, type_)| TypeDefinition::new(&name, type_))
+        .map(|(_, name, _, type_)| TypeDefinition::new(name, type_))
         .expected("type alias definition")
 }
 

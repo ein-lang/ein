@@ -33,6 +33,9 @@ impl<'a> app::ApplicationLinker for ApplicationLinker<'a> {
             // LLVM C API doesn't seem to support the tailcallopt pass directly.
             // So we compile each bitcode file with the pass manually in order
             // to optimize all tail calls.
+            //
+            // TODO This seems to be a bug in Clippy.
+            #[allow(clippy::needless_borrow)]
             self.command_runner.run(
                 std::process::Command::new(&llc)
                     .arg("-O3")
