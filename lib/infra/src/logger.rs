@@ -9,6 +9,7 @@ impl Logger {
         Self {}
     }
 
+    // TODO This looks like Clippy's bug?
     #[allow(clippy::only_used_in_recursion)]
     pub fn log_error(
         &self,

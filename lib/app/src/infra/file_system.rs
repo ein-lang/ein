@@ -123,9 +123,7 @@ mod tests {
         let file_system = FakeFileSystem::new(Default::default());
 
         file_system.write(&FilePath::new(["foo"]), &[]).unwrap();
-        file_system
-            .read_to_string(&FilePath::new(["foo"]))
-            .unwrap();
+        file_system.read_to_string(&FilePath::new(["foo"])).unwrap();
 
         FakeFileSystem::new(vec![(FilePath::new(["foo"]), vec![])].drain(..).collect())
             .write(&FilePath::new(["foo"]), &[])
