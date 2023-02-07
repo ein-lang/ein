@@ -10,7 +10,7 @@ impl ParseError {
     pub fn new(source_name: &str, errors: &impl std::error::Error) -> Self {
         Self {
             source_name: source_name.into(),
-            details: format!("{}", errors),
+            details: format!("{errors}"),
         }
     }
 }

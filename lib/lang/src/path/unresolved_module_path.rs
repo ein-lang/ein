@@ -25,8 +25,8 @@ impl From<InternalUnresolvedModulePath> for UnresolvedModulePath {
 impl std::fmt::Display for UnresolvedModulePath {
     fn fmt(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::External(external_module_path) => write!(formatter, "{}", external_module_path),
-            Self::Internal(internal_module_path) => write!(formatter, "{}", internal_module_path),
+            Self::External(external_module_path) => write!(formatter, "{external_module_path}"),
+            Self::Internal(internal_module_path) => write!(formatter, "{internal_module_path}"),
         }
     }
 }

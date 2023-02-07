@@ -29,27 +29,24 @@ impl Display for CompileError {
         match self {
             Self::AnyEqualOperation(source_information) => write!(
                 formatter,
-                "cannot compare Any type values\n{}",
-                source_information
+                "cannot compare Any type values\n{source_information}"
             ),
             Self::CaseArgumentTypeInvalid(source_information) => write!(
                 formatter,
-                "invalid argument type of case expression\n{}",
-                source_information
+                "invalid argument type of case expression\n{source_information}"
             ),
             Self::ExportedNameNotFound { name } => {
-                write!(formatter, "exported name \"{}\" not found", name)
+                write!(formatter, "exported name \"{name}\" not found")
             }
             Self::DuplicateNames(one, other) => {
-                write!(formatter, "duplicate names\n{}\n{}", one, other)
+                write!(formatter, "duplicate names\n{one}\n{other}")
             }
             Self::FunctionEqualOperation(source_information) => write!(
                 formatter,
-                "cannot compare functions\n{}",
-                source_information
+                "cannot compare functions\n{source_information}"
             ),
             Self::FunctionExpected(source_information) => {
-                write!(formatter, "function expected\n{}", source_information)
+                write!(formatter, "function expected\n{source_information}")
             }
             Self::MainFunctionNotFound(path) => write!(
                 formatter,
@@ -64,11 +61,10 @@ impl Display for CompileError {
             ),
             Self::RecordEqualOperation(source_information) => write!(
                 formatter,
-                "cannot compare records including functions or Any values\n{}",
-                source_information
+                "cannot compare records including functions or Any values\n{source_information}"
             ),
             Self::EirFmmCompile(error) => {
-                write!(formatter, "failed to compile eir to fmm: {:?}", error)
+                write!(formatter, "failed to compile eir to fmm: {error:?}")
             }
             Self::TypeNotFound(reference) => write!(
                 formatter,
@@ -77,12 +73,11 @@ impl Display for CompileError {
                 reference.source_information()
             ),
             Self::TypeNotInferred(source_information) => {
-                write!(formatter, "failed to infer type\n{}", source_information)
+                write!(formatter, "failed to infer type\n{source_information}")
             }
             Self::TypesNotMatched(lhs_source_information, rhs_source_information) => write!(
                 formatter,
-                "types not matched\n{}\n{}",
-                lhs_source_information, rhs_source_information
+                "types not matched\n{lhs_source_information}\n{rhs_source_information}"
             ),
             Self::VariableNotFound(variable) => write!(
                 formatter,
