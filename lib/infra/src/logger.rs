@@ -24,7 +24,7 @@ impl Logger {
         writeln!(
             &mut stderr,
             ": {}",
-            format!("{}", error).replace('\n', "\n  ").trim()
+            format!("{error}").replace('\n', "\n  ").trim()
         )?;
 
         if let Some(error) = error.source() {
@@ -43,7 +43,7 @@ impl app::Logger for Logger {
         write!(&mut stderr, "info")?;
         stderr.set_color(ColorSpec::new().set_fg(None))?;
 
-        writeln!(&mut stderr, ": {}", log)?;
+        writeln!(&mut stderr, ": {log}")?;
 
         Ok(())
     }

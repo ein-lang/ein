@@ -27,7 +27,7 @@ impl FilePath {
         let replacement = if extension.is_empty() {
             "".into()
         } else {
-            format!(".{}", extension)
+            format!(".{extension}")
         };
 
         Self::new(

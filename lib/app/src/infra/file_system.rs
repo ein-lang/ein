@@ -47,7 +47,7 @@ impl FileSystem for FakeFileSystem {
         directory_path: &FilePath,
     ) -> Result<Option<Repository>, Box<dyn std::error::Error>> {
         Ok(Some(Repository::new(
-            url::Url::parse(&format!("{}", directory_path))?,
+            url::Url::parse(&format!("{directory_path}"))?,
             "v1",
         )))
     }

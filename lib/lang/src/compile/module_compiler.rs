@@ -162,7 +162,7 @@ impl ModuleCompiler {
         body: &Expression,
         function_type: &eir::types::Function,
     ) -> Result<Vec<eir::ir::Definition>, CompileError> {
-        let thunk_name = format!("{}.thunk", name);
+        let thunk_name = format!("{name}.thunk");
         const ARGUMENT_NAME: &str = "$arg";
 
         Ok(vec![
