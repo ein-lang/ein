@@ -41,10 +41,9 @@ impl Display for CompileError {
             Self::DuplicateNames(one, other) => {
                 write!(formatter, "duplicate names\n{one}\n{other}")
             }
-            Self::FunctionEqualOperation(source_information) => write!(
-                formatter,
-                "cannot compare functions\n{source_information}"
-            ),
+            Self::FunctionEqualOperation(source_information) => {
+                write!(formatter, "cannot compare functions\n{source_information}")
+            }
             Self::FunctionExpected(source_information) => {
                 write!(formatter, "function expected\n{source_information}")
             }
