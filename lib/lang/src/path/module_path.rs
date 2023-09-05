@@ -56,7 +56,7 @@ impl ModulePath {
         .into_iter()
         .chain(self.components.iter())
         .map(|component| component.as_str())
-        .chain(vec![name].into_iter())
+        .chain(vec![name])
         .collect::<Vec<_>>()
         .join(".")
     }
