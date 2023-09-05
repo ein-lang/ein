@@ -30,15 +30,12 @@ impl FilePath {
             format!(".{extension}")
         };
 
-        Self::new(
-            self.components().take(self.components.len() - 1).chain(
-                vec![regex::Regex::new(r"(\..*)?$")
+        Self::new(self.components().take(self.components.len() - 1).chain(
+            vec![regex::Regex::new(r"(\..*)?$")
                     .unwrap()
                     .replace(self.components.iter().last().unwrap(), replacement.as_str())
-                    .deref()]
-                .into_iter(),
-            ),
-        )
+                    .deref()],
+        ))
     }
 
     pub fn join(&self, file_path: &Self) -> Self {
