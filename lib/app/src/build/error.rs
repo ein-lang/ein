@@ -24,8 +24,7 @@ impl std::fmt::Display for BuildError {
         match self {
             Self::ExternalPackageConfigurationFileNotFound { package_name } => write!(
                 formatter,
-                "package configuration file not found in external package \"{}\"",
-                package_name
+                "package configuration file not found in external package \"{package_name}\""
             ),
             Self::MainFunctionModuleNotFound {
                 main_function_module_name,
@@ -38,8 +37,7 @@ impl std::fmt::Display for BuildError {
             ),
             Self::ModuleCircularDependency(file_path) => write!(
                 formatter,
-                "circular module dependency detected: {}",
-                file_path
+                "circular module dependency detected: {file_path}"
             ),
             Self::ModuleNotFound {
                 module_path,
@@ -47,8 +45,7 @@ impl std::fmt::Display for BuildError {
             } => {
                 write!(
                     formatter,
-                    "module \"{}\" not found imported by \"{}\"",
-                    module_path, source_file_path
+                    "module \"{module_path}\" not found imported by \"{source_file_path}\""
                 )
             }
             Self::PackageCircularDependency(external_package) => write!(

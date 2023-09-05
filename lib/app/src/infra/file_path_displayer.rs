@@ -18,6 +18,6 @@ impl FakeFilePathDisplayer {
 #[cfg(test)]
 impl FilePathDisplayer for FakeFilePathDisplayer {
     fn display(&self, file_path: &FilePath) -> String {
-        format!("{}", file_path)
+        format!("{file_path}")
     }
 }

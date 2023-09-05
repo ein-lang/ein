@@ -45,7 +45,7 @@ impl Display for InfrastructureError {
         match self {
             Self::CommandExit { status_code } => match status_code {
                 Some(status_code) => {
-                    write!(formatter, "command exited with status code {}", status_code)
+                    write!(formatter, "command exited with status code {status_code}")
                 }
                 None => write!(formatter, "command exited without status code"),
             },
