@@ -1,10 +1,11 @@
 [workspace]
+resolver = "2"
 members = [
   "cmd/ein",
   "lib/app",
   "lib/ffi",
   "lib/infra",
   "lib/lang",
-  "lib/prelude/ffi"
+  "lib/prelude/ffi",
 ]
 exclude = ["tmp"]

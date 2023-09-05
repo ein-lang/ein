@@ -39,8 +39,8 @@ impl LetErrorTransformer {
             let_.source_information().clone(),
         );
 
-        let_.definitions().iter().rev().fold(
-            Ok(let_.expression().clone()),
+        let_.definitions().iter().rev().try_fold(
+            let_.expression().clone(),
             |expression, variable_definition| {
                 let ok_type = variable_definition.type_().clone();
 
@@ -55,7 +55,7 @@ impl LetErrorTransformer {
                     variable_definition.name(),
                     variable_definition.body().clone(),
                     vec![
-                        Alternative::new(ok_type, expression?),
+                        Alternative::new(ok_type, expression),
                         Alternative::new(
                             error_type.clone(),
                             self.coerce_type(
