@@ -1,21 +1,22 @@
+
 pull_request_rules:
-  - name: dependabot
-    conditions:
-      - author=dependabot[bot]
+  - name: dependabot + merge
+    conditions: []
     actions:
       queue:
-        name: default
-        method: squash
-  - name: merge
-    conditions:
+queue_rules:
+  - name: duplicated default from dependabot
+    queue_conditions:
+      - author=dependabot[bot]
+    merge_conditions: []
+    merge_method: squash
+  - name: duplicated default from merge
+    queue_conditions:
       - label=merge
       - or:
           - author=raviqqe
           - "#approved-reviews-by>=1"
-    actions:
-      queue:
-        name: default
-        method: squash
-queue_rules:
+    merge_conditions: []
+    merge_method: squash
   - name: default
     conditions: []
