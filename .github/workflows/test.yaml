@@ -39,3 +39,14 @@ jobs:
       - uses: streetsidesoftware/cspell-action@main
         with:
           files: "**/*.{feature,md,rs}"
+  test:
+    needs:
+      - unit_test
+      - integration_test
+      - format
+      - lint
+      - spell_check
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: for result in ${{ join(needs.*.result, ' ') }}; do [ $result = success ]; done
