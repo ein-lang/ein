@@ -40,7 +40,7 @@ impl VariableConstraintSet {
     fn get_constraint(&mut self, variable: &types::Variable) -> &mut VariableConstraint {
         let id = variable.id();
 
-        if self.constraints.get(&id).is_none() {
+        if self.constraints.contains_key(&id) {
             self.constraints.insert(
                 id,
                 VariableConstraint::new(variable.source_information().clone()),
