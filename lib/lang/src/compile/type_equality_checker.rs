@@ -38,7 +38,7 @@ impl TypeEqualityChecker {
     }
 }
 
-#[cfg(tests)]
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::ast::*;
