@@ -23,7 +23,7 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - run: cargo fmt -- --check
   lint:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
   spell_check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: streetsidesoftware/cspell-action@main
         with:
           files: "**/*.{feature,md,rs}"
