@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-    - uses: homebrew/actions/setup-homebrew@master
+      - uses: homebrew/actions/setup-homebrew@master
       - run: tools/ci/setup.sh
       - run: cargo test
         env:
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-    - uses: homebrew/actions/setup-homebrew@master
+      - uses: homebrew/actions/setup-homebrew@master
       - run: tools/ci/setup.sh
       - run: sudo apt update --fix-missing
       - run: sudo apt install clang valgrind
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-    - uses: homebrew/actions/setup-homebrew@master
+      - uses: homebrew/actions/setup-homebrew@master
       - run: tools/ci/setup.sh
       - run: cargo clippy -- -D warnings
   spell_check:
